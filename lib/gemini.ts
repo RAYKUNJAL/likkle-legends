@@ -92,7 +92,7 @@ export const playTextToSpeech = async (text: string, voiceName: 'Kore' | 'Puck' 
 export const getReadingFeedback = async (age: string, text: string) => {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview", // Updated to valid model
+      model: "gemini-2.0-flash",
       contents: `You are a friendly, encouraging Caribbean reading buddy character for a ${age} year old child. 
       The child just read this text: "${text}".
       
@@ -112,7 +112,7 @@ export const getReadingFeedback = async (age: string, text: string) => {
 export const getParentSuggestions = async (age: string, lastMission: string, month: string) => {
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
+      model: "gemini-2.0-flash",
       contents: `Act as an expert child psychologist and cultural educator specializing in Caribbean heritage.
       
       Context:
@@ -140,7 +140,7 @@ export const getParentSuggestions = async (age: string, lastMission: string, mon
 export const getChatResponse = async (history: any[], message: string, context: string) => {
   try {
     const chat = ai.chats.create({
-      model: "gemini-3-pro-preview",
+      model: "gemini-2.0-flash",
       config: {
         systemInstruction: `${TANTY_SPICE_SYSTEM_INSTRUCTION}\n\nCurrent Context: ${context}`,
       }

@@ -1,42 +1,52 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from './components/UserContext';
 import Header from './components/Header';
-import Hero from './components/Hero';
-import Features from './components/Features';
-import Gallery from './components/Gallery';
-import DigitalPortal from './components/DigitalPortal';
-import Characters from './components/Characters';
-import ParentDashboard from './components/ParentDashboard';
-import Pricing from './components/Pricing';
-import Testimonials from './components/Testimonials';
 import Footer from './components/Footer';
+import Home from './components/Home';
 import ExitIntentModal from './components/ExitIntentModal';
 import MobileFloatingCTA from './components/MobileFloatingCTA';
 import UpgradeBanner from './components/UpgradeBanner';
+import ScrollToTop from './components/ScrollToTop';
+
+// Page Imports
+import { PrivacyPolicy, ShippingReturns, FAQ, ContactUs } from './pages/LegalPages';
+import { PastBoxes, Merchandise, GiftSubscription } from './pages/ShopPages';
 
 function App() {
   return (
-    <UserProvider>
-      <div className="min-h-screen bg-white font-sans text-text antialiased selection:bg-primary/20 selection:text-primary">
-        <Header />
-        <main>
-          <Hero />
-          <Features />
-          <DigitalPortal />
-          <ParentDashboard />
-          <Gallery />
-          <Characters />
-          <Pricing />
-          <Testimonials />
-        </main>
-        <Footer />
-        
-        {/* CRO Components */}
-        <ExitIntentModal />
-        <MobileFloatingCTA />
-        <UpgradeBanner />
-      </div>
-    </UserProvider>
+    <Router>
+      <UserProvider>
+        <div className="min-h-screen bg-white font-sans text-text antialiased selection:bg-primary/20 selection:text-primary flex flex-col">
+          <ScrollToTop />
+          <Header />
+          
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              
+              {/* Legal & Support */}
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/shipping" element={<ShippingReturns />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/contact" element={<ContactUs />} />
+              
+              {/* Shop */}
+              <Route path="/past-boxes" element={<PastBoxes />} />
+              <Route path="/merch" element={<Merchandise />} />
+              <Route path="/gift" element={<GiftSubscription />} />
+            </Routes>
+          </main>
+
+          <Footer />
+          
+          {/* CRO Components - Only show on Home roughly, or manage visibility internally */}
+          <ExitIntentModal />
+          <MobileFloatingCTA />
+          <UpgradeBanner />
+        </div>
+      </UserProvider>
+    </Router>
   );
 }
 

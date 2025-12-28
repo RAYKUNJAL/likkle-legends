@@ -9,12 +9,12 @@ const Hero: React.FC = () => {
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat animate-scale-up"
         style={{ 
-          // Using a vibrant Caribbean beach/tropical scene
-          backgroundImage: 'url("https://images.unsplash.com/photo-1590523278135-1e992929db14?q=80&w=2670&auto=format&fit=crop")', 
+          // Fun, playful Pineapple on beach image fitting the "Flavors" theme
+          backgroundImage: 'url("https://images.unsplash.com/photo-1576016770956-debb63d92058?q=80&w=2669&auto=format&fit=crop")', 
         }}
       >
         {/* Adjusted gradient for better text readability on bright background */}
-        <div className="absolute inset-0 bg-gradient-to-r from-deep/80 via-deep/50 to-deep/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-deep/90 via-deep/60 to-deep/20"></div>
       </div>
 
       <div className="container mx-auto px-4 relative z-10 pt-10">

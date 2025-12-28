@@ -4,7 +4,8 @@ import CharacterBuilder from './CharacterBuilder';
 import ReadingBuddy from './ReadingBuddy';
 import FeelingsCoach from './FeelingsCoach';
 import ImageEditor from './ImageEditor';
-import { Sparkles, Laptop } from 'lucide-react';
+import ActivityPack from './ActivityPack';
+import { Sparkles, Laptop, Download } from 'lucide-react';
 
 const DigitalPortal: React.FC = () => {
   return (
@@ -36,9 +37,10 @@ const DigitalPortal: React.FC = () => {
             <ImageEditor />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          {/* Feature 1: Interactive Story */}
-          <div className="space-y-6">
+        {/* Content Row: Storybook & Downloads */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch mb-12">
+          {/* Feature 1: Interactive Story (Takes up 2 columns) */}
+          <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-primary">
                 <Sparkles size={20} />
@@ -51,8 +53,25 @@ const DigitalPortal: React.FC = () => {
             <StorybookWidget />
           </div>
 
-          {/* Feature 2: Character Builder */}
-          <div className="space-y-6">
+          {/* Feature 2: Downloads (Takes up 1 column) */}
+          <div className="space-y-4 flex flex-col">
+             <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-green-600">
+                <Download size={20} />
+              </div>
+              <div>
+                <h3 className="font-heading font-bold text-2xl text-text">Activity Corner</h3>
+                <p className="text-sm text-textLight">Offline fun to print & play.</p>
+              </div>
+            </div>
+            <div className="flex-1">
+               <ActivityPack />
+            </div>
+          </div>
+        </div>
+
+        {/* Feature 3: Character Builder (Full width) */}
+        <div className="space-y-4">
              <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600">
                 <Sparkles size={20} />
@@ -63,7 +82,6 @@ const DigitalPortal: React.FC = () => {
               </div>
             </div>
             <CharacterBuilder />
-          </div>
         </div>
       </div>
     </section>
