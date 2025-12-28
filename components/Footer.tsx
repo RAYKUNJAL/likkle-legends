@@ -1,16 +1,20 @@
 import React from 'react';
 import { Instagram, Facebook, Twitter } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Footer: React.FC = () => {
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+
   return (
     <footer className="bg-gray-900 text-white pt-20 pb-10">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center gap-2 mb-6">
+            <Link to="/" className="flex items-center gap-2 mb-6">
               <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-bold">L</div>
               <span className="font-heading font-bold text-xl">Likkle<span className="text-primary">Legends</span></span>
-            </div>
+            </Link>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
               Empowering the next generation with Caribbean pride, emotional intelligence, and endless joy.
             </p>
@@ -30,20 +34,20 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="font-heading font-bold mb-6 text-lg">Shop</h4>
             <ul className="space-y-3 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">Subscribe</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Gift A Subscription</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Past Boxes</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Merchandise</a></li>
+              <li><Link to={isHome ? "#pricing" : "/#pricing"} className="hover:text-white transition-colors">Subscribe</Link></li>
+              <li><Link to="/gift" className="hover:text-white transition-colors">Gift A Subscription</Link></li>
+              <li><Link to="/past-boxes" className="hover:text-white transition-colors">Past Boxes</Link></li>
+              <li><Link to="/merch" className="hover:text-white transition-colors">Merchandise</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-heading font-bold mb-6 text-lg">Support</h4>
             <ul className="space-y-3 text-sm text-gray-400">
-              <li><a href="#" className="hover:text-white transition-colors">FAQ</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Shipping & Returns</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><Link to="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
+              <li><Link to="/shipping" className="hover:text-white transition-colors">Shipping & Returns</Link></li>
+              <li><Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+              <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
             </ul>
           </div>
 

@@ -96,6 +96,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     description: "Physical mail + Limited Digital Access",
     features: [
       "Monthly Physical Letter",
+      "2 Collectible Flashcards (Zaboca & Nutmeg)",
       "1 Digital Story / month",
       "1 AI Reading Session / month",
       "Pay as you go"
@@ -110,6 +111,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     description: "The Full Experience (Physical + Unlimited Digital)",
     features: [
       "Everything in Mail Club",
+      "Bonus Sticker Sheet",
       "Unlimited AI Reading Buddy",
       "Full Digital Library Access",
       "Feelings & Culture Coach",
