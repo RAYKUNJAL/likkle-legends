@@ -1,8 +1,6 @@
-"use client";
-
 import { useState } from 'react';
-import { MessageSquare, X, Send, User } from 'lucide-react';
-import { generateAIResponse } from '@/lib/gemini';
+import { MessageSquare, X, Send } from 'lucide-react';
+import { askTantySpice } from '@/app/actions/tanty';
 
 export default function TantySpiceWidget() {
     const [isOpen, setIsOpen] = useState(false);
@@ -20,10 +18,20 @@ export default function TantySpiceWidget() {
         setChat(prev => [...prev, { role: 'user', text: userMsg }]);
 
         setIsTyping(true);
-        const response = await generateAIResponse(userMsg);
-        setIsTyping(false);
+        // In a real app, this should be a Server Action to protect the API key. 
+        // For this demo/prototype, we are importing the logic directly, but 
+        // Note: NEXT_PUBLIC_ env vars or Server Actions are needed for client-side safety.
+        // We will mock the delay for the UI experience if the key is missing client-side.
 
-        setChat(prev => [...prev, { role: 'tanty', text: response }]);
+        try {
+            // We call our secure Server Action here
+            const response = await askTantySpice(userMsg);
+            setChat(prev => [...prev, { role: 'tanty', text: response }]);
+        } catch (e) {
+            setChat(prev => [...prev, { role: 'tanty', text: "Oye, the spirits are quiet right now." }]);
+        }
+
+        setIsTyping(false);
     };
 
     return (
@@ -42,7 +50,7 @@ export default function TantySpiceWidget() {
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                         <div className="flex items-center gap-4 relative z-10">
                             <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center font-bold border-2 border-white/40 overflow-hidden shadow-inner">
-                                <img src="/images/tanty_spice.png" alt="Tanty Spice" className="w-full h-full object-cover" onError={(e) => {
+                                <img src="/images/tanty_spice.png" alt="Tanty" className="w-full h-full object-cover" onError={(e) => {
                                     e.currentTarget.src = "https://ui-avatars.com/api/?name=Tanty+Spice&background=FF3FB4&color=fff";
                                 }} />
                             </div>
