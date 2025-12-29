@@ -1,216 +1,35 @@
-<<<<<<< HEAD
-export async function generateAIResponse(prompt: string, model: string = "gemini-3-flash-preview") {
-    // This is a mock implementation. In a real app, you'd call the Gemini API via a secure backend route.
-    console.log(`Generating response with ${model} for prompt: ${prompt}`);
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-    const responses = [
-        "Fix your face, little one! Tanty Spice is here. Tell me, what's on your heart today?",
-        "Oh gosh, that sounds like a grand adventure! When I was your age, we used to run through the mango patches...",
-        "Sweetness, you have to be proud of where you from! Your roots are deep like a silk cotton tree.",
-        "You feeling a bit 'mish-mash'? Don't worry, even the sea has rough days before the calm.",
-        "That is too sweet! You making Tanty proud. Keep learning your culture, it's your superpower.",
-        "Listen to me, child. Every legend starts with a single letter. You are doing great!",
-        "Dilly Doubles was just telling me about the best street food... what's your favorite snack?",
-        "Mango Moko says you've been standing tall today! I agree, you are a true legend."
-    ];
+const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
+const genAI = new GoogleGenerativeAI(apiKey);
 
-    if (prompt.toLowerCase().includes("feeling") || prompt.toLowerCase().includes("sad") || prompt.toLowerCase().includes("happy")) {
-        return "Tanty knows hearts best. Tell me more, my darling. Your feelings are like the tides - they come and go, but you stay strong.";
-    }
+export async function generateAIResponse(userMessage: string) {
+  if (!apiKey) {
+    console.error("Missing GOOGLE_GENERATIVE_AI_API_KEY");
+    return "Oye! My magic connection is a bit weak right now. Tell the developer to check the API key!";
+  }
 
-    if (prompt.toLowerCase().includes("culture") || prompt.toLowerCase().includes("caribbean")) {
-        return "The Caribbean is a big, beautiful family! From the steelpan to the carnival, we have so much to celebrate.";
-    }
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    return responses[Math.floor(Math.random() * responses.length)];
+    const prompt = `
+      You are Tanty Spice, a wise, warm, and funny Caribbean auntie. 
+      You speak with a gentle Caribbean rhythm (using words like "darlin'", "child", "bless up", "small ting").
+      You are an expert in emotional literacy for children (SEL) and Caribbean folklore.
+      
+      Your goal is to help children identify their feelings and feel proud of who they are.
+      Keep your responses short (under 3 sentences), encouraging, and playful.
+      
+      User said: "${userMessage}"
+      
+      Respond as Tanty Spice:
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error("Error generating AI response:", error);
+    return "My crystal ball is a bit cloudy, child. Ask me again in a moment!";
+  }
 }
-=======
-import { GoogleGenAI, Modality } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-// Tanty Spice Persona from JSON
-const TANTY_SPICE_SYSTEM_INSTRUCTION = `You are Tanty Spice, a warm, wise Caribbean aunty in the Likkle Legends universe. You help children ages 4–8 and their caregivers with feelings, confidence, and Caribbean culture. 
-
-Speak with a light Caribbean flavour but always in clear, standard English. You sometimes use gentle Caribbean phrases like "leh we reason" or "my sweet child," but not in every sentence. 
-
-Adjust your explanations and length based on the child’s age band (Mini Legends 4–5, Big Legends 6–8) or whether you are talking to a parent.
-
-Safety Rules:
-- You never flirt, you never talk about sex with children.
-- You never give instructions for anything harmful, violent, or illegal.
-- If a child talks about self-harm, abuse, or serious danger, respond with empathy, say you are an AI helper and not a doctor, and urge them to tell a trusted adult or emergency service right away.
-
-Behavior:
-- Mini Legends (4-5): 1–3 short sentences, simple words, lots of reassurance.
-- Big Legends (6-8): Slightly longer explanations, 2–3 practical steps.
-- Validate feelings before giving advice.`;
-
-// --- Audio Helpers ---
-
-function decode(base64: string) {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
-
-async function decodeAudioData(
-  data: Uint8Array,
-  ctx: AudioContext,
-  sampleRate: number,
-  numChannels: number,
-): Promise<AudioBuffer> {
-  const dataInt16 = new Int16Array(data.buffer);
-  const frameCount = dataInt16.length / numChannels;
-  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-
-  for (let channel = 0; channel < numChannels; channel++) {
-    const channelData = buffer.getChannelData(channel);
-    for (let i = 0; i < frameCount; i++) {
-      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
-    }
-  }
-  return buffer;
-}
-
-export const playTextToSpeech = async (text: string, voiceName: 'Kore' | 'Puck' = 'Kore') => {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-tts",
-      contents: [{ parts: [{ text }] }],
-      config: {
-        responseModalities: [Modality.AUDIO],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName },
-          },
-        },
-      },
-    });
-
-    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-    if (!base64Audio) return;
-
-    const outputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-    const audioBuffer = await decodeAudioData(
-      decode(base64Audio),
-      outputAudioContext,
-      24000,
-      1,
-    );
-
-    const source = outputAudioContext.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(outputAudioContext.destination);
-    source.start();
-    
-    return source; // Return source to allow stopping if needed
-  } catch (error) {
-    console.error("TTS Error:", error);
-  }
-};
-
-// --- Existing Functions ---
-
-export const getReadingFeedback = async (age: string, text: string) => {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: `You are a friendly, encouraging Caribbean reading buddy character for a ${age} year old child. 
-      The child just read this text: "${text}".
-      
-      Provide:
-      1. One sentence of specific, enthusiastic praise about their effort.
-      2. One simple, fun question about the story to check understanding.
-      
-      Keep the tone magical, warm, and use very mild Caribbean slang (like "Smallie" or "fren") appropriate for kids.`,
-    });
-    return response.text;
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    return "Great job reading! I loved hearing that story. What was your favorite part?";
-  }
-};
-
-export const getParentSuggestions = async (age: string, lastMission: string, month: string) => {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: `Act as an expert child psychologist and cultural educator specializing in Caribbean heritage.
-      
-      Context:
-      - Child Age: ${age} (Group: ${age === '4-5' ? 'Mini Legend' : 'Big Legend'})
-      - Last Mission Completed: ${lastMission}
-      - Current Month: ${month}
-      
-      Task:
-      Generate a JSON object with 3 "Unity Mission" ideas.
-      Each mission should have:
-      - title: Short catchy title
-      - description: 1 sentence description
-      - type: 'Creative', 'Outdoor', or 'Emotional'
-      
-      The missions should be screen-free, foster emotional intelligence (SEL), and connect to Caribbean culture.`,
-      config: { responseMimeType: "application/json" }
-    });
-    return JSON.parse(response.text || "[]");
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    return [];
-  }
-};
-
-export const getChatResponse = async (history: any[], message: string, context: string) => {
-  try {
-    const chat = ai.chats.create({
-      model: "gemini-2.0-flash",
-      config: {
-        systemInstruction: `${TANTY_SPICE_SYSTEM_INSTRUCTION}\n\nCurrent Context: ${context}`,
-      }
-    });
-
-    const result = await chat.sendMessage({ message });
-    return result.text;
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    return "Oh my dear, tell me more about that!";
-  }
-};
-
-export const generateImageEdit = async (imageBase64: string, prompt: string) => {
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: imageBase64,
-              mimeType: 'image/jpeg', 
-            },
-          },
-          {
-            text: `Edit this image: ${prompt}. Return only the image.`,
-          },
-        ],
-      },
-    });
-
-    if (response.candidates?.[0]?.content?.parts) {
-       for (const part of response.candidates[0].content.parts) {
-         if (part.inlineData) {
-           return `data:image/png;base64,${part.inlineData.data}`;
-         }
-       }
-    }
-    return null;
-  } catch (error) {
-    console.error("Gemini Image Edit Error:", error);
-    throw error;
-  }
-};
->>>>>>> origin/main
