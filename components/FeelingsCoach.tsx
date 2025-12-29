@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { MessageCircle, Send, Volume2, VolumeX } from 'lucide-react';
 import { useUser } from './UserContext';
-import { getChatResponse, playTextToSpeech } from '../lib/gemini';
-import Button from './Button';
+import { generateAIResponse } from '../lib/gemini'
+import Button from '../Button';
 
 const FeelingsCoach: React.FC = () => {
   const { user, isLocked, upgradeTier } = useUser();
@@ -29,7 +29,7 @@ const FeelingsCoach: React.FC = () => {
       role: 'child'
     });
 
-    const responseText = await getChatResponse(
+    const responseText = await generateAIResponse(
       newMessages, 
       input, 
       contextString
