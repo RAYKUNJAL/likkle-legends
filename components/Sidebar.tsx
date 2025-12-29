@@ -11,23 +11,26 @@ import {
     LogOut,
     UserCircle,
     Star,
-    Briefcase
+    Briefcase,
+    Plus,
+    BarChart3
 } from 'lucide-react';
 
 interface SidebarProps {
-    isAdmin?: boolean;
+    view?: 'parent' | 'admin';
 }
 
-export default function Sidebar({ isAdmin = false }: SidebarProps) {
+export default function Sidebar({ view = 'parent' }: SidebarProps) {
     const pathname = usePathname();
+    const isAdmin = view === 'admin';
 
     const parentItems = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+        { name: 'Parent View', href: '/parent', icon: UserCircle },
         { name: 'Nursery Songs', href: '/dashboard/songs', icon: Music },
         { name: 'Storybooks', href: '/dashboard/stories', icon: BookOpen },
         { name: 'Printables', href: '/dashboard/printables', icon: Download },
-        { name: 'Child Portal', href: '/dashboard/portal', icon: Star },
-        { name: 'Account', href: '/dashboard/account', icon: UserCircle },
+        { name: 'Child Portal', href: '/portal', icon: Star },
     ];
 
     const adminItems = [
@@ -35,49 +38,55 @@ export default function Sidebar({ isAdmin = false }: SidebarProps) {
         { name: 'Asset Command', href: '/admin/assets', icon: Briefcase },
         { name: 'Manage Customers', href: '/admin/customers', icon: UserCircle },
         { name: 'Content Manager', href: '/admin/content', icon: Plus },
-        { name: 'Analytics', href: '/admin/analytics', icon: Star },
+        { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
         { name: 'Settings', href: '/admin/settings', icon: Settings },
     ];
 
     const items = isAdmin ? adminItems : parentItems;
 
     return (
-        <aside className="w-64 bg-deep text-white h-screen fixed left-0 top-0 flex flex-col p-6 z-50">
-            <div className="mb-12">
-                <img src="/images/logo.png" alt="Logo" className="w-32 brightness-0 invert" />
-                {isAdmin && <span className="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter ml-1">Admin</span>}
+        <aside className="w-64 bg-deep text-white h-screen fixed left-0 top-0 flex flex-col p-8 z-50">
+            <div className="mb-12 flex items-center gap-3">
+                <img src="/images/logo.png" alt="Logo" className="w-28 brightness-0 invert" />
+                {isAdmin && (
+                    <span className="text-[9px] bg-primary text-white px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">
+                        Admin
+                    </span>
+                )}
             </div>
 
             <nav className="flex-1 space-y-2">
+                <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] mb-4 px-4">Menu</p>
                 {items.map((item) => {
                     const isActive = pathname === item.href;
                     return (
                         <Link
                             key={item.name}
                             href={item.href}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${isActive
-                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                : 'hover:bg-white/5 text-white/60 hover:text-white'
+                            className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all group ${isActive
+                                ? 'bg-primary text-white shadow-xl shadow-primary/20'
+                                : 'hover:bg-white/5 text-white/50 hover:text-white'
                                 }`}
                         >
-                            <item.icon size={20} />
-                            <span className="font-semibold text-sm">{item.name}</span>
+                            <item.icon size={20} className={isActive ? 'text-white' : 'group-hover:scale-110 transition-transform'} />
+                            <span className="font-black text-sm tracking-tight">{item.name}</span>
                         </Link>
                     )
                 })}
             </nav>
 
-            <div className="pt-6 border-t border-white/10">
-                <button className="flex items-center gap-3 px-4 py-3 rounded-2xl text-white/60 hover:text-white hover:bg-white/5 w-full transition-all">
-                    <LogOut size={20} />
-                    <span className="font-semibold text-sm">Logout</span>
+            <div className="pt-8 border-t border-white/10">
+                <button
+                    onClick={() => {
+                        // In a real app, call supabase.auth.signOut()
+                        window.location.href = '/';
+                    }}
+                    className="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-white/40 hover:text-white hover:bg-white/5 w-full transition-all group"
+                >
+                    <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+                    <span className="font-black text-sm tracking-tight">Logout</span>
                 </button>
             </div>
         </aside>
     );
 }
-
-// Dummy Plus icon for adminItems as it wasn't imported
-const Plus = ({ size }: { size: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
-);

@@ -1,51 +1,89 @@
 "use client";
 
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { siteContent } from '@/lib/content';
 
 export default function PrivacyPage() {
     return (
-        <div className="flex flex-col min-h-screen bg-white">
+        <div className="flex flex-col min-h-screen bg-[#FFFDF7]">
             <Navbar />
+
             <main className="flex-grow pt-32 pb-24">
-                <div className="container max-w-3xl">
-                    <h1 className="text-5xl font-black text-deep mb-8">Privacy Policy</h1>
-                    <p className="text-sm font-bold text-primary mb-12">Effective Date: December 28, 2025</p>
+                <div className="container max-w-4xl">
+                    <div className="space-y-4 mb-16 text-center">
+                        <span className="text-primary font-bold uppercase tracking-widest text-sm">Transparency & Trust</span>
+                        <h1 className="text-5xl lg:text-7xl font-black text-deep">Privacy Policy</h1>
+                        <p className="text-deep/40 font-bold uppercase tracking-tighter">Effective Date: December 28, 2025</p>
+                    </div>
 
-                    <div className="prose prose-lg max-w-none text-deep/70 space-y-10">
-                        <section className="space-y-4">
-                            <h2 className="text-2xl font-black text-deep">1. Introduction</h2>
-                            <p>At Likkle Legends Mail Club, we are committed to protecting the privacy and security of current and prospective customers, especially children. This policy describes how we collect, use, and share information.</p>
-                        </section>
+                    <div className="bg-white rounded-[3rem] p-8 lg:p-16 border border-zinc-100 shadow-xl space-y-12">
+                        <div className="prose prose-xl max-w-none text-deep/70 space-y-12">
+                            <section className="space-y-6">
+                                <h2 className="text-3xl font-black text-deep flex items-center gap-4">
+                                    <span className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm">01</span>
+                                    Introduction
+                                </h2>
+                                <p className="leading-relaxed">
+                                    At Likkle Legends Mail Club, we are committed to protecting the privacy and security of current and prospective customers, especially children. This policy describes how we collect, use, and share information.
+                                </p>
+                            </section>
 
-                        <section className="space-y-4">
-                            <h2 className="text-2xl font-black text-deep">2. Child Safety (COPPA Compliance)</h2>
-                            <p>We take children's privacy seriously. Our "Kids Portal" does not collect personally identifiable information from children without parental consent. All accounts are managed by a parent or guardian who provides the child's first name for personalization purposes only.</p>
-                        </section>
+                            <section className="space-y-6">
+                                <h2 className="text-3xl font-black text-deep flex items-center gap-4">
+                                    <span className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm">02</span>
+                                    Child Safety (COPPA Compliance)
+                                </h2>
+                                <p className="leading-relaxed">
+                                    We take children's privacy seriously. Our "Kids Portal" does not collect personally identifiable information from children without parental consent. All accounts are managed by a parent or guardian who provides the child's first name for personalization purposes only.
+                                </p>
+                            </section>
 
-                        <section className="space-y-4">
-                            <h2 className="text-2xl font-black text-deep">3. Information We Collect</h2>
-                            <ul className="list-disc pl-6 space-y-2">
-                                <li><strong>Parental Information:</strong> Name, email address, billing address, and shipping address.</li>
-                                <li><strong>Child's Information:</strong> First name and age range (to ensure appropriate content delivery).</li>
-                                <li><strong>Usage Data:</strong> How the digital portal and AI widgets are used to improve our service.</li>
-                            </ul>
-                        </section>
+                            <section className="space-y-6">
+                                <h2 className="text-3xl font-black text-deep flex items-center gap-4">
+                                    <span className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm">03</span>
+                                    Information We Collect
+                                </h2>
+                                <div className="grid gap-6">
+                                    <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-100">
+                                        <h4 className="font-bold text-deep mb-2">Parental Information</h4>
+                                        <p className="text-sm">Name, email address, billing address, and shipping address.</p>
+                                    </div>
+                                    <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-100">
+                                        <h4 className="font-bold text-deep mb-2">Child's Information</h4>
+                                        <p className="text-sm">First name and age range (to ensure appropriate content delivery).</p>
+                                    </div>
+                                    <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-100">
+                                        <h4 className="font-bold text-deep mb-2">Usage Data</h4>
+                                        <p className="text-sm">How the digital portal and AI widgets are used to improve our service.</p>
+                                    </div>
+                                </div>
+                            </section>
 
-                        <section className="space-y-4">
-                            <h2 className="text-2xl font-black text-deep">4. How We Use Information</h2>
-                            <p>We use your information to fulfill your subscription, personalize the character letters, and improve the educational quality of our AI Reading Buddy and story generation features.</p>
-                        </section>
+                            <section className="space-y-6">
+                                <h2 className="text-3xl font-black text-deep flex items-center gap-4">
+                                    <span className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm">04</span>
+                                    How We Use Information
+                                </h2>
+                                <p className="leading-relaxed">
+                                    We use your information to fulfill your subscription, personalize the character letters, and improve the educational quality of our AI Reading Buddy and story generation features.
+                                </p>
+                            </section>
 
-                        <section className="space-y-4 text-sm bg-zinc-50 p-8 rounded-[2rem] italic">
-                            <p>We never sell your data to third parties. Your family's journey is private and protected by industry-standard encryption.</p>
-                        </section>
+                            <div className="p-10 rounded-[2.5rem] bg-deep text-white relative overflow-hidden group">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-primary opacity-20 blur-[80px] -mr-32 -mt-32"></div>
+                                <div className="relative z-10 text-center space-y-4">
+                                    <p className="text-xl font-bold italic opacity-90">
+                                        "We never sell your data to third parties. Your family's journey is private and protected by industry-standard encryption."
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
-            <footer className="py-12 border-t border-zinc-100 text-center text-[10px] font-black tracking-widest text-deep/20 uppercase">
-                {siteContent.footer.copyright}
-            </footer>
+
+            <Footer />
         </div>
     );
 }

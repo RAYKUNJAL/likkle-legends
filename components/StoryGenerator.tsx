@@ -25,7 +25,7 @@ export default function StoryGenerator() {
     };
 
     return (
-        <section className="py-24 bg-zinc-50">
+        <section id="sample-letter" className="py-24 bg-zinc-50">
             <div className="container">
                 <div className="max-w-5xl mx-auto bg-white rounded-[4rem] border-8 border-primary/5 shadow-2xl overflow-hidden flex flex-col md:flex-row">
                     <div className="md:w-1/2 p-12 lg:p-16 flex flex-col justify-center">

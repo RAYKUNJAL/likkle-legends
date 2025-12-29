@@ -1,17 +1,19 @@
 "use client";
 
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { Mail, MessageCircle, Phone, MapPin } from 'lucide-react';
 import { siteContent } from '@/lib/content';
 
 export default function ContactPage() {
     return (
-        <div className="flex flex-col min-h-screen bg-zinc-50">
+        <div className="flex flex-col min-h-screen bg-[#FFFDF7]">
             <Navbar />
 
             <main className="flex-grow pt-32 pb-24">
                 <div className="container">
                     <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
+                        <span className="text-primary font-bold uppercase tracking-widest text-sm pl-2">Get in touch</span>
                         <h1 className="text-5xl font-black text-deep">We'd love to hear from you</h1>
                         <p className="text-xl text-deep/60">Questions about your subscription? Ideas for new legends? Or just want to say hello?</p>
                     </div>
@@ -31,7 +33,7 @@ export default function ContactPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-black uppercase tracking-widest text-deep/40 pl-2">Subject</label>
-                                    <select className="w-full p-6 bg-zinc-50 rounded-3xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold appearance-none">
+                                    <select aria-label="Subject" className="w-full p-6 bg-zinc-50 rounded-3xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold appearance-none">
                                         <option>Subscription Question</option>
                                         <option>Content Suggestion</option>
                                         <option>Technical Issue</option>
@@ -94,9 +96,7 @@ export default function ContactPage() {
                 </div>
             </main>
 
-            <footer className="py-12 border-t border-zinc-200 text-center text-xs font-black text-deep/20 uppercase tracking-widest">
-                {siteContent.footer.copyright}
-            </footer>
+            <Footer />
         </div>
     );
 }

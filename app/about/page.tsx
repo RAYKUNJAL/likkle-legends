@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from '@/components/Navbar';
-import FAQ from '@/components/FAQ';
+import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { siteContent } from '@/lib/content';
 
@@ -52,11 +52,7 @@ export default function AboutPage() {
                 </div>
             </main>
 
-            <footer className="bg-deep text-white py-24">
-                <div className="container text-center opacity-50 text-sm font-bold uppercase tracking-widest">
-                    {siteContent.footer.copyright}
-                </div>
-            </footer>
+            <Footer />
         </div>
     );
 }
