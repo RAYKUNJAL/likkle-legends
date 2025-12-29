@@ -15,41 +15,46 @@ interface StorageAsset {
     created_at: string;
 }
 
+import Sidebar from '@/components/Sidebar';
+
 export default function AdminAssetsPage() {
     const [activeTab, setActiveTab] = useState<'upload' | 'generate' | 'library'>('library');
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-10">
-                <div>
-                    <h1 className="text-4xl font-black text-deep mb-2">Asset Command Center</h1>
-                    <p className="text-deep/60">Manage monthly drops and generate new content with AI.</p>
+        <div className="bg-[#FFFDF7] min-h-screen">
+            <Sidebar view="admin" />
+            <main className="ml-64 p-12">
+                <div className="flex justify-between items-center mb-10">
+                    <div>
+                        <h1 className="text-5xl font-black text-deep mb-2">Asset Command Center</h1>
+                        <p className="text-lg text-deep/40 font-bold">Manage monthly drops and generate new content with AI.</p>
+                    </div>
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => setActiveTab('library')}
+                            className={`px-6 py-4 rounded-2xl font-black transition-all ${activeTab === 'library' ? 'bg-deep text-white shadow-lg' : 'bg-white text-deep hover:bg-zinc-50 border border-zinc-100'}`}
+                        >
+                            📚 Library
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('upload')}
+                            className={`px-6 py-4 rounded-2xl font-black transition-all ${activeTab === 'upload' ? 'bg-deep text-white shadow-lg' : 'bg-white text-deep hover:bg-zinc-50 border border-zinc-100'}`}
+                        >
+                            <Upload size={18} className="inline mr-2" /> Upload
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('generate')}
+                            className={`px-6 py-4 rounded-2xl font-black transition-all ${activeTab === 'generate' ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/20' : 'bg-white text-deep hover:bg-zinc-50 border border-zinc-100'}`}
+                        >
+                            <Bot size={18} className="inline mr-2" /> AI Builder
+                        </button>
+                    </div>
                 </div>
-                <div className="flex gap-4">
-                    <button
-                        onClick={() => setActiveTab('library')}
-                        className={`px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'library' ? 'bg-deep text-white shadow-lg' : 'bg-white text-deep hover:bg-zinc-50'}`}
-                    >
-                        📚 Library
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('upload')}
-                        className={`px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'upload' ? 'bg-deep text-white shadow-lg' : 'bg-white text-deep hover:bg-zinc-50'}`}
-                    >
-                        <Upload size={18} className="inline mr-2" /> Upload
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('generate')}
-                        className={`px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'generate' ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-lg shadow-primary/20' : 'bg-white text-deep hover:bg-zinc-50'}`}
-                    >
-                        <Bot size={18} className="inline mr-2" /> AI Builder
-                    </button>
-                </div>
-            </div>
 
-            {activeTab === 'library' && <AssetLibrary />}
-            {activeTab === 'upload' && <AssetUploader onUploadComplete={() => setActiveTab('library')} />}
-            {activeTab === 'generate' && <AssetBuilder />}
+                {activeTab === 'library' && <AssetLibrary />}
+                {activeTab === 'upload' && <AssetUploader onUploadComplete={() => setActiveTab('library')} />}
+                {activeTab === 'generate' && <AssetBuilder />}
+            </main>
         </div>
     );
 }

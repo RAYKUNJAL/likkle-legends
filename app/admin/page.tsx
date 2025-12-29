@@ -1,91 +1,107 @@
 "use client";
 
 import Sidebar from '@/components/Sidebar';
-import { Users, CreditCard, ShoppingBag, TrendingUp, AlertCircle, Eye } from 'lucide-react';
+import Footer from '@/components/Footer';
+import { Users, CreditCard, ShoppingBag, TrendingUp, AlertCircle, Eye, Search, Activity } from 'lucide-react';
 
 export default function AdminPage() {
     return (
-        <div className="flex min-h-screen bg-zinc-50">
-            <Sidebar isAdmin={true} />
+        <div className="flex min-h-screen bg-[#FFFDF7]">
+            <Sidebar view="admin" />
 
             <main className="flex-1 ml-64 p-10">
-                <header className="flex justify-between items-center mb-10">
-                    <div>
-                        <h1 className="text-3xl font-black text-deep">Business Command Center 🚀</h1>
-                        <p className="text-deep/50">Likkle Legends is growing! Here's your global snapshot.</p>
+                <header className="flex justify-between items-center mb-12">
+                    <div className="flex-1 max-w-xl pr-8">
+                        <div className="relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-deep/20 group-focus-within:text-primary transition-colors" size={20} />
+                            <input
+                                type="text"
+                                placeholder="Search subscribers, transactions, or missions..."
+                                className="w-full pl-12 pr-6 py-4 bg-white border border-zinc-100 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all shadow-sm"
+                            />
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full font-bold text-xs animate-pulse">
-                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                        LIVE: 42 FAMILIES ONLINE
+                    <div className="flex items-center gap-6 bg-white p-3 pr-8 rounded-[2rem] shadow-sm border border-zinc-100">
+                        <div className="w-14 h-14 bg-deep rounded-full flex items-center justify-center font-bold text-white text-xl shadow-lg ring-4 ring-zinc-50">AD</div>
+                        <div className="text-left">
+                            <p className="font-black text-deep">Admin Panel</p>
+                            <p className="text-xs text-primary font-black uppercase tracking-widest">System Controller</p>
+                        </div>
                     </div>
                 </header>
 
                 {/* KPI Metrics */}
-                <div className="grid md:grid-cols-4 gap-6 mb-10">
+                <div className="grid md:grid-cols-4 gap-6 mb-12">
                     {[
-                        { label: "Total Revenue", value: "$42,850", trend: "+12%", icon: <CreditCard className="text-blue-600" />, color: "bg-blue-100" },
-                        { label: "Active Subs", value: "1,240", trend: "+5%", icon: <Users className="text-purple-600" />, color: "bg-purple-100" },
-                        { label: "Mailings Sent", value: "12,400", trend: "+18%", icon: <ShoppingBag className="text-orange-600" />, color: "bg-orange-100" },
-                        { label: "Conversion Rate", value: "4.2%", trend: "-1%", icon: <TrendingUp className="text-green-600" />, color: "bg-green-100" },
+                        { label: "Total Members", value: "2,840", delta: "+12%", icon: Users, color: "text-blue-600 bg-blue-50" },
+                        { label: "Active Subs", value: "2,150", delta: "+5.4%", icon: ShoppingBag, color: "text-green-600 bg-green-50" },
+                        { label: "Monthly Rev", value: "$42,500", delta: "+18%", icon: CreditCard, color: "text-purple-600 bg-purple-50" },
+                        { label: "Engagement", value: "78%", delta: "+2.1%", icon: TrendingUp, color: "text-orange-600 bg-orange-50" },
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white p-6 rounded-[2rem] border border-zinc-100 shadow-sm relative overflow-hidden">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className={`w-12 h-12 ${stat.color} rounded-2xl flex items-center justify-center`}>
-                                    {stat.icon}
+                        <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-zinc-100 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-current opacity-[0.02] rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700"></div>
+                            <div className="flex justify-between items-start mb-6">
+                                <div className={`w-14 h-14 ${stat.color} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                                    <stat.icon size={28} />
                                 </div>
-                                <span className={`text-xs font-bold px-2 py-1 rounded-lg ${stat.trend.startsWith('+') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                    {stat.trend}
-                                </span>
+                                <span className="text-green-500 font-black text-xs bg-green-50 px-2 py-1 rounded-lg">{stat.delta}</span>
                             </div>
-                            <p className="text-xs font-bold text-deep/40 uppercase tracking-widest">{stat.label}</p>
-                            <p className="text-3xl font-black mt-1">{stat.value}</p>
+                            <p className="text-xs font-black text-deep/30 uppercase tracking-widest mb-1">{stat.label}</p>
+                            <h3 className="text-3xl font-black text-deep tracking-tight">{stat.value}</h3>
                         </div>
                     ))}
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Recent Orders / Customers */}
-                    <div className="lg:col-span-2 bg-white rounded-[3rem] border border-zinc-100 shadow-sm overflow-hidden">
-                        <div className="p-8 border-b border-zinc-50 flex justify-between items-center">
-                            <h3 className="text-xl font-bold">Recent Subscriptions</h3>
-                            <button className="text-primary text-sm font-bold hover:underline">View All Customers</button>
+                <div className="grid lg:grid-cols-3 gap-10">
+                    {/* Recent Transactions/Subscribers Table */}
+                    <div className="lg:col-span-2 bg-white p-10 rounded-[3.5rem] border border-zinc-100 shadow-xl shadow-zinc-200/50">
+                        <div className="flex items-center justify-between mb-10">
+                            <h3 className="text-2xl font-black text-deep tracking-tight">Recent Subscriptions</h3>
+                            <button className="text-primary font-black text-sm uppercase tracking-widest hover:underline">View All</button>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-zinc-50 text-[10px] font-black uppercase text-deep/40 tracking-widest">
-                                    <tr>
-                                        <th className="px-8 py-4">Customer</th>
-                                        <th className="px-4 py-4">Plan</th>
-                                        <th className="px-4 py-4">Status</th>
-                                        <th className="px-4 py-4 text-right pr-8">Actions</th>
+                                <thead>
+                                    <tr className="border-b border-zinc-50">
+                                        <th className="pb-6 text-[10px] font-black text-deep/30 uppercase tracking-widest">Subscriber</th>
+                                        <th className="pb-6 text-[10px] font-black text-deep/30 uppercase tracking-widest">Plan</th>
+                                        <th className="pb-6 text-[10px] font-black text-deep/30 uppercase tracking-widest">Status</th>
+                                        <th className="pb-6 text-[10px] font-black text-deep/30 uppercase tracking-widest text-right pr-6">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody className="text-sm">
+                                <tbody className="divide-y divide-zinc-50">
                                     {[
-                                        { name: "Michael Chen", email: "m.chen@example.com", plan: "Annual Plus", status: "Active", amount: "$228" },
-                                        { name: "Sarah Johnson", email: "sarah.j@example.com", plan: "Legends Plus", status: "Past Due", amount: "$24" },
-                                        { name: "Amara Okoro", email: "amara@example.com", plan: "Mail Club", status: "Active", amount: "$10" },
-                                        { name: "James Wilson", email: "j.wilson@example.com", plan: "Annual Plus", status: "Active", amount: "$228" },
+                                        { name: "Sarah Jenkins", email: "sarah.j@example.com", plan: "Annual Plus", status: "Active", date: "Oct 24, 2023" },
+                                        { name: "Marcus Thompson", email: "marcus.t@example.com", plan: "Monthly", status: "Active", date: "Oct 23, 2023" },
+                                        { name: "Elena Rodriguez", email: "elena.r@example.com", plan: "Annual Plus", status: "Pending", date: "Oct 23, 2023" },
+                                        { name: "David Wilson", email: "david.w@example.com", plan: "Monthly", status: "Expired", date: "Oct 22, 2023" },
                                     ].map((row, i) => (
-                                        <tr key={i} className="border-b border-zinc-50 hover:bg-zinc-50/50 transition-colors">
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-zinc-200 rounded-full"></div>
+                                        <tr key={i} className="group hover:bg-zinc-50 transition-colors cursor-pointer text-sm">
+                                            <td className="py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-black text-deep/20 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                                        {row.name.charAt(0)}
+                                                    </div>
                                                     <div>
-                                                        <p className="font-bold">{row.name}</p>
-                                                        <p className="text-xs text-deep/40">{row.email}</p>
+                                                        <p className="font-black text-deep group-hover:text-primary transition-colors">{row.name}</p>
+                                                        <p className="text-xs text-deep/30 font-bold">{row.email}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-6 font-medium tracking-tight">{row.plan}</td>
-                                            <td className="px-4 py-6">
-                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${row.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                            <td className="py-6">
+                                                <span className="font-bold text-deep/60">{row.plan}</span>
+                                            </td>
+                                            <td className="py-6">
+                                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${row.status === 'Active' ? 'bg-green-100 text-green-700' :
+                                                        row.status === 'Pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
                                                     }`}>
                                                     {row.status}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-6 text-right pr-8">
-                                                <button className="p-2 hover:bg-zinc-100 rounded-lg"><Eye size={18} /></button>
+                                            <td className="py-6 text-right pr-6">
+                                                <button className="p-2 hover:bg-white hover:shadow-md rounded-lg transition-all">
+                                                    <Eye size={18} className="text-deep/20 group-hover:text-deep" />
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}
@@ -94,50 +110,46 @@ export default function AdminPage() {
                         </div>
                     </div>
 
-                    {/* Pending Actions / Notifications */}
-                    <div className="space-y-6">
-                        <div className="bg-deep text-white p-8 rounded-[3rem] shadow-xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary transform translate-x-16 -translate-y-16 rounded-full blur-3xl opacity-20"></div>
-                            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                <AlertCircle size={20} className="text-primary" />
-                                Urgent System Tasks
+                    {/* System Alerts and Tasks */}
+                    <div className="space-y-10">
+                        <div className="bg-white p-10 rounded-[3.5rem] border border-zinc-100 shadow-xl shadow-zinc-200/50">
+                            <h3 className="text-xl font-black text-deep mb-8 flex items-center gap-3">
+                                <AlertCircle className="text-red-500" />
+                                Urgent Tasks
                             </h3>
-                            <div className="space-y-4">
-                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                                    <p className="font-bold text-sm">Inventory Low</p>
-                                    <p className="text-xs text-white/50">Letters for Ages 4-5 are running low.</p>
+                            <div className="space-y-6">
+                                <div className="p-6 bg-red-50 rounded-3xl border border-red-100">
+                                    <p className="font-black text-red-700 text-sm mb-1">Verify Mailing List</p>
+                                    <p className="text-xs text-red-700/60 font-bold leading-relaxed">12 new subscribers need mailing address verification for Batch #04.</p>
                                 </div>
-                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                                    <p className="font-bold text-sm">Content Review</p>
-                                    <p className="text-xs text-white/50">2 new stories pending character approval.</p>
+                                <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
+                                    <p className="font-black text-amber-700 text-sm mb-1">Content Review</p>
+                                    <p className="text-xs text-amber-700/60 font-bold leading-relaxed">"Mango Season" Digital Asset needs final proofreading before release.</p>
                                 </div>
                             </div>
-                            <button className="w-full mt-6 py-4 bg-primary rounded-2xl text-white font-bold text-sm hover:scale-105 transition-all">
-                                Process All Tasks
-                            </button>
                         </div>
 
-                        <div className="bg-white p-8 rounded-[3rem] border border-zinc-100 shadow-sm">
-                            <h3 className="text-xl font-bold mb-4">Content Stats</h3>
-                            <div className="space-y-3">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-deep/50">Songs Uploaded</span>
-                                    <span className="font-bold">48</span>
+                        <div className="bg-deep p-10 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-48 h-48 bg-primary rounded-full blur-[80px] opacity-10 -mr-24 -mt-24"></div>
+                            <h3 className="text-xl font-black mb-8 flex items-center gap-3 relative z-10">
+                                <Activity className="text-primary" />
+                                Content Stats
+                            </h3>
+                            <div className="grid grid-cols-2 gap-4 relative z-10">
+                                <div className="bg-white/5 border border-white/10 p-5 rounded-3xl text-center backdrop-blur-sm">
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Library Size</p>
+                                    <p className="text-2xl font-black uppercase">142 Items</p>
                                 </div>
-                                <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
-                                    <div className="w-[80%] h-full bg-accent rounded-full"></div>
-                                </div>
-                                <div className="flex justify-between text-sm mt-4">
-                                    <span className="text-deep/50">Printables Ready</span>
-                                    <span className="font-bold">124</span>
-                                </div>
-                                <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
-                                    <div className="w-[95%] h-full bg-secondary rounded-full"></div>
+                                <div className="bg-white/5 border border-white/10 p-5 rounded-3xl text-center backdrop-blur-sm">
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">AI Interactions</p>
+                                    <p className="text-2xl font-black uppercase">12.4K</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <Footer />
             </main>
         </div>
     );

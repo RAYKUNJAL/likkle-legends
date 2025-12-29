@@ -1,137 +1,166 @@
 "use client";
 
 import Sidebar from '@/components/Sidebar';
-import { Music, BookOpen, Star, Mail, LayoutDashboard, Compass } from 'lucide-react';
+import Footer from '@/components/Footer';
+import { BookOpen, Star, ArrowRight, Flame, GraduationCap, Mic, BarChart3, History, Mail } from 'lucide-react';
 import Link from 'next/link';
+import { islandData } from '@/lib/islands';
 
 export default function DashboardPage() {
+    const jamaica = islandData["JAM-001"];
+
     return (
-        <div className="flex min-h-screen bg-zinc-50">
+        <div className="flex min-h-screen bg-[#FFFDF7]">
             <Sidebar />
 
             <main className="flex-1 ml-64 p-10">
-                <header className="flex justify-between items-center mb-10">
+                {/* Header Section with Streak & Stamps */}
+                <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-12">
                     <div>
-                        <h1 className="text-3xl font-black text-deep">Welcome back, Legend! 👋</h1>
-                        <p className="text-deep/50">Your child's next adventure is currently being packed with love.</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className="text-right">
-                            <p className="font-bold text-sm">Parent Account</p>
-                            <p className="text-xs text-primary font-bold">LEGENDS PLUS MEMBER</p>
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full text-xs font-black text-primary uppercase tracking-widest mb-4">
+                            Active Explorer
                         </div>
-                        <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center font-bold text-primary">JS</div>
+                        <h1 className="text-5xl lg:text-6xl font-black text-deep tracking-tight">Welcome Back, Kai! 👋</h1>
+                        <p className="text-deep/50 text-xl font-medium mt-2">You've explored <span className="text-secondary font-black">2 islands</span> this month. Keep going!</p>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-[2.5rem] shadow-xl shadow-zinc-200/50 border border-zinc-100 flex items-center gap-8 group">
+                        <div className="text-center px-4">
+                            <p className="text-[10px] font-black text-deep/30 uppercase tracking-widest mb-1">Current Streak</p>
+                            <p className="text-3xl font-black text-orange-500 flex items-center gap-2">
+                                <Flame size={28} fill="currentColor" className="animate-pulse" />
+                                5 Days
+                            </p>
+                        </div>
+                        <div className="h-12 w-[2px] bg-zinc-100 rounded-full"></div>
+                        <div className="text-center px-4">
+                            <p className="text-[10px] font-black text-deep/30 uppercase tracking-widest mb-1">Stamps Earned</p>
+                            <p className="text-3xl font-black text-primary flex items-center gap-2">
+                                12 <GraduationCap size={28} className="group-hover:rotate-12 transition-transform" />
+                            </p>
+                        </div>
                     </div>
                 </header>
 
-                {/* Status Bar */}
-                <div className="grid md:grid-cols-4 gap-6 mb-10">
-                    <div className="bg-white p-6 rounded-[2rem] border border-zinc-100 flex items-center gap-4">
-                        <div className="w-12 h-12 bg-secondary/10 text-secondary rounded-2xl flex items-center justify-center">
-                            <Mail size={24} />
+                <div className="grid lg:grid-cols-3 gap-12">
+                    <div className="lg:col-span-2 space-y-12">
+
+                        {/* Monthly Reading Goal Card */}
+                        <div className="bg-white p-12 rounded-[4rem] shadow-2xl shadow-zinc-200/50 border border-zinc-100 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32"></div>
+
+                            <div className="flex justify-between items-center mb-8 relative z-10">
+                                <h3 className="text-2xl font-black text-deep flex items-center gap-3">
+                                    <BookOpen className="text-primary" />
+                                    Monthly Reading Goal
+                                </h3>
+                                <div className="bg-primary/10 text-primary px-6 py-2 rounded-2xl font-black text-xl">
+                                    65%
+                                </div>
+                            </div>
+
+                            <div className="w-full bg-zinc-100 h-8 rounded-full overflow-hidden p-1.5 shadow-inner mb-8">
+                                <div className="w-[65%] h-full bg-gradient-to-r from-primary via-orange-500 to-secondary rounded-full shadow-lg relative group">
+                                    <div className="absolute top-0 right-0 w-4 h-full bg-white/20 animate-shine"></div>
+                                </div>
+                            </div>
+
+                            <p className="text-lg text-deep/60 leading-relaxed font-medium">
+                                <span className="text-deep font-black uppercase tracking-tight">Level Up!</span> 3 more stories until your next <span className="text-secondary font-black italic">Physical Sticker Pack</span> ships to your door! 📦
+                            </p>
                         </div>
-                        <div>
-                            <p className="text-xs font-bold text-deep/40 uppercase">Next Mail</p>
-                            <p className="font-bold">Jan 15th</p>
+
+                        {/* Island Passport Section */}
+                        <div className="space-y-8">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-3xl font-black text-deep tracking-tight">Your Island Passport</h3>
+                                <button className="text-primary font-black uppercase text-xs tracking-widest hover:underline flex items-center gap-2">
+                                    View Full Map <ArrowRight size={16} />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                                {/* Jamaica (Current) */}
+                                <div className="bg-gradient-to-br from-[#FFF7EC] to-white p-8 rounded-[3rem] border-4 border-primary shadow-2xl shadow-primary/10 text-center group cursor-pointer hover:-translate-y-2 transition-all">
+                                    <div className="text-6xl mb-6 group-hover:scale-125 transition-transform duration-500">🇯🇲</div>
+                                    <p className="text-xl font-black text-deep mb-3">Jamaica</p>
+                                    <span className="inline-block px-4 py-1.5 bg-primary text-white text-[10px] font-black uppercase rounded-full tracking-widest">Explored</span>
+                                </div>
+
+                                {/* Trinidad (Unlocked) */}
+                                <div className="bg-gradient-to-br from-white to-zinc-50 p-8 rounded-[3rem] border-2 border-zinc-100 shadow-xl hover:shadow-2xl transition-all text-center group cursor-pointer hover:-translate-y-2">
+                                    <div className="text-6xl mb-6 group-hover:scale-125 transition-transform duration-500">🇹🇹</div>
+                                    <p className="text-xl font-black text-deep mb-3">Trinidad</p>
+                                    <span className="inline-block px-4 py-1.5 bg-secondary text-white text-[10px] font-black uppercase rounded-full tracking-widest">Explored</span>
+                                </div>
+
+                                {/* Barbados (Locked) */}
+                                <div className="bg-zinc-100 p-8 rounded-[3rem] border-2 border-dashed border-zinc-200 shadow-sm text-center grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all cursor-not-allowed">
+                                    <div className="text-6xl mb-6">🇧🇧</div>
+                                    <p className="text-xl font-black text-deep/40 mb-3">Barbados</p>
+                                    <span className="inline-block px-4 py-1.5 bg-zinc-200 text-zinc-500 text-[10px] font-black uppercase rounded-full tracking-widest">Locked</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div className="bg-white p-6 rounded-[2rem] border border-zinc-100 flex items-center gap-4">
-                        <div className="w-12 h-12 bg-accent/10 text-accent rounded-2xl flex items-center justify-center">
-                            <Star size={24} />
+
+                    {/* Sidebar Stats & Tools */}
+                    <div className="space-y-12">
+                        {/* AI Reading Buddy Widget */}
+                        <div className="bg-gradient-to-br from-primary to-orange-500 p-10 rounded-[3.5rem] text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full -mr-16 -mt-16 blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                            <h3 className="text-2xl font-black mb-4 flex items-center gap-3 relative z-10">
+                                <Mic fill="currentColor" size={24} />
+                                Reading Buddy
+                            </h3>
+                            <p className="text-white/80 font-bold mb-10 leading-relaxed relative z-10">
+                                Ready to read <span className="text-white italic">"The Brave Little Hummingbird"</span>? Tanty Spice is waiting!
+                            </p>
+                            <button className="w-full bg-white text-primary py-5 rounded-[2rem] font-black text-lg flex items-center justify-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all">
+                                🎙️ Start Reading
+                            </button>
                         </div>
-                        <div>
-                            <p className="text-xs font-bold text-deep/40 uppercase">Points Earned</p>
-                            <p className="font-bold">850 Pts</p>
+
+                        {/* Parent Quick Tools */}
+                        <div className="bg-white p-10 rounded-[3.5rem] border border-zinc-100 shadow-xl shadow-zinc-200/50">
+                            <h3 className="text-2xl font-black text-deep mb-8 flex items-center gap-3">
+                                <BarChart3 className="text-primary" />
+                                Parent Tools
+                            </h3>
+                            <div className="space-y-3">
+                                {[
+                                    { name: "Growth Report", icon: BarChart3, href: "/parent" },
+                                    { name: "Saved Recordings", icon: History, href: "#" },
+                                    { name: "Mail Tracking", icon: Mail, href: "#" },
+                                ].map((item, i) => (
+                                    <Link
+                                        key={i}
+                                        href={item.href}
+                                        className="w-full flex justify-between items-center p-5 hover:bg-zinc-50 rounded-2xl transition-all group"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <item.icon size={20} className="text-deep/20 group-hover:text-primary transition-colors" />
+                                            <span className="font-black text-deep group-hover:text-primary transition-colors">{item.name}</span>
+                                        </div>
+                                        <ArrowRight size={18} className="text-deep/10 group-hover:translate-x-1 transition-all" />
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-[2rem] border border-zinc-100 flex items-center gap-4">
-                        <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
-                            <BookOpen size={24} />
-                        </div>
-                        <div>
-                            <p className="text-xs font-bold text-deep/40 uppercase">Books Read</p>
-                            <p className="font-bold">12 Stories</p>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-[2rem] border border-zinc-100 flex items-center gap-4">
-                        <div className="w-12 h-12 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center">
-                            <Compass size={24} />
-                        </div>
-                        <div>
-                            <p className="text-xs font-bold text-deep/40 uppercase">Missions</p>
-                            <p className="font-bold">4 Complete</p>
+
+                        {/* Recent Activity Mini Feed */}
+                        <div className="bg-deep text-white/40 p-10 rounded-[3.5rem] shadow-2xl border border-white/5">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-6">Recent Wins</h4>
+                            <div className="space-y-4">
+                                <p className="text-xs font-bold text-white/60"><span className="text-primary">✨ Learned:</span> "Wah Gwan"</p>
+                                <p className="text-xs font-bold text-white/60"><span className="text-secondary">📚 Finished:</span> Mento Beats</p>
+                                <p className="text-xs font-bold text-white/60"><span className="text-primary">🎨 Painted:</span> Red Billed Bird</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Main Content: Child Portal Access */}
-                    <div className="lg:col-span-2 space-y-8">
-                        <div className="relative h-80 rounded-[3rem] overflow-hidden group border-8 border-white shadow-2xl">
-                            <img src="/images/hero.png" alt="Child Portal" className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[2s]" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-deep via-deep/20 to-transparent"></div>
-                            <div className="absolute bottom-10 left-10 right-10 flex justify-between items-end">
-                                <div>
-                                    <span className="bg-accent text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase mb-2 inline-block">Kids Only Area</span>
-                                    <h2 className="text-4xl font-black text-white">Enter the Child Portal</h2>
-                                    <p className="text-white/70 max-w-sm">Magic awaits! Interactive stories, AI buddies, and new songs are ready.</p>
-                                </div>
-                                <button className="btn btn-primary btn-lg p-6">Enter Portal →</button>
-                            </div>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div className="bg-white p-8 rounded-[2.5rem] border border-zinc-100 hover:shadow-xl transition-all group">
-                                <h3 className="text-xl font-bold mb-4 flex items-center justify-between">
-                                    Newest Song
-                                    <Music className="text-accent group-hover:rotate-12 transition-transform" />
-                                </h3>
-                                <div className="p-4 bg-zinc-50 rounded-2xl mb-4">
-                                    <p className="font-bold text-sm">Mango Seasons</p>
-                                    <p className="text-xs text-deep/40">By Mango Moko</p>
-                                </div>
-                                <button className="text-accent font-bold text-sm hover:underline">Listen Now</button>
-                            </div>
-                            <div className="bg-white p-8 rounded-[2.5rem] border border-zinc-100 hover:shadow-xl transition-all group">
-                                <h3 className="text-xl font-bold mb-4 flex items-center justify-between">
-                                    Next Mission
-                                    <LayoutDashboard className="text-primary group-hover:scale-110 transition-transform" />
-                                </h3>
-                                <div className="p-4 bg-zinc-50 rounded-2xl mb-4">
-                                    <p className="font-bold text-sm">Identity & Pride</p>
-                                    <p className="text-xs text-deep/40">Level 2: The Stilt Walker</p>
-                                </div>
-                                <button className="text-primary font-bold text-sm hover:underline">Start Mission</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Sidebar Sidebar: Activity Feed */}
-                    <div className="bg-white p-8 rounded-[3rem] border border-zinc-100">
-                        <h3 className="text-xl font-black mb-8">Activity Hub</h3>
-                        <div className="space-y-6">
-                            {[
-                                { title: "Daughter completed Level 1", date: "2 hours ago", icon: "✨", color: "bg-yellow-100" },
-                                { title: "Letter #4 Shipped Worldwide", date: "Yesterday", icon: "📦", color: "bg-blue-100" },
-                                { title: "New coloring page added", date: "2 days ago", icon: "🎨", color: "bg-pink-100" },
-                                { title: "Tanty Spice sent a voice msg", date: "3 days ago", icon: "🎙️", color: "bg-purple-100" },
-                            ].map((item, i) => (
-                                <div key={i} className="flex gap-4">
-                                    <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center shrink-0`}>
-                                        {item.icon}
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-bold text-deep leading-tight">{item.title}</p>
-                                        <p className="text-[10px] text-deep/40 uppercase font-black tracking-widest mt-1">{item.date}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                        <button className="w-full mt-10 p-4 border-2 border-dashed border-zinc-200 rounded-2xl text-deep/40 text-sm font-bold hover:bg-zinc-50 transition-colors">
-                            View All History
-                        </button>
-                    </div>
-                </div>
+                <Footer />
             </main>
         </div>
     );
