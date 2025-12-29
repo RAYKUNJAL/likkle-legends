@@ -322,11 +322,11 @@ export const siteContent = {
         "subheadline": "Join 500+ families building identity, emotional literacy, and joyful memories each month.",
         "primaryCTA": {
             "label": "Start Mail Club for $10/month",
-            "href": "#pricing"
+            "href": "/#pricing"
         },
         "secondaryCTA": {
             "label": "See what’s inside a letter",
-            "href": "#sample-letter"
+            "href": "/#sample-letter"
         }
     },
     "footer": {
@@ -335,8 +335,8 @@ export const siteContent = {
             {
                 "title": "Platform",
                 "links": [
-                    { "label": "How It Works", "href": "#how-it-works" },
-                    { "label": "Pricing", "href": "#pricing" },
+                    { "label": "How It Works", "href": "/#how-it-works" },
+                    { "label": "Pricing", "href": "/#pricing" },
                     { "label": "Child Portal", "href": "/dashboard" },
                     { "label": "Parent Dashboard", "href": "/dashboard" }
                 ]
