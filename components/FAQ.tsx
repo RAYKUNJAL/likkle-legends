@@ -2,62 +2,50 @@
 
 import { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
-
-const faqs = [
-    {
-        q: "How does the physical mail work?",
-        a: "Every month, your child receives a personalized envelope addressed directly to them. Inside, they'll find a letter from a Likkle Legend, a cultural flashcard, and a physical coloring sheet. Subscriptions ship by the 15th of every month."
-    },
-    {
-        q: "Is it suitable for children outside the Caribbean?",
-        a: "Absolutely! Likkle Legends is designed for children everywhere. For those with Caribbean roots, it's a way to stay connected. For others, it's a beautiful way to learn about a vibrant culture, emotional literacy, and island pride."
-    },
-    {
-        q: "What age groups are supported?",
-        a: "We have two main tracks: 'Mini Legends' (Ages 4-5) which focuses on basic cultural concepts and SEL, and 'Big Legends' (Ages 6-8) which includes more advanced stories and complex emotional literacy activities."
-    },
-    {
-        q: "How do the Digital Storybooks work?",
-        a: "Legends Plus and Annual members get access to our digital portal. Every month, new interactive storybooks are unlocked. These books can be read on any tablet or computer and feature AI-powered character interactions."
-    },
-    {
-        q: "Can I cancel my subscription?",
-        a: "Yes! We want you to love Likkle Legends. You can cancel your monthly subscription at any time through your parent dashboard. Annual plans are billed once and renew every year."
-    }
-];
+import { siteContent } from '@/lib/content';
 
 export default function FAQ() {
-    const [openIndex, setOpenIndex] = useState<number | null>(null);
+    const { faq } = siteContent;
+    const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
-        <section id="faq" className="py-24 bg-white">
-            <div className="container max-w-4xl">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl font-bold mb-4">Frequently Asked Questions</h2>
-                    <p className="text-deep/60">Everything you need to know about the adventure.</p>
+        <section id="faq" className="py-24 bg-white relative">
+            <div className="container max-w-4xl relative z-10">
+                <div className="text-center mb-20 space-y-4">
+                    <h2 className="text-4xl lg:text-5xl font-black text-deep">{faq.title}</h2>
+                    <p className="text-xl text-deep/60">{faq.subtitle}</p>
                 </div>
 
                 <div className="space-y-4">
-                    {faqs.map((faq, i) => (
-                        <div key={i} className="border-2 border-zinc-100 rounded-3xl overflow-hidden">
+                    {faq.items.map((item, i) => (
+                        <div key={i} className={`border-2 rounded-[2.5rem] transition-all duration-300 overflow-hidden ${openIndex === i ? 'border-primary bg-zinc-50' : 'border-zinc-100 bg-white hover:border-zinc-200'
+                            }`}>
                             <button
                                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                                className="w-full p-6 text-left flex items-center justify-between hover:bg-zinc-50 transition-colors"
+                                className="w-full p-8 text-left flex items-center justify-between group"
                             >
-                                <span className="text-lg font-bold text-deep">{faq.q}</span>
-                                <div className={`w-8 h-8 rounded-full border-2 border-border flex items-center justify-center transition-transform duration-300 ${openIndex === i ? 'rotate-180 border-primary bg-primary text-white' : ''}`}>
-                                    {openIndex === i ? <Minus size={16} /> : <Plus size={16} />}
+                                <span className={`text-xl font-black transition-colors ${openIndex === i ? 'text-primary' : 'text-deep'}`}>
+                                    {item.question}
+                                </span>
+                                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300 ${openIndex === i
+                                        ? 'bg-primary text-white rotate-180 shadow-lg shadow-primary/20'
+                                        : 'bg-zinc-100 text-deep group-hover:bg-zinc-200'
+                                    }`}>
+                                    {openIndex === i ? <Minus size={20} /> : <Plus size={20} />}
                                 </div>
                             </button>
-                            <div className={`transition-all duration-300 overflow-hidden ${openIndex === i ? 'max-h-96' : 'max-h-0'}`}>
-                                <div className="p-6 pt-0 text-deep/70 leading-relaxed border-t border-zinc-50">
-                                    {faq.a}
+                            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${openIndex === i ? 'max-h-[500px] opacity-100 pb-8 px-8' : 'max-h-0 opacity-0'}`}>
+                                <div className="text-lg text-deep/70 leading-relaxed border-t border-zinc-200/50 pt-6">
+                                    {item.answer}
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
+
+            {/* Background blur */}
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-[100px] -mb-48 -mr-48 pointer-events-none"></div>
         </section>
     );
 }

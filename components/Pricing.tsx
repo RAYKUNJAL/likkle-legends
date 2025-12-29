@@ -1,122 +1,106 @@
 "use client";
 
-import { Check, Info } from 'lucide-react';
+import { Check, Info, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
-
-const tiers = [
-    {
-        name: "Mail Club",
-        price: "10",
-        description: "The Perfect Starter",
-        features: [
-            "Physical Monthly Letter",
-            "1x Cultural Flashcard",
-            "1x Coloring Sheet (Physical)",
-            "Access to 5 Island Nursery Songs",
-            "Cancel Anytime"
-        ],
-        cta: "Start Mail Club",
-        variant: "outline"
-    },
-    {
-        name: "Legends Plus",
-        price: "24",
-        description: "Full Cultural Immersion",
-        features: [
-            "Everything in Mail Club",
-            "20+ Island Nursery Songs Library",
-            "Unlimited Printable Coloring Pages",
-            "3 Digital Storybooks / Month",
-            "AI Reading Buddy Access",
-            "Parent Co-Pilot Dashboard"
-        ],
-        cta: "Upgrade to Plus",
-        variant: "primary",
-        highlight: true,
-        badge: "BEST FOR LEARNING"
-    },
-    {
-        name: "Annual Plus",
-        price: "19",
-        billing: "Billed annually ($228)",
-        description: "The Grand Adventure",
-        features: [
-            "2 MONTHS FREE",
-            "Exclusive Character Welcome Box",
-            "All Digital Storybooks (Archive)",
-            "Priority Access to New Songs",
-            "Custom Child Shoutout in Story",
-            "All Legends Plus Features"
-        ],
-        cta: "Choose Annual",
-        variant: "secondary"
-    }
-];
+import { siteContent } from '@/lib/content';
 
 export default function Pricing() {
+    const { pricing } = siteContent;
+
     return (
-        <section id="pricing" className="py-24 bg-zinc-50">
+        <section id={pricing.id} className="py-24 bg-zinc-50 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-accent opacity-50"></div>
+
             <div className="container">
-                <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-                    <h2 className="text-4xl lg:text-5xl font-bold">Simple, Flexible Pricing</h2>
-                    <p className="text-lg text-deep/70">Join 500+ families already on their cultural journey! Choose the plan that fits your family's needs.</p>
+                <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
+                    <h2 className="text-4xl lg:text-6xl font-black text-deep">{pricing.title}</h2>
+                    <p className="text-xl text-deep/60">{pricing.subtitle}</p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8 items-stretch">
-                    {tiers.map((tier) => (
+                <div className="grid lg:grid-cols-3 gap-8 items-stretch mb-20">
+                    {pricing.plans.map((plan) => (
                         <div
-                            key={tier.name}
-                            className={`relative flex flex-col p-8 rounded-3xl bg-white border-2 transition-all duration-300 hover:shadow-xl ${tier.highlight ? 'border-primary ring-4 ring-primary/10 lg:scale-105 z-10' : 'border-border'
+                            key={plan.name}
+                            className={`relative flex flex-col p-10 rounded-[3rem] bg-white border-2 transition-all duration-500 hover:shadow-2xl ${plan.highlight === 'recommended'
+                                    ? 'border-primary ring-8 ring-primary/5 lg:scale-110 z-10'
+                                    : 'border-zinc-100'
                                 }`}
                         >
-                            {tier.badge && (
-                                <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                                    {tier.badge}
+                            {plan.badge && (
+                                <span className={`absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full text-xs font-black uppercase tracking-[0.15em] text-white shadow-lg ${plan.highlight === 'recommended' ? 'bg-primary' : 'bg-deep'
+                                    }`}>
+                                    {plan.badge}
                                 </span>
                             )}
 
-                            <div className="mb-8 text-center sm:text-left">
-                                <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
-                                <p className="text-deep/60 text-sm mb-4">{tier.description}</p>
-                                <div className="flex items-baseline justify-center sm:justify-start gap-1">
-                                    <span className="text-5xl font-black text-deep">${tier.price}</span>
-                                    <span className="text-deep/60">/mo</span>
+                            <div className="mb-10 text-center">
+                                <h3 className="text-3xl font-black mb-4 text-deep">{plan.name}</h3>
+                                <div className="flex items-baseline justify-center gap-1 mb-2">
+                                    <span className="text-6xl font-black text-deep leading-none">{plan.priceLabel.split('/')[0]}</span>
+                                    <span className="text-deep/40 font-bold">/{plan.priceLabel.split('/')[1]}</span>
                                 </div>
-                                {tier.billing && <p className="text-xs font-semibold text-secondary mt-2 uppercase">{tier.billing}</p>}
+                                <p className="text-deep/50 text-xs font-bold uppercase tracking-widest">{plan.billingNote}</p>
                             </div>
 
-                            <ul className="space-y-4 flex-1 mb-8">
-                                {tier.features.map((feature, i) => (
-                                    <li key={i} className="flex items-start gap-3 text-sm">
-                                        <Check className={`w-5 h-5 mt-0.5 shrink-0 ${tier.highlight ? 'text-primary' : 'text-secondary'}`} />
-                                        <span className="text-deep/80 leading-tight">{feature}</span>
+                            <ul className="space-y-5 flex-1 mb-10">
+                                {plan.bullets.map((bullet, i) => (
+                                    <li key={i} className="flex items-start gap-4 text-sm font-medium">
+                                        <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${plan.highlight === 'recommended' ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'
+                                            }`}>
+                                            <Check size={12} strokeWidth={4} />
+                                        </div>
+                                        <span className="text-deep/80 leading-relaxed text-pretty">{bullet}</span>
                                     </li>
                                 ))}
                             </ul>
 
                             <Link
-                                href="/signup"
-                                className={`btn btn-lg w-full ${tier.variant === 'primary' ? 'btn-primary' : tier.variant === 'secondary' ? 'btn-secondary' : 'btn-outline'}`}
+                                href={plan.ctaHref}
+                                className={`btn btn-lg w-full py-6 text-lg font-black tracking-tight ${plan.highlight === 'recommended'
+                                        ? 'btn-primary shadow-xl shadow-primary/20'
+                                        : plan.highlight === 'best-value'
+                                            ? 'btn-secondary shadow-xl shadow-secondary/20'
+                                            : 'bg-deep text-white hover:bg-black shadow-xl shadow-black/10'
+                                    }`}
                             >
-                                {tier.cta}
+                                {plan.ctaLabel}
                             </Link>
                         </div>
                     ))}
                 </div>
 
-                {/* Tier 4: Educator Section */}
-                <div className="mt-16 p-8 rounded-3xl bg-deep text-white flex flex-col lg:flex-row items-center justify-between gap-8">
-                    <div className="space-y-4">
-                        <h3 className="text-3xl font-bold flex items-center gap-3">
-                            Educators & Homeschoolers <span className="text-xs bg-white/20 px-3 py-1 rounded-full">Coming Soon</span>
-                        </h3>
-                        <p className="max-w-xl text-white/70">
-                            Get SEL + Caribbean culture lesson plans for groups of 1-10 kids. Includes classroom licenses and digital portal for all students.
+                {/* Guarantee */}
+                <div className="max-w-4xl mx-auto p-8 bg-white border border-dashed border-zinc-200 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-6 mb-20 text-center md:text-left">
+                    <div className="w-16 h-16 bg-green-50 text-green-600 rounded-3xl flex items-center justify-center shrink-0 shadow-inner">
+                        <ShieldCheck size={32} />
+                    </div>
+                    <div className="flex-1">
+                        <p className="font-bold text-lg text-deep">Our Legend's Guarantee</p>
+                        <p className="text-sm text-deep/60 leading-relaxed">{pricing.guarantee}</p>
+                    </div>
+                </div>
+
+                {/* Educator Section */}
+                <div className="p-12 rounded-[4rem] bg-deep text-white flex flex-col lg:flex-row items-center justify-between gap-12 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary rotate-45 translate-x-32 -translate-y-32 blur-[100px] opacity-20 transition-transform group-hover:scale-150"></div>
+
+                    <div className="space-y-6 relative z-10 text-center lg:text-left">
+                        <div className="flex flex-col lg:flex-row items-center gap-4">
+                            <h3 className="text-4xl font-black">{pricing.educators.title}</h3>
+                            <span className="text-[10px] font-black bg-white/10 px-4 py-1 rounded-full uppercase tracking-widest border border-white/20">
+                                {pricing.educators.subtitle}
+                            </span>
+                        </div>
+                        <p className="max-w-2xl text-xl text-white/60 leading-relaxed">
+                            {pricing.educators.description}
                         </p>
                     </div>
-                    <div className="flex flex-col items-center">
-                        <div className="text-3xl font-black mb-2">$39 - $59<span className="text-sm font-normal">/mo</span></div>
-                        <Link href="#contact" className="btn border border-white/30 hover:bg-white/10 text-white">Join the Waitlist</Link>
+
+                    <div className="flex flex-col items-center lg:items-end relative z-10 shrink-0">
+                        <div className="text-5xl font-black mb-4">{pricing.educators.priceRange}<span className="text-xl font-normal opacity-40"> /mo</span></div>
+                        <Link href={pricing.educators.ctaHref} className="btn bg-white text-deep px-10 py-5 text-lg font-black hover:scale-105 transition-transform shadow-2xl">
+                            {pricing.educators.ctaLabel}
+                        </Link>
                     </div>
                 </div>
             </div>

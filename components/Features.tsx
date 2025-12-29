@@ -1,44 +1,31 @@
-import { Mail, ShieldCheck, Laptop, Award, Palette, GraduationCap } from 'lucide-react';
+"use client";
 
-const features = [
-    {
-        icon: <Mail className="w-8 h-8" />,
-        title: "Personalized Letter",
-        desc: "A story-driven message from a Likkle Legend character, tailored to your child's age track.",
-        color: "bg-orange-100 text-orange-600"
-    },
-    {
-        icon: <ShieldCheck className="w-8 h-8" />,
-        title: "Card & Coloring",
-        desc: "Collectible cultural flashcards and creative coloring pages to bring the story to life.",
-        color: "bg-blue-100 text-blue-600"
-    },
-    {
-        icon: <Laptop className="w-8 h-8" />,
-        title: "Digital Universe",
-        desc: "Unlock lessons, interactive stories, and Missions in our private age-based portal.",
-        color: "bg-pink-100 text-pink-600"
-    },
-    {
-        icon: <GraduationCap className="w-8 h-8" />,
-        title: "AI Reading Buddy",
-        desc: "Gemini-powered buddy that listens to your child read and provides gentle feedback.",
-        color: "bg-purple-100 text-purple-600"
-    }
-];
+import { Mail, Grid, Globe, Sparkles } from 'lucide-react';
+import { siteContent } from '@/lib/content';
 
 export default function Features() {
+    const { coreBenefits } = siteContent;
+
+    const icons = [<Mail />, <Grid />, <Globe />, <Sparkles />];
+
     return (
-        <section id="how-it-works" className="py-24">
+        <section id="features" className="py-24 bg-zinc-50">
             <div className="container">
+                <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
+                    <h2 className="text-4xl lg:text-5xl font-black text-deep">{coreBenefits.title}</h2>
+                </div>
+
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {features.map((f, i) => (
-                        <div key={i} className="p-8 rounded-3xl bg-white border border-border shadow-sm hover:shadow-md transition-shadow group">
-                            <div className={`w-14 h-14 ${f.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                                {f.icon}
+                    {coreBenefits.items.map((item, i) => (
+                        <div key={i} className="bg-white p-10 rounded-[3rem] border border-zinc-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 bg-zinc-50 text-deep group-hover:bg-primary group-hover:text-white transition-colors`}>
+                                {icons[i % icons.length]}
                             </div>
-                            <h3 className="text-xl font-bold mb-3">{f.title}</h3>
-                            <p className="text-deep/70 text-sm leading-relaxed">{f.desc}</p>
+                            <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-3 block">{item.label}</span>
+                            <h3 className="text-xl font-bold mb-4 leading-tight group-hover:text-primary transition-colors">{item.headline}</h3>
+                            <p className="text-deep/60 text-sm leading-relaxed">
+                                {item.body}
+                            </p>
                         </div>
                     ))}
                 </div>
