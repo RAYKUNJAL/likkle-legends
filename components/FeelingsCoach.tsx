@@ -28,10 +28,7 @@ const FeelingsCoach: React.FC = () => {
       role: 'child'
     });
 
-    const responseText = await generateAIResponse(
-      newMessages, 
-      input, 
-      contextString
+    const responseText = await generateAIResponse(input)
     );
     
     const finalText = responseText || "I'm listening, my dear.";
