@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { MessageCircle, Send, Volume2, VolumeX } from 'lucide-react';
 import { useUser } from './UserContext';
 import { generateAIResponse } from '../lib/gemini'
-import Button from ''./Button';
-
+import Button from './Button';
 const FeelingsCoach: React.FC = () => {
   const { user, isLocked, upgradeTier } = useUser();
   const [messages, setMessages] = useState<{role: 'user' | 'model', text: string}[]>([
