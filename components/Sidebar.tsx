@@ -10,7 +10,8 @@ import {
     Settings,
     LogOut,
     UserCircle,
-    Star
+    Star,
+    Briefcase
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -31,6 +32,7 @@ export default function Sidebar({ isAdmin = false }: SidebarProps) {
 
     const adminItems = [
         { name: 'Admin Overview', href: '/admin', icon: LayoutDashboard },
+        { name: 'Asset Command', href: '/admin/assets', icon: Briefcase },
         { name: 'Manage Customers', href: '/admin/customers', icon: UserCircle },
         { name: 'Content Manager', href: '/admin/content', icon: Plus },
         { name: 'Analytics', href: '/admin/analytics', icon: Star },
@@ -54,8 +56,8 @@ export default function Sidebar({ isAdmin = false }: SidebarProps) {
                             key={item.name}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${isActive
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                    : 'hover:bg-white/5 text-white/60 hover:text-white'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                : 'hover:bg-white/5 text-white/60 hover:text-white'
                                 }`}
                         >
                             <item.icon size={20} />
