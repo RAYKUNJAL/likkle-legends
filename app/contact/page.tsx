@@ -23,17 +23,17 @@ export default function ContactPage() {
                             <form className="space-y-8">
                                 <div className="grid md:grid-cols-2 gap-8">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-black uppercase tracking-widest text-deep/40 pl-2">Name</label>
-                                        <input type="text" className="w-full p-6 bg-zinc-50 rounded-3xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold" placeholder="Your name" />
+                                        <label htmlFor="name" className="text-sm font-black uppercase tracking-widest text-deep/40 pl-2">Name</label>
+                                        <input id="name" type="text" className="w-full p-6 bg-zinc-50 rounded-3xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold" placeholder="Your name" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-black uppercase tracking-widest text-deep/40 pl-2">Email</label>
-                                        <input type="email" className="w-full p-6 bg-zinc-50 rounded-3xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold" placeholder="your@email.com" />
+                                        <label htmlFor="email" className="text-sm font-black uppercase tracking-widest text-deep/40 pl-2">Email</label>
+                                        <input id="email" type="email" className="w-full p-6 bg-zinc-50 rounded-3xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold" placeholder="your@email.com" />
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-black uppercase tracking-widest text-deep/40 pl-2">Subject</label>
-                                    <select aria-label="Subject" className="w-full p-6 bg-zinc-50 rounded-3xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold appearance-none">
+                                    <label htmlFor="subject" className="text-sm font-black uppercase tracking-widest text-deep/40 pl-2">Subject</label>
+                                    <select id="subject" aria-label="Subject" className="w-full p-6 bg-zinc-50 rounded-3xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold appearance-none">
                                         <option>Subscription Question</option>
                                         <option>Content Suggestion</option>
                                         <option>Technical Issue</option>
@@ -42,8 +42,8 @@ export default function ContactPage() {
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-sm font-black uppercase tracking-widest text-deep/40 pl-2">Message</label>
-                                    <textarea rows={6} className="w-full p-6 bg-zinc-50 rounded-3xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold resize-none" placeholder="How can we help?"></textarea>
+                                    <label htmlFor="message" className="text-sm font-black uppercase tracking-widest text-deep/40 pl-2">Message</label>
+                                    <textarea id="message" rows={6} className="w-full p-6 bg-zinc-50 rounded-3xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold resize-none" placeholder="How can we help?"></textarea>
                                 </div>
                                 <button type="submit" className="btn btn-primary btn-lg w-full py-6 text-xl shadow-xl shadow-primary/20">Send Message</button>
                             </form>

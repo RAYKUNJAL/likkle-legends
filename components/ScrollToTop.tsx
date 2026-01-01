@@ -1,23 +1,26 @@
+"use client";
+
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { usePathname } from 'next/navigation';
 
 export default function ScrollToTop() {
-  const { pathname, hash } = useLocation();
+  const pathname = usePathname();
 
   useEffect(() => {
-    // If there is a hash, scroll to the element
+    // Check if there is a hash in the URL on mount and pathname change
+    const hash = window.location.hash;
     if (hash) {
-      setTimeout(() => {
-        const element = document.getElementById(hash.replace('#', ''));
-        if (element) {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
           element.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100); // Small delay to ensure content is rendered
+        }, 100);
+      }
     } else {
-      // Otherwise scroll to top
       window.scrollTo(0, 0);
     }
-  }, [pathname, hash]);
+  }, [pathname]);
 
   return null;
 }

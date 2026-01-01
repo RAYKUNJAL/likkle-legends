@@ -1,36 +1,37 @@
+"use client";
+
 import React, { useState } from 'react';
 import { MessageCircle, Send, Volume2, VolumeX } from 'lucide-react';
 import { useUser } from './UserContext';
-import { generateAIResponse } from '../lib/gemini'
+import { generateAIResponse, playTextToSpeech } from '../lib/gemini';
 import Button from './Button';
 const FeelingsCoach: React.FC = () => {
-  const { user, isLocked, upgradeTier } = useUser();
-  const [messages, setMessages] = useState<{role: 'user' | 'model', text: string}[]>([
-    { role: 'model', text: `Hello ${user.name}! It's Tanty Spice. How are you feeling today?` }
+  const { activeChild, canAccess } = useUser();
+  const [messages, setMessages] = useState<{ role: 'user' | 'model', text: string }[]>([
+    { role: 'model', text: `Hello ${activeChild?.first_name || 'little one'}! It's Tanty Spice. How are you feeling today?` }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
-  
-  const locked = isLocked('legends_plus');
+
+  const locked = !canAccess('legends_plus');
 
   const handleSend = async () => {
     if (!input.trim()) return;
-    
+
     const newMessages = [...messages, { role: 'user' as const, text: input }];
     setMessages(newMessages);
     setInput('');
     setIsLoading(true);
 
     const contextString = JSON.stringify({
-      child_name: user.name,
-      child_age_group: user.ageGroup === 'mini' ? 'Mini Legends (4-5)' : 'Big Legends (6-8)',
+      child_name: activeChild?.first_name || 'friend',
+      child_age_group: activeChild?.age_track === 'mini' ? 'Mini Legends (4-5)' : 'Big Legends (6-8)',
       role: 'child'
     });
 
-    const responseText = await generateAIResponse(input)
-    );
-    
+    const responseText = await generateAIResponse(input);
+
     const finalText = responseText || "I'm listening, my dear.";
 
     setMessages([...newMessages, { role: 'model', text: finalText }]);
@@ -44,14 +45,14 @@ const FeelingsCoach: React.FC = () => {
 
   return (
     <div className="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-accent/10 flex flex-col h-[500px] relative">
-       {locked && (
+      {locked && (
         <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center text-center p-6">
           <div className="bg-accent text-white p-3 rounded-full mb-3 shadow-lg">
             <MessageCircle size={24} />
           </div>
           <h3 className="font-heading font-bold text-xl text-deep mb-2">Upgrade to Chat with Tanty Spice</h3>
           <p className="text-textLight text-sm mb-4 max-w-xs">Unlock the Feelings & Culture Coach for emotional support and learning.</p>
-          <Button size="sm" onClick={() => upgradeTier('legends_plus')}>Chat Now</Button>
+          <a href="/checkout?plan=legends_plus" className="px-4 py-2 bg-accent text-white rounded-lg font-bold text-sm">Chat Now</a>
         </div>
       )}
 
@@ -59,11 +60,11 @@ const FeelingsCoach: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center font-bold shadow-md ring-2 ring-white">TS</div>
           <div>
-             <h3 className="font-heading font-bold text-deep">Tanty Spice</h3>
-             <p className="text-xs text-textLight">Feelings & Culture Coach</p>
+            <h3 className="font-heading font-bold text-deep">Tanty Spice</h3>
+            <p className="text-xs text-textLight">Feelings & Culture Coach</p>
           </div>
         </div>
-        <button 
+        <button
           onClick={() => setVoiceEnabled(!voiceEnabled)}
           className={`p-2 rounded-full transition-colors ${voiceEnabled ? 'bg-accent text-white' : 'bg-white text-gray-400'}`}
           title={voiceEnabled ? "Mute Voice" : "Enable Voice"}
@@ -75,11 +76,10 @@ const FeelingsCoach: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, idx) => (
           <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${
-              msg.role === 'user' 
-                ? 'bg-deep text-white rounded-tr-none' 
-                : 'bg-white border border-gray-100 text-text rounded-tl-none'
-            }`}>
+            <div className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${msg.role === 'user'
+              ? 'bg-deep text-white rounded-tr-none'
+              : 'bg-white border border-gray-100 text-text rounded-tl-none'
+              }`}>
               {msg.text}
             </div>
           </div>
@@ -95,8 +95,8 @@ const FeelingsCoach: React.FC = () => {
 
       <div className="p-4 border-t border-gray-100 bg-gray-50">
         <div className="flex gap-2">
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
@@ -104,9 +104,11 @@ const FeelingsCoach: React.FC = () => {
             disabled={locked}
             className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-accent outline-none shadow-sm"
           />
-          <button 
+          <button
             onClick={handleSend}
             disabled={locked || isLoading}
+            aria-label="Send message"
+            title="Send message"
             className="bg-accent text-white p-3 rounded-xl hover:bg-pink-600 transition-colors disabled:opacity-50 shadow-md shadow-accent/20"
           >
             <Send size={20} />

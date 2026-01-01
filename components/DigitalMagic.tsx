@@ -17,7 +17,7 @@ export default function DigitalMagic() {
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Songs */}
-                    <div className="p-8 rounded-[3rem] bg-zinc-50 border border-border group hover:bg-white hover:shadow-2xl transition-all duration-500">
+                    <div className="p-8 rounded-[3rem] glass-card border border-border group hover:bg-white hover:shadow-2xl transition-all duration-500">
                         <div className="w-16 h-16 bg-accent/10 text-accent rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                             <Music size={32} />
                         </div>
@@ -35,7 +35,7 @@ export default function DigitalMagic() {
                     </div>
 
                     {/* Storybooks */}
-                    <div className="p-8 rounded-[3rem] bg-zinc-50 border border-border group hover:bg-white hover:shadow-2xl transition-all duration-500 lg:translate-y-8">
+                    <div className="p-8 rounded-[3rem] glass-card border border-border group hover:bg-white hover:shadow-2xl transition-all duration-500 lg:translate-y-8">
                         <div className="w-16 h-16 bg-primary/10 text-primary rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                             <BookOpen size={32} />
                         </div>
@@ -50,7 +50,7 @@ export default function DigitalMagic() {
                     </div>
 
                     {/* Printables */}
-                    <div className="p-8 rounded-[3rem] bg-zinc-50 border border-border group hover:bg-white hover:shadow-2xl transition-all duration-500">
+                    <div className="p-8 rounded-[3rem] glass-card border border-border group hover:bg-white hover:shadow-2xl transition-all duration-500">
                         <div className="w-16 h-16 bg-secondary/10 text-secondary rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                             <Download size={32} />
                         </div>

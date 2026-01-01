@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Settings, BarChart3, Users, Sparkles, Plus, ArrowRight } from 'lucide-react';
 import { islandData } from '@/lib/islands';
+import Link from 'next/link';
 import IslandCustomizer from '@/components/IslandCustomizer';
 
 export default function ParentDashboard() {

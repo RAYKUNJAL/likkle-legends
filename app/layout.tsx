@@ -12,10 +12,33 @@ const geistMono = JetBrains_Mono({
   subsets: ["latin"],
 });
 
+import { siteContent } from '@/lib/content';
+
 export const metadata: Metadata = {
-  title: "Likkle Legends Mail Club | Caribbean Fun & Learning",
-  description: "A Monthly Adventure in Caribbean Culture, Pride, and Emotional Literacy for Children. Personalized letters from island friends!",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'),
+  title: {
+    default: siteContent.meta.title,
+    template: `%s | Likkle Legends`,
+  },
+  description: siteContent.meta.description,
+  openGraph: {
+    title: siteContent.meta.title,
+    description: siteContent.meta.description,
+    url: '/',
+    siteName: 'Likkle Legends',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteContent.meta.title,
+    description: siteContent.meta.description,
+  },
 };
+
+import AnalyticsLoader from '@/components/AnalyticsLoader';
+import CookieBanner from '@/components/CookieBanner';
+import { UserProvider } from '@/components/UserContext';
 
 export default function RootLayout({
   children,
@@ -26,8 +49,13 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        suppressHydrationWarning
       >
-        {children}
+        <AnalyticsLoader />
+        <CookieBanner />
+        <UserProvider>
+          {children}
+        </UserProvider>
       </body>
     </html>
   );

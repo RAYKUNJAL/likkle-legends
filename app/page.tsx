@@ -2,6 +2,7 @@
 
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
+import Image from 'next/image';
 import Features from '@/components/Features';
 import Pricing from '@/components/Pricing';
 import Characters from '@/components/Characters';
@@ -9,7 +10,6 @@ import AnnouncementBar from '@/components/AnnouncementBar';
 import TantySpiceWidget from '@/components/AIWidgets';
 import Link from 'next/link';
 
-import DigitalMagic from '@/components/DigitalMagic';
 import FAQ from '@/components/FAQ';
 import StoryGenerator from '@/components/StoryGenerator';
 import HowItWorks from '@/components/HowItWorks';
@@ -19,7 +19,14 @@ import { siteContent } from '@/lib/content';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export default function Home() {
-  const { finalCTA, trustStack, testimonials } = siteContent;
+  const {
+    cta_banner,
+    founders_section,
+    testimonials,
+    identity_section,
+    hero,
+    educator_block
+  } = siteContent;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -29,12 +36,12 @@ export default function Home() {
       <main className="flex-grow">
         <Hero />
 
-        {/* Trust Banner */}
+        {/* Trust Banner (Marquee) */}
         <div className="bg-deep py-6 overflow-hidden select-none">
           <div className="flex animate-marquee gap-12 text-white/50 font-bold text-sm uppercase tracking-widest items-center whitespace-nowrap">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="flex gap-16 items-center">
-                <span>{trustStack.strip.text}</span>
+                <span>{hero.trust_row.ticker_text}</span>
                 <span className="w-2 h-2 bg-primary rounded-full"></span>
               </div>
             ))}
@@ -43,38 +50,37 @@ export default function Home() {
 
         <HowItWorks />
         <Features />
-        <DigitalMagic />
 
-        {/* Emotional Positioning / Story Section */}
-        <section id="story" className="py-24 bg-deep text-white overflow-hidden relative">
+        {/* Identity Section (was Emotional Positioning) */}
+        <section id="identity" className="py-24 bg-deep text-white overflow-hidden relative">
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary rounded-full blur-[150px] opacity-10 -mr-64 -mt-64"></div>
 
           <div className="container grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-10">
-              <span className="text-secondary font-bold uppercase tracking-widest text-sm">Building Connections</span>
-              <h2 className="text-4xl lg:text-6xl font-black leading-[1.1]">Identity, Culture & SEL <br /> <span className="text-primary italic">Wrapped in Fun.</span></h2>
-              <p className="text-xl text-white/70 leading-relaxed max-w-xl">
-                Too many Caribbean children grow up disconnected from their roots or unsure how to express big feelings.
-                Likkle Legends brings emotional literacy and Caribbean pride straight into their hands each month.
-              </p>
+              <span className="text-secondary font-bold uppercase tracking-widest text-sm">Identity & Culture</span>
+              <h2 className="text-4xl lg:text-6xl font-black leading-[1.1]">{identity_section.title}</h2>
+              <div className="space-y-4">
+                <p className="text-xl text-white/70 leading-relaxed font-bold">{identity_section.problem_text}</p>
+                <p className="text-xl text-white/70 leading-relaxed">{identity_section.solution_text}</p>
+              </div>
 
               <div className="grid gap-6">
-                {siteContent.emotionalPositioning.pillars.map((pillar, i) => (
+                {identity_section.pillars.map((pillar, i) => (
                   <div key={i} className="flex gap-6 p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group">
                     <div className="w-16 h-16 bg-white/10 text-3xl rounded-3xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                      {pillar.icon}
+                      {pillar.icon === 'relationship' ? '🤝' : '✨'}
                     </div>
                     <div>
                       <h4 className="font-bold text-xl mb-2">{pillar.title}</h4>
-                      <p className="text-white/60 leading-relaxed">{pillar.body}</p>
+                      <p className="text-white/60 leading-relaxed">{pillar.description}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="relative aspect-[4/5] rounded-[4rem] overflow-hidden border-[12px] border-white/5 rotate-3 shadow-2xl">
-              <img src="/images/child_reading.png" alt="Happy child" className="w-full h-full object-cover" />
+            <div className="relative aspect-[4/5] rounded-[4rem] overflow-hidden border-[12px] border-white/5 rotate-3 shadow-2xl min-h-[400px]">
+              <Image src={identity_section.supporting_media} alt="Happy child" fill className="object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-deep/80 via-transparent to-transparent"></div>
             </div>
           </div>
@@ -83,16 +89,16 @@ export default function Home() {
         <Characters />
         <StoryGenerator />
 
-        {/* Founder / Trust Stack Section */}
+        {/* Founder Section */}
         <section className="py-24 bg-[#FFFDF7]">
           <div className="container">
             <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
               <div className="space-y-8">
                 <h2 className="text-4xl lg:text-5xl font-black text-deep leading-tight">
-                  {trustStack.founderSection.title}
+                  {founders_section.title}
                 </h2>
                 <div className="space-y-6">
-                  {trustStack.founderSection.bullets.map((bullet, i) => (
+                  {founders_section.bullets.map((bullet, i) => (
                     <div key={i} className="flex gap-4">
                       <CheckCircle2 className="text-primary shrink-0 w-6 h-6 mt-1" />
                       <p className="text-lg text-deep/70 leading-relaxed">{bullet}</p>
@@ -102,7 +108,7 @@ export default function Home() {
               </div>
               <div className="relative">
                 <div className="aspect-[4/3] rounded-[3rem] bg-zinc-100 overflow-hidden shadow-2xl relative z-10">
-                  <img src="/images/hero.png" alt="Founders" className="w-full h-full object-cover grayscale opacity-80" />
+                  <img src={founders_section.image} alt="Founders" className="w-full h-full object-cover grayscale opacity-80" />
                 </div>
                 <div className="absolute -bottom-10 -right-10 bg-primary text-white p-12 rounded-[3rem] shadow-2xl z-20 hidden md:block">
                   <p className="text-3xl font-black mb-1">Authentic</p>
@@ -115,12 +121,26 @@ export default function Home() {
 
         <Pricing />
 
-        {/* Social Proof / Testimonials Section */}
+        {/* Educator Block */}
+        <section className="py-16 bg-zinc-50 border-y border-zinc-200">
+          <div className="container text-center max-w-2xl mx-auto space-y-6">
+            <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">{educator_block.tagline}</span>
+            <h2 className="text-3xl font-black text-deep">{educator_block.title}</h2>
+            <p className="text-lg text-deep/60">{educator_block.description}</p>
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-sm font-bold text-deep/40">{educator_block.price_hint}</p>
+              <Link href={educator_block.cta.href} className="btn btn-outline">{educator_block.cta.label}</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials Section */}
         <section id="testimonials" className="py-24 bg-white relative overflow-hidden">
           <div className="container">
             <div className="text-center mb-20 space-y-4">
               <h2 className="text-4xl lg:text-5xl font-black text-deep">{testimonials.title}</h2>
               <p className="text-xl text-deep/60">{testimonials.subtitle}</p>
+              <p className="font-bold text-primary">{testimonials.featured_rating}</p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-10">
@@ -157,17 +177,17 @@ export default function Home() {
 
               <div className="relative z-10 max-w-3xl space-y-8">
                 <h2 className="text-4xl lg:text-6xl font-black text-white leading-tight">
-                  {finalCTA.headline}
+                  {cta_banner.headline}
                 </h2>
                 <p className="text-xl text-white/60 leading-relaxed">
-                  {finalCTA.subheadline}
+                  {cta_banner.subheadline}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-6 justify-center pt-6">
-                  <Link href={finalCTA.primaryCTA.href} className="btn btn-primary btn-lg px-12 py-6 text-xl shadow-2xl shadow-primary/20 hover:scale-105 transition-transform group">
-                    {finalCTA.primaryCTA.label} <ArrowRight className="ml-2 group-hover:translate-x-2 transition-transform" />
+                  <Link href={cta_banner.primary_cta.href} className="btn btn-primary btn-lg px-12 py-6 text-xl shadow-2xl shadow-primary/20 hover:scale-105 transition-transform group">
+                    {cta_banner.primary_cta.label} <ArrowRight className="ml-2 group-hover:translate-x-2 transition-transform" />
                   </Link>
-                  <Link href={finalCTA.secondaryCTA.href} className="btn bg-white/10 text-white hover:bg-white/20 px-12 py-6 text-xl border border-white/20">
-                    {finalCTA.secondaryCTA.label}
+                  <Link href={cta_banner.secondary_cta.href} className="btn bg-white/10 text-white hover:bg-white/20 px-12 py-6 text-xl border border-white/20">
+                    {cta_banner.secondary_cta.label}
                   </Link>
                 </div>
               </div>

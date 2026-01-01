@@ -1,12 +1,16 @@
+"use client";
+
 import { useState } from 'react';
 import { MessageSquare, X, Send } from 'lucide-react';
 import { askTantySpice } from '@/app/actions/tanty';
+import { siteContent } from '@/lib/content';
 
 export default function TantySpiceWidget() {
+    const { tanty_spice_chat } = siteContent;
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState("");
     const [chat, setChat] = useState<{ role: 'user' | 'tanty', text: string }[]>([
-        { role: 'tanty', text: "Fix your face, little one! Tanty Spice is here. Tell me, what's on your heart today?" }
+        { role: 'tanty', text: tanty_spice_chat.welcome_message }
     ]);
     const [isTyping, setIsTyping] = useState(false);
 
@@ -18,21 +22,18 @@ export default function TantySpiceWidget() {
         setChat(prev => [...prev, { role: 'user', text: userMsg }]);
 
         setIsTyping(true);
-        // In a real app, this should be a Server Action to protect the API key. 
-        // For this demo/prototype, we are importing the logic directly, but 
-        // Note: NEXT_PUBLIC_ env vars or Server Actions are needed for client-side safety.
-        // We will mock the delay for the UI experience if the key is missing client-side.
 
         try {
-            // We call our secure Server Action here
             const response = await askTantySpice(userMsg);
             setChat(prev => [...prev, { role: 'tanty', text: response }]);
         } catch (e) {
-            setChat(prev => [...prev, { role: 'tanty', text: "Oye, the spirits are quiet right now." }]);
+            setChat(prev => [...prev, { role: 'tanty', text: tanty_spice_chat.states.error.message }]);
         }
 
         setIsTyping(false);
     };
+
+    if (!tanty_spice_chat.enabled) return null;
 
     return (
         <div className="fixed bottom-6 right-6 z-[100]">
@@ -55,14 +56,21 @@ export default function TantySpiceWidget() {
                                 }} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-lg">Tanty Spice</h4>
+                                <h4 className="font-bold text-lg">{tanty_spice_chat.name}</h4>
                                 <div className="flex items-center gap-2">
                                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                                    <p className="text-xs text-white/80">Online & Listening</p>
+                                    <p className="text-xs text-white/80">{tanty_spice_chat.status_text}</p>
                                 </div>
                             </div>
                         </div>
-                        <button onClick={() => setIsOpen(false)} className="hover:rotate-90 transition-transform"><X /></button>
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            aria-label="Close chat"
+                            title="Close chat"
+                            className="hover:rotate-90 transition-transform"
+                        >
+                            <X />
+                        </button>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background/50">
@@ -74,19 +82,24 @@ export default function TantySpiceWidget() {
                                 </div>
                             </div>
                         ))}
-                        {isTyping && <div className="text-xs text-deep/40 italic">Tanty is thinking...</div>}
+                        {isTyping && <div className="text-xs text-deep/40 italic">{tanty_spice_chat.states.loading.message}</div>}
                     </div>
 
                     <div className="p-6 border-t bg-white flex gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] relative z-10">
                         <input
                             type="text"
-                            placeholder="Type your feelings..."
+                            placeholder={tanty_spice_chat.input_placeholder}
                             className="flex-1 bg-zinc-100 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all border-none"
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                         />
-                        <button onClick={handleSend} className="bg-accent w-12 h-12 rounded-2xl text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg shadow-accent/20">
+                        <button
+                            onClick={handleSend}
+                            aria-label={tanty_spice_chat.button_label}
+                            title={tanty_spice_chat.button_label}
+                            className="bg-accent w-12 h-12 rounded-2xl text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg shadow-accent/20"
+                        >
                             <Send size={20} />
                         </button>
                     </div>

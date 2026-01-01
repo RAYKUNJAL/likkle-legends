@@ -12,7 +12,7 @@ export default function Footer() {
                 <div className="col-span-1 md:col-span-2 space-y-10">
                     <img src="/images/logo.png" alt="Likkle Legends" className="w-56 brightness-0 invert" />
                     <p className="text-white/50 text-xl leading-relaxed max-w-md">
-                        {footer.brandLine}
+                        {footer.brand_line}
                     </p>
                 </div>
                 {footer.columns.map((col, i) => (
