@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Volume2, Info, X, Music, Sun } from 'lucide-react';
 
@@ -87,10 +89,10 @@ const StorybookWidget: React.FC = () => {
 
           {/* Flower */}
           <div className="absolute left-[20%] bottom-[15%] text-accent">
-             <div className="w-4 h-20 bg-green-600 mx-auto"></div>
-             <div className="w-12 h-12 bg-current rounded-full -mt-24 relative">
-                <div className="absolute inset-0 bg-pink-400 rounded-full opacity-50 scale-150 animate-pulse"></div>
-             </div>
+            <div className="w-4 h-20 bg-green-600 mx-auto"></div>
+            <div className="w-12 h-12 bg-current rounded-full -mt-24 relative">
+              <div className="absolute inset-0 bg-pink-400 rounded-full opacity-50 scale-150 animate-pulse"></div>
+            </div>
           </div>
         </div>
 
@@ -110,8 +112,10 @@ const StorybookWidget: React.FC = () => {
         {/* Interaction Modal/Popup */}
         {activeItem && (
           <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-4 rounded-xl shadow-2xl border-l-4 border-primary animate-slide-up z-20">
-            <button 
+            <button
               onClick={() => setActiveItem(null)}
+              aria-label="Close details"
+              title="Close details"
               className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
             >
               <X size={18} />
@@ -127,7 +131,7 @@ const StorybookWidget: React.FC = () => {
                 <p className="text-sm text-gray-600 leading-relaxed">
                   {hotspots.find(h => h.id === activeItem)?.content}
                 </p>
-                
+
                 {isPlaying && activeItem === 'steelpan' && (
                   <div className="mt-2 flex items-center gap-2 text-primary font-bold text-xs animate-pulse">
                     <Volume2 size={14} /> Playing Calypso Beat... 🎵

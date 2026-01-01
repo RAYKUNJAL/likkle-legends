@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #FFFDF7;
@@ -17,97 +19,76 @@
   --radius: 1rem;
 }
 
-@theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-secondary: var(--secondary);
-  --color-accent: var(--accent);
-  --color-deep: var(--deep);
-  --color-border: var(--border);
-}
-
 @layer base {
   body {
-    background-color: var(--background);
-    color: var(--foreground);
+    @apply bg-[var(--background)] text-[var(--foreground)] antialiased;
   }
 }
 
 @layer components {
   .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 1.5rem;
-    border-radius: 9999px;
-    font-weight: 600;
-    transition: all 0.3s;
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-full font-semibold transition-all duration-300;
   }
 
   .btn-primary {
-    background-color: var(--primary);
-    color: white;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  }
-
-  .btn-primary:hover {
-    background-color: color-mix(in srgb, var(--primary) 90%, black);
-    transform: translateY(-0.25rem);
-    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    @apply bg-[var(--primary)] text-white shadow-lg hover:shadow-xl hover:-translate-y-1;
   }
 
   .btn-secondary {
-    background-color: var(--secondary);
-    color: white;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  }
-
-  .btn-secondary:hover {
-    background-color: color-mix(in srgb, var(--secondary) 90%, black);
-    transform: translateY(-0.25rem);
+    @apply bg-[var(--secondary)] text-white shadow-lg hover:shadow-xl hover:-translate-y-1;
   }
 
   .btn-outline {
-    border: 2px solid var(--primary);
-    color: var(--primary);
+    @apply border-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white;
   }
 
-  .btn-outline:hover {
-    background-color: var(--primary);
-    color: white;
+  .glass-card {
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    @apply relative;
   }
 
-  .container {
-    max-width: 80rem;
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 1rem;
-    padding-right: 1rem;
+  .glass-nav {
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(40px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    @apply relative;
   }
 
-  .glass {
-    background-color: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+  .shimmer-btn {
+    @apply relative overflow-hidden;
   }
 
-  .glass-dark {
-    background-color: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  .shimmer-btn::after {
+    content: '';
+    @apply absolute -top-1/2 -left-1/2 w-[200%] h-[200%] rotate-[45deg];
+    background: linear-gradient(to bottom right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0) 100%);
+    animation: shimmer 3s infinite;
   }
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+@keyframes shimmer {
+  0% {
+    transform: translateX(-150%) rotate(45deg);
+  }
+
+  100% {
+    transform: translateX(150%) rotate(45deg);
+  }
 }
 
 @keyframes float {
 
   0%,
   100% {
-    transform: translateY(0px);
+    transform: translateY(0);
   }
 
   50% {
@@ -115,11 +96,7 @@
   }
 }
 
-.animate-pulse-slow {
-  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
+@keyframes pulse-slow {
 
   0%,
   100% {
@@ -128,15 +105,9 @@
   }
 
   50% {
-    opacity: .9;
+    opacity: 0.9;
     transform: scale(1.05);
   }
-}
-
-.animate-marquee {
-  display: flex;
-  width: max-content;
-  animation: marquee 40s linear infinite;
 }
 
 @keyframes marquee {
@@ -147,6 +118,20 @@
   100% {
     transform: translateX(-50%);
   }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 40s linear infinite;
 }
 
 /* Custom Scrollbar */

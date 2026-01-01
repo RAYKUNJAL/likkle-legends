@@ -1,107 +1,200 @@
 "use client";
 
-import { Check, Info, ShieldCheck } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { siteContent } from '@/lib/content';
+import { Check, Sparkles, Gift, Crown, Star } from 'lucide-react';
+import { SUBSCRIPTION_PLANS, getLocalizedPrice, SubscriptionTier } from '@/lib/paypal';
+import { detectCountry, GeoInfo } from '@/lib/geo-routing';
 
 export default function Pricing() {
-  const { pricing } = siteContent;
+  const [geoInfo, setGeoInfo] = useState<GeoInfo | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+
+  useEffect(() => {
+    detectCountry().then(setGeoInfo);
+  }, []);
+
+  const getPlanIcon = (id: string) => {
+    switch (id) {
+      case 'starter_mailer': return '📬';
+      case 'legends_plus': return '⭐';
+      case 'family_legacy': return '👑';
+      default: return '✨';
+    }
+  };
+
+  const getPlanGradient = (id: string) => {
+    switch (id) {
+      case 'starter_mailer': return 'from-blue-500 to-cyan-500';
+      case 'legends_plus': return 'from-primary to-accent';
+      case 'family_legacy': return 'from-amber-500 to-orange-500';
+      default: return 'from-gray-500 to-gray-600';
+    }
+  };
 
   return (
-    <section id={pricing.id} className="py-24 bg-zinc-50 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-accent opacity-50"></div>
-
-      <div className="container">
-        <div className="text-center max-w-3xl mx-auto mb-20 space-y-4">
-          <h2 className="text-4xl lg:text-6xl font-black text-deep">{pricing.title}</h2>
-          <p className="text-xl text-deep/60">{pricing.subtitle}</p>
+    <section id="pricing" className="py-24 bg-gradient-to-br from-sky-50 via-white to-amber-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-bold mb-4">
+            <Gift size={16} />
+            Pricing & Plans
+          </span>
+          <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+            Choose Your <span className="text-primary">Adventure</span>
+          </h2>
+          <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+            Every plan includes monthly mailers, digital access, and AI-powered learning experiences
+          </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 items-stretch mb-20">
-          {pricing.plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`relative flex flex-col p-10 rounded-[3rem] bg-white border-2 transition-all duration-500 hover:shadow-2xl ${plan.highlight === 'recommended'
-                ? 'border-primary ring-8 ring-primary/5 lg:scale-110 z-10'
-                : 'border-zinc-100'
+        {/* Billing Toggle */}
+        <div className="flex justify-center mb-12">
+          <div className="bg-white rounded-2xl p-1.5 shadow-sm border border-gray-100 inline-flex">
+            <button
+              onClick={() => setBillingCycle('monthly')}
+              className={`px-6 py-3 rounded-xl font-bold transition-all ${billingCycle === 'monthly'
+                ? 'bg-primary text-white shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
-              {plan.badge && (
-                <span className={`absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 rounded-full text-xs font-black uppercase tracking-[0.15em] text-white shadow-lg ${plan.highlight === 'recommended' ? 'bg-primary' : 'bg-deep'
-                  }`}>
-                  {plan.badge}
-                </span>
-              )}
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingCycle('annual')}
+              className={`px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${billingCycle === 'annual'
+                ? 'bg-primary text-white shadow-sm'
+                : 'text-gray-500 hover:text-gray-700'
+                }`}
+            >
+              Annual
+              <span className="px-2 py-0.5 bg-green-400 text-green-900 text-xs font-bold rounded-full">
+                Save 20%
+              </span>
+            </button>
+          </div>
+        </div>
 
-              <div className="mb-10 text-center">
-                <h3 className="text-3xl font-black mb-4 text-deep">{plan.name}</h3>
-                <div className="flex items-baseline justify-center gap-1 mb-2">
-                  <span className="text-6xl font-black text-deep leading-none">{plan.priceLabel.split('/')[0]}</span>
-                  <span className="text-deep/40 font-bold">/{plan.priceLabel.split('/')[1]}</span>
-                </div>
-                <p className="text-deep/50 text-xs font-bold uppercase tracking-widest">{plan.billingNote}</p>
-              </div>
+        {/* Pricing Cards */}
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          {(Object.entries(SUBSCRIPTION_PLANS) as [SubscriptionTier, typeof SUBSCRIPTION_PLANS.starter_mailer][]).map(([id, plan]) => {
+            const price = geoInfo
+              ? getLocalizedPrice(plan.price, geoInfo.countryCode)
+              : { price: plan.price, symbol: '$', currency: 'USD' };
 
-              <ul className="space-y-5 flex-1 mb-10">
-                {plan.bullets.map((bullet, i) => (
-                  <li key={i} className="flex items-start gap-4 text-sm font-medium">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${plan.highlight === 'recommended' ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'
-                      }`}>
-                      <Check size={12} strokeWidth={4} />
-                    </div>
-                    <span className="text-deep/80 leading-relaxed text-pretty">{bullet}</span>
-                  </li>
-                ))}
-              </ul>
+            const annualPrice = billingCycle === 'annual'
+              ? (geoInfo ? getLocalizedPrice(plan.priceYearly || plan.price * 10, geoInfo.countryCode) : { ...price, price: plan.priceYearly || plan.price * 10 })
+              : price;
 
-              <Link
-                href={plan.ctaHref}
-                className={`btn btn-lg w-full py-6 text-lg font-black tracking-tight ${plan.highlight === 'recommended'
-                  ? 'btn-primary shadow-xl shadow-primary/20'
-                  : plan.highlight === 'best-value'
-                    ? 'btn-secondary shadow-xl shadow-secondary/20'
-                    : 'bg-deep text-white hover:bg-black shadow-xl shadow-black/10'
+            const monthlyEquivalent = billingCycle === 'annual'
+              ? Math.round(annualPrice.price / 12 * 100) / 100
+              : price.price;
+
+            const isPopular = id === 'legends_plus';
+
+            return (
+              <div
+                key={id}
+                className={`relative rounded-[2rem] overflow-hidden transition-all hover:scale-105 ${isPopular ? 'ring-4 ring-primary/30 shadow-2xl' : 'shadow-xl'
                   }`}
               >
-                {plan.ctaLabel}
-              </Link>
-            </div>
-          ))}
+                {/* Popular Badge */}
+                {isPopular && (
+                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-primary to-accent py-2 text-center">
+                    <span className="text-white text-sm font-bold flex items-center justify-center gap-1">
+                      <Star size={14} /> MOST POPULAR
+                    </span>
+                  </div>
+                )}
+
+                <div className={`bg-white p-8 ${isPopular ? 'pt-14' : ''}`}>
+                  {/* Plan Header */}
+                  <div className="text-center mb-6">
+                    <div className={`inline-flex w-16 h-16 rounded-2xl bg-gradient-to-br ${getPlanGradient(id)} items-center justify-center text-3xl mb-4`}>
+                      {getPlanIcon(id)}
+                    </div>
+                    <h3 className="text-2xl font-black text-gray-900">{plan.name}</h3>
+                    <p className="text-gray-500 text-sm mt-1">{plan.description}</p>
+                  </div>
+
+                  {/* Price */}
+                  <div className="text-center mb-6">
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="text-5xl font-black text-gray-900">
+                        {price.symbol}{monthlyEquivalent.toFixed(2)}
+                      </span>
+                      <span className="text-gray-400">/mo</span>
+                    </div>
+                    {billingCycle === 'annual' && (
+                      <p className="text-sm text-green-600 font-medium mt-1">
+                        Billed annually at {price.symbol}{annualPrice.price.toFixed(2)}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Features */}
+                  <ul className="space-y-3 mb-8">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                          <Check size={12} className="text-green-600" />
+                        </div>
+                        <span className="text-gray-600 text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA */}
+                  <Link
+                    href={`/checkout?plan=${id}&cycle=${billingCycle}`}
+                    className={`block w-full py-4 rounded-2xl font-bold text-center transition-all ${isPopular
+                      ? 'bg-gradient-to-r from-primary to-accent text-white hover:opacity-90'
+                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                      }`}
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Guarantee */}
-        <div className="max-w-4xl mx-auto p-8 bg-white border border-dashed border-zinc-200 rounded-[2.5rem] flex flex-col md:flex-row items-center gap-6 mb-20 text-center md:text-left">
-          <div className="w-16 h-16 bg-green-50 text-green-600 rounded-3xl flex items-center justify-center shrink-0 shadow-inner">
-            <ShieldCheck size={32} />
-          </div>
-          <div className="flex-1">
-            <p className="font-bold text-lg text-deep">Our Legend's Guarantee</p>
-            <p className="text-sm text-deep/60 leading-relaxed">{pricing.guarantee}</p>
-          </div>
+        {/* Trust Row */}
+        <div className="flex flex-wrap justify-center gap-8 mt-16 text-sm text-gray-500">
+          <span className="flex items-center gap-2">
+            <Check className="text-green-500" size={18} />
+            Cancel anytime
+          </span>
+          <span className="flex items-center gap-2">
+            <Check className="text-green-500" size={18} />
+            Free shipping worldwide
+          </span>
+          <span className="flex items-center gap-2">
+            <Check className="text-green-500" size={18} />
+            30-day money-back guarantee
+          </span>
+          <span className="flex items-center gap-2">
+            <Check className="text-green-500" size={18} />
+            Secure PayPal checkout
+          </span>
         </div>
 
-        {/* Educator Section */}
-        <div className="p-12 rounded-[4rem] bg-deep text-white flex flex-col lg:flex-row items-center justify-between gap-12 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary rotate-45 translate-x-32 -translate-y-32 blur-[100px] opacity-20 transition-transform group-hover:scale-150"></div>
-
-          <div className="space-y-6 relative z-10 text-center lg:text-left">
-            <div className="flex flex-col lg:flex-row items-center gap-4">
-              <h3 className="text-4xl font-black">{pricing.educators.title}</h3>
-              <span className="text-[10px] font-black bg-white/10 px-4 py-1 rounded-full uppercase tracking-widest border border-white/20">
-                {pricing.educators.subtitle}
-              </span>
-            </div>
-            <p className="max-w-2xl text-xl text-white/60 leading-relaxed">
-              {pricing.educators.description}
-            </p>
-          </div>
-
-          <div className="flex flex-col items-center lg:items-end relative z-10 shrink-0">
-            <div className="text-5xl font-black mb-4">{pricing.educators.priceRange}<span className="text-xl font-normal opacity-40"> /mo</span></div>
-            <Link href={pricing.educators.ctaHref} className="btn bg-white text-deep px-10 py-5 text-lg font-black hover:scale-105 transition-transform shadow-2xl">
-              {pricing.educators.ctaLabel}
-            </Link>
-          </div>
+        {/* Enterprise/Schools CTA */}
+        <div className="mt-16 bg-deep rounded-3xl p-8 md:p-12 text-white text-center">
+          <Crown className="w-12 h-12 mx-auto mb-4 text-amber-400" />
+          <h3 className="text-2xl md:text-3xl font-black mb-3">Schools & Educators</h3>
+          <p className="text-white/70 max-w-xl mx-auto mb-6">
+            Bring Caribbean cultural education to your classroom with our special educator pricing and curriculum resources
+          </p>
+          <Link
+            href="/educators"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-deep rounded-2xl font-bold hover:bg-white/90 transition-colors"
+          >
+            <Sparkles size={20} />
+            Learn About Educator Plans
+          </Link>
         </div>
       </div>
     </section>

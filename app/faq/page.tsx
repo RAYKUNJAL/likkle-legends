@@ -3,6 +3,7 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { siteContent } from '@/lib/content';
+import Link from 'next/link';
 import { useState } from 'react';
 import { ChevronDown, Plus, Minus } from 'lucide-react';
 
@@ -33,9 +34,9 @@ export default function FAQPage() {
                             Our team is here to help you and your little legend. We usually respond within 24 hours.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <a href="/contact" className="btn btn-primary btn-lg px-12 py-6 text-xl">
+                            <Link href="/contact" className="btn btn-primary btn-lg px-12 py-6 text-xl">
                                 Contact Support
-                            </a>
+                            </Link>
                             <button
                                 onClick={() => {
                                     const widget = document.querySelector('button[class*="bg-accent"]');

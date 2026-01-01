@@ -4,7 +4,17 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, Mail, Lock, User, Sparkles } from 'lucide-react';
 
+import { useState, useEffect } from 'react';
+
 export default function SignupPage() {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
+
     return (
         <div className="min-h-screen bg-[#FFFDF7] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
             {/* Background elements */}
@@ -27,8 +37,8 @@ export default function SignupPage() {
                 </div>
             </div>
 
-            <div className="mt-12 sm:mx-auto sm:w-full sm:max-w-[480px] relative z-10">
-                <div className="bg-white py-12 px-10 shadow-2xl shadow-zinc-200/50 rounded-[3.5rem] border border-zinc-100">
+            <div className="mt-12 sm:mx-auto sm:w-full sm:max-w-[480px] relative z-10 px-4">
+                <div className="bg-white py-12 px-10 shadow-2xl shadow-zinc-200/50 rounded-[3.5rem] border border-zinc-100 relative overflow-hidden">
                     <form className="space-y-8">
                         <div>
                             <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Child's Name</label>
