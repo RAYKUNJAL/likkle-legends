@@ -5,8 +5,14 @@ import Link from 'next/link';
 import { Check, Sparkles, Gift, Crown, Star } from 'lucide-react';
 import { SUBSCRIPTION_PLANS, getLocalizedPrice, SubscriptionTier } from '@/lib/paypal';
 import { detectCountry, GeoInfo } from '@/lib/geo-routing';
+import { siteContent } from '@/lib/content';
 
-export default function Pricing() {
+interface PricingProps {
+  content?: typeof siteContent.pricing;
+}
+
+export default function Pricing({ content }: PricingProps) {
+  const pricing = content || siteContent.pricing;
   const [geoInfo, setGeoInfo] = useState<GeoInfo | null>(null);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 

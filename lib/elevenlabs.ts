@@ -6,9 +6,9 @@ const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 
 // Voice IDs - replace with your custom Caribbean voice model
 export const VOICES = {
-    tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || 'pNInz6obpgDQGcFmaJgB', // Default to a warm female voice
+    tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || 'MF3mGyEYCl7XYWbV9V6O', // 'Elli' - Warm, calm female or similar
     steelpan_sam: process.env.ELEVENLABS_SAM_VOICE_ID || 'ErXwobaYiN019PkySvjV',
-    dilly_doubles: process.env.ELEVENLABS_DILLY_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL',
+    dilly_doubles: process.env.ELEVENLABS_DILLY_VOICE_ID || 'TxGEqnHWrfWFTfGW9XjX',
 };
 
 export type VoiceCharacter = keyof typeof VOICES;
@@ -26,9 +26,9 @@ export async function generateSpeech(
 ): Promise<ArrayBuffer | null> {
     const {
         voice = 'tanty_spice',
-        stability = 0.5,
-        similarityBoost = 0.75,
-        style = 0.5,
+        stability = 0.45, // Slightly lower for more expressive rhythm
+        similarityBoost = 0.8, // High fidelity to tone
+        style = 0.65, // More expressive style
     } = options;
 
     if (!ELEVENLABS_API_KEY) {

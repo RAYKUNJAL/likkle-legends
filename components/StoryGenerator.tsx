@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Sparkles, Wand2, BookOpen, User, AlertCircle } from 'lucide-react';
 import { createStoryAction } from '@/app/actions/story';
 import { siteContent } from '@/lib/content';
+import PrintStudio from '@/components/PrintStudio';
 
 export default function StoryGenerator() {
     const { ai_story_studio } = siteContent;
@@ -12,8 +13,9 @@ export default function StoryGenerator() {
     const [formData, setFormData] = useState({
         childName: "",
         primaryIsland: "Trinidad",
-        problem: "feeling shy about their culture",
-        selectedCharacter: "Mango Moko"
+        guide: "Tanty Spice",
+        location: "Rainforest",
+        mission: "Folklore Quest"
     });
     const [result, setResult] = useState<{ title: string; content: string } | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -43,8 +45,9 @@ export default function StoryGenerator() {
 
     const nameField = getField('child_name');
     const islandField = getField('island');
-    const charField = getField('character');
-    const challengeField = getField('challenge');
+    const guideField = getField('guide');
+    const locationField = getField('location');
+    const missionField = getField('mission');
 
     return (
         <section id="sample-letter" className="py-24 bg-zinc-50">
@@ -90,28 +93,44 @@ export default function StoryGenerator() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label htmlFor="character-select" className="text-[10px] font-black uppercase tracking-widest text-deep/40 ml-4 mb-1 block">{charField?.label}</label>
+                                    <label htmlFor="guide-select" className="text-[10px] font-black uppercase tracking-widest text-deep/40 ml-4 mb-1 block">{guideField?.label}</label>
                                     <select
-                                        id="character-select"
-                                        title={charField?.label}
-                                        value={formData.selectedCharacter}
-                                        onChange={(e) => setFormData({ ...formData, selectedCharacter: e.target.value })}
+                                        id="guide-select"
+                                        title={guideField?.label}
+                                        value={formData.guide}
+                                        onChange={(e) => setFormData({ ...formData, guide: e.target.value })}
                                         className="w-full px-6 py-4 bg-zinc-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none border-none"
                                     >
-                                        {charField?.options?.map(opt => <option key={opt}>{opt}</option>)}
+                                        {guideField?.options?.map(opt => <option key={opt}>{opt}</option>)}
                                     </select>
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-deep/40 ml-4 mb-1 block">{challengeField?.label}</label>
-                                <input
-                                    type="text"
-                                    value={formData.problem}
-                                    onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
-                                    className="w-full px-6 py-4 bg-zinc-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all border-none"
-                                    placeholder={challengeField?.placeholder}
-                                />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="location-select" className="text-[10px] font-black uppercase tracking-widest text-deep/40 ml-4 mb-1 block">{locationField?.label}</label>
+                                    <select
+                                        id="location-select"
+                                        title={locationField?.label}
+                                        value={formData.location}
+                                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                        className="w-full px-6 py-4 bg-zinc-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none border-none"
+                                    >
+                                        {locationField?.options?.map(opt => <option key={opt}>{opt}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="mission-select" className="text-[10px] font-black uppercase tracking-widest text-deep/40 ml-4 mb-1 block">{missionField?.label}</label>
+                                    <select
+                                        id="mission-select"
+                                        title={missionField?.label}
+                                        value={formData.mission}
+                                        onChange={(e) => setFormData({ ...formData, mission: e.target.value })}
+                                        className="w-full px-6 py-4 bg-zinc-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none border-none"
+                                    >
+                                        {missionField?.options?.map(opt => <option key={opt}>{opt}</option>)}
+                                    </select>
+                                </div>
                             </div>
 
                             <button
@@ -155,11 +174,36 @@ export default function StoryGenerator() {
                                             </p>
                                         ))}
                                     </div>
-                                    <div className="pt-8 border-t border-white/10 mt-8">
-                                        <p className="text-primary font-black text-sm uppercase tracking-widest mb-2 flex items-center gap-2">
-                                            <Sparkles size={16} /> Magical Snippet
-                                        </p>
-                                        <p className="text-white/40 text-sm">{upsell_note}</p>
+                                    <div className="pt-8 border-t border-white/10 mt-8 space-y-4">
+                                        <div className="flex flex-wrap gap-3">
+                                            <PrintStudio
+                                                mode="story_book"
+                                                variant="home_print"
+                                                data={{
+                                                    title: result.title,
+                                                    content: result.content,
+                                                    childName: formData.childName
+                                                }}
+                                                className="flex-1"
+                                            />
+                                            <PrintStudio
+                                                mode="story_book"
+                                                variant="pod_kdp"
+                                                data={{
+                                                    title: result.title,
+                                                    content: result.content,
+                                                    childName: formData.childName
+                                                }}
+                                                label="KDP Ready"
+                                                className="flex-1"
+                                            />
+                                        </div>
+                                        <div>
+                                            <p className="text-primary font-black text-sm uppercase tracking-widest mb-2 flex items-center gap-2">
+                                                <Sparkles size={16} /> Magical Snippet
+                                            </p>
+                                            <p className="text-white/40 text-sm">{upsell_note}</p>
+                                        </div>
                                     </div>
                                 </div>
                             ) : (

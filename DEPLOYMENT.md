@@ -64,6 +64,30 @@ Access the admin panel at `/admin`.
 *   **Portal**: Children access `/portal` for stories, games, and missions.
 *   **Dashboard**: Parents track progress at `/analytics` and `/dashboard`.
 
-## 7. Messaging
+## 7. Deployment (Vercel)
+The recommended way to deploy is **Vercel**.
+
+1.  **Push to GitHub**: Ensure your latest code is pushed to your repository.
+2.  **Import Project in Vercel**:
+    *   Go to Vercel Dashboard -> Add New -> Project.
+    *   Select `likkle-legends` repo.
+3.  **Configure Environment Variables**:
+    *   Copy all values from your `.env.local`.
+    *   **IMPORTANT**: Add `SUPABASE_SERVICE_ROLE_KEY` to the Environment Variables settings in Vercel. This is required for the Admin Dashboard to work.
+4.  **Deploy**: Click "Deploy".
+
+## 8. DNS Configuration (GoLive)
+To make your site live at `likklelegends.com` (or `.cm`):
+
+1.  **In Vercel**:
+    *   Go to **Settings** -> **Domains**.
+    *   Enter your domain (e.g., `likklelegends.cm`).
+    *   Vercel will provide you with DNS records to add.
+2.  **In Your Domain Registrar (Namecheap, GoDaddy, etc.)**:
+    *   **A Record**: Point `@` to `76.76.21.21`.
+    *   **CNAME Record**: Point `www` to `cname.vercel-dns.com`.
+3.  **Propagation**: It may take up to 24-48 hours, but usually happens within minutes.
+
+## 9. Messaging
 *   Parents can invite grandparents/family.
 *   Messages appear in `/messages`.
