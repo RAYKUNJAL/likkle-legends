@@ -31,7 +31,7 @@ export const siteContent = {
             login_href: "/login",
             primary_cta: {
                 label: "Start Mail Club",
-                href: "#pricing"
+                href: "/get-started"
             }
         }
     },
@@ -40,11 +40,11 @@ export const siteContent = {
             { label: "Mini Legends (4–5)", id: "mini" },
             { label: "Big Legends (6–8)", id: "big" }
         ],
-        headline: "Caribbean culture & confidence in your child’s mailbox every month.",
-        subheadline: "Personalized letters, cultural activities, and an AI reading buddy that help kids 4–8 feel proud of their roots and confident in their feelings.",
+        headline: "Raise Proud, Confident Caribbean Kids.",
+        subheadline: "The monthly mail club that delivers personalized letters, cultural activities, and AI-powered stories to help your child love their roots.",
         primary_cta: {
-            label: "Start Mail Club – Only $10/month",
-            href: "#pricing"
+            label: "Build Your Child's Box",
+            href: "/get-started"
         },
         secondary_cta: {
             label: "Preview a free sample letter",
@@ -119,7 +119,7 @@ export const siteContent = {
             {
                 label: "AI READING BUDDY",
                 title: "Reading help when you’re busy",
-                description: "A gentle Gemini-powered buddy that listens as your child reads and offers simple feedback to build confidence and fluency.",
+                description: "A gentle, smart reading buddy that listens as your child reads and offers simple feedback to build confidence and fluency.",
                 media: "/images/ai-reading-buddy.jpg"
             }
         ]
@@ -193,19 +193,34 @@ export const siteContent = {
                     id: "island",
                     label: "Island",
                     type: "select",
-                    options: ["Jamaica", "Trinidad", "Barbados", "St. Lucia", "Guyana", "Island explorer"]
+                    options: [
+                        "Anguilla", "Antigua and Barbuda", "Aruba", "Bahamas", "Barbados",
+                        "Belize", "Bermuda", "Bonaire", "British Virgin Islands", "Cayman Islands",
+                        "Cuba", "Curaçao", "Dominica", "Dominican Republic", "Grenada",
+                        "Guadeloupe", "Guyana", "Haiti", "Jamaica", "Martinique",
+                        "Montserrat", "Puerto Rico", "Saba", "Saint Barthélemy",
+                        "Saint Kitts and Nevis", "Saint Lucia", "Saint Martin",
+                        "Saint Vincent and the Grenadines", "Sint Eustatius", "Sint Maarten",
+                        "Suriname", "Trinidad and Tobago", "Turks and Caicos Islands", "US Virgin Islands"
+                    ]
                 },
                 {
-                    id: "character",
-                    label: "Character",
+                    id: "guide",
+                    label: "Choose your Island Guide",
                     type: "select",
-                    options: ["Mango Moko", "Dilly Doubles", "Steelpan Sam"]
+                    options: ["Tanty Spice", "Dilly Doubles", "Scorcha"]
                 },
                 {
-                    id: "challenge",
-                    label: "A current challenge?",
-                    type: "text",
-                    placeholder: "e.g. feeling shy about their culture"
+                    id: "location",
+                    label: "Where are we exploring?",
+                    type: "select",
+                    options: ["Rainforest", "Beach", "Local Market", "Grandma's Kitchen"]
+                },
+                {
+                    id: "mission",
+                    label: "What is our mission?",
+                    type: "select",
+                    options: ["Folklore Quest", "Number Hunt", "Color Splash", "Random Adventure"]
                 }
             ],
             primary_button: {
@@ -339,7 +354,7 @@ export const siteContent = {
         subheadline: "Join 500+ families building identity, emotional literacy, and joyful memories each month.",
         primary_cta: {
             label: "Start Mail Club for $10/month",
-            href: "#pricing"
+            href: "/get-started"
         },
         secondary_cta: {
             label: "See what’s inside a letter",
@@ -384,8 +399,8 @@ export const siteContent = {
         enabled: true,
         name: "Tanty Spice",
         status_text: "Online & listening",
-        welcome_message: "Fix your face, little one! Tanty Spice is here. Tell me, what's on your heart today?",
-        input_placeholder: "Type your feelings...",
+        welcome_message: "Bless up! I'm Tanty Spice. Ask me about our plans or tell me how you're feeling today!",
+        input_placeholder: "Type a message...",
         button_label: "Send message",
         states: {
             idle: {},
@@ -424,6 +439,8 @@ export const siteContent = {
                 links: [
                     { label: "About Us", href: "/about" },
                     { label: "Contact", href: "/contact" },
+                    { label: "Shipping & Returns", href: "/shipping" }, // Added
+                    { label: "FAQ", href: "/faq" }, // Added
                     { label: "Privacy Policy", href: "/privacy" },
                     { label: "Terms of Use", href: "/terms" },
                     { label: "Kids' Safety Policy", href: "/safety" }

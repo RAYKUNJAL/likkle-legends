@@ -20,6 +20,19 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
+    // Auth Check
+    useEffect(() => {
+        async function checkAuth() {
+            // Dynamically import supabase to avoid build issues if env missing
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = '/login?redirect=/admin';
+            }
+        }
+        checkAuth();
+    }, []);
+
     const navItems = [
         { id: 'overview', label: 'Overview', icon: BarChart3, href: '/admin' },
         { id: 'customers', label: 'Customers', icon: Users, href: '/admin/customers' },
@@ -28,6 +41,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
         { id: 'characters', label: 'Characters', icon: Palette, href: '/admin/characters' },
         { id: 'media', label: 'Media (Songs/Videos)', icon: Music, href: '/admin/media' },
         { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/admin/messages' },
+        { id: 'cms', label: 'Site CMS', icon: Globe, href: '/admin/cms' },
         { id: 'announcements', label: 'Announcements', icon: Megaphone, href: '/admin/announcements' },
         { id: 'analytics', label: 'Analytics', icon: TrendingUp, href: '/admin/analytics' },
         { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
@@ -48,8 +62,8 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
                             key={item.id}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === item.id
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                : 'text-white/70 hover:bg-white/10 hover:text-white'
                                 }`}
                         >
                             <item.icon size={20} />
@@ -101,8 +115,8 @@ export function StatCard({ label, value, delta, deltaType = 'positive', icon: Ic
                 </div>
                 {delta && (
                     <span className={`text-xs font-bold px-2 py-1 rounded-lg ${deltaType === 'positive' ? 'bg-green-100 text-green-700' :
-                            deltaType === 'negative' ? 'bg-red-100 text-red-700' :
-                                'bg-gray-100 text-gray-700'
+                        deltaType === 'negative' ? 'bg-red-100 text-red-700' :
+                            'bg-gray-100 text-gray-700'
                         }`}>
                         {delta}
                     </span>
@@ -408,9 +422,10 @@ export function ActionButton({ icon: Icon, onClick, variant = 'default', title }
         <button
             onClick={(e) => { e.stopPropagation(); onClick(); }}
             title={title}
+            aria-label={title}
             className={`p-2 rounded-lg transition-colors ${variant === 'danger'
-                    ? 'hover:bg-red-100 text-gray-400 hover:text-red-600'
-                    : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+                ? 'hover:bg-red-100 text-gray-400 hover:text-red-600'
+                : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
                 }`}
         >
             <Icon size={18} />
@@ -471,8 +486,8 @@ export function Tabs({ tabs, activeTab, onChange }: TabsProps) {
                     key={tab.id}
                     onClick={() => onChange(tab.id)}
                     className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === tab.id
-                            ? 'bg-white text-gray-900 shadow-sm'
-                            : 'text-gray-500 hover:text-gray-700'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-700'
                         }`}
                 >
                     {tab.label}

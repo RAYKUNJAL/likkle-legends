@@ -1,4 +1,3 @@
-"use client";
 
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
@@ -15,10 +14,12 @@ import StoryGenerator from '@/components/StoryGenerator';
 import HowItWorks from '@/components/HowItWorks';
 import Footer from '@/components/Footer';
 
-import { siteContent } from '@/lib/content';
+import { getMergedSiteContent } from '@/lib/services/cms';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 
-export default function Home() {
+export default async function Home() {
+  const content = await getMergedSiteContent();
+
   const {
     cta_banner,
     founders_section,
@@ -26,7 +27,7 @@ export default function Home() {
     identity_section,
     hero,
     educator_block
-  } = siteContent;
+  } = content;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -34,14 +35,15 @@ export default function Home() {
       <Navbar />
 
       <main className="flex-grow">
-        <Hero />
+        {/* Pass fetched content to Hero */}
+        <Hero content={hero} />
 
         {/* Trust Banner (Marquee) */}
         <div className="bg-deep py-6 overflow-hidden select-none">
           <div className="flex animate-marquee gap-12 text-white/50 font-bold text-sm uppercase tracking-widest items-center whitespace-nowrap">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="flex gap-16 items-center">
-                <span>{hero.trust_row.ticker_text}</span>
+                <span>{hero.trust_row?.ticker_text || "Trusted by families worldwide"}</span>
                 <span className="w-2 h-2 bg-primary rounded-full"></span>
               </div>
             ))}
@@ -51,7 +53,7 @@ export default function Home() {
         <HowItWorks />
         <Features />
 
-        {/* Identity Section (was Emotional Positioning) */}
+        {/* Identity Section */}
         <section id="identity" className="py-24 bg-deep text-white overflow-hidden relative">
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary rounded-full blur-[150px] opacity-10 -mr-64 -mt-64"></div>
 
@@ -65,7 +67,7 @@ export default function Home() {
               </div>
 
               <div className="grid gap-6">
-                {identity_section.pillars.map((pillar, i) => (
+                {identity_section.pillars.map((pillar: any, i: number) => (
                   <div key={i} className="flex gap-6 p-8 rounded-[2.5rem] bg-white/5 border border-white/10 hover:bg-white/10 transition-colors group">
                     <div className="w-16 h-16 bg-white/10 text-3xl rounded-3xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                       {pillar.icon === 'relationship' ? '🤝' : '✨'}
@@ -98,7 +100,7 @@ export default function Home() {
                   {founders_section.title}
                 </h2>
                 <div className="space-y-6">
-                  {founders_section.bullets.map((bullet, i) => (
+                  {founders_section.bullets.map((bullet: string, i: number) => (
                     <div key={i} className="flex gap-4">
                       <CheckCircle2 className="text-primary shrink-0 w-6 h-6 mt-1" />
                       <p className="text-lg text-deep/70 leading-relaxed">{bullet}</p>
@@ -119,7 +121,7 @@ export default function Home() {
           </div>
         </section>
 
-        <Pricing />
+        <Pricing content={content.pricing} />
 
         {/* Educator Block */}
         <section className="py-16 bg-zinc-50 border-y border-zinc-200">
@@ -144,7 +146,7 @@ export default function Home() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-10">
-              {testimonials.items.map((item, i) => (
+              {testimonials.items.map((item: any, i: number) => (
                 <div key={i} className="p-12 rounded-[4rem] bg-zinc-50 border border-zinc-100 flex flex-col relative group hover:bg-white hover:shadow-2xl transition-all duration-500">
                   <div className="text-primary/20 text-8xl font-serif absolute top-8 left-8 select-none">“</div>
                   <div className="relative z-10 flex-1">

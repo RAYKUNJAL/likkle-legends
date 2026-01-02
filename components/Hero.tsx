@@ -6,8 +6,12 @@ import { Check, ArrowRight, Play } from 'lucide-react';
 import { siteContent } from '@/lib/content';
 import { useScrollParallax } from '@/hooks/useScrollParallax';
 
-export default function Hero() {
-  const { hero } = siteContent;
+interface HeroProps {
+  content?: typeof siteContent.hero;
+}
+
+export default function Hero({ content }: HeroProps) {
+  const hero = content || siteContent.hero;
 
   // Apply parallax to elements with the class
   useScrollParallax(-0.15, '.parallax-element');

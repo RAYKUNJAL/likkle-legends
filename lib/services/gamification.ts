@@ -1,0 +1,135 @@
+
+import { supabase } from '@/lib/storage';
+import { getChild, updateChild } from './children';
+
+export async function logActivity(
+    profileId: string,
+    childId: string,
+    activityType: string,
+    contentId?: string,
+    xpEarned = 0,
+    durationSeconds?: number,
+    metadata: Record<string, unknown> = {}
+) {
+    const { error } = await supabase.from('activities').insert({
+        profile_id: profileId,
+        child_id: childId,
+        activity_type: activityType,
+        content_id: contentId,
+        xp_earned: xpEarned,
+        duration_seconds: durationSeconds,
+        metadata,
+    });
+
+    if (error) throw error;
+
+    // Update streak
+    await updateStreak(childId);
+
+    // Add XP if earned
+    if (xpEarned > 0) {
+        await addXP(childId, xpEarned, activityType);
+    }
+}
+
+export async function getRecentActivities(childId: string, limit = 20) {
+    const { data, error } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('child_id', childId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function addXP(childId: string, xpAmount: number, source: string) {
+    // Get current XP
+    const child = await getChild(childId);
+    const newXP = (child.total_xp || 0) + xpAmount;
+
+    // Update child XP
+    await updateChild(childId, { total_xp: newXP });
+
+    // Log the activity
+    await supabase.from('activities').insert({
+        child_id: childId,
+        profile_id: child.parent_id,
+        activity_type: 'xp_earn',
+        xp_earned: xpAmount,
+        metadata: { source },
+    });
+
+    return newXP;
+}
+
+export async function updateStreak(childId: string) {
+    const child = await getChild(childId);
+    const today = new Date().toISOString().split('T')[0];
+    const lastActivity = child.last_activity_date;
+
+    let newStreak = child.current_streak || 0;
+
+    if (!lastActivity) {
+        newStreak = 1;
+    } else {
+        const lastDate = new Date(lastActivity);
+        const todayDate = new Date(today);
+        const diffDays = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 1) {
+            newStreak += 1;
+        } else if (diffDays > 1) {
+            newStreak = 1;
+        }
+    }
+
+    const longestStreak = Math.max(newStreak, child.longest_streak || 0);
+
+    await updateChild(childId, {
+        current_streak: newStreak,
+        longest_streak: longestStreak,
+        last_activity_date: today,
+    });
+
+    return { currentStreak: newStreak, longestStreak };
+}
+
+export async function earnBadge(childId: string, badgeId: string) {
+    // Check if already earned
+    const { data: existing } = await supabase
+        .from('badge_earnings')
+        .select('id')
+        .eq('child_id', childId)
+        .eq('badge_id', badgeId)
+        .single();
+
+    if (existing) return false;
+
+    // Award badge
+    const { error } = await supabase.from('badge_earnings').insert({
+        child_id: childId,
+        badge_id: badgeId,
+    });
+
+    if (error) throw error;
+
+    // Update child's earned badges array
+    const child = await getChild(childId);
+    const earnedBadges = [...(child.earned_badges || []), badgeId];
+    await updateChild(childId, { earned_badges: earnedBadges });
+
+    return true;
+}
+
+export async function getEarnedBadges(childId: string) {
+    const { data, error } = await supabase
+        .from('badge_earnings')
+        .select('*')
+        .eq('child_id', childId)
+        .order('earned_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+}

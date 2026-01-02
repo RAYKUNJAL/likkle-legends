@@ -5,7 +5,7 @@ import {
     AdminLayout, StatCard, DataTable, SearchBar, StatusBadge,
     Users, CreditCard, Package, TrendingUp, Activity, BarChart3
 } from '@/components/admin/AdminComponents';
-import { getAnalyticsSummary, getAllOrders, getAllProfiles } from '@/lib/database';
+// import { getAnalyticsSummary, getAllOrders, getAllProfiles } from '@/lib/database';
 
 interface DashboardStats {
     totalSubscribers: number;
@@ -55,20 +55,25 @@ export default function AdminDashboard() {
     const loadDashboard = async () => {
         setIsLoading(true);
         try {
-            // Load stats
-            const analyticsData = await getAnalyticsSummary();
-            setStats({
-                ...analyticsData,
-                monthlyRevenue: analyticsData.activeSubscribers * 15, // Avg revenue estimate
-            });
+            // Get session token
+            const { data: { session } } = await import('@/lib/storage').then(m => m.supabase.auth.getSession());
+            if (!session) return;
+
+            const token = session.access_token;
+
+            // Load stats with admin token
+            const { getAdminAnalytics, getRecentOrdersAdmin, getRecentCustomersAdmin } = await import('@/app/actions/admin');
+
+            const analyticsData = await getAdminAnalytics(token);
+            setStats(analyticsData);
 
             // Load recent orders
-            const { orders } = await getAllOrders(undefined, 5, 0);
-            setRecentOrders(orders as RecentOrder[]);
+            const orders = await getRecentOrdersAdmin(token);
+            setRecentOrders(orders);
 
             // Load recent customers
-            const { profiles } = await getAllProfiles(5, 0);
-            setRecentCustomers(profiles as RecentCustomer[]);
+            const profiles = await getRecentCustomersAdmin(token);
+            setRecentCustomers(profiles);
         } catch (error) {
             console.error('Failed to load dashboard:', error);
         } finally {

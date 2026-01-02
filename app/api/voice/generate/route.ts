@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateSpeech, VOICES, VoiceCharacter } from '@/lib/elevenlabs';
+import { supabase } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
     try {
@@ -12,6 +13,21 @@ export async function POST(request: NextRequest) {
 
         if (text.length > 5000) {
             return NextResponse.json({ error: 'Text too long (max 5000 characters)' }, { status: 400 });
+        }
+
+        // SECURITY: Verify Authorization
+        // We expect a Bearer token or cookie session (if using same-origin)
+        // Since we are not using @supabase/ssr here, we'll check for the Authorization header manually
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) {
+            return NextResponse.json({ error: 'Unauthorized: Missing Authorization header' }, { status: 401 });
+        }
+
+        // Verify the token with Supabase
+        const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+
+        if (authError || !user) {
+            return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
         }
 
         // Validate voice

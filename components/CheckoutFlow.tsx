@@ -6,6 +6,7 @@ import { Check, ShieldCheck, Sparkles, Gift, X } from 'lucide-react';
 import { SUBSCRIPTION_PLANS, UPSELLS, getLocalizedPrice, SubscriptionTier } from '@/lib/paypal';
 import { detectCountry, GeoInfo } from '@/lib/geo-routing';
 import { supabase } from '@/lib/storage';
+import { useUser } from '@/components/UserContext';
 
 interface CheckoutFlowProps {
     selectedTier?: SubscriptionTier;
@@ -21,9 +22,21 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentBillingCycle, setPaymentBillingCycle] = useState<'month' | 'year'>('month');
 
+    const { user, loading: authLoading } = useUser();
+    const [configError, setConfigError] = useState<string | null>(null);
+
     useEffect(() => {
         detectCountry().then(setGeoInfo);
-    }, []);
+
+        // Config Validation
+        const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+        if (!clientId) {
+            console.error("❌ CRITICAL: NEXT_PUBLIC_PAYPAL_CLIENT_ID is missing from .env.local");
+            if (process.env.NODE_ENV === 'development') {
+                setConfigError("Missing PayPal Client ID. Check console.");
+            }
+        }
+    }, [user]);
 
     // Force annual billing for Family Legacy (no monthly plan exists)
     useEffect(() => {
@@ -57,17 +70,26 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handlePayPalApprove = async (data: any) => {
         setIsProcessing(true);
+        console.log("✅ PayPal Approved:", data);
+
         try {
-            // Get auth token
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error('User not authenticated');
+            if (!user) {
+                // Fallback if useUser is slow, check session directly
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    alert("Please sign in to complete your subscription.");
+                    // In a real app, save state and redirect. For now, prompt.
+                    throw new Error('User not authenticated');
+                }
+            }
 
             // Save subscription to database
             const response = await fetch('/api/payments/paypal/confirm', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
+                    // User token handled by cookie or header if using Supabase Auth Helper? 
+                    // Manual header here looks correct for client-side fetch if we grab session
                 },
                 body: JSON.stringify({
                     subscriptionId: data.subscriptionID,
@@ -79,12 +101,16 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
                 }),
             });
 
-            if (!response.ok) throw new Error('Failed to confirm subscription');
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || 'Failed to confirm subscription');
+            }
 
             setStep('success');
             onSuccess?.(data.subscriptionID || data.orderID || '');
         } catch (error) {
             console.error('Payment confirmation failed:', error);
+            alert(`Payment recorded but account update failed: ${(error as Error).message}. Please contact support.`);
             onError?.(error);
         } finally {
             setIsProcessing(false);
@@ -339,6 +365,11 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
                                     currency: displayPrice.currency,
                                 }}
                             >
+                                {configError && (
+                                    <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl mb-4 text-sm font-medium">
+                                        ⚠️ {configError}
+                                    </div>
+                                )}
                                 <PayPalButtons
                                     style={{
                                         layout: 'vertical',

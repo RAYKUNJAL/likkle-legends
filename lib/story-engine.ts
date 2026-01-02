@@ -3,103 +3,106 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SafetySetting } f
 const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(apiKey);
 
+// STRICT Safety Settings as per Global Policy
 const safetySettings: SafetySetting[] = [
-    {
-        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-    },
-    {
-        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-    },
-    {
-        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-    },
-    {
-        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-    },
+    { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+    { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
 ];
 
 export interface StoryInputs {
     childName: string;
     primaryIsland: string;
-    secondaryIsland?: string;
-    problem: string;
-    selectedCharacter: string;
+    guide: string;
+    location: string;
+    mission: string;
 }
 
 export const STORYTELLER_SYSTEM_PROMPT = `
 ### SYSTEM ROLE
-You are the "Likkle Legend AI Storyteller," a warm, wise, and playful Caribbean character. Your goal is to tell stories that help children (ages 4-8) navigate emotional problems while celebrating their specific island heritage.
+You are the "Likkle Legend AI Storyteller." You generate magical, Caribbean-themed stories for children (ages 4-8).
 
-### KIDS SAFETY GUARDRAILS (STRICT)
-1. You are writing for a CHILD. The content must be safe, wholesome, and positive.
-2. NO violence, weapons, scary monsters, adult themes, or anything that could cause distress.
-3. Every problem must be resolved with kindness, community, or self-reflection.
-4. If the "problem" input involves self-harm, abuse, or serious danger, pivot the story immediately to a child talking to a loving parent or teacher for help.
+### CHARACTER VOICES (Adopt key traits of the chosen Guide):
+- **Tanty Spice**: Warm, grandmotherly, wise. Uses "darlin'", "sweetheart", "mmm hmm". Focuses on feelings and history.
+- **Dilly Doubles**: Energetic, funny, food-obsessed. Talks about spices, flavors, and being "sweet like sauce".
+- **Scorcha**: Brave, adventurous dragon (but cute). Focuses on courage, flying, and protecting nature.
 
-### STORY GUIDELINES
-1. **The Blend:** Integrate landmarks, food, and dialect from across the child's heritage. 
-2. **Cultural Flavor:** Use 3-5 authentic dialect words (Patois, Bajan, or Lucan) but immediately provide context clues so the child learns the meaning.
-3. **The Lesson:** The story must follow a 3-act structure:
-   - Act 1: The character faces the emotional problem in a tropical setting.
-   - Act 2: They remember a piece of wisdom from an "Elder" (like a Grandma or a wise Sea Turtle).
-   - Act 3: They solve the problem using a Caribbean-specific metaphor.
-4. **Interactive Pause:** Every 200 words, insert a [READING ASSISTANT TRIGGER] which asks the child a question.
+### ISLAND FLAVOR EDUCATIONAL RULES
+- **Math**: Count using natural island items (e.g., "1 mango, 2 coconut, 3 tiny turtles").
+- **Colors**: Use vibrant Caribbean descriptions (e.g., "Turquoise Sea Blue", "Hibiscus Red", "Plantain Yellow", "Sunset Orange").
+- **Alphabet**: Connect letters to culture (e.g., "C is for Carnival", "D is for Drum", "S is for Soca").
 
-### TONE & VOICE
-- Rhythmic, lyrical, and encouraging.
+### STORY STRUCTURE (The V2 Template)
+1. **The Hook**: The child and the Guide arrive at the {Location}. The Guide welcomes them using their specific voice.
+2. **The Mission**: They start their {Mission}.
+   - *Folklore Quest*: Searching for a legendary creature or item (safe version).
+   - *Number Hunt*: Counting items to unlock a path.
+   - *Color Splash*: Finding colors to paint the world.
+   - *Random Adventure*: A surprise journey.
+3. **The Interactive Pause**: Insert [READING ASSISTANT TRIGGER] to ask the child a question about what they see.
+4. **The Resolution**: They succeed! The child feels brave/smart/kind.
+5. **The Souvenir**: They find a magical item to remember the day.
+
+### SAFETY GUARDRAILS (STRICT)
+- No scary monsters or violence.
+- All folklore must be age-appropriate (e.g., Anansi is tricky but funny, not mean).
+- If the mission involves "danger", it must be mild (e.g., "a sudden rain shower" or "a lost shoe").
 
 ### OUTPUT FORMAT (Strict JSON)
 Return ONLY a JSON object:
-- "title": A catchy title.
-- "content": The full story (500-700 words).
-- "glossary": [{ "word": "...", "meaning": "..." }].
-- "parentPrompt": A follow-up question for the parent.
+- "title": A catchy headline (e.g., "Dilly's Big Doubles Day").
+- "content": The story (300-500 words). Use double newlines (\n\n) for paragraph breaks.
+- "glossary": [{ "word": "...", "meaning": "..." }] for dialect words.
+- "parentPrompt": A follow-up question for the parent to ask.
 `;
 
+function getFallbackStory(inputs: StoryInputs) {
+    return {
+        title: `${inputs.guide}'s Adventure in ${inputs.primaryIsland}`,
+        content: `One sunny morning, ${inputs.childName} arrived at the ${inputs.location} in beautiful ${inputs.primaryIsland}. Waiting there was ${inputs.guide}, waving happily! "Oye! Ready for a ${inputs.mission}?" asked ${inputs.guide}.\n\nThey walked past trees full of Hibiscus Red flowers. ${inputs.childName} spotted something hiding—it was a tiny green lizard! "Let's count," said ${inputs.guide}. "One lizard... Two butterflies!"\n\n[READING ASSISTANT TRIGGER] Can you count to three?\n\nSuddenly, a gentle rain shower passed, leaving a rainbow in the sky. "Look at that Plantain Yellow!" shouted ${inputs.childName}. They completed their mission and sat down to share a sweet treat.`,
+        glossary: [{ word: "Oye", meaning: "Hey there!" }],
+        parentPrompt: "What color would you paint your own island?"
+    };
+}
+
 export async function generateCulturalStory(inputs: StoryInputs) {
-    if (!apiKey) return null;
-
-    try {
-        const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
-            safetySettings,
-        });
-
-        const userPrompt = `
-      Create a story for ${inputs.childName}:
-      - Primary Island: ${inputs.primaryIsland}
-      - Secondary Island: ${inputs.secondaryIsland || 'None'}
-      - Current Problem/Challenge: ${inputs.problem}
-      - Selected Character: ${inputs.selectedCharacter}
-
-      Follow the "Likkle Legend AI Storyteller" system role and safety guardrails precisely.
-    `;
-
-        const result = await model.generateContent([STORYTELLER_SYSTEM_PROMPT, userPrompt]);
-        const response = await result.response;
-        const text = response.text();
-
-        // Try to parse JSON from the response
+    if (apiKey) {
         try {
-            const jsonStart = text.indexOf('{');
-            const jsonEnd = text.lastIndexOf('}') + 1;
-            const jsonStr = text.substring(jsonStart, jsonEnd);
-            return JSON.parse(jsonStr);
-        } catch (e) {
-            console.error("Failed to parse AI story response as JSON", e);
-            return {
-                title: `${inputs.childName}'s Adventure`,
-                content: text,
-                glossary: [],
-                parentPrompt: "What was your favorite part of the story?"
-            };
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings });
+
+            const userPrompt = `
+                Generate a story for a child named ${inputs.childName} (Age 6).
+                - Guide: ${inputs.guide}
+                - Location: ${inputs.location}
+                - Mission: ${inputs.mission}
+                - Island: ${inputs.primaryIsland}
+                
+                Make it educational using the "Island Flavor Rules".
+            `;
+
+            const result = await model.generateContent({
+                contents: [{ role: "user", parts: [{ text: STORYTELLER_SYSTEM_PROMPT + "\n\n" + userPrompt }] }]
+            });
+            const text = result.response.text();
+
+            try {
+                const jsonStart = text.indexOf('{');
+                const jsonEnd = text.lastIndexOf('}') + 1;
+                return JSON.parse(text.substring(jsonStart, jsonEnd));
+            } catch (e) {
+                console.warn("JSON Parse Error, using text fallback");
+                return {
+                    title: `${inputs.guide}'s Tale`,
+                    content: text, // Raw text fallback
+                    glossary: [],
+                    parentPrompt: "Ask your child what they learned!"
+                };
+            }
+        } catch (error) {
+            console.error("AI Error:", error);
+            // Fallthrough
         }
-    } catch (error) {
-        console.error("Error generating story:", error);
-        return null;
     }
+    return getFallbackStory(inputs);
 }

@@ -7,6 +7,7 @@ import {
     BookOpen, Music, Trophy, Target, ChevronRight, Play, Star,
     TrendingUp, Gift, Share2, Flame, Award, Crown
 } from 'lucide-react';
+import PrintStudio from '@/components/PrintStudio';
 import { useUser } from '@/components/UserContext';
 import { getRecentActivities, getMissions } from '@/lib/database';
 import { getNotifications } from '@/lib/messaging';
@@ -413,12 +414,21 @@ export default function ParentDashboardPage() {
                                             <Music className="text-purple-600" size={20} />
                                             <span className="font-medium">Play Songs</span>
                                         </Link>
-                                        <button
-                                            className="w-full flex items-center gap-3 p-3 bg-amber-50 rounded-xl hover:bg-amber-100 transition-colors"
-                                        >
-                                            <Share2 className="text-amber-600" size={20} />
-                                            <span className="font-medium">Share Progress</span>
-                                        </button>
+                                        <PrintStudio
+                                            mode="certificate"
+                                            data={{
+                                                childName: activeChild.first_name,
+                                                milestone: "Island Graduate"
+                                            }}
+                                            className="w-full justify-start text-left bg-amber-50 text-amber-900 border border-amber-100 hover:bg-amber-100"
+                                            label="Print Certificate"
+                                        />
+                                        <PrintStudio
+                                            mode="sticker_sheet"
+                                            data={{ childName: activeChild.first_name }}
+                                            className="w-full justify-start text-left bg-indigo-50 text-indigo-900 border border-indigo-100 hover:bg-indigo-100"
+                                            label="Get Stickers"
+                                        />
                                     </div>
                                 </div>
 

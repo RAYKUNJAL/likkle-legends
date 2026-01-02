@@ -6,6 +6,7 @@ import {
     Sparkles, BookOpen, Music, Palette, Target, Star, Play,
     Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift
 } from 'lucide-react';
+import TantySpiceWidget from '@/components/AIWidgets';
 import { useUser } from '@/components/UserContext';
 import { getSongs, getStorybooks, getMissions, getPrintables } from '@/lib/database';
 import { calculateLevel, BADGES, LEVELS } from '@/lib/gamification';
@@ -122,8 +123,8 @@ export default function ChildPortalPage() {
                             key={item.id}
                             onClick={() => setActiveSection(item.id as typeof activeSection)}
                             className={`w-full aspect-square rounded-3xl flex flex-col items-center justify-center gap-2 transition-all ${activeSection === item.id
-                                    ? `bg-gradient-to-br ${item.color} text-white shadow-lg scale-105`
-                                    : 'bg-white hover:bg-gray-50 text-gray-600'
+                                ? `bg-gradient-to-br ${item.color} text-white shadow-lg scale-105`
+                                : 'bg-white hover:bg-gray-50 text-gray-600'
                                 }`}
                         >
                             <item.icon size={28} />
@@ -425,6 +426,8 @@ export default function ChildPortalPage() {
                     )}
                 </main>
             </div>
+            {/* AI Chat Buddy */}
+            <TantySpiceWidget />
         </div>
     );
 }
