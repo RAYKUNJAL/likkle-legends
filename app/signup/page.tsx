@@ -29,7 +29,15 @@ export default function SignupPage() {
                     </div>
                 </Link>
                 <div className="text-center">
-                    <img src="/images/logo.png" alt="Likkle Legends" className="mx-auto h-16 w-auto mb-8" />
+                    <div className="relative h-16 w-48 mx-auto mb-8">
+                        <Image
+                            src="/images/logo.png"
+                            alt="Likkle Legends"
+                            fill
+                            className="object-contain"
+                            priority
+                        />
+                    </div>
                     <h2 className="text-4xl font-black text-deep tracking-tight">Create your account</h2>
                     <p className="mt-4 text-lg text-deep/40 font-bold">
                         Start your child's Caribbean adventure today.
@@ -80,6 +88,20 @@ export default function SignupPage() {
                                     className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
                                 />
                             </div>
+                        </div>
+
+                        <div className="flex items-start gap-3 px-1">
+                            <input
+                                type="checkbox"
+                                id="coppa-consent"
+                                className="mt-1 w-5 h-5 rounded border-zinc-200 text-primary focus:ring-primary/20"
+                                required
+                            />
+                            <label htmlFor="coppa-consent" className="text-sm text-deep/50 leading-tight">
+                                I confirm I am a parent or legal guardian and agree to the{' '}
+                                <Link href="/terms" className="text-primary hover:underline">Terms</Link> and{' '}
+                                <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+                            </label>
                         </div>
 
                         <button

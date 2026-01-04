@@ -32,7 +32,7 @@ function CheckoutContent() {
                 <CheckoutFlow
                     selectedTier={plan || undefined}
                     onSuccess={(subscriptionId) => {
-                        console.log('Subscription created:', subscriptionId);
+                        // Success handling
                     }}
                     onError={(error) => {
                         console.error('Checkout error:', error);

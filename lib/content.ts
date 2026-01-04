@@ -60,7 +60,7 @@ export const siteContent = {
         },
         hero_media: {
             type: "image",
-            src: "/images/hero-child-reading-letter.jpg",
+            src: "/images/hero.png",
             alt: "Child reading a Likkle Legends letter"
         },
         new_mission_chip: {
@@ -160,21 +160,21 @@ export const siteContent = {
                 role: "Food & Traditions Expert",
                 tagline: "“Ready for a Caribbean journey?”",
                 description: "Dilly knows every street food spot in Trinidad and loves sharing the magic of doubles, bakes, and buss-up-shot with curious kids.",
-                image: "/images/dilly-doubles.png"
+                image: "/images/dilly_doubles.png"
             },
             {
                 name: "Mango Moko",
                 role: "Perspective & Pride Guide",
                 tagline: "“Stand tall, little legend.”",
                 description: "Perched high on her moko jumbie stilts, Mango teaches kids to see themselves with pride and view challenges from a higher perspective.",
-                image: "/images/mango-moko.png"
+                image: "/images/mango_moko.png"
             },
             {
                 name: "Steelpan Sam",
                 role: "Music & Rhythm Master",
                 tagline: "“Everything in the world has a beat.”",
                 description: "From steelpan to soca, Sam helps your child find the rhythm in everyday life and express big emotions through music.",
-                image: "/images/steelpan-sam.png"
+                image: "/images/steelpan_sam.png"
             }
         ]
     },
@@ -242,7 +242,7 @@ export const siteContent = {
             "Guided by social-emotional learning principles used in classrooms around the world.",
             "Stories and songs inspired by real Caribbean foods, festivals, and everyday family life."
         ],
-        image: "/images/founders-photo.jpg"
+        image: "/images/child_reading.png"
     },
     pricing: {
         id: "pricing",

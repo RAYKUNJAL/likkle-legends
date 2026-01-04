@@ -1,5 +1,6 @@
 "use client";
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { siteContent } from '@/lib/content';
 
@@ -10,7 +11,14 @@ export default function Footer() {
         <footer className="bg-deep text-white py-24 border-t border-white/5">
             <div className="container grid md:grid-cols-4 gap-16">
                 <div className="col-span-1 md:col-span-2 space-y-10">
-                    <img src="/images/logo.png" alt="Likkle Legends" className="w-56 brightness-0 invert" />
+                    <div className="relative w-56 h-20">
+                        <Image
+                            src="/images/logo.png"
+                            alt="Likkle Legends"
+                            fill
+                            className="object-contain brightness-0 invert"
+                        />
+                    </div>
                     <p className="text-white/50 text-xl leading-relaxed max-w-md">
                         {footer.brand_line}
                     </p>

@@ -198,3 +198,37 @@ export async function createPrintable(printableData: Record<string, unknown>) {
     if (error) throw error;
     return data;
 }
+
+export async function getGames() {
+    const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function createGame(gameData: Record<string, unknown>) {
+    const { data, error } = await supabase
+        .from('games')
+        .insert(gameData)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
+export async function updateGame(id: string, updates: Record<string, unknown>) {
+    const { data, error } = await supabase
+        .from('games')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}

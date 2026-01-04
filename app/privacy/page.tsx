@@ -1,8 +1,12 @@
-"use client";
-
+import { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { siteContent } from '@/lib/content';
+
+export const metadata: Metadata = {
+    title: 'Privacy Policy',
+    description: "Your family's privacy is our top priority. Read how Likkle Legends protects your data and ensures a safe experience for your children.",
+};
 
 export default function PrivacyPage() {
     return (

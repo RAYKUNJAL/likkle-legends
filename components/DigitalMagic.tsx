@@ -1,5 +1,4 @@
-"use client";
-
+import Image from 'next/image';
 import { Music, BookOpen, Download } from 'lucide-react';
 
 export default function DigitalMagic() {
@@ -42,7 +41,7 @@ export default function DigitalMagic() {
                         <h3 className="text-2xl font-bold mb-4">Digital Storybooks</h3>
                         <p className="text-deep/60 mb-6">Interactive stories featuring Dilly, Mango, and Sam. Each story includes 'Legends Mode' where your child is the hero.</p>
                         <div className="aspect-[4/3] bg-primary/5 rounded-2xl border border-primary/10 relative overflow-hidden flex items-center justify-center">
-                            <img src="/images/hero.png" alt="Story preview" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+                            <Image src="/images/hero.png" alt="Story preview" fill className="object-cover opacity-20" />
                             <span className="relative z-10 font-bold text-primary text-sm flex items-center gap-2">
                                 <BookOpen size={16} /> Open "Sam's Steelpan Secret"
                             </span>
@@ -57,11 +56,11 @@ export default function DigitalMagic() {
                         <h3 className="text-2xl font-bold mb-4">Printable Adventures</h3>
                         <p className="text-deep/60 mb-6">Fresh coloring pages and cultural activity sheets delivered to your inbox every week. Just print and play!</p>
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="aspect-square bg-white rounded-xl border border-border flex items-center justify-center p-4">
-                                <img src="/images/dilly_doubles.png" alt="Coloring" className="w-full opacity-30 grayscale" />
+                            <div className="aspect-square bg-white rounded-xl border border-border flex items-center justify-center p-4 relative overflow-hidden">
+                                <Image src="/images/dilly_doubles.png" alt="Coloring" fill className="object-contain opacity-30 grayscale p-4" />
                             </div>
-                            <div className="aspect-square bg-white rounded-xl border border-border flex items-center justify-center p-4">
-                                <img src="/images/mango_moko.png" alt="Coloring" className="w-full opacity-30 grayscale" />
+                            <div className="aspect-square bg-white rounded-xl border border-border flex items-center justify-center p-4 relative overflow-hidden">
+                                <Image src="/images/mango_moko.png" alt="Coloring" fill className="object-contain opacity-30 grayscale p-4" />
                             </div>
                         </div>
                     </div>

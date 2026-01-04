@@ -93,7 +93,6 @@ export async function getReadingFeedback(age: string, text: string) {
 }
 
 export function playTextToSpeech(text: string, voice: string = 'Kore') {
-  console.log(`TTS Placeholder: Playing "${text}" with voice "${voice}"`);
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.pitch = voice === 'Puck' ? 1.2 : 0.9;
@@ -103,7 +102,6 @@ export function playTextToSpeech(text: string, voice: string = 'Kore') {
 }
 
 export async function generateImageEdit(prompt: string, imageUri: string) {
-  console.log(`Image Edit Placeholder: Modifying ${imageUri} based on "${prompt}"`);
   return imageUri;
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard,
@@ -47,7 +48,14 @@ export default function Sidebar({ view = 'parent' }: SidebarProps) {
     return (
         <aside className="w-64 bg-deep text-white h-screen fixed left-0 top-0 flex flex-col p-8 z-50">
             <div className="mb-12 flex items-center gap-3">
-                <img src="/images/logo.png" alt="Logo" className="w-28 brightness-0 invert" />
+                <div className="relative w-28 h-10">
+                    <Image
+                        src="/images/logo.png"
+                        alt="Logo"
+                        fill
+                        className="object-contain brightness-0 invert"
+                    />
+                </div>
                 {isAdmin && (
                     <span className="text-[9px] bg-primary text-white px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">
                         Admin

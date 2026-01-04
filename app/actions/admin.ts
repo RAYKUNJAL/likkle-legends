@@ -102,3 +102,25 @@ export async function getRecentCustomersAdmin(token: string) {
 
     return profiles || [];
 }
+
+export async function getContentCounts(token: string) {
+    const admin = await verifyAdmin(token);
+
+    const [songs, stories, characters, videos, printables, games] = await Promise.all([
+        admin.from('songs').select('*', { count: 'exact', head: true }),
+        admin.from('storybooks').select('*', { count: 'exact', head: true }),
+        admin.from('characters').select('*', { count: 'exact', head: true }),
+        admin.from('videos').select('*', { count: 'exact', head: true }),
+        admin.from('printables').select('*', { count: 'exact', head: true }),
+        admin.from('games').select('*', { count: 'exact', head: true }),
+    ]);
+
+    return {
+        songs: songs.count || 0,
+        stories: stories.count || 0,
+        characters: characters.count || 0,
+        videos: videos.count || 0,
+        printables: printables.count || 0,
+        games: games.count || 0,
+    };
+}

@@ -1,5 +1,6 @@
 import GetStartedWizard from '@/components/GetStartedWizard';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function GetStartedPage() {
     return (
@@ -7,7 +8,9 @@ export default function GetStartedPage() {
             {/* Minimal Header */}
             <header className="py-8 px-8 flex justify-between items-center">
                 <Link href="/" className="flex items-center gap-2 group">
-                    <img src="/images/logo.png" alt="Likkle Legends" className="h-12 w-auto group-hover:scale-105 transition-transform" />
+                    <div className="relative h-12 w-48">
+                        <Image src="/images/logo.png" alt="Likkle Legends" fill className="object-contain group-hover:scale-105 transition-transform" />
+                    </div>
                 </Link>
                 <div className="text-sm font-bold text-deep/40 hidden md:block uppercase tracking-widest">
                     Build Your Box

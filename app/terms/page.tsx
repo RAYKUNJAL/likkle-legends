@@ -1,8 +1,12 @@
-"use client";
-
+import { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { siteContent } from '@/lib/content';
+
+export const metadata: Metadata = {
+    title: 'Terms of Use',
+    description: 'Read the terms and conditions for using the Likkle Legends Mail Club service, including subscription, shipping, and digital content policies.',
+};
 
 export default function TermsPage() {
     return (

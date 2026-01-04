@@ -1,121 +1,159 @@
 "use client";
 
-import Sidebar from '@/components/Sidebar';
-import { Settings, Shield, Bell, Database, Globe, Lock, Cpu, Save } from 'lucide-react';
+import { useState } from 'react';
+import {
+    AdminLayout, StatCard,
+} from '@/components/admin/AdminComponents';
+import {
+    Settings, Shield, Bell, Database, Globe, Lock, Cpu, Save,
+    Mail, CreditCard
+} from 'lucide-react';
 
 export default function AdminSettingsPage() {
+    const [isSaving, setIsSaving] = useState(false);
+
+    const handleSave = () => {
+        setIsSaving(true);
+        setTimeout(() => setIsSaving(false), 2000);
+    };
+
     return (
-        <div className="bg-[#FFFDF7] min-h-screen">
-            <Sidebar view="admin" />
-            <main className="ml-64 p-12">
-                <header className="flex justify-between items-center mb-16">
+        <AdminLayout activeSection="settings">
+            <header className="bg-white border-b border-gray-100 px-8 py-6">
+                <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-5xl font-black text-deep mb-2">System Settings ⚙️</h1>
-                        <p className="text-lg text-deep/40 font-bold">Configure platform parameters and security protocols.</p>
+                        <h1 className="text-3xl font-black text-gray-900">System Settings</h1>
+                        <p className="text-gray-500">Configure platform parameters and business logic</p>
                     </div>
-                    <button className="bg-primary text-white px-10 py-5 rounded-2xl font-black flex items-center gap-3 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
-                        <Save size={24} /> Save Global Changes
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="bg-primary text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                    >
+                        {isSaving ? 'Saving...' : <><Save size={20} /> Save Changes</>}
                     </button>
-                </header>
+                </div>
+            </header>
 
-                <div className="max-w-4xl space-y-10">
-                    {/* General Settings */}
-                    <div className="bg-white p-12 rounded-[4rem] border border-zinc-100 shadow-xl">
-                        <div className="flex items-center gap-4 mb-10">
-                            <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
-                                <Globe size={24} />
+            <div className="p-8 max-w-5xl">
+                <div className="grid md:grid-cols-2 gap-8">
+                    {/* General Configuration */}
+                    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+                        <h3 className="text-xl font-black text-gray-900 flex items-center gap-3">
+                            <Globe className="text-blue-500" /> Platform Config
+                        </h3>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Platform Mode</label>
+                                <select title="Platform Mode" className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold text-gray-900 outline-none focus:ring-2 focus:ring-primary/20">
+                                    <option>Production (Live)</option>
+                                    <option>Maintenance Mode</option>
+                                    <option>Staging/Test</option>
+                                </select>
                             </div>
-                            <h3 className="text-2xl font-black text-deep">Environment Configuration</h3>
-                        </div>
-                        <div className="space-y-8">
-                            <div className="grid grid-cols-2 gap-8">
-                                <div>
-                                    <label id="platform-mode-label" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3">Platform Mode</label>
-                                    <select aria-labelledby="platform-mode-label" className="w-full p-5 bg-zinc-50 border-none rounded-2xl font-bold text-deep focus:ring-4 focus:ring-primary/10 transition-all">
-                                        <option>Production (Live)</option>
-                                        <option>Maintenance Mode</option>
-                                        <option>Beta Access Only</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label id="currency-label" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3">Default Currency</label>
-                                    <select aria-labelledby="currency-label" className="w-full p-5 bg-zinc-50 border-none rounded-2xl font-bold text-deep focus:ring-4 focus:ring-primary/10 transition-all">
-                                        <option>USD ($)</option>
-                                        <option>GBP (£)</option>
-                                        <option>CAD ($)</option>
-                                        <option>JMD ($)</option>
-                                        <option>TTD ($)</option>
-                                    </select>
-                                </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Default Currency</label>
+                                <select title="Default Currency" className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold text-gray-900 outline-none focus:ring-2 focus:ring-primary/20">
+                                    <option>USD ($)</option>
+                                    <option>GBP (£)</option>
+                                    <option>CAD ($)</option>
+                                    <option>JMD ($)</option>
+                                </select>
                             </div>
-                            <div className="flex items-center justify-between p-6 bg-zinc-50 rounded-3xl border border-zinc-100">
+
+                            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
                                 <div>
-                                    <p className="font-black text-deep">Auto-Publish Content</p>
-                                    <p className="text-xs font-bold text-deep/30">Automatically release new monthly letters on the 10th.</p>
+                                    <p className="font-bold text-gray-900">Auto-Publish Content</p>
+                                    <p className="text-xs text-gray-400">Release monthly themes on the 1st</p>
                                 </div>
-                                <div className="w-16 h-8 bg-primary rounded-full relative cursor-pointer shadow-inner">
-                                    <div className="absolute right-1 top-1 w-6 h-6 bg-white rounded-full shadow-md"></div>
+                                <div className="w-12 h-6 bg-primary rounded-full relative cursor-pointer shadow-inner">
+                                    <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-md"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* AI & Intelligence */}
-                    <div className="bg-white p-12 rounded-[4rem] border border-zinc-100 shadow-xl">
-                        <div className="flex items-center gap-4 mb-10">
-                            <div className="w-12 h-12 bg-accent/10 text-accent rounded-2xl flex items-center justify-center">
-                                <Cpu size={24} />
-                            </div>
-                            <h3 className="text-2xl font-black text-deep">AI Brain (Gemini Logic)</h3>
-                        </div>
-                        <div className="space-y-6 text-sm">
-                            <div className="p-6 bg-zinc-50 rounded-3xl border border-zinc-100 space-y-6">
-                                <div className="flex justify-between items-center">
-                                    <span className="font-bold text-deep/60 flex items-center gap-2"><Settings size={14} /> Creativity Temperature</span>
-                                    <span className="font-black text-accent">0.85 (High)</span>
-                                </div>
-                                <div className="w-full h-2 bg-zinc-200 rounded-full overflow-hidden">
-                                    <div className="w-[85%] h-full bg-accent rounded-full"></div>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <button className="p-5 border-2 border-zinc-100 rounded-2xl font-black text-xs uppercase tracking-widest text-deep/40 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
-                                    <Database size={16} /> Sync Culture Map
-                                </button>
-                                <button className="p-5 border-2 border-zinc-100 rounded-2xl font-black text-xs uppercase tracking-widest text-deep/40 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2">
-                                    <Bell size={16} /> Test Notifications
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    {/* AI Engine Settings */}
+                    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+                        <h3 className="text-xl font-black text-gray-900 flex items-center gap-3">
+                            <Cpu className="text-accent" /> AI Logic (Gemini)
+                        </h3>
 
-                    {/* Security */}
-                    <div className="bg-white p-12 rounded-[4rem] border border-zinc-100 shadow-xl border-b-8 border-b-red-500/10">
-                        <div className="flex items-center gap-4 mb-10">
-                            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center">
-                                <Shield size={24} />
-                            </div>
-                            <h3 className="text-2xl font-black text-deep">Security & Access</h3>
-                        </div>
                         <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center text-zinc-400"><Lock size={18} /></div>
-                                    <span className="font-bold text-deep">Two-Factor Authentication</span>
+                            <div>
+                                <div className="flex justify-between mb-2">
+                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Creativity (Temp)</label>
+                                    <span className="text-xs font-bold text-accent">0.85</span>
                                 </div>
-                                <button className="text-xs font-black text-primary uppercase tracking-widest">Enable</button>
+                                <input title="Creativity Temperature" type="range" className="w-full accent-accent" min="0" max="1" step="0.05" defaultValue="0.85" />
+                            </div>
+
+                            <div className="p-4 bg-accent/5 rounded-2xl border border-accent/10">
+                                <h4 className="text-sm font-bold text-accent mb-2">Tanty Spice Knowledge Base</h4>
+                                <div className="flex gap-2">
+                                    <button className="flex-1 py-2 bg-white rounded-lg text-xs font-black text-accent shadow-sm">Update Maps</button>
+                                    <button className="flex-1 py-2 border border-accent/20 rounded-lg text-xs font-black text-accent">Optimize</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Security & Access */}
+                    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+                        <h3 className="text-xl font-black text-gray-900 flex items-center gap-3">
+                            <Shield className="text-red-500" /> Security
+                        </h3>
+
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500"><Lock size={18} /></div>
+                                    <span className="font-bold text-gray-700">2FA Protection</span>
+                                </div>
+                                <span className="text-xs font-black text-primary uppercase">Enable</span>
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500"><Database size={18} /></div>
+                                    <span className="font-bold text-gray-700">Daily Backups</span>
+                                </div>
+                                <span className="text-[10px] font-black text-green-500 bg-green-50 px-2 py-1 rounded">ACTIVE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Email & Communication */}
+                    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+                        <h3 className="text-xl font-black text-gray-900 flex items-center gap-3">
+                            <Mail className="text-amber-500" /> Notifications
+                        </h3>
+
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm font-bold text-gray-700">Welcome Emails</span>
+                                <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                                    <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                                </div>
                             </div>
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center text-zinc-400"><Database size={18} /></div>
-                                    <span className="font-bold text-deep">Database Auto-Backups</span>
+                                <span className="text-sm font-bold text-gray-700">Subscription Alerts</span>
+                                <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                                    <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
                                 </div>
-                                <span className="text-[10px] font-black text-green-500 bg-green-50 px-2 py-1 rounded">EVERY 6H</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm font-bold text-gray-700">Monthly Fulfillment Reminders</span>
+                                <div className="w-12 h-6 bg-gray-200 rounded-full relative">
+                                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </AdminLayout>
     );
 }

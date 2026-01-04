@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 const Gallery: React.FC = () => {
   // Using different aspect ratios via picsum dimensions to simulate masonry feel
@@ -28,11 +29,15 @@ const Gallery: React.FC = () => {
         <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
           {images.map((img, idx) => (
             <div key={idx} className="break-inside-avoid relative group overflow-hidden rounded-2xl shadow-lg bg-white">
-              <img 
-                src={img.url} 
-                alt={img.caption} 
-                className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700"
-              />
+              <div className="relative w-full">
+                <Image
+                  src={img.url}
+                  alt={img.caption}
+                  width={400}
+                  height={500}
+                  className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
                 <span className="text-white font-heading font-bold text-lg">{img.caption}</span>
               </div>
