@@ -1,8 +1,13 @@
-"use client";
-
+import Link from 'next/link';
+import { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Truck, RotateCcw, Globe, Package } from 'lucide-react';
+import { Truck, RotateCcw } from 'lucide-react';
+
+export const metadata: Metadata = {
+    title: 'Shipping & Returns',
+    description: 'Learn about our global shipping times, free shipping offers, and our hassle-free 30-day return policy.',
+};
 
 export default function ShippingPage() {
     return (
@@ -95,12 +100,12 @@ export default function ShippingPage() {
                             </div>
 
                             <div className="pt-8 relative z-10">
-                                <button
-                                    onClick={() => window.location.href = '/contact'}
-                                    className="btn btn-primary btn-lg px-12 py-6 text-xl shadow-xl shadow-primary/20"
+                                <Link
+                                    href="/contact"
+                                    className="btn btn-primary btn-lg inline-block px-12 py-6 text-xl shadow-xl shadow-primary/20"
                                 >
                                     Start a Return
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>

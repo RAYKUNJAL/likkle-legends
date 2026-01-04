@@ -1,9 +1,14 @@
-"use client";
-
+import { Metadata } from 'next';
+import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { siteContent } from '@/lib/content';
+
+export const metadata: Metadata = {
+    title: 'Our Story',
+    description: 'Learn how Likkle Legends was born from a desire to celebrate Caribbean heritage and empower the next generation of Global Legends.',
+};
 
 export default function AboutPage() {
     return (
@@ -15,8 +20,8 @@ export default function AboutPage() {
                     <span className="text-primary font-bold uppercase tracking-widest text-sm mb-4 block text-center">Our Story</span>
                     <h1 className="text-5xl lg:text-7xl font-black text-deep text-center mb-12">Building a Bridge to the Islands</h1>
 
-                    <div className="aspect-video rounded-[3rem] overflow-hidden mb-16 shadow-2xl border-8 border-white">
-                        <img src="/images/hero.png" alt="Children playing" className="w-full h-full object-cover grayscale opacity-80" />
+                    <div className="aspect-video rounded-[3rem] overflow-hidden mb-16 shadow-2xl border-8 border-white relative">
+                        <Image src="/images/hero.png" alt="Children playing" fill className="object-cover grayscale opacity-80" />
                     </div>
 
                     <div className="prose prose-xl max-w-none text-deep/70 space-y-8 leading-relaxed">

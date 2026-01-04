@@ -1,7 +1,11 @@
-"use client";
-
+import { Metadata } from 'next';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+
+export const metadata: Metadata = {
+    title: "Kids' Safety Policy",
+    description: "Learn about the safety measures we take to protect your children, including COPPA compliance, ad-free environment, and parental controls.",
+};
 
 export default function SafetyPage() {
     return (

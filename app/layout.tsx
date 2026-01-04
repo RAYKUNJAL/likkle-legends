@@ -39,6 +39,7 @@ export const metadata: Metadata = {
 import AnalyticsLoader from '@/components/AnalyticsLoader';
 import CookieBanner from '@/components/CookieBanner';
 import { UserProvider } from '@/components/UserContext';
+import StructuredData from '@/components/StructuredData';
 
 export default function RootLayout({
   children,
@@ -47,6 +48,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <StructuredData />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning

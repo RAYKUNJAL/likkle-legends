@@ -34,3 +34,21 @@ export const CARIBBEAN_ISLANDS = [
     "Turks and Caicos Islands",
     "US Virgin Islands"
 ].sort();
+
+export const islandData = {
+    "JAM-001": {
+        name: "Jamaica",
+        cultural_training_data: {
+            sensory_calibration: {
+                sounds: ["Steelpan", "Reggae", "Wave crash"],
+            },
+            dialect_patois: [
+                { word: "Wah Gwan", meaning: "What's going on / Hello" },
+                { word: "Likkle", meaning: "Little", phrase: "Likkle but tallawah" }
+            ]
+        },
+        parent_analytics_logic: {
+            milestone_alert: "Kai just learned 5 new Patois words! High five! 🖐️"
+        }
+    }
+};

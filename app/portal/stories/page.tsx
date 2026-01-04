@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
     ArrowLeft, Book, Clock, Star, Lock, Play, Filter,
@@ -191,10 +192,11 @@ export default function StoriesPage() {
                             >
                                 {/* Cover Image */}
                                 <div className="relative aspect-[4/3] overflow-hidden">
-                                    <img
+                                    <Image
                                         src={story.cover_image}
                                         alt={story.title}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        fill
+                                        className="object-cover group-hover:scale-105 transition-transform duration-500"
                                     />
 
                                     {/* Isle Badge */}

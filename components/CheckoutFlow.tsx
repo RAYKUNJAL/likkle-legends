@@ -22,7 +22,7 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentBillingCycle, setPaymentBillingCycle] = useState<'month' | 'year'>('month');
 
-    const { user, loading: authLoading } = useUser();
+    const { user, isLoading: authLoading } = useUser();
     const [configError, setConfigError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -70,7 +70,7 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handlePayPalApprove = async (data: any) => {
         setIsProcessing(true);
-        console.log("✅ PayPal Approved:", data);
+        // Payment approved
 
         try {
             if (!user) {

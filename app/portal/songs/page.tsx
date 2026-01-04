@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
     ArrowLeft, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
@@ -247,11 +248,14 @@ export default function SongsPage() {
                         <div className="flex items-center gap-6">
                             {/* Song Info */}
                             <div className="flex items-center gap-4 flex-1 min-w-0">
-                                <img
-                                    src={currentSong.cover_image_url}
-                                    alt={currentSong.title}
-                                    className="w-14 h-14 rounded-lg object-cover"
-                                />
+                                <div className="relative w-14 h-14 shrink-0">
+                                    <Image
+                                        src={currentSong.cover_image_url}
+                                        alt={currentSong.title}
+                                        fill
+                                        className="rounded-lg object-cover"
+                                    />
+                                </div>
                                 <div className="min-w-0">
                                     <p className="font-bold truncate">{currentSong.title}</p>
                                     <p className="text-sm text-white/60 truncate">{currentSong.artist}</p>
@@ -356,11 +360,14 @@ function SongCard({
         <div className={`bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all group ${isPlaying ? 'ring-2 ring-purple-500' : ''
             }`}>
             <div className="relative mb-3">
-                <img
-                    src={song.cover_image_url}
-                    alt={song.title}
-                    className="w-full aspect-square rounded-xl object-cover"
-                />
+                <div className="relative w-full aspect-square">
+                    <Image
+                        src={song.cover_image_url}
+                        alt={song.title}
+                        fill
+                        className="rounded-xl object-cover"
+                    />
+                </div>
 
                 {!canPlay && (
                     <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">

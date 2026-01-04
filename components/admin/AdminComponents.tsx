@@ -7,7 +7,8 @@ import {
     Search, Activity, Upload, Music, Video, BookOpen,
     Settings, Bell, BarChart3, FileText, MessageSquare,
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
-    Plus, Eye, Edit, Trash2, Download, RefreshCw
+    Plus, Eye, Edit, Trash2, Download, RefreshCw,
+    Gamepad2, LayoutGrid, Wand2, Sparkles
 } from 'lucide-react';
 
 // ==========================================
@@ -508,5 +509,6 @@ export {
     Search, Activity, Upload, Music, Video, BookOpen,
     Settings, Bell, BarChart3, FileText, MessageSquare,
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
-    Plus, Eye, Edit, Trash2, Download, RefreshCw
+    Plus, Eye, Edit, Trash2, Download, RefreshCw,
+    Gamepad2, LayoutGrid, Wand2, Sparkles
 };

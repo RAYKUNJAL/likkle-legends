@@ -25,6 +25,7 @@ const config: Config = {
                 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                 'float': 'float 6s ease-in-out infinite',
                 'marquee': 'marquee 40s linear infinite',
+                'wiggle': 'wiggle 1s ease-in-out infinite',
             },
             keyframes: {
                 float: {
@@ -34,6 +35,10 @@ const config: Config = {
                 marquee: {
                     '0%': { transform: 'translateX(0)' },
                     '100%': { transform: 'translateX(-50%)' },
+                },
+                wiggle: {
+                    '0%, 100%': { transform: 'rotate(-3deg)' },
+                    '50%': { transform: 'rotate(3deg)' },
                 },
             },
         },

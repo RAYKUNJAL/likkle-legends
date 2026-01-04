@@ -1,98 +1,228 @@
 "use client";
 
-import Sidebar from '@/components/Sidebar';
-import { Plus, Layout, Type, Music, BookOpen, Download, Settings, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import {
+    AdminLayout,
+    Music, Video, BookOpen, Download, LayoutGrid, Gamepad2,
+    Plus, Settings, ChevronRight, Activity, Globe
+} from '@/components/admin/AdminComponents';
 
 export default function AdminContentPage() {
+    const [counts, setCounts] = useState({
+        songs: 0,
+        stories: 0,
+        characters: 0,
+        videos: 0,
+        printables: 0,
+        games: 0
+    });
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        loadCounts();
+    }, []);
+
+    const loadCounts = async () => {
+        setIsLoading(true);
+        try {
+            const { data: { session } } = await import('@/lib/storage').then(m => m.supabase.auth.getSession());
+            if (!session) return;
+
+            const { getContentCounts } = await import('@/app/actions/admin');
+            const data = await getContentCounts(session.access_token);
+            setCounts(data);
+        } catch (error) {
+            console.error('Failed to load counts:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const modules = [
-        { name: "Island Nursery Songs", count: 24, type: "Audio", icon: Music, color: "text-accent bg-accent/5", lastUpdate: "2h ago" },
-        { name: "Interactive Stories", count: 18, type: "Interactive", icon: BookOpen, color: "text-primary bg-primary/5", lastUpdate: "1d ago" },
-        { name: "Activity Sheets", count: 56, type: "Document", icon: Download, color: "text-secondary bg-secondary/5", lastUpdate: "3h ago" },
-        { name: "Character Bios", count: 12, type: "Text", icon: Layout, color: "text-blue-600 bg-blue-50", lastUpdate: "1w ago" },
-        { name: "Parent Guides", count: 8, type: "Text", icon: Type, color: "text-amber-600 bg-amber-50", lastUpdate: "3d ago" },
+        {
+            id: 'songs',
+            name: "Island Nursery Songs",
+            count: counts.songs,
+            type: "Audio",
+            icon: Music,
+            color: "text-accent bg-accent/5",
+            href: "/admin/media?tab=songs"
+        },
+        {
+            id: 'stories',
+            name: "Interactive Stories",
+            count: counts.stories,
+            type: "Interactive",
+            icon: BookOpen,
+            color: "text-primary bg-primary/5",
+            href: "/admin/content/stories"
+        },
+        {
+            id: 'videos',
+            name: "Video Lessons",
+            count: counts.videos,
+            type: "Video",
+            icon: Video,
+            color: "text-blue-600 bg-blue-50",
+            href: "/admin/media?tab=videos"
+        },
+        {
+            id: 'games',
+            name: "Fun Games",
+            count: counts.games,
+            type: "Game",
+            icon: Gamepad2,
+            color: "text-purple-600 bg-purple-50",
+            href: "/admin/games"
+        },
+        {
+            id: 'characters',
+            name: "Character Bios",
+            count: counts.characters,
+            type: "Profile",
+            icon: LayoutGrid,
+            color: "text-emerald-600 bg-emerald-50",
+            href: "/admin/characters"
+        },
+        {
+            id: 'printables',
+            name: "Activity Sheets",
+            count: counts.printables,
+            type: "Document",
+            icon: Download,
+            color: "text-secondary bg-secondary/5",
+            href: "/admin/content/printables"
+        }
     ];
 
     return (
-        <div className="bg-[#FFFDF7] min-h-screen">
-            <Sidebar view="admin" />
-            <main className="ml-64 p-12">
-                <header className="flex justify-between items-center mb-16">
+        <AdminLayout activeSection="content">
+            <header className="bg-white border-b border-gray-100 px-8 py-6">
+                <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-5xl font-black text-deep mb-2">Content Manager 🛠️</h1>
-                        <p className="text-lg text-deep/40 font-bold">Control the stories, beats, and lessons in the Likkle Universe.</p>
+                        <h1 className="text-3xl font-black text-gray-900">Content Library</h1>
+                        <p className="text-gray-500">Manage all island assets, stories, and educational modules</p>
                     </div>
                     <div className="flex gap-4">
-                        <button className="px-8 py-5 rounded-2xl font-black text-deep/40 bg-zinc-100 hover:bg-zinc-200 transition-all flex items-center gap-3">
-                            <Settings size={20} /> View Archive
-                        </button>
-                        <button className="bg-primary text-white px-8 py-5 rounded-2xl font-black flex items-center gap-3 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
-                            <Plus size={24} /> New Content Module
+                        <Link
+                            href="/admin/cms"
+                            className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors flex items-center gap-2"
+                        >
+                            <Globe size={20} />
+                            Site CMS
+                        </Link>
+                        <button
+                            className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-lg shadow-primary/20"
+                        >
+                            <Plus size={20} />
+                            New Module
                         </button>
                     </div>
-                </header>
+                </div>
+            </header>
 
-                <div className="grid lg:grid-cols-2 gap-10">
-                    <div className="space-y-6">
-                        <h3 className="text-2xl font-black text-deep pl-4 mb-4">Core Libraries</h3>
-                        {modules.map((mod, i) => (
-                            <div key={i} className="bg-white p-8 rounded-[3.5rem] border border-zinc-100 shadow-sm hover:shadow-xl transition-all group cursor-pointer flex items-center justify-between">
-                                <div className="flex items-center gap-8">
-                                    <div className={`w-20 h-20 ${mod.color} rounded-[2rem] flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                                        <mod.icon size={36} />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-2xl font-black text-deep mb-1">{mod.name}</h4>
-                                        <div className="flex items-center gap-4">
-                                            <span className="text-xs font-black text-deep/30 uppercase tracking-widest">{mod.count} Items</span>
-                                            <span className="w-1 h-1 bg-zinc-200 rounded-full"></span>
-                                            <span className="text-xs font-bold text-deep/30 italic">Updated {mod.lastUpdate}</span>
+            <div className="p-8">
+                <div className="grid lg:grid-cols-2 gap-8">
+                    {/* Core Libraries */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2 px-2">
+                            <h3 className="text-xl font-black text-gray-900">Core Libraries</h3>
+                            <button
+                                onClick={loadCounts}
+                                title="Refresh Counts"
+                                className="text-gray-400 hover:text-primary transition-colors"
+                            >
+                                <Activity size={18} />
+                            </button>
+                        </div>
+
+                        <div className="grid gap-4">
+                            {modules.map((mod) => (
+                                <Link
+                                    key={mod.id}
+                                    href={mod.href}
+                                    className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group flex items-center justify-between"
+                                >
+                                    <div className="flex items-center gap-6">
+                                        <div className={`w-14 h-14 ${mod.color} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                                            <mod.icon size={28} />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-lg font-black text-gray-900">{mod.name}</h4>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                                    {isLoading ? '...' : mod.count} {mod.type}s
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="w-12 h-12 rounded-full bg-zinc-50 flex items-center justify-center text-zinc-300 group-hover:bg-primary/10 group-hover:text-primary group-hover:translate-x-1 transition-all">
-                                    <ChevronRight size={24} />
-                                </div>
-                            </div>
-                        ))}
+                                    <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-primary/10 group-hover:text-primary group-hover:translate-x-1 transition-all">
+                                        <ChevronRight size={20} />
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
                     </div>
 
-                    <div className="space-y-10">
-                        <div className="bg-deep p-12 rounded-[4rem] text-white shadow-2xl relative overflow-hidden group">
+                    {/* AI & Automation */}
+                    <div className="space-y-8">
+                        <div className="bg-deep rounded-3xl p-10 text-white shadow-xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-primary rounded-full blur-[100px] opacity-20 -mr-32 -mt-32"></div>
-                            <h3 className="text-3xl font-black mb-6 relative z-10">AI Deployment Logic</h3>
-                            <p className="text-white/60 text-lg font-bold leading-relaxed mb-10 relative z-10">
-                                Current storytelling engine is using <span className="text-primary italic">Gemini 1.5 Pro</span>. Accuracy for Jamaican Patois is currently 94.2%.
-                            </p>
-                            <div className="grid gap-4 relative z-10">
-                                <button className="w-full py-5 bg-white text-deep rounded-2xl font-black shadow-xl hover:scale-[1.02] transition-transform">Update System Role</button>
-                                <button className="w-full py-5 border-2 border-white/20 hover:bg-white/5 rounded-2xl font-black transition-all">View Logic Audit</button>
+                            <div className="relative z-10">
+                                <h3 className="text-2xl font-black mb-4 flex items-center gap-3">
+                                    <Activity className="text-primary" />
+                                    AI Engine Status
+                                </h3>
+                                <div className="space-y-6">
+                                    <div className="p-6 bg-white/5 rounded-2xl border border-white/10">
+                                        <p className="text-white/60 text-sm font-medium mb-1">Active Model</p>
+                                        <p className="text-xl font-bold">Gemini 1.5 Pro</p>
+                                        <div className="mt-3 flex items-center gap-2">
+                                            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                                            <span className="text-xs text-green-400 font-bold uppercase tracking-widest">Optimal Performance</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <button className="py-4 bg-white text-deep rounded-xl font-bold text-sm hover:bg-gray-100 transition-colors">
+                                            Manage Prompts
+                                        </button>
+                                        <button className="py-4 border border-white/20 rounded-xl font-bold text-sm hover:bg-white/5 transition-colors">
+                                            View Logs
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="bg-white p-12 rounded-[4rem] border border-zinc-100 shadow-sm shadow-zinc-200/20">
-                            <h3 className="text-2xl font-black text-deep mb-8">Asset Commands</h3>
-                            <div className="space-y-4">
+                        <div className="bg-white rounded-3xl p-10 border border-gray-100 shadow-sm">
+                            <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
+                                <Settings className="text-gray-400" size={20} />
+                                Asset Automation
+                            </h3>
+                            <div className="space-y-3">
                                 {[
-                                    { label: "Bulk PDF Generator", status: "Idle", color: "bg-green-500" },
+                                    { label: "Bulk PDF Generator", status: "Ready", color: "bg-green-500" },
                                     { label: "Audio Sync (CDN)", status: "Active", color: "bg-amber-500" },
-                                    { label: "Child Asset Garbage Map", status: "Clean", color: "bg-blue-500" },
+                                    { label: "Asset Cleanup", status: "Idle", color: "bg-gray-400" },
                                 ].map((task, i) => (
-                                    <div key={i} className="p-6 bg-zinc-50 rounded-[2rem] border border-zinc-100 flex items-center justify-between group hover:border-primary transition-all">
-                                        <span className="font-black text-deep">{task.label}</span>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-[10px] font-black text-deep/30 uppercase tracking-widest">{task.status}</span>
-                                            <div className={`w-2.5 h-2.5 rounded-full ${task.color} ${task.status === 'Active' ? 'animate-pulse' : ''}`}></div>
+                                    <div key={i} className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-between group hover:border-primary transition-all">
+                                        <span className="font-bold text-gray-700 text-sm">{task.label}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{task.status}</span>
+                                            <div className={`w-2 h-2 rounded-full ${task.color} ${task.status === 'Active' ? 'animate-pulse' : ''}`}></div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                            <button className="w-full mt-10 p-5 border-2 border-dashed border-zinc-200 rounded-3xl text-[10px] font-black uppercase tracking-widest text-deep/30 hover:border-primary hover:text-primary transition-all">
+                            <button className="w-full mt-6 py-4 border-2 border-dashed border-gray-200 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-400 hover:border-primary hover:text-primary transition-all">
                                 Run Maintenance Cycle
                             </button>
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </AdminLayout>
     );
 }

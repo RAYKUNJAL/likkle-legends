@@ -182,7 +182,12 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
 
   // Check access to tier-locked content
   const canAccess = useCallback((tierRequired: string): boolean => {
+    // Free content is accessible to everyone (even guests)
+    if (tierRequired === 'free' || !tierRequired) return true;
+
+    // Anything else requires a logged-in user
     if (!user) return false;
+
     const userLevel = TIER_LEVELS[user.subscription_tier] || 0;
     const requiredLevel = TIER_LEVELS[tierRequired] || 0;
     return userLevel >= requiredLevel;

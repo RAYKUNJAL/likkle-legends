@@ -7,6 +7,7 @@ import {
     ArrowLeft, ChevronLeft, ChevronRight, BookOpen, Volume2,
     Bookmark, Share2, Home, Star, HelpCircle
 } from 'lucide-react';
+import Image from 'next/image';
 import { useUser } from '@/components/UserContext';
 import VoiceNarrator from '@/components/VoiceNarrator';
 import { supabase } from '@/lib/storage';
@@ -187,10 +188,11 @@ export default function StoryReaderPage() {
                         {/* Page Image */}
                         {page?.imageUrl && (
                             <div className="aspect-[16/10] bg-gradient-to-br from-primary/10 to-secondary/10">
-                                <img
+                                <Image
                                     src={page.imageUrl}
                                     alt={`Page ${currentPage + 1}`}
-                                    className="w-full h-full object-cover"
+                                    fill
+                                    className="object-cover"
                                 />
                             </div>
                         )}

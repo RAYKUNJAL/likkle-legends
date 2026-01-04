@@ -136,6 +136,5 @@ export interface FulfillmentOrder {
 export async function addToFulfillmentSheet(order: FulfillmentOrder): Promise<boolean> {
     // This would use Google Sheets API - for now returns mock success
     // In production, use googleapis package or server action
-    console.log('Adding to fulfillment sheet:', order);
     return true;
 }

@@ -110,7 +110,7 @@ export default async function Home() {
               </div>
               <div className="relative">
                 <div className="aspect-[4/3] rounded-[3rem] bg-zinc-100 overflow-hidden shadow-2xl relative z-10">
-                  <img src={founders_section.image} alt="Founders" className="w-full h-full object-cover grayscale opacity-80" />
+                  <Image src={founders_section.image} alt="Founders" fill className="w-full h-full object-cover grayscale opacity-80" />
                 </div>
                 <div className="absolute -bottom-10 -right-10 bg-primary text-white p-12 rounded-[3rem] shadow-2xl z-20 hidden md:block">
                   <p className="text-3xl font-black mb-1">Authentic</p>

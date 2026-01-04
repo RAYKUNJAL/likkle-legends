@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { MessageSquare, X, Send, Volume2 } from 'lucide-react';
 import { askTantySpice } from '@/app/actions/tanty';
 import { getTantyVoice } from '@/app/actions/voice';
@@ -95,13 +96,11 @@ export default function TantySpiceWidget() {
                 >
                     {/* Main Avatar Image */}
                     <div className="w-full h-full rounded-full overflow-hidden relative">
-                        <img
+                        <Image
                             src="/images/tanty_spice.png"
                             alt="Tanty Spice"
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                                e.currentTarget.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=TantySpice&backgroundColor=ffdfbf";
-                            }}
+                            fill
+                            className="object-cover"
                         />
                     </div>
 
@@ -145,10 +144,13 @@ export default function TantySpiceWidget() {
                             <>
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                                 <div className="flex items-center gap-4 relative z-10 transition-all">
-                                    <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center font-bold border-2 border-white/40 overflow-hidden shadow-inner">
-                                        <img src="/images/tanty_spice.png" alt="Tanty" className="w-full h-full object-cover" onError={(e) => {
-                                            e.currentTarget.src = "https://ui-avatars.com/api/?name=Tanty+Spice&background=FF3FB4&color=fff";
-                                        }} />
+                                    <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center font-bold border-2 border-white/40 overflow-hidden shadow-inner relative">
+                                        <Image
+                                            src="/images/tanty_spice.png"
+                                            alt="Tanty"
+                                            fill
+                                            className="object-cover"
+                                        />
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-lg">{tanty_spice_chat.name}</h4>
