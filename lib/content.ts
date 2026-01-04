@@ -320,13 +320,13 @@ export const siteContent = {
         ]
     },
     educator_block: {
-        title: "Educators & Homeschoolers",
-        tagline: "COMING SOON",
-        description: "Get SEL + Caribbean culture lesson plans for small groups with classroom licenses and a digital portal for all students.",
-        price_hint: "$39–$59/mo expected pricing",
+        title: "Schools & Educators",
+        tagline: "FOR CLASSROOMS",
+        description: "Bring Caribbean cultural education to your classroom with our special educator pricing and curriculum resources.",
+        price_hint: "Custom licensing available for schools and libraries.",
         cta: {
-            label: "Join the waitlist",
-            href: "#contact"
+            label: "Explore Educator Plans",
+            href: "/educators"
         }
     },
     testimonials: {

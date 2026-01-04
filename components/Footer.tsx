@@ -19,7 +19,7 @@ export default function Footer() {
                             className="object-contain brightness-0 invert"
                         />
                     </div>
-                    <p className="text-white/50 text-xl leading-relaxed max-w-md">
+                    <p className="text-white/80 text-xl leading-relaxed max-w-md font-bold">
                         {footer.brand_line}
                     </p>
                 </div>
@@ -29,7 +29,7 @@ export default function Footer() {
                         <ul className="space-y-4">
                             {col.links.map((link, j) => (
                                 <li key={j}>
-                                    <Link href={link.href} className="text-white/40 hover:text-white transition-colors flex items-center gap-2 group">
+                                    <Link href={link.href} className="text-white/80 font-bold hover:text-white transition-colors flex items-center gap-2 group">
                                         <span className="w-1 h-1 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
                                         {link.label}
                                     </Link>
@@ -39,7 +39,7 @@ export default function Footer() {
                     </div>
                 ))}
             </div>
-            <div className="container mt-24 pt-10 border-t border-white/5 text-center text-sm font-bold text-white/20 tracking-tighter">
+            <div className="container mt-24 pt-10 border-t border-white/5 text-center text-base font-black text-white/40 tracking-normal">
                 {footer.copyright}
             </div>
         </footer>
