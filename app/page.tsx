@@ -123,18 +123,6 @@ export default async function Home() {
 
         <Pricing content={content.pricing} />
 
-        {/* Educator Block */}
-        <section className="py-16 bg-zinc-50 border-y border-zinc-200">
-          <div className="container text-center max-w-2xl mx-auto space-y-6">
-            <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">{educator_block.tagline}</span>
-            <h2 className="text-3xl font-black text-deep">{educator_block.title}</h2>
-            <p className="text-lg text-deep/60">{educator_block.description}</p>
-            <div className="flex flex-col items-center gap-2">
-              <p className="text-sm font-bold text-deep/40">{educator_block.price_hint}</p>
-              <Link href={educator_block.cta.href} className="btn btn-outline">{educator_block.cta.label}</Link>
-            </div>
-          </div>
-        </section>
 
         {/* Testimonials Section */}
         <section id="testimonials" className="py-24 bg-white relative overflow-hidden">

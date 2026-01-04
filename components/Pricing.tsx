@@ -168,21 +168,21 @@ export default function Pricing({ content }: PricingProps) {
         </div>
 
         {/* Trust Row */}
-        <div className="flex flex-wrap justify-center gap-8 mt-16 text-sm text-gray-500">
+        <div className="flex flex-wrap justify-center gap-8 mt-16 text-base font-bold text-gray-700">
           <span className="flex items-center gap-2">
-            <Check className="text-green-500" size={18} />
+            <Check className="text-green-600" size={20} />
             Cancel anytime
           </span>
           <span className="flex items-center gap-2">
-            <Check className="text-green-500" size={18} />
+            <Check className="text-green-600" size={20} />
             Free shipping worldwide
           </span>
           <span className="flex items-center gap-2">
-            <Check className="text-green-500" size={18} />
+            <Check className="text-green-600" size={20} />
             30-day money-back guarantee
           </span>
           <span className="flex items-center gap-2">
-            <Check className="text-green-500" size={18} />
+            <Check className="text-green-600" size={20} />
             Secure PayPal checkout
           </span>
         </div>
@@ -190,16 +190,16 @@ export default function Pricing({ content }: PricingProps) {
         {/* Enterprise/Schools CTA */}
         <div className="mt-16 bg-deep rounded-3xl p-8 md:p-12 text-white text-center">
           <Crown className="w-12 h-12 mx-auto mb-4 text-amber-400" />
-          <h3 className="text-2xl md:text-3xl font-black mb-3">Schools & Educators</h3>
-          <p className="text-white/70 max-w-xl mx-auto mb-6">
-            Bring Caribbean cultural education to your classroom with our special educator pricing and curriculum resources
+          <h3 className="text-2xl md:text-3xl font-black mb-3">{siteContent.educator_block.title}</h3>
+          <p className="text-white font-bold max-w-xl mx-auto mb-6">
+            {siteContent.educator_block.description}
           </p>
           <Link
-            href="/educators"
+            href={siteContent.educator_block.cta.href}
             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-deep rounded-2xl font-bold hover:bg-white/90 transition-colors"
           >
             <Sparkles size={20} />
-            Learn About Educator Plans
+            {siteContent.educator_block.cta.label}
           </Link>
         </div>
       </div>
