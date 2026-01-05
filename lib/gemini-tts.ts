@@ -14,10 +14,11 @@ export async function generateGeminiSpeech(
     options: GeminiTTSOptions = {}
 ): Promise<ArrayBuffer | null> {
     const { voiceName = TANTY_ISLAND_ENGINE.vocal_blueprint.voice_name } = options;
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    console.log('Gemini TTS: Using API key', apiKey ? 'Configured' : 'MISSING');
 
     if (!apiKey) {
-        console.warn('Gemini API key not configured (NEXT_PUBLIC_GEMINI_API_KEY)');
+        console.warn('Gemini API key not configured (NEXT_PUBLIC_GEMINI_API_KEY or GEMINI_API_KEY)');
         return null;
     }
 
