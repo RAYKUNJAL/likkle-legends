@@ -6,7 +6,7 @@ import { generateSpeechBase64 as generateElevenLabsBase64 } from "@/lib/elevenla
 export async function getTantyVoice(text: string) {
     try {
         // Try Gemini TTS first (configured with Kore voice)
-        const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+        const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
         if (geminiApiKey) {
             console.log("Voice Action: Using Gemini TTS");
             const audioData = await generateGeminiSpeechBase64(text);

@@ -17,9 +17,9 @@ export const TANTY_ISLAND_ENGINE = {
     },
 
     technical_stack: {
-        brain_model: "gemini-3-flash-preview", // Falls back to gemini-2.0-flash-exp if not available
-        vocal_model: "gemini-2.5-flash-preview-tts",
-        image_engine: "gemini-2.5-flash-image",
+        brain_model: "gemini-2.0-flash-exp",
+        vocal_model: "gemini-2.0-flash-exp",
+        image_engine: "gemini-2.0-flash-exp",
         audio_sample_rate: 24000,
         input_sample_rate: 16000
     },
