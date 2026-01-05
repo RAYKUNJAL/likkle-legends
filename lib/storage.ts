@@ -14,7 +14,10 @@ function getSupabase(): SupabaseClient {
         if (!supabaseUrl || !supabaseAnonKey) {
             // Return a dummy client for build time - will throw on actual usage
             console.warn('Supabase credentials not available at build time');
-            return createClient('https://placeholder.supabase.co', 'placeholder-key');
+            return createClient(
+                'https://placeholder-project.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NDc5NjQyNzgsImV4cCI6MTk2MzU0MDI3OH0.placeholder'
+            );
         }
 
         _supabase = createClient(supabaseUrl, supabaseAnonKey);

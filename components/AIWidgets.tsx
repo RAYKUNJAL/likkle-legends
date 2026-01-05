@@ -70,7 +70,13 @@ export default function TantySpiceWidget() {
         setIsTyping(true);
 
         try {
-            const response = await askTantySpice(userMsg);
+            // Map 'tanty' to 'assistant' for the API
+            const history = chat.map(msg => ({
+                role: msg.role === 'tanty' ? 'assistant' as const : 'user' as const,
+                content: msg.text
+            }));
+
+            const response = await askTantySpice(history, userMsg);
             setChat(prev => [...prev, { role: 'tanty', text: response }]);
 
             // Auto-speak the response if it's short, or user can click play

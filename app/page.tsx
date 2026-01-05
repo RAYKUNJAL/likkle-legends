@@ -6,13 +6,13 @@ import Features from '@/components/Features';
 import Pricing from '@/components/Pricing';
 import Characters from '@/components/Characters';
 import AnnouncementBar from '@/components/AnnouncementBar';
-import TantySpiceWidget from '@/components/AIWidgets';
 import Link from 'next/link';
 
 import FAQ from '@/components/FAQ';
 import StoryGenerator from '@/components/StoryGenerator';
 import HowItWorks from '@/components/HowItWorks';
 import Footer from '@/components/Footer';
+import TantysPorchSection from '@/components/TantysPorchSection';
 
 import { getMergedSiteContent } from '@/lib/services/cms';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
@@ -54,6 +54,8 @@ export default async function Home() {
         <Features />
 
         {/* Identity Section */}
+        <TantysPorchSection />
+
         <section id="identity" className="py-24 bg-deep text-white overflow-hidden relative">
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary rounded-full blur-[150px] opacity-10 -mr-64 -mt-64"></div>
 
@@ -190,7 +192,6 @@ export default async function Home() {
 
       <Footer />
 
-      <TantySpiceWidget />
     </div>
   );
 }

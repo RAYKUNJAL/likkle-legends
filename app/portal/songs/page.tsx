@@ -7,6 +7,7 @@ import {
     ArrowLeft, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
     Heart, Shuffle, Repeat, ListMusic, Music2, Clock, Star, Lock
 } from 'lucide-react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/components/UserContext';
 import { supabase } from '@/lib/storage';
 
@@ -29,6 +30,9 @@ export default function SongsPage() {
     const { activeChild, canAccess } = useUser();
     const [songs, setSongs] = useState<Song[]>([]);
     const [currentSong, setCurrentSong] = useState<Song | null>(null);
+
+    const searchParams = useSearchParams();
+    const playId = searchParams.get('play');
 
     useEffect(() => {
         async function loadSongs() {
@@ -58,6 +62,16 @@ export default function SongsPage() {
 
         loadSongs();
     }, []);
+
+    // Auto-play from URL
+    useEffect(() => {
+        if (songs.length > 0 && playId) {
+            const songToPlay = songs.find(s => s.id === playId);
+            if (songToPlay) {
+                playSong(songToPlay);
+            }
+        }
+    }, [songs, playId]);
 
     const [isPlaying, setIsPlaying] = useState(false);
     const [progress, setProgress] = useState(0);

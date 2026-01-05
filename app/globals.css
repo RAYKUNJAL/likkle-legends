@@ -149,6 +149,57 @@
   border: 4px solid var(--background);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 107, 53, 0.5);
+@keyframes neural-halo {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.4), 0 0 0 0 rgba(255, 203, 71, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 15px rgba(255, 107, 53, 0), 0 0 0 30px rgba(255, 203, 71, 0);
+  }
+}
+
+@keyframes neural-aura {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+    filter: blur(10px);
+  }
+
+  50% {
+    transform: scale(1.5);
+    opacity: 0.8;
+    filter: blur(20px);
+  }
+
+  100% {
+    transform: scale(2);
+    opacity: 0;
+    filter: blur(30px);
+  }
+}
+
+.animate-neural-halo {
+  animation: neural-halo 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.animate-neural-aura {
+  animation: neural-aura 3s ease-out infinite;
+}
+
+.glassmorphism-tanty {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.font-fredoka {
+  font-family: var(--font-fredoka), sans-serif;
+}
+
+.font-quicksand {
+  font-family: var(--font-quicksand), sans-serif;
 }
