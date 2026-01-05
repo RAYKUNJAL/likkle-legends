@@ -20,6 +20,7 @@ const config: Config = {
             fontFamily: {
                 sans: ["var(--font-geist-sans)"],
                 mono: ["var(--font-geist-mono)"],
+                heading: ["var(--font-geist-sans)"],
             },
             animation: {
                 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

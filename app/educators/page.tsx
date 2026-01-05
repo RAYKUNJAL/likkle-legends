@@ -1,14 +1,10 @@
+"use client";
+
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Sparkles, BookOpen, Users, Globe, CheckCircle2, Mail, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-    title: 'Educators & schools | Likkle Legends Mail Club',
-    description: 'Bring Caribbean cultural education and social-emotional learning to your classroom with our curriculum-aligned resources.',
-};
 
 export default function EducatorsPage() {
     return (

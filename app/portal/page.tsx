@@ -5,11 +5,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
     Sparkles, BookOpen, Music, Palette, Target, Star, Play,
-    Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift
+    Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video
 } from 'lucide-react';
-import TantySpiceWidget from '@/components/AIWidgets';
 import { useUser } from '@/components/UserContext';
-import { getSongs, getStorybooks, getMissions, getPrintables } from '@/lib/database';
+import { getSongs, getStorybooks, getMissions, getPrintables, getVideos } from '@/lib/database';
 import { calculateLevel, BADGES, LEVELS } from '@/lib/gamification';
 
 interface Song {
@@ -37,13 +36,22 @@ interface Mission {
     mission_type: string;
 }
 
+interface Video {
+    id: string;
+    title: string;
+    thumbnail_url: string;
+    duration_seconds: number;
+    tier_required: string;
+}
+
 export default function ChildPortalPage() {
     const { activeChild, canAccess, isSubscribed } = useUser();
     const [songs, setSongs] = useState<Song[]>([]);
     const [stories, setStories] = useState<Storybook[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
+    const [videos, setVideos] = useState<Video[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [activeSection, setActiveSection] = useState<'home' | 'stories' | 'songs' | 'missions' | 'games'>('home');
+    const [activeSection, setActiveSection] = useState<'home' | 'stories' | 'songs' | 'missions' | 'games' | 'lessons'>('home');
 
     useEffect(() => {
         loadPortalData();
@@ -52,14 +60,16 @@ export default function ChildPortalPage() {
     const loadPortalData = async () => {
         setIsLoading(true);
         try {
-            const [songsData, storiesData, missionsData] = await Promise.all([
+            const [songsData, storiesData, missionsData, videosData] = await Promise.all([
                 getSongs(),
                 getStorybooks(),
                 getMissions(activeChild?.age_track),
+                getVideos(),
             ]);
             setSongs(songsData as Song[]);
             setStories(storiesData as Storybook[]);
             setMissions(missionsData as Mission[]);
+            setVideos(videosData as Video[]);
         } catch (error) {
             console.error('Failed to load portal:', error);
         } finally {
@@ -73,6 +83,7 @@ export default function ChildPortalPage() {
     const navItems = [
         { id: 'home', label: 'Home', icon: Sparkles, color: 'from-primary to-accent' },
         { id: 'stories', label: 'Stories', icon: BookOpen, color: 'from-blue-500 to-cyan-500' },
+        { id: 'lessons', label: 'Lessons', icon: Video, color: 'from-indigo-500 to-purple-500' },
         { id: 'songs', label: 'Songs', icon: Music, color: 'from-purple-500 to-pink-500' },
         { id: 'missions', label: 'Missions', icon: Target, color: 'from-orange-500 to-red-500' },
         { id: 'games', label: 'Games', icon: Palette, color: 'from-green-500 to-emerald-500' },
@@ -296,9 +307,10 @@ export default function ChildPortalPage() {
                                         const isLocked = !canAccess(song.tier_required);
 
                                         return (
-                                            <div
+                                            <Link
                                                 key={song.id}
-                                                className={`bg-white rounded-3xl p-4 shadow-sm hover:shadow-lg transition-all group cursor-pointer ${isLocked ? 'opacity-70' : ''
+                                                href={isLocked ? '#' : `/portal/songs?play=${song.id}`}
+                                                className={`block bg-white rounded-3xl p-4 shadow-sm hover:shadow-lg transition-all group cursor-pointer ${isLocked ? 'opacity-70' : ''
                                                     }`}
                                             >
                                                 <div className="relative aspect-square bg-gradient-to-br from-purple-200 to-pink-200 rounded-2xl mb-3 overflow-hidden">
@@ -329,7 +341,85 @@ export default function ChildPortalPage() {
                                                 </div>
                                                 <h3 className="font-bold text-gray-900 truncate">{song.title}</h3>
                                                 <p className="text-xs text-gray-500">{song.artist}</p>
-                                            </div>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </section>
+                    )}
+
+                    {/* Lessons Section */}
+                    {(activeSection === 'home' || activeSection === 'lessons') && (
+                        <section className="mb-8">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+                                        🎥
+                                    </div>
+                                    Video Lessons
+                                </h2>
+                                {activeSection === 'home' && (
+                                    <button
+                                        onClick={() => setActiveSection('lessons')}
+                                        className="text-primary font-bold hover:underline"
+                                    >
+                                        See All →
+                                    </button>
+                                )}
+                            </div>
+
+                            {isLoading ? (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {[1, 2, 3, 4].map(i => (
+                                        <div key={i} className="bg-white rounded-3xl p-4 animate-pulse">
+                                            <div className="aspect-video bg-gray-100 rounded-2xl mb-3" />
+                                            <div className="h-4 bg-gray-100 rounded mb-2" />
+                                            <div className="h-3 bg-gray-100 rounded w-2/3" />
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {videos.slice(0, activeSection === 'lessons' ? 12 : 4).map((video) => {
+                                        const isLocked = !canAccess(video.tier_required);
+
+                                        return (
+                                            <Link
+                                                key={video.id}
+                                                href={isLocked ? '#' : `/portal/lessons`}
+                                                className={`block bg-white rounded-3xl p-4 shadow-sm hover:shadow-lg transition-all group cursor-pointer ${isLocked ? 'opacity-70' : ''
+                                                    }`}
+                                            >
+                                                <div className="relative aspect-video bg-gradient-to-br from-indigo-200 to-purple-200 rounded-2xl mb-3 overflow-hidden">
+                                                    {video.thumbnail_url ? (
+                                                        <Image
+                                                            src={video.thumbnail_url}
+                                                            alt={video.title}
+                                                            fill
+                                                            className="object-cover group-hover:scale-105 transition-transform"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-4xl">
+                                                            🎥
+                                                        </div>
+                                                    )}
+
+                                                    {isLocked ? (
+                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                                            <Lock className="text-white" size={32} />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-colors">
+                                                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                                                                <Play className="text-primary ml-1" size={24} />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <h3 className="font-bold text-gray-900 mb-1 truncate">{video.title}</h3>
+                                                <p className="text-xs text-gray-500">{Math.round(video.duration_seconds / 60)} min watch</p>
+                                            </Link>
                                         );
                                     })}
                                 </div>
@@ -458,8 +548,7 @@ export default function ChildPortalPage() {
                     )}
                 </main>
             </div>
-            {/* AI Chat Buddy */}
-            <TantySpiceWidget />
+            {/* AI Chat Buddy handled globally in layout.tsx */}
         </div>
     );
 }
