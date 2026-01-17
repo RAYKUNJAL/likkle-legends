@@ -9,6 +9,8 @@ This checklist covers all critical actions required to transform the codebase in
 - [x] **Loading States**: Check `loading.tsx` implementations for smooth transitions. (Done ✅)
 - [x] **Mobile Responsiveness**: Refactored layouts for better mobile support. (Done ✅)
 - [x] **Accessibility Audit**: Final check for `aria-labels` on all buttons (Done ✅).
+- [x] **Magic Adventure UI**: Implemented `AdventureCreator` with personalized baking flow. (Done ✅)
+- [x] **Story Reader**: Implemented immersive full-screen reader with Tanty narration. (Done ✅)
 
 ## 2. 🔍 SEO & Discovery
 - [x] **Metadata Scan**: Ensure every page has a unique `title` and `description` export. (Done ✅)
@@ -24,6 +26,8 @@ This checklist covers all critical actions required to transform the codebase in
 - [x] **Console Logs**: Removed decorative/debug logs from core libs. (Done ✅)
 - [x] **Image Optimization**: Core pages refactored to `next/image` with proper sizing. (Done ✅)
 - [x] **CSP Headers**: Configured Content Security Policy in `next.config.mjs`. (Done ✅)
+- [x] **Antigravity SDK Migration**: Logic moved from legacy to `@google/genai`. (Done ✅)
+- [x] **Tanty Spice v6.0**: Updated linguistic tiering and phonetic TTS rules. (Done ✅)
 
 ## 4. ⚖️ Legal & Compliance (Crucial for Kids' App)
 - [x] **Privacy Policy**: Accessible from footer and linked in signup. (Done ✅)

@@ -108,10 +108,15 @@ const IslandVoice: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const startSession = async () => {
         if (isConnecting) return;
 
-        // Check API Key
-        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+        // Check API Key - Robust detection
+        const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
+            process.env.GEMINI_API_KEY ||
+            process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
         if (!apiKey) {
-            alert("Missing NEXT_PUBLIC_GEMINI_API_KEY");
+            console.error("Voice Service Error: Missing API Key");
+            alert("Tanty is a bit shy right now! (Missing API Key). Please check your settings.");
+            setIsConnecting(false);
             return;
         }
 

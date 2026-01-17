@@ -221,6 +221,7 @@ export async function createGame(gameData: Record<string, unknown>) {
     return data;
 }
 
+
 export async function updateGame(id: string, updates: Record<string, unknown>) {
     const { data, error } = await supabase
         .from('games')
@@ -231,4 +232,41 @@ export async function updateGame(id: string, updates: Record<string, unknown>) {
 
     if (error) throw error;
     return data;
+}
+
+// Delete Operations
+export async function deleteSong(id: string) {
+    const { error } = await supabase.from('songs').delete().eq('id', id);
+    if (error) throw error;
+    return true;
+}
+
+export async function deleteVideo(id: string) {
+    const { error } = await supabase.from('videos').delete().eq('id', id);
+    if (error) throw error;
+    return true;
+}
+
+export async function deleteStorybook(id: string) {
+    const { error } = await supabase.from('storybooks').delete().eq('id', id);
+    if (error) throw error;
+    return true;
+}
+
+export async function deletePrintable(id: string) {
+    const { error } = await supabase.from('printables').delete().eq('id', id);
+    if (error) throw error;
+    return true;
+}
+
+export async function deleteGame(id: string) {
+    const { error } = await supabase.from('games').delete().eq('id', id);
+    if (error) throw error;
+    return true;
+}
+
+export async function deleteCharacter(id: string) {
+    const { error } = await supabase.from('characters').delete().eq('id', id);
+    if (error) throw error;
+    return true;
 }

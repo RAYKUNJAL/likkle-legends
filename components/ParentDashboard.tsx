@@ -110,42 +110,73 @@ const ParentDashboard: React.FC = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <div className="bg-deep text-white rounded-3xl p-6 shadow-xl">
-              <h3 className="font-heading font-bold text-lg mb-4 flex items-center gap-2">
+            <div className="bg-deep text-white rounded-3xl p-6 shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12" />
+              <h3 className="font-heading font-bold text-lg mb-4 flex items-center gap-2 relative z-10">
                 <Calendar size={18} /> Next Box
               </h3>
-              <div className="bg-white/10 rounded-xl p-4 mb-4">
+              <div className="bg-white/10 rounded-xl p-4 mb-4 relative z-10">
                 <p className="text-xs text-gray-300 uppercase tracking-wider mb-1">Theme</p>
                 <p className="font-bold text-lg">Carnival Colors 🎭</p>
               </div>
-              <div className="flex justify-between text-sm text-gray-300 border-t border-white/10 pt-4">
+              <div className="flex justify-between text-sm text-gray-300 border-t border-white/10 pt-4 relative z-10">
                 <span>Shipping</span>
                 <span className="text-white font-bold">In 5 Days</span>
               </div>
             </div>
 
+            {/* Child Profile Summary */}
             <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
               <h3 className="font-heading font-bold text-lg mb-4 text-text flex items-center gap-2">
-                <Settings size={18} /> Child Profile
+                🌟 Active Legend
               </h3>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-textLight">Name</span>
-                  <span className="font-bold text-text">{activeChild?.first_name || 'Not set'}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-textLight">Age Group</span>
-                  <span className="font-bold text-text bg-gray-100 px-2 py-1 rounded">
-                    {activeChild?.age_track === 'mini' ? 'Mini (4-5)' : 'Big (6-8)'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-textLight">Plan</span>
-                  <span className={`font-bold px-2 py-1 rounded ${canAccess('legends_plus') ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-600'}`}>
-                    {canAccess('legends_plus') ? 'Legends+' : 'Starter'}
-                  </span>
+              <div className="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-2xl">
+                <div className="text-3xl">{activeChild?.total_xp && activeChild.total_xp > 1000 ? '🦁' : '🐣'}</div>
+                <div>
+                  <p className="font-black text-text">{activeChild?.first_name || 'Your Legend'}</p>
+                  <p className="text-[10px] text-textLight font-bold uppercase tracking-widest">{activeChild?.age_track === 'mini' ? 'Mini Legend (4-5)' : 'Big Legend (6-8)'}</p>
                 </div>
               </div>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-textLight font-bold">Total XP</span>
+                  <span className="font-black text-primary">{activeChild?.total_xp.toLocaleString()} XP</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-textLight font-bold">Primary Island</span>
+                  <span className="font-black text-secondary">{activeChild?.primary_island}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
+              <h3 className="font-heading font-bold text-lg mb-4 text-text flex items-center gap-2">
+                <Settings size={18} /> Village Safety Settings
+              </h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-textLight">Audio Narrations</span>
+                  <button className="w-10 h-6 bg-primary rounded-full relative"><div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div></button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-textLight">Patois Intensity</span>
+                  <select className="text-xs bg-gray-50 border-none rounded-lg p-1 font-bold">
+                    <option>Gentle</option>
+                    <option>Full Flavor</option>
+                  </select>
+                </div>
+                <div className="pt-2 border-t border-gray-100 mt-2">
+                  <button className="text-[10px] font-black uppercase text-red-500 tracking-widest hover:underline">
+                    Data Deletion Request
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-50/50 rounded-3xl p-6 border-2 border-dashed border-blue-100">
+              <h4 className="font-heading font-black text-blue-950 text-sm mb-2">Heritage Resources</h4>
+              <p className="text-xs text-blue-900/60 font-bold mb-4">Download Tanty's Guide to Caribbean Storytelling at Home.</p>
+              <button className="w-full bg-blue-600 text-white py-3 rounded-xl text-xs font-black shadow-lg">Download PDF</button>
             </div>
           </div>
         </div>

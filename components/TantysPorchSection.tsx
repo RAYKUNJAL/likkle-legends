@@ -69,8 +69,17 @@ export default function TantysPorchSection() {
                 audio.play();
             } else {
                 console.warn("Falling back to browser TTS due to server error");
-                // Minimal Fallback
+                // Minimal Fallback (robotic)
                 const utterance = new SpeechSynthesisUtterance(text);
+                const voices = window.speechSynthesis.getVoices();
+                const preferredVoice = voices.find(v => v.name.includes('Google UK English Female')) ||
+                    voices.find(v => v.name.includes('Google US English')) ||
+                    voices.find(v => v.name.includes('Natural')) ||
+                    voices.find(v => v.name.includes('Samantha'));
+
+                if (preferredVoice) utterance.voice = preferredVoice;
+                utterance.pitch = 0.9;
+                utterance.rate = 0.9;
                 window.speechSynthesis.speak(utterance);
             }
         } catch (e) {

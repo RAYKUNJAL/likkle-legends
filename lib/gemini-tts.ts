@@ -47,6 +47,7 @@ export async function generateGeminiSpeech(
         const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
 
         if (base64Audio) {
+            console.log('Gemini TTS: Success! Audio received, length:', base64Audio.length);
             // Convert base64 to Buffer
             const pcmBuffer = Buffer.from(base64Audio, 'base64');
             const numChannels = 1;
@@ -73,10 +74,10 @@ export async function generateGeminiSpeech(
             return finalBuffer.buffer.slice(finalBuffer.byteOffset, finalBuffer.byteOffset + finalBuffer.byteLength);
         }
 
-        console.warn('Gemini TTS: No audio data in response');
+        console.warn('Gemini TTS: No audio data in response. Response:', JSON.stringify(response, null, 2));
         return null;
     } catch (error) {
-        console.error('Gemini TTS error:', error);
+        console.error('Gemini TTS error details:', error);
         return null;
     }
 }

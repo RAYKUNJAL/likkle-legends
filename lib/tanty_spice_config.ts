@@ -54,11 +54,11 @@ Tanty: "Mmm-hmmm! Well, one day, Bredda Anansi decide he want all de wisdom in d
 
 /**
  * TANTY SPICE: VOCAL BLUEPRINT (TTS CONFIG)
- * Model: gemini-2.5-flash-preview-tts
+ * Model: gemini-1.5-flash
  * Voice: Kore (Warm, maternal timbre)
  */
 export const TANTY_VOICE_CONFIG = {
-    model: 'gemini-2.5-flash-preview-tts',
+    model: 'gemini-1.5-flash',
     config: {
         responseModalities: [Modality.AUDIO],
         speechConfig: {

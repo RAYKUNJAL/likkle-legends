@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TANTY_ISLAND_ENGINE } from "@/services/tantyConfig";
 import { getTantyVoice } from "@/app/actions/voice";
 import { askTantySpice } from "@/app/actions/tanty";
+import { narrateText, getGlobalAudioContext } from "@/services/geminiService";
+import { warmupVoiceCache } from "@/services/voiceCacheService";
 
 type Message = {
     role: "user" | "assistant";
@@ -39,28 +41,53 @@ export default function TantySpiceWidget() {
         scrollToBottom();
     }, [messages, isOpen]);
 
+    useEffect(() => {
+        // Warm up cache on mount
+        warmupVoiceCache(narrateText).catch(console.error);
+    }, []);
+
     const speak = async (text: string) => {
         if (isMuted || typeof window === 'undefined') return;
 
         setIsSpeaking(true);
         try {
-            const res = await getTantyVoice(text);
-            if (res.success && res.audio) {
-                if (audioRef.current) {
-                    audioRef.current.src = res.audio;
-                    audioRef.current.play();
-                    audioRef.current.onended = () => setIsSpeaking(false);
-                }
+            // Use client-side narrateText for caching benefits
+            const audioBuffer = await narrateText(text);
+
+            if (audioBuffer) {
+                const ctx = getGlobalAudioContext();
+                const source = ctx.createBufferSource();
+                source.buffer = audioBuffer;
+                source.connect(ctx.destination);
+                source.onended = () => setIsSpeaking(false);
+                source.start(0);
             } else {
-                // Fallback to Browser TTS
-                const utterance = new SpeechSynthesisUtterance(text);
-                const voices = window.speechSynthesis.getVoices();
-                const preferredVoice = voices.find(v => v.name.includes('Google UK English Female')) || voices.find(v => v.name.includes('Samantha'));
-                if (preferredVoice) utterance.voice = preferredVoice;
-                utterance.onend = () => setIsSpeaking(false);
-                window.speechSynthesis.speak(utterance);
+                // Fallback to Server Action if client-side fails
+                const res = await getTantyVoice(text);
+                if (res.success && res.audio) {
+                    if (audioRef.current) {
+                        audioRef.current.src = res.audio;
+                        audioRef.current.play();
+                        audioRef.current.onended = () => setIsSpeaking(false);
+                    }
+                } else {
+                    // Fallback to Browser TTS (robotic)
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    const voices = window.speechSynthesis.getVoices();
+                    const preferredVoice = voices.find(v => v.name.includes('Google UK English Female')) ||
+                        voices.find(v => v.name.includes('Google US English')) ||
+                        voices.find(v => v.name.includes('Natural')) ||
+                        voices.find(v => v.name.includes('Samantha'));
+
+                    if (preferredVoice) utterance.voice = preferredVoice;
+                    utterance.pitch = 0.9;
+                    utterance.rate = 0.9;
+                    utterance.onend = () => setIsSpeaking(false);
+                    window.speechSynthesis.speak(utterance);
+                }
             }
         } catch (e) {
+            console.error("Speech error:", e);
             setIsSpeaking(false);
         }
     };
@@ -144,8 +171,14 @@ export default function TantySpiceWidget() {
                                     />
                                 </div>
                                 <div className="font-fredoka">
-                                    <h3 className="font-bold text-xl leading-tight">Tanty Spice</h3>
-                                    <p className="text-xs text-white/80 font-medium">Village Grandmother</p>
+                                    <h3 className="font-bold text-xl leading-tight flex items-center gap-2">
+                                        Tanty Spice
+                                        <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_8px_#4ade80]" />
+                                    </h3>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-[10px] text-white/80 font-black uppercase tracking-widest">Village Elder</p>
+                                        <span className="text-[8px] bg-white/20 px-1.5 py-0.5 rounded font-black uppercase">Live</span>
+                                    </div>
                                 </div>
                             </div>
 

@@ -2,8 +2,8 @@
 
 import { siteContent } from '@/lib/content';
 
-export default function HowItWorks() {
-    const { how_it_works } = siteContent;
+export default function HowItWorks({ content }: { content?: any }) {
+    const { how_it_works } = content || siteContent;
 
     return (
         <section id={how_it_works.id} className="py-24 bg-white">

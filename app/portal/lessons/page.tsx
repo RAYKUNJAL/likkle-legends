@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import VideoPlayer from '@/components/VideoPlayer';
+import { EmptyState } from '@/components/EmptyState';
 
 interface Video {
     id: string;
@@ -91,8 +92,7 @@ export default function LessonsPage() {
                                 src={activeVideo.video_url}
                                 autoPlay={true}
                                 onEnded={() => {
-                                    // Could mark as complete here
-                                    console.log('Video ended', activeVideo.id);
+                                    // Mark as complete in DB here if needed
                                 }}
                             />
                         </div>
@@ -175,11 +175,11 @@ export default function LessonsPage() {
                 )}
 
                 {!isLoading && videos.length === 0 && (
-                    <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">🎥</div>
-                        <h3 className="text-lg font-bold text-gray-900">No Videos Yet</h3>
-                        <p className="text-gray-500">Check back soon for new lessons!</p>
-                    </div>
+                    <EmptyState
+                        icon="🎥"
+                        title="No Lessons Found"
+                        message="Our island teachers are preparing new video lessons. Stay tuned for fresh content!"
+                    />
                 )}
             </main>
         </div>

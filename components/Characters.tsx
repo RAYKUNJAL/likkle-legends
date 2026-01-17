@@ -3,8 +3,8 @@
 import Image from 'next/image';
 import { siteContent } from '@/lib/content';
 
-export default function Characters() {
-  const { characters } = siteContent;
+export default function Characters({ content }: { content?: any }) {
+  const { characters } = content || siteContent;
 
   return (
     <section id={characters.id} className="py-24 bg-[#FAF9F6]">

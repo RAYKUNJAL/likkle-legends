@@ -27,6 +27,10 @@ const config: Config = {
                 'float': 'float 6s ease-in-out infinite',
                 'marquee': 'marquee 40s linear infinite',
                 'wiggle': 'wiggle 1s ease-in-out infinite',
+                'vocal-bounce': 'vocal-bounce 0.5s ease-in-out infinite',
+                'neural-aura': 'neural-aura 3s ease-in-out infinite',
+                'neural-halo': 'neural-halo 2s ease-in-out infinite',
+                'message': 'message 0.4s ease-out forwards',
             },
             keyframes: {
                 float: {
@@ -40,6 +44,22 @@ const config: Config = {
                 wiggle: {
                     '0%, 100%': { transform: 'rotate(-3deg)' },
                     '50%': { transform: 'rotate(3deg)' },
+                },
+                'vocal-bounce': {
+                    '0%, 100%': { transform: 'scale(1)' },
+                    '50%': { transform: 'scale(1.15) translateY(-5px)' },
+                },
+                'neural-aura': {
+                    '0%, 100%': { transform: 'scale(1) translate(-50%, -50%)', opacity: '0.2' },
+                    '50%': { transform: 'scale(1.5) translate(-50%, -50%)', opacity: '0.4' },
+                },
+                'neural-halo': {
+                    '0%, 100%': { boxShadow: '0 0 0 0 rgba(234, 179, 8, 0.4)' },
+                    '70%': { boxShadow: '0 0 0 20px rgba(234, 179, 8, 0)' },
+                },
+                'message': {
+                    '0%': { opacity: '0', transform: 'translateY(10px) scale(0.95)' },
+                    '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
                 },
             },
         },

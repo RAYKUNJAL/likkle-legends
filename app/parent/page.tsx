@@ -3,14 +3,45 @@
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Settings, BarChart3, Users, Sparkles, Plus, ArrowRight, Edit, BookOpen, Music, Trophy, Flame } from 'lucide-react';
+import {
+    Settings, BarChart3, Users, Sparkles, Plus, ArrowRight,
+    Edit, BookOpen, Music, Trophy, Flame, Target, TrendingUp,
+    ChevronRight, Star
+} from 'lucide-react';
 import Link from 'next/link';
 import { useUser } from '@/components/UserContext';
 import { calculateLevel } from '@/lib/gamification';
+import { getRecentActivities, getMissions } from '@/lib/database';
 
 export default function ParentDashboard() {
     const { user, children, activeChild, isLoading, isSubscribed } = useUser();
     const [showAddChildModal, setShowAddChildModal] = useState(false);
+    const [activities, setActivities] = useState<any[]>([]);
+    const [missions, setMissions] = useState<any[]>([]);
+    const [isDataLoading, setIsDataLoading] = useState(false);
+
+    useEffect(() => {
+        if (activeChild) {
+            loadDashboardData();
+        }
+    }, [activeChild]);
+
+    const loadDashboardData = async () => {
+        if (!activeChild || !user) return;
+        setIsDataLoading(true);
+        try {
+            const [activitiesData, missionsData] = await Promise.all([
+                getRecentActivities(activeChild.id, 5),
+                getMissions(activeChild.age_track),
+            ]);
+            setActivities(activitiesData);
+            setMissions(missionsData);
+        } catch (error) {
+            console.error('Failed to load portal data:', error);
+        } finally {
+            setIsDataLoading(false);
+        }
+    };
 
     // If not logged in, show login prompt
     if (!isLoading && !user) {
@@ -112,41 +143,102 @@ export default function ParentDashboard() {
                                 </div>
                             </div>
 
-                            {/* Child Profiles */}
-                            <div className="bg-white p-12 rounded-[4rem] shadow-2xl shadow-zinc-200/50 border border-zinc-100">
-                                <div className="flex items-center justify-between mb-12">
-                                    <h3 className="text-3xl font-black text-deep">Legend Profiles</h3>
-                                    <Link
-                                        href="/onboarding/child"
-                                        className="flex items-center gap-3 text-primary font-black text-sm bg-primary/10 px-6 py-3 rounded-full hover:bg-primary hover:text-white transition-all"
-                                    >
-                                        <Plus size={18} /> Add Child
+                            {/* Weekly Missions */}
+                            <div className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-zinc-200/50 border border-zinc-100">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h3 className="text-2xl font-black text-deep flex items-center gap-3">
+                                        <Target className="text-primary" />
+                                        Weekly Missions
+                                    </h3>
+                                    <Link href="/portal" className="text-primary font-bold text-sm hover:underline">
+                                        Open Portal →
                                     </Link>
                                 </div>
-                                <div className="space-y-6">
+                                <div className="space-y-4">
+                                    {isDataLoading ? (
+                                        [1, 2].map(i => <div key={i} className="h-20 bg-zinc-50 rounded-2xl animate-pulse" />)
+                                    ) : missions.length === 0 ? (
+                                        <p className="text-zinc-400 font-bold text-center py-4">No active missions</p>
+                                    ) : (
+                                        missions.slice(0, 2).map((mission) => (
+                                            <div key={mission.id} className="flex items-center gap-4 p-5 bg-zinc-50 rounded-[1.5rem] group hover:bg-zinc-100 transition-colors">
+                                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                                    <Target className="text-primary" size={20} />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="font-bold text-deep">{mission.title}</h4>
+                                                    <p className="text-sm text-deep/40">{mission.estimated_minutes} mins • +{mission.xp_reward} XP</p>
+                                                </div>
+                                                <ChevronRight className="text-zinc-300 group-hover:text-primary transition-colors" />
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Recent Activity */}
+                            <div className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-zinc-200/50 border border-zinc-100">
+                                <h3 className="text-2xl font-black text-deep flex items-center gap-3 mb-8">
+                                    <TrendingUp className="text-green-500" />
+                                    Recent Activity
+                                </h3>
+                                <div className="space-y-4">
+                                    {isDataLoading ? (
+                                        [1, 2, 3].map(i => <div key={i} className="h-12 bg-zinc-50 rounded-2xl animate-pulse" />)
+                                    ) : activities.length === 0 ? (
+                                        <p className="text-zinc-400 font-bold text-center py-4">No recent activity</p>
+                                    ) : (
+                                        activities.map((activity) => (
+                                            <div key={activity.id} className="flex items-center gap-4 py-3 border-b border-zinc-50 last:border-0">
+                                                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
+                                                    <Star size={16} />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-bold text-deep capitalize text-sm">{activity.activity_type.replace(/_/g, ' ')}</p>
+                                                    <p className="text-xs text-deep/30">{new Date(activity.created_at).toLocaleDateString()}</p>
+                                                </div>
+                                                <span className="font-black text-green-600 text-sm">+{activity.xp_earned} XP</span>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Child Profiles */}
+                            <div className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-zinc-200/50 border border-zinc-100">
+                                <div className="flex items-center justify-between mb-10">
+                                    <h3 className="text-2xl font-black text-deep">Legend Profiles</h3>
+                                    <Link
+                                        href="/onboarding/child"
+                                        className="flex items-center gap-3 text-primary font-black text-xs bg-primary/10 px-5 py-2.5 rounded-full hover:bg-primary hover:text-white transition-all"
+                                    >
+                                        <Plus size={16} /> Add Child
+                                    </Link>
+                                </div>
+                                <div className="space-y-4">
                                     {children.map((child) => {
                                         const level = calculateLevel(child.total_xp);
                                         return (
                                             <div
                                                 key={child.id}
-                                                className="p-8 rounded-[2.5rem] border-4 border-primary/20 bg-primary/5 flex items-center justify-between group hover:border-primary transition-all"
+                                                className="p-6 rounded-[2rem] border-2 border-primary/10 bg-primary/5 flex items-center justify-between group hover:border-primary transition-all"
                                             >
-                                                <div className="flex items-center gap-6">
-                                                    <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center font-black text-2xl shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center font-black text-lg shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform">
                                                         {child.first_name?.charAt(0) || '?'}
                                                     </div>
                                                     <div>
-                                                        <h4 className="text-xl font-black text-deep">{child.first_name}</h4>
-                                                        <p className="text-deep/60 font-bold">
-                                                            Age {child.age} • {level.name} • {child.total_xp.toLocaleString()} XP
+                                                        <h4 className="text-lg font-black text-deep">{child.first_name}</h4>
+                                                        <p className="text-deep/40 text-xs font-bold">
+                                                            Age {child.age} • {level.name}
                                                         </p>
                                                     </div>
                                                 </div>
                                                 <Link
                                                     href={`/account/children/${child.id}`}
-                                                    className="text-primary font-black uppercase tracking-widest text-sm hover:underline flex items-center gap-2"
+                                                    className="text-primary font-black uppercase tracking-widest text-[10px] hover:underline flex items-center gap-1.5"
                                                 >
-                                                    <Edit size={16} /> Edit
+                                                    <Edit size={12} /> Edit
                                                 </Link>
                                             </div>
                                         );
@@ -155,20 +247,27 @@ export default function ParentDashboard() {
                             </div>
 
                             {/* Quick Links */}
-                            <div className="grid sm:grid-cols-2 gap-6">
+                            <div className="grid sm:grid-cols-3 gap-6">
                                 <Link
                                     href="/portal"
                                     className="bg-gradient-to-br from-blue-500 to-cyan-500 p-8 rounded-[2.5rem] text-white hover:scale-[1.02] transition-transform"
                                 >
-                                    <h4 className="text-xl font-black mb-2">Open Kids Portal</h4>
-                                    <p className="text-white/80">Let your child explore stories, songs, and games.</p>
+                                    <h4 className="text-xl font-black mb-2">Portal</h4>
+                                    <p className="text-white/80 text-sm">Open Portal</p>
+                                </Link>
+                                <Link
+                                    href="/messages"
+                                    className="bg-gradient-to-br from-green-500 to-emerald-500 p-8 rounded-[2.5rem] text-white hover:scale-[1.02] transition-transform"
+                                >
+                                    <h4 className="text-xl font-black mb-2">Chat</h4>
+                                    <p className="text-white/80 text-sm">Messages</p>
                                 </Link>
                                 <Link
                                     href="/analytics"
                                     className="bg-gradient-to-br from-purple-500 to-pink-500 p-8 rounded-[2.5rem] text-white hover:scale-[1.02] transition-transform"
                                 >
-                                    <h4 className="text-xl font-black mb-2">View Progress</h4>
-                                    <p className="text-white/80">Track learning milestones and XP growth.</p>
+                                    <h4 className="text-xl font-black mb-2">Stats</h4>
+                                    <p className="text-white/80 text-sm">Progress</p>
                                 </Link>
                             </div>
                         </div>

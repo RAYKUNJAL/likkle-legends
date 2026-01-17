@@ -5,10 +5,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
     ArrowLeft, Book, Clock, Star, Lock, Play, Filter,
-    Search, ChevronDown, Heart, Sparkles
+    Search, ChevronDown, Heart, Sparkles, Wand2
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { getStorybooks } from '@/lib/database';
+import AdventureCreator from '@/components/AdventureCreator';
 
 interface Story {
     id: string;
@@ -124,6 +125,11 @@ export default function StoriesPage() {
                     </div>
                 </div>
             </header>
+
+            {/* Magic Adventure Section */}
+            <div className="max-w-6xl mx-auto px-4 py-8">
+                <AdventureCreator />
+            </div>
 
             {/* Filters */}
             <div className="max-w-6xl mx-auto px-4 -mt-4">

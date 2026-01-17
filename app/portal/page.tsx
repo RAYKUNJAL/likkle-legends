@@ -5,11 +5,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
     Sparkles, BookOpen, Music, Palette, Target, Star, Play,
-    Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video
+    Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video, Radio
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { getSongs, getStorybooks, getMissions, getPrintables, getVideos } from '@/lib/database';
 import { calculateLevel, BADGES, LEVELS } from '@/lib/gamification';
+import { HeritageMap } from '@/components/HeritageMap';
+import { CultureQuests } from '@/components/CultureQuests';
+import { EmptyState } from '@/components/EmptyState';
+import TantyRadio from '@/components/TantyRadio';
 
 interface Song {
     id: string;
@@ -51,7 +55,7 @@ export default function ChildPortalPage() {
     const [missions, setMissions] = useState<Mission[]>([]);
     const [videos, setVideos] = useState<Video[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [activeSection, setActiveSection] = useState<'home' | 'stories' | 'songs' | 'missions' | 'games' | 'lessons'>('home');
+    const [activeSection, setActiveSection] = useState<'home' | 'stories' | 'songs' | 'missions' | 'games' | 'lessons' | 'radio'>('home');
 
     useEffect(() => {
         loadPortalData();
@@ -87,6 +91,7 @@ export default function ChildPortalPage() {
         { id: 'songs', label: 'Songs', icon: Music, color: 'from-purple-500 to-pink-500' },
         { id: 'missions', label: 'Missions', icon: Target, color: 'from-orange-500 to-red-500' },
         { id: 'games', label: 'Games', icon: Palette, color: 'from-green-500 to-emerald-500' },
+        { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
     ];
 
     return (
@@ -150,7 +155,7 @@ export default function ChildPortalPage() {
                     {/* Welcome Banner */}
                     {activeSection === 'home' && activeChild && (
                         <>
-                            <div className="bg-gradient-to-r from-primary via-secondary to-accent rounded-[3rem] p-8 text-white mb-8 relative overflow-hidden">
+                            <div className="bg-gradient-to-r from-primary via-secondary to-accent rounded-[3rem] p-8 text-white mb-12 relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
                                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24" />
 
@@ -174,8 +179,13 @@ export default function ChildPortalPage() {
                                 </div>
                             </div>
 
+                            {/* Heritage Trail Map */}
+                            <div className="mb-12">
+                                <HeritageMap />
+                            </div>
+
                             {/* Quick Stats - Kid Friendly */}
-                            <div className="grid grid-cols-4 gap-4 mb-8">
+                            <div className="grid grid-cols-4 gap-4 mb-12">
                                 <div className="bg-white rounded-3xl p-6 text-center shadow-sm">
                                     <div className="text-4xl mb-2">📚</div>
                                     <p className="text-3xl font-black text-gray-900">{activeChild.stories_completed}</p>
@@ -230,6 +240,12 @@ export default function ChildPortalPage() {
                                         </div>
                                     ))}
                                 </div>
+                            ) : stories.length === 0 ? (
+                                <EmptyState
+                                    icon="📖"
+                                    title="No Stories Found"
+                                    message="Our island librarians are busy writing new adventures. Check back soon!"
+                                />
                             ) : (
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {stories.slice(0, activeSection === 'stories' ? 12 : 4).map((story) => {
@@ -301,6 +317,12 @@ export default function ChildPortalPage() {
                                         </div>
                                     ))}
                                 </div>
+                            ) : songs.length === 0 ? (
+                                <EmptyState
+                                    icon="🎵"
+                                    title="No Songs Yet"
+                                    message="The steelpan band is taking a break. New tunes coming your way soon!"
+                                />
                             ) : (
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {songs.slice(0, activeSection === 'songs' ? 12 : 4).map((song) => {
@@ -449,11 +471,11 @@ export default function ChildPortalPage() {
                                     ))}
                                 </div>
                             ) : missions.length === 0 ? (
-                                <div className="bg-white rounded-3xl p-12 text-center">
-                                    <div className="text-6xl mb-4">🏖️</div>
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2">Rest Day!</h3>
-                                    <p className="text-gray-500">No missions today. Come back tomorrow!</p>
-                                </div>
+                                <EmptyState
+                                    icon="🎯"
+                                    title="No Missions Today"
+                                    message="You've earned a rest day! Or you can start a Culture Quest below."
+                                />
                             ) : (
                                 <div className="space-y-4">
                                     {missions.map((mission) => (
@@ -477,6 +499,48 @@ export default function ChildPortalPage() {
                                     ))}
                                 </div>
                             )}
+
+                            {/* Culture Quests Section */}
+                            <div className="mt-12">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
+                                            🗺️
+                                        </div>
+                                        Culture Quests
+                                    </h2>
+                                </div>
+                                <CultureQuests completedIds={activeChild?.cultural_milestones || []} />
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Radio Section */}
+                    {(activeSection === 'home' || activeSection === 'radio') && (
+                        <section className="mb-12">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-3xl flex items-center justify-center text-white text-3xl shadow-lg animate-float">
+                                        📻
+                                    </div>
+                                    <div>
+                                        <h2 className="text-3xl font-black text-gray-900">Heritage Radio</h2>
+                                        <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Live from Likkle Legends Island</p>
+                                    </div>
+                                </div>
+                                {activeSection === 'home' && (
+                                    <button
+                                        onClick={() => setActiveSection('radio')}
+                                        className="px-6 py-3 bg-white border-2 border-orange-100 text-orange-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-orange-50 transition-all hover:scale-105"
+                                    >
+                                        Full Station
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="bg-white rounded-[4rem] p-1 border-4 border-orange-50 shadow-2xl overflow-hidden">
+                                <TantyRadio />
+                            </div>
                         </section>
                     )}
 
@@ -506,13 +570,6 @@ export default function ChildPortalPage() {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                    {/* Dynamic games from database */}
-                                    {(async () => {
-                                        // We need to fetch games in useEffect, so let's show a link to games page
-                                        return null;
-                                    })()}
-
-                                    {/* Fallback static games for when database is empty */}
                                     <Link
                                         href="/portal/games/island-match"
                                         className="bg-gradient-to-br from-green-400 to-emerald-500 rounded-3xl p-6 text-white cursor-pointer hover:scale-105 transition-transform"
@@ -548,7 +605,6 @@ export default function ChildPortalPage() {
                     )}
                 </main>
             </div>
-            {/* AI Chat Buddy handled globally in layout.tsx */}
         </div>
     );
 }
