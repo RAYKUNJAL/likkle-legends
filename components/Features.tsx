@@ -3,8 +3,8 @@
 import { Mail, Palette, Laptop, Sparkles } from 'lucide-react';
 import { siteContent } from '@/lib/content';
 
-export default function Features() {
-  const { what_you_get } = siteContent;
+export default function Features({ content }: { content?: any }) {
+  const { what_you_get } = content || siteContent;
 
   const icons = [<Mail key="mail" />, <Palette key="palette" />, <Laptop key="laptop" />, <Sparkles key="sparkles" />];
 

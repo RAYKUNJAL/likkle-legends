@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { siteContent } from '@/lib/content';
 
-export default function FAQ() {
-    const { faq } = siteContent;
+export default function FAQ({ content }: { content?: any }) {
+    const { faq } = content || siteContent;
     const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
@@ -17,7 +17,7 @@ export default function FAQ() {
                 </div>
 
                 <div className="space-y-4">
-                    {faq.items.map((item, i) => (
+                    {faq.items.map((item: { question: string, answer: string }, i: number) => (
                         <div key={i} className={`border-2 rounded-[2.5rem] transition-all duration-300 overflow-hidden ${openIndex === i ? 'border-primary bg-zinc-50' : 'border-zinc-100 bg-white hover:border-zinc-200'
                             }`}>
                             <button
@@ -28,8 +28,8 @@ export default function FAQ() {
                                     {item.question}
                                 </span>
                                 <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300 ${openIndex === i
-                                        ? 'bg-primary text-white rotate-180 shadow-lg shadow-primary/20'
-                                        : 'bg-zinc-100 text-deep group-hover:bg-zinc-200'
+                                    ? 'bg-primary text-white rotate-180 shadow-lg shadow-primary/20'
+                                    : 'bg-zinc-100 text-deep group-hover:bg-zinc-200'
                                     }`}>
                                     {openIndex === i ? <Minus size={20} /> : <Plus size={20} />}
                                 </div>

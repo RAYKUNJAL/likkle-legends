@@ -3,7 +3,7 @@ export const siteContent = {
         title: "Likkle Legends Mail Club | Caribbean Culture & Confidence for Kids 4–8",
         description: "A $10/month Caribbean mail club and AI-powered learning world that helps kids 4–8 build identity, emotional literacy, and confidence through letters, songs, stories, and missions.",
         canonical_url: "https://likklelegends.com",
-        og_image: "/images/og-likkle-legends.jpg"
+        og_image: "/images/logo.png"
     },
     notification_bar: {
         enabled: true,
@@ -102,25 +102,25 @@ export const siteContent = {
                 label: "PERSONALIZED LETTER",
                 title: "Stories that speak to your child",
                 description: "A story-driven letter from a Likkle Legend character, tailored to your child’s age track, turning mail time into a moment of connection.",
-                media: "/images/letter-preview.jpg"
+                media: "/images/letter-preview.png"
             },
             {
                 label: "CARD & COLORING",
                 title: "Culture they can hold and color",
                 description: "Collectible cultural flashcards and creative coloring pages that teach island history, foods, and traditions while they play.",
-                media: "/images/flashcard-coloring.jpg"
+                media: "/images/flashcard-coloring.png"
             },
             {
                 label: "DIGITAL UNIVERSE",
                 title: "A kid-safe learning portal",
                 description: "Unlock lessons, interactive stories, and Legends Missions in a private age-based portal so screen time actually supports learning.",
-                media: "/images/digital-portal.jpg"
+                media: "/images/digital-portal.png"
             },
             {
                 label: "AI READING BUDDY",
                 title: "Reading help when you’re busy",
                 description: "A gentle, smart reading buddy that listens as your child reads and offers simple feedback to build confidence and fluency.",
-                media: "/images/ai-reading-buddy.jpg"
+                media: "/images/ai-reading-buddy.png"
             }
         ]
     },
@@ -140,7 +140,7 @@ export const siteContent = {
                 description: "Kids see themselves as the legends of their own stories through personalized missions and character-led encouragement."
             }
         ],
-        supporting_media: "/images/parent-child-smiling.jpg"
+        supporting_media: "/images/parent-child-smiling.png"
     },
     who_it_is_for: {
         title: "Who Likkle Legends is perfect for",
@@ -430,8 +430,8 @@ export const siteContent = {
                 links: [
                     { label: "How It Works", href: "#how-it-works" },
                     { label: "Pricing", href: "#pricing" },
-                    { label: "Child Portal", href: "/dashboard" },
-                    { label: "Parent Dashboard", href: "/dashboard" }
+                    { label: "Child Portal", href: "/portal" },
+                    { label: "Parent Dashboard", href: "/parent" }
                 ]
             },
             {

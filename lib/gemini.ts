@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SafetySetting } from "@google/generative-ai";
+import { TANTY_ISLAND_ENGINE } from "@/services/tantyConfig";
 
 const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -30,38 +31,12 @@ export async function generateAIResponse(userMessage: string) {
 
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: TANTY_ISLAND_ENGINE.technical_stack.brain_model,
+      systemInstruction: TANTY_ISLAND_ENGINE.neural_personality.system_instruction,
       safetySettings,
     });
 
-    const systemPrompt = `
-      You are Tanty Spice, a wise, warm, and funny Caribbean auntie. 
-      You speak with a gentle Caribbean rhythm (using words like "darlin'", "child", "bless up", "small ting", "mash up").
-      You are an expert in emotional literacy for children (SEL) and Caribbean folklore.
-      
-      CORE ROLE:
-      Help children (ages 4-8) identify their feelings and feel proud of who they are.
-      Keep your responses short (max 2-3 sentences), encouraging, and playful.
-
-      KIDS SAFETY GUARDRAILS:
-      1. Always be kind and age-appropriate.
-      2. NEVER discuss violence, self-harm, adult themes, or spooky stuff.
-      3. If a child mentions being in danger, tell them to talk to a trusted adult.
-      4. Do not provide professional advice or ask for personal info.
-
-      TRAINING EXAMPLES:
-      Child: "I'm feeling sad today."
-      Tanty Spice: "Aw, hush now darlin'. Even the sun hides behind a cloud sometimes, but it always comes back out to shine. Tell Tanty, what's making your heart feel heavy like a wet mango?"
-
-      Child: "What happens if I play with fire?"
-      Tanty Spice: "Oye! That's a dangerous ting, child. Please go and talk to a trusted adult right now, like your Mommy or Daddy. They'll keep you safe and explain why we stay away from flames."
-      
-      User Message: "${userMessage}"
-      
-      Respond as Tanty Spice:
-    `;
-
-    const result = await model.generateContent(systemPrompt);
+    const result = await model.generateContent(userMessage);
     const response = await result.response;
     return response.text();
   } catch (error) {
@@ -92,12 +67,32 @@ export async function getReadingFeedback(age: string, text: string) {
   }
 }
 
-export function playTextToSpeech(text: string, voice: string = 'Kore') {
-  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.pitch = voice === 'Puck' ? 1.2 : 0.9;
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
+export async function playTextToSpeech(text: string, voice: string = 'Kore') {
+  if (typeof window === 'undefined') return;
+
+  try {
+    // Dynamically import to avoid circular dependency or server-only issues in client bundle
+    const { getTantyVoice } = await import('@/app/actions/voice');
+    const res = await getTantyVoice(text);
+
+    if (res.success && res.audio) {
+      const audio = new Audio(res.audio);
+      await audio.play();
+    } else {
+      // Fallback to Browser TTS (robotic) only if server fails
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v => v.name.includes('Google UK English Female')) ||
+          voices.find(v => v.name.includes('Samantha'));
+        if (preferredVoice) utterance.voice = preferredVoice;
+        utterance.pitch = 0.9;
+        utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  } catch (e) {
+    console.error("TTS playback error:", e);
   }
 }
 
@@ -130,5 +125,30 @@ export async function getParentSuggestions(ageGroup: string, recentActivity: str
       { title: "Island Talk", description: "Ask your little legend about their favorite island fruit.", type: "Language" },
       { title: "Art Attack", description: "Practice some new Patois words together.", type: "Creative" }
     ];
+  }
+}
+
+export async function generateAssetMetadata(title: string, type: string) {
+  if (!apiKey) return { description: "Island vibes and fun learning!", tags: ["culture", "fun"] };
+
+  try {
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      generationConfig: { responseMimeType: "application/json" }
+    });
+
+    const prompt = `
+      You are an expert curator for "Likkle Legends", a Caribbean educational app for kids.
+      User is uploading a ${type} titled "${title}".
+      Generate a child-friendly, engaging description (grandmotherly and warm) and 3-5 keywords.
+      Return JSON: { "description": string, "tags": string[] }
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return JSON.parse(response.text());
+  } catch (error) {
+    console.error("Error generating asset metadata:", error);
+    return { description: "A special gift for our little legends!", tags: ["caribbean", "learning"] };
   }
 }

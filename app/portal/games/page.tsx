@@ -115,6 +115,8 @@ const FEATURED_GAMES = [
     },
 ];
 
+import { EmptyState } from '@/components/EmptyState';
+
 export default function GamesHubPage() {
     const { activeChild, canAccess, isSubscribed } = useUser();
     const [games, setGames] = useState<Game[]>([]);
@@ -138,12 +140,14 @@ export default function GamesHubPage() {
         }
     };
 
+    const displayGames = games.length > 0 ? games : FEATURED_GAMES;
+
     const filteredGames = activeCategory === 'all'
-        ? FEATURED_GAMES
-        : FEATURED_GAMES.filter(g => g.category === activeCategory);
+        ? displayGames
+        : displayGames.filter(g => (g as any).category === activeCategory);
 
     const totalXP = activeChild?.total_xp || 0;
-    const unlockedGames = FEATURED_GAMES.filter(g => canAccess(g.tier));
+    const unlockedGames = filteredGames.filter(g => canAccess((g as any).tier_required || (g as any).tier));
 
     return (
         <div className="min-h-screen bg-[#0a0a1a] text-white overflow-hidden">
@@ -201,8 +205,8 @@ export default function GamesHubPage() {
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
                             className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold whitespace-nowrap transition-all ${activeCategory === cat.id
-                                    ? `bg-gradient-to-r ${cat.color} text-white shadow-lg shadow-primary/20 scale-105`
-                                    : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
+                                ? `bg-gradient-to-r ${cat.color} text-white shadow-lg shadow-primary/20 scale-105`
+                                : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
                                 }`}
                         >
                             <span className="text-lg">{cat.emoji}</span>
@@ -278,17 +282,28 @@ export default function GamesHubPage() {
                             <div key={i} className="bg-white/5 rounded-3xl h-72 animate-pulse border border-white/5" />
                         ))}
                     </div>
+                ) : filteredGames.length === 0 ? (
+                    <div className="py-20">
+                        <EmptyState
+                            icon="🎮"
+                            title="No Games Found"
+                            message="Tanty's game box is currently being tidied. Try another category or check back later!"
+                            actionLabel="See All Games"
+                            onAction={() => setActiveCategory('all')}
+                        />
+                    </div>
                 ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredGames.map((game) => {
-                            const isLocked = !canAccess(game.tier);
+                            const tier = (game as any).tier_required || (game as any).tier;
+                            const isLocked = !canAccess(tier);
 
                             return (
                                 <div
                                     key={game.id}
                                     onMouseEnter={() => setHoveredGame(game.id)}
                                     onMouseLeave={() => setHoveredGame(null)}
-                                    className={`group relative bg-gradient-to-br ${game.gradient} rounded-3xl overflow-hidden transition-all duration-300 ${hoveredGame === game.id ? 'scale-105 shadow-2xl z-10' : 'shadow-lg'
+                                    className={`group relative bg-gradient-to-br ${(game as any).gradient || 'from-primary to-accent'} rounded-3xl overflow-hidden transition-all duration-300 ${hoveredGame === game.id ? 'scale-105 shadow-2xl z-10' : 'shadow-lg'
                                         } ${isLocked ? 'opacity-70' : ''}`}
                                 >
                                     {/* Glass overlay */}

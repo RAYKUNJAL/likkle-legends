@@ -50,8 +50,8 @@ export default async function Home() {
           </div>
         </div>
 
-        <HowItWorks />
-        <Features />
+        <HowItWorks content={content} />
+        <Features content={content} />
 
         {/* Identity Section */}
         <TantysPorchSection />
@@ -90,7 +90,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <Characters />
+        <Characters content={content} />
         <StoryGenerator />
 
         {/* Founder Section */}
@@ -187,7 +187,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <FAQ />
+        <FAQ content={content} />
       </main>
 
       <Footer />

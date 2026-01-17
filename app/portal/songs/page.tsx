@@ -10,6 +10,8 @@ import {
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/components/UserContext';
 import { supabase } from '@/lib/storage';
+import { EmptyState } from '@/components/EmptyState';
+import { Radio } from 'lucide-react';
 
 interface Song {
     id: string;
@@ -198,6 +200,27 @@ export default function SongsPage() {
                 </div>
             </header>
 
+            {/* Tanty Radio Teaser */}
+            <div className="max-w-6xl mx-auto px-4 mt-8">
+                <div className="bg-gradient-to-r from-orange-400 to-red-500 rounded-[2.5rem] p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Radio size={24} className="animate-pulse" />
+                            <span className="font-black uppercase tracking-widest text-xs opacity-80">Live Now</span>
+                        </div>
+                        <h2 className="text-3xl font-black mb-2">Tanty's Island Radio</h2>
+                        <p className="text-white/80 max-w-md">Listen to non-stop Calypso, Reggae, and Folklore. Tanty's currently spinning "Steelpan Serenade"!</p>
+                    </div>
+                    <Link
+                        href="/portal/radio"
+                        className="relative z-10 px-8 py-4 bg-white text-orange-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg text-center"
+                    >
+                        Tune In Live
+                    </Link>
+                </div>
+            </div>
+
             {/* Main Content */}
             <main className="max-w-6xl mx-auto px-4 py-8 pb-40">
                 {activeTab === 'islands' ? (
@@ -240,10 +263,13 @@ export default function SongsPage() {
                 )}
 
                 {filteredSongs.length === 0 && (
-                    <div className="text-center py-16">
-                        <Music2 className="text-gray-300 mx-auto mb-4" size={48} />
-                        <p className="text-gray-500">No songs in this category yet</p>
-                    </div>
+                    <EmptyState
+                        icon="🎵"
+                        title="No Songs Found"
+                        message="Your favorite melodies are playing hide and seek. Try 'All Songs' to see the full collection!"
+                        actionLabel="View All Songs"
+                        onAction={() => setActiveTab('all')}
+                    />
                 )}
             </main>
 

@@ -54,3 +54,13 @@ export async function updateChild(childId: string, updates: Record<string, unkno
     if (error) throw error;
     return data;
 }
+
+export async function deleteChild(childId: string) {
+    const { error } = await supabase
+        .from('children')
+        .delete()
+        .eq('id', childId);
+
+    if (error) throw error;
+    return true;
+}

@@ -1,59 +1,37 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# 🏝️ Likkle Legends - AI Studio Edition
 
-First, run the development server:
+The first Caribbean emotional-learning universe for kids ages 4–8. Integrated with Google Gemini for magical storytelling and cultural pride.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Features Integrated
+- **Tanty Spice v3 (Antigravity Edition)**: Advanced AI personality with authentic Caribbean rhythmic dialect and warm voice.
+- **Magic Story Creator**: Generate 3-page personalized storybooks with custom illustrations and Tanty's narration.
+- **Island Discovery Map**: Explore real-world landmarks in the Caribbean with grounding from Google Maps.
+- **Magic Brush**: Transform child sketches into professional island-style 3D illustrations.
+- **Legend Missions**: Interactive cultural and emotional missions with feedback from Tanty.
+- **Tanty's Radio**: Listen to island beats and nursery songs.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Getting Started
+1. **Set your API Key**:
+   Create a `.env.local` file or set the environment variable:
+   ```env
+   NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+   ```
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Run the App**:
+   ```bash
+   npm run dev
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
+- **Framework**: Next.js / React (Vite-based in subfolder)
+- **AI Brain**: Google Gemini 2.0 Flash
+- **Voice**: Google Gemini TTS (Vocal Blueprint: Kore)
+- **Styling**: Tailwind CSS + Custom Caribbean Glassmorphism
+- **Fonts**: Fredoka (Headings) & Quicksand (Body)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
-
-# Run and deploy your AI Studio app
-
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/drive/1q3otHCzWHDfvxUjwMTdnCDsOgXM0Wixk
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
->>>>>>> origin/main
+---
+© 2026 Likkle Legends Universe. 🍢 Everything Cook & Curry!

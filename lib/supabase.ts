@@ -27,3 +27,7 @@ export const supabase = new Proxy({} as SupabaseClient, {
         return (getSupabase() as any)[prop];
     }
 });
+
+export const isSupabaseConfigured = () => {
+    return !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+};

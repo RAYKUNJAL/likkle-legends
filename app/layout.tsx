@@ -49,10 +49,9 @@ export const metadata: Metadata = {
 };
 
 import AnalyticsLoader from '@/components/AnalyticsLoader';
-import CookieBanner from '@/components/CookieBanner';
+import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import { UserProvider } from '@/components/UserContext';
 import StructuredData from '@/components/StructuredData';
-
 import TantySpiceWidget from '@/components/TantySpiceWidget';
 
 export default function RootLayout({
@@ -70,7 +69,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <AnalyticsLoader />
-        <CookieBanner />
+        <CookieConsentBanner />
         <UserProvider>
           {children}
           <TantySpiceWidget />
