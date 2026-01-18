@@ -18,9 +18,9 @@ const config: Config = {
                 border: "var(--border)",
             },
             fontFamily: {
-                sans: ["var(--font-geist-sans)"],
+                sans: ["var(--font-quicksand)", "system-ui", "sans-serif"],
                 mono: ["var(--font-geist-mono)"],
-                heading: ["var(--font-geist-sans)"],
+                heading: ["var(--font-fredoka)", "sans-serif"],
             },
             animation: {
                 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

@@ -13,6 +13,8 @@ import StoryGenerator from '@/components/StoryGenerator';
 import HowItWorks from '@/components/HowItWorks';
 import Footer from '@/components/Footer';
 import TantysPorchSection from '@/components/TantysPorchSection';
+import TantyRadio from '@/components/TantyRadio';
+import { Music, ShieldCheck } from 'lucide-react';
 
 import { getMergedSiteContent } from '@/lib/services/cms';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
@@ -50,11 +52,46 @@ export default async function Home() {
           </div>
         </div>
 
-        <HowItWorks content={content} />
-        <Features content={content} />
-
-        {/* Identity Section */}
+        {/* PROMINENT TANTY SECTION */}
         <TantysPorchSection />
+
+        <HowItWorks content={content} />
+
+        {/* TANTY RADIO SECTION */}
+        <section className="py-24 bg-deep overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('/images/pattern.png')] opacity-5 pointer-events-none"></div>
+          <div className="container relative z-10">
+            <div className="text-center mb-16 space-y-4">
+              <span className="text-primary font-bold uppercase tracking-[0.2em] text-sm">Now Playing</span>
+              <h2 className="text-4xl lg:text-6xl font-black text-white">Tanty's Magic Radio</h2>
+              <p className="text-xl text-white/60 max-w-2xl mx-auto">
+                Tune in to island rhythms & folklore stories narrated by Tanty Spice herself.
+              </p>
+            </div>
+
+            <TantyRadio />
+
+            <div className="mt-20 grid md:grid-cols-3 gap-8">
+              <div className="bg-white/5 backdrop-blur-sm p-8 rounded-[2rem] border border-white/10 text-center">
+                <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">📻</div>
+                <h4 className="text-xl font-bold text-white mb-2">Authentic Sound</h4>
+                <p className="text-white/60">Real Caribbean accents and instruments that feel like home.</p>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm p-8 rounded-[2rem] border border-white/10 text-center">
+                <div className="w-16 h-16 bg-secondary/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">📖</div>
+                <h4 className="text-xl font-bold text-white mb-2">Folklore Stories</h4>
+                <p className="text-white/60">Anansi, Papa Bois, and more legends brought to life.</p>
+              </div>
+              <div className="bg-white/5 backdrop-blur-sm p-8 rounded-[2rem] border border-white/10 text-center">
+                <div className="w-16 h-16 bg-accent/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">🛡️</div>
+                <h4 className="text-xl font-bold text-white mb-2">100% Kid Safe</h4>
+                <p className="text-white/60">Ad-free, curated content designed for little ears.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <Features content={content} />
 
         <section id="identity" className="py-24 bg-deep text-white overflow-hidden relative">
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary rounded-full blur-[150px] opacity-10 -mr-64 -mt-64"></div>

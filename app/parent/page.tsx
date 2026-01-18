@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useUser } from '@/components/UserContext';
 import { calculateLevel } from '@/lib/gamification';
 import { getRecentActivities, getMissions } from '@/lib/database';
+import TantyRadio from '@/components/TantyRadio';
 
 export default function ParentDashboard() {
     const { user, children, activeChild, isLoading, isSubscribed } = useUser();
@@ -76,6 +77,10 @@ export default function ParentDashboard() {
                         {user ? `Welcome back, ${user.full_name?.split(' ')[0]}!` : 'Manage your little legend\'s cultural journey.'}
                     </p>
                 </header>
+
+                <div className="mb-12">
+                    <TantyRadio isLite />
+                </div>
 
                 {isLoading ? (
                     <div className="grid lg:grid-cols-3 gap-10">

@@ -21,7 +21,7 @@ const fredoka = Fredoka({
 const quicksand = Quicksand({
   variable: "--font-quicksand",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 import { siteContent } from '@/lib/content';
@@ -65,7 +65,7 @@ export default function RootLayout({
         <StructuredData />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${quicksand.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${quicksand.variable} font-quicksand antialiased`}
         suppressHydrationWarning
       >
         <AnalyticsLoader />

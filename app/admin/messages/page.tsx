@@ -1,7 +1,6 @@
-"use client";
-
 import { useState, useEffect } from 'react';
-import { AdminLayout, DataTable, SearchBar, StatusBadge, ActionButton, Eye, MessageSquare, Trash2, Send } from '@/components/admin/AdminComponents';
+import { AdminLayout, DataTable, SearchBar, StatusBadge, ActionButton } from '@/components/admin/AdminComponents';
+import { Eye, MessageSquare, Trash2, Send } from 'lucide-react';
 
 interface AdminMessage {
     id: string;

@@ -1,12 +1,18 @@
 "use client";
 
-import { Mail, Palette, Laptop, Sparkles } from 'lucide-react';
+import { Mail, Palette, Laptop, Sparkles, MessageCircle } from 'lucide-react';
 import { siteContent } from '@/lib/content';
 
 export default function Features({ content }: { content?: any }) {
   const { what_you_get } = content || siteContent;
 
-  const icons = [<Mail key="mail" />, <Palette key="palette" />, <Laptop key="laptop" />, <Sparkles key="sparkles" />];
+  const icons = [
+    <Mail key="mail" />,
+    <Palette key="palette" />,
+    <Laptop key="laptop" />,
+    <MessageCircle key="message" />,
+    <Sparkles key="sparkles" />
+  ];
 
   return (
     <section id={what_you_get.id} className="py-24 bg-zinc-50">
@@ -16,7 +22,7 @@ export default function Features({ content }: { content?: any }) {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {what_you_get.items.map((item, i) => (
+          {what_you_get.items.map((item: any, i: number) => (
             <div key={i} className="glass-card p-10 rounded-[3rem] border border-zinc-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 bg-zinc-50 text-deep group-hover:bg-primary group-hover:text-white transition-colors`}>
                 {icons[i % icons.length]}

@@ -17,7 +17,7 @@ export default function TantysPorchSection() {
     const [messages, setMessages] = useState<Message[]>([
         {
             role: "assistant",
-            content: "Fix yuh face, me darlin'! Come sit down and tell Tanty how your heart feelin' today. Everything cook and curry here."
+            content: "Come in, me sugar-plum! Sit down on Tanty's porch. How's yuh heart feelin' today?"
         }
     ]);
     const [inputValue, setInputValue] = useState("");
@@ -34,8 +34,8 @@ export default function TantysPorchSection() {
     ] as const;
 
     const QUICK_OPTIONS = {
-        stories: ["Anansi & The Pot of Wisdom", "Papa Bois", "Why Dog chase Cat"],
-        feelings: ["I feel sad", "I am happy!", "I feel scared"],
+        stories: ["Tell me a story about Anansi", "narrate Mama Bois", "Why Dog chase Cat?"],
+        feelings: ["I feel Sunny ☀️", "I feel Rainy 🌧️", "I feel like a Rainbow 🌈", "I feel Stormy ⛈️"],
         fun: ["What is Carnival?", "Tell me about Steel Pan", "What is Callaloo?"]
     };
 
@@ -228,8 +228,8 @@ export default function TantysPorchSection() {
                                 <span className="text-2xl">📞</span>
                             </div>
                             <div className="text-left leading-tight">
-                                <span className="block font-black text-white uppercase tracking-wider text-lg drop-shadow-md">Call Tanty!</span>
-                                <span className="block text-xs text-green-100 font-bold">Chat Live Now</span>
+                                <span className="block font-black text-white uppercase tracking-wider text-lg drop-shadow-md">Talk to Tanty!</span>
+                                <span className="block text-xs text-green-100 font-bold">Try de Live Demo</span>
                             </div>
                         </button>
 

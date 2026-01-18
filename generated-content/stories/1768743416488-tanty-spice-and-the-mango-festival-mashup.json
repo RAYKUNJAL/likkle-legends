@@ -1,0 +1,128 @@
+{
+  "title": "Tanty Spice and the Mango Festival Mashup",
+  "summary": "When the annual Mango Festival is threatened by a sudden storm, Tanty Spice rallies the community of Mango Bay, Jamaica, to come together and save the day. Through teamwork, resourcefulness, and a whole lot of Caribbean spirit, they show that even a little bit of community love can go a long way.",
+  "pages": [
+    {
+      "pageNumber": 1,
+      "text": "Mango Bay, Jamaica, was buzzing with excitement. The annual Mango Festival was just around the corner! Everyone looked forward to the sweet treats, lively music, and the chance to celebrate together. Tanty Spice, known for her delicious mango chutney and her even sweeter smile, was busy preparing. She loved seeing all the [pickney] [children] laughing and playing during the festival.",
+      "imagePrompt": "Illustration of Mango Bay, Jamaica, with colorful houses, palm trees, and a bustling marketplace in the distance. Tanty Spice, a kind-looking elderly woman with a bright headwrap, is stirring a large pot with a wooden spoon. Children are playing nearby, smiling and excited.",
+      "patoisWords": [
+        {
+          "word": "pickney",
+          "meaning": "child"
+        }
+      ]
+    },
+    {
+      "pageNumber": 2,
+      "text": "The day before the festival, dark clouds gathered. The wind howled, and rain poured down in sheets. A big storm was brewing! The marketplace stalls were blown over, and mangoes were scattered everywhere. Tanty Spice peeked out her window, worried. \"Oh dear,\" she sighed. \"This storm might ruin the festival, and disappoint all the [pickney].\"",
+      "imagePrompt": "Illustration of a tropical storm hitting Mango Bay. Rain is pouring down, the wind is blowing palm trees sideways, and market stalls are overturned. Tanty Spice is looking out of her window with a concerned expression.",
+      "patoisWords": [
+        {
+          "word": "pickney",
+          "meaning": "children"
+        }
+      ]
+    },
+    {
+      "pageNumber": 3,
+      "text": "The next morning, the storm had passed, but the damage was done. The marketplace was a mess! People looked sad and discouraged. Tanty Spice knew she had to do something. She called out, \"[Wah gwaan], everyone?\" [What's going on?] \"We can't let a little rain stop us!\"",
+      "imagePrompt": "Illustration of the damaged marketplace after the storm. People are standing around looking disheartened. Tanty Spice is standing in the middle, raising her voice with a determined expression.",
+      "patoisWords": [
+        {
+          "word": "wah gwaan",
+          "meaning": "what's going on"
+        }
+      ]
+    },
+    {
+      "pageNumber": 4,
+      "text": "Tanty Spice gathered everyone together. \"We need to clean up and rebuild,\" she said. \"If we all work together, we can still have a festival!\" The villagers started helping. Some swept up debris, others righted the stalls, and some collected the scattered mangoes. Even the [pickney] helped by picking up small branches.",
+      "imagePrompt": "Illustration of the community working together to clean up the marketplace. People are sweeping, lifting stalls, and collecting mangoes. Children are helping by picking up smaller debris. The sun is starting to peek through the clouds.",
+      "patoisWords": [
+        {
+          "word": "pickney",
+          "meaning": "children"
+        }
+      ]
+    },
+    {
+      "pageNumber": 5,
+      "text": "As they worked, Tanty Spice started singing a lively reggae tune. Soon, everyone was singing along, their spirits lifting with each verse. The sound of music filled the air, chasing away the gloom. She told them, \"[Yuh] see, music and togetherness can fix anything!\" [You see]",
+      "imagePrompt": "Illustration of the community working and singing together. Tanty Spice is leading the singing, and everyone is smiling and enjoying themselves. Some people are playing makeshift instruments like drums made from buckets.",
+      "patoisWords": [
+        {
+          "word": "yuh",
+          "meaning": "you"
+        }
+      ]
+    },
+    {
+      "pageNumber": 6,
+      "text": "By afternoon, the marketplace was almost back to normal! Colorful decorations were hung, the stalls were filled with mango treats, and the sweet aroma of jerk chicken filled the air. Everyone was hungry from working so hard. \"Time to [nyam]!\" [To Eat] Tanty Spice announced, setting out a big platter of her famous mango chutney.",
+      "imagePrompt": "Illustration of the revitalized marketplace. Colorful decorations are hanging, stalls are filled with mangoes and other treats, and people are gathered around, smiling and laughing. Tanty Spice is presenting a platter of mango chutney.",
+      "patoisWords": [
+        {
+          "word": "nyam",
+          "meaning": "to eat"
+        }
+      ]
+    },
+    {
+      "pageNumber": 7,
+      "text": "The Mango Festival was a success! People danced to the reggae music, ate delicious food, and celebrated their community spirit. Tanty Spice smiled, knowing that even though the storm had tried to ruin their fun, their togetherness had saved the day. The community had demonstrated real resilience.",
+      "imagePrompt": "Illustration of the Mango Festival in full swing. People are dancing, eating, and enjoying themselves. Tanty Spice is watching with a warm smile on her face. There are colorful lights and decorations everywhere.",
+      "patoisWords": []
+    },
+    {
+      "pageNumber": 8,
+      "text": "That night, as the stars twinkled over Mango Bay, Tanty Spice sat on her porch, sipping ginger tea. She knew that the real sweetness of the Mango Festival wasn't just the mangoes, but the love and kindness that everyone shared. Remember [pickney], when we come together, we can overcome anything! Now go and spread some sunshine!",
+      "imagePrompt": "Illustration of Tanty Spice sitting on her porch at night, sipping tea and looking at the stars. The sky is filled with stars, and fireflies are flitting around. The atmosphere is peaceful and warm.",
+      "patoisWords": [
+        {
+          "word": "pickney",
+          "meaning": "children"
+        }
+      ]
+    }
+  ],
+  "ageTrack": "big",
+  "islandTheme": "Jamaica",
+  "readingTimeMinutes": 7,
+  "difficultyLevel": 3,
+  "tierRequired": "legends_plus",
+  "patoisWords": [
+    {
+      "word": "pickney",
+      "meaning": "child",
+      "pronunciation": "PICK-nee"
+    },
+    {
+      "word": "yuh",
+      "meaning": "you",
+      "pronunciation": "YUH"
+    },
+    {
+      "word": "nyam",
+      "meaning": "to eat",
+      "pronunciation": "NYAM"
+    },
+    {
+      "word": "wah gwaan",
+      "meaning": "what's going on",
+      "pronunciation": "WAH gwaan"
+    }
+  ],
+  "characterId": "Tanty Spice",
+  "culturalElements": [
+    "Jamaican Mango Festival",
+    "Reggae Music",
+    "Mango Chutney",
+    "Community Support",
+    "Respect for Elders",
+    "Jerk Chicken",
+    "Ginger Tea",
+    "Caribbean Market Place",
+    "Colorful Houses"
+  ]
+}

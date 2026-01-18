@@ -114,6 +114,9 @@ export const RADIO_TRACKS = [
     },
     {
         id: 'wav6',
+        title: 'Learn de Alphabet',
+        artist: 'Tanty Spice',
+        url: 'https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3',
         channel: 'learning'
     }
 ];
