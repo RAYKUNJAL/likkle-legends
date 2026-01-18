@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Track } from '../lib/types';
 import { BRAND_NAME, RADIO_CHANNELS, RADIO_TRACKS as DEFAULT_TRACKS } from '../lib/constants';

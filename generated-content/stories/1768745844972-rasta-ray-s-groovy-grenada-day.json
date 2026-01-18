@@ -1,0 +1,78 @@
+{
+  "title": "Rasta Ray's Groovy Grenada Day",
+  "summary": "Rasta Ray loves music! He shares his love of steelpan music and Grenadian dance with all the [pickney] on the island, spreading joy and rhythm everywhere he goes. He learns that sharing his talents makes everyone happy.",
+  "pages": [
+    {
+      "pageNumber": 1,
+      "text": "Rasta Ray lives in Grenada. He loves to play his steelpan. Boom! Boom! Ting!",
+      "imagePrompt": "Illustration of Rasta Ray, a small boy with dreadlocks, standing in front of a brightly colored house in Grenada. He is smiling and holding a miniature steelpan. Palm trees and tropical flowers surround the house. The sky is bright blue.",
+      "patoisWords": []
+    },
+    {
+      "pageNumber": 2,
+      "text": "Today, Rasta Ray wants to play for all the [pickney] [child]! He packs his little steelpan and a mango to [nyam] [eat].",
+      "imagePrompt": "Rasta Ray walking down a sunny road in Grenada, carrying a small steelpan in one hand and a bright yellow mango in the other. Other children are playing nearby, smiling at him. The houses are painted in vibrant Caribbean colors.",
+      "patoisWords": [
+        {
+          "word": "pickney",
+          "meaning": "child"
+        },
+        {
+          "word": "nyam",
+          "meaning": "to eat"
+        }
+      ]
+    },
+    {
+      "pageNumber": 3,
+      "text": "He goes to the beach. The waves say, “Shhh! Shhh!” He plays a happy song. Ting! Boom! Ting!",
+      "imagePrompt": "Rasta Ray playing his steelpan on a sandy beach in Grenada. The turquoise water is calm and clear. Children are gathered around him, clapping and dancing to the music. Colorful fishing boats are in the distance.",
+      "patoisWords": []
+    },
+    {
+      "pageNumber": 4,
+      "text": "The [pickney] love his music! They dance and laugh. Rasta Ray smiles. He loves to share his music.",
+      "imagePrompt": "Close-up shot of the children dancing and laughing around Rasta Ray on the beach. They are holding hands and moving to the rhythm of the steelpan music. A young girl offers him a piece of sugar cake. The scene is filled with joy and energy.",
+      "patoisWords": [
+        {
+          "word": "pickney",
+          "meaning": "children"
+        }
+      ]
+    },
+    {
+      "pageNumber": 5,
+      "text": "Sharing his music makes everyone happy! Rasta Ray feels good. Music and friends make the best day!",
+      "imagePrompt": "Rasta Ray surrounded by children on the beach, all smiling and laughing. The sun is setting, casting a warm golden glow over the scene. The Grenadian flag is waving gently in the background. They are eating sugar cake and enjoying the last light of the day.",
+      "patoisWords": []
+    }
+  ],
+  "ageTrack": "mini",
+  "islandTheme": "Grenada",
+  "readingTimeMinutes": 3,
+  "difficultyLevel": 1,
+  "tierRequired": "starter_mailer",
+  "patoisWords": [
+    {
+      "word": "pickney",
+      "meaning": "child",
+      "pronunciation": "PICK-nee"
+    },
+    {
+      "word": "nyam",
+      "meaning": "to eat",
+      "pronunciation": "NYAM"
+    }
+  ],
+  "characterId": "Rasta Ray",
+  "culturalElements": [
+    "Steelpan music",
+    "Grenadian flag",
+    "Mango",
+    "Sugar cake",
+    "Community spirit",
+    "Colorful houses",
+    "Caribbean beach setting",
+    "Respect for sharing"
+  ]
+}

@@ -117,6 +117,12 @@ export const siteContent = {
                 media: "/images/digital-portal.png"
             },
             {
+                label: "TANTY'S PORCH",
+                title: "Safe AI Chat & Emotional Support",
+                description: "Tanty Spice is always online to help children express big feelings, share folklore stories, and learn island wisdom in a safe, moderated environment.",
+                media: "/images/tanty-porch-preview.png"
+            },
+            {
                 label: "AI READING BUDDY",
                 title: "Reading help when you’re busy",
                 description: "A gentle, smart reading buddy that listens as your child reads and offers simple feedback to build confidence and fluency.",
@@ -153,8 +159,15 @@ export const siteContent = {
     },
     characters: {
         id: "characters",
-        title: "Meet the Likkle Legends",
+        title: "Meet the Village Legends",
         characters: [
+            {
+                name: "Tanty Spice",
+                role: "Village Heart & Wisdom",
+                tagline: "“Everything Cook & Curry, me darlin'.”",
+                description: "Tanty Spice is the heart of the village, teaching emotional regulation through comfort food and ancestral wisdom. She's always ready with a story and a warm hug.",
+                image: "/images/tanty_spice_avatar.jpg"
+            },
             {
                 name: "Dilly Doubles",
                 role: "Food & Traditions Expert",

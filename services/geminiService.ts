@@ -113,16 +113,16 @@ export async function narrateText(text: string): Promise<AudioBuffer | null> {
     }
 
     const ai = new GoogleGenAI({ apiKey });
-    const prompt = `Read this with the ultimate warmth, rhythmic lilt, and melodic charm of Tanty Spice, a loving Caribbean grandmother.Dialogue: ${text}`;
+    const prompt = `Generate high-fidelity speech for the following dialogue using the 'Kore' voice. The speaker is Tanty Spice, a warm, expressive Caribbean grandmother. The tone should be gentle, melodic, and richly emotional. Avoid any robotic flatness. Dialogue: ${text}`;
 
     try {
         const response = await ai.models.generateContent({
-            model: TANTY_ISLAND_ENGINE.technical_stack.vocal_model,
+            model: "gemini-2.0-flash-exp",
             contents: [{ parts: [{ text: prompt }] }],
             config: {
                 responseModalities: [Modality.AUDIO],
                 speechConfig: {
-                    voiceConfig: { prebuiltVoiceConfig: { voiceName: TANTY_ISLAND_ENGINE.vocal_blueprint.voice_name } },
+                    voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } },
                 }
             }
         });

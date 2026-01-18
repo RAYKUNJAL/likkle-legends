@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate:content": "tsx scripts/generate-content.ts",
+    "generate:stories": "tsx scripts/generate-content.ts --type story",
+    "generate:songs": "tsx scripts/generate-content.ts --type song",
+    "generate:batch": "tsx scripts/generate-content.ts --batch",
+    "test:generator": "tsx scripts/test-generator.ts",
+    "test:supabase": "tsx scripts/test-supabase.ts"
   },
   "dependencies": {
     "@google/genai": "^1.34.0",
@@ -20,6 +26,7 @@
     "autoprefixer": "^10.4.19",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.23.26",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",
@@ -39,6 +46,7 @@
     "eslint": "^8",
     "eslint-config-next": "^14.1.0",
     "tailwindcss": "^3.4.15",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
 }

@@ -1,0 +1,79 @@
+{
+  "title": "Captain Calypso's Spice Surprise",
+  "summary": "Captain Calypso sails around Grenada, sharing spices and stories with the children. He teaches them about the island's rich culture and the importance of community.",
+  "pages": [
+    {
+      "pageNumber": 1,
+      "text": "Captain Calypso is ready! He sails his boat around Grenada, the Spice Isle. He loves to share Grenada's yummy spices with all the [pickney]!",
+      "imagePrompt": "Illustration of Captain Calypso, a friendly, older man with a white beard and a colorful captain's hat, on a small, brightly painted sailboat. The boat is filled with baskets of spices. The background shows the lush green hills of Grenada and turquoise water. A bright sun shines in the sky.",
+      "patoisWords": [
+        {
+          "word": "pickney",
+          "meaning": "child"
+        }
+      ]
+    },
+    {
+      "pageNumber": 2,
+      "text": "First, he visits Lily's house. Lily loves nutmeg! Captain Calypso gives her a big smile and says, \"[Big up] to you, Lily, for helping your grandma in the garden!\"",
+      "imagePrompt": "Illustration of Captain Calypso handing a nutmeg to Lily, a young girl with braids, standing in front of a colorful wooden house in Grenada. Lily is smiling. Her grandma is tending a small garden with tropical flowers. Focus on warm, vibrant colors.",
+      "patoisWords": [
+        {
+          "word": "Big up",
+          "meaning": "Respect/Praise"
+        }
+      ]
+    },
+    {
+      "pageNumber": 3,
+      "text": "Next, he sees Mikey playing his steelpan! Captain Calypso loves the music. He gives Mikey some cinnamon. \"This spice will make your music even sweeter!\", he exclaimed.",
+      "imagePrompt": "Illustration of Mikey, a young boy with a big smile, playing a steelpan drum on a beach in Grenada. Captain Calypso stands beside him, handing him a cinnamon stick. Palm trees sway in the background. Focus on the joyful expression on Mikey's face and the rhythmic movement of his hands.",
+      "patoisWords": []
+    },
+    {
+      "pageNumber": 4,
+      "text": "Then, Captain Calypso shares cloves with the fishermen. They use the spices to make their fish taste extra good! He loves seeing everyone happy.",
+      "imagePrompt": "Illustration of two fishermen standing next to their fishing boat on the beach in Grenada. Captain Calypso is handing them a small bag of cloves. The boat is painted in bright colors. Focus on the sense of community and the vibrant colors of the scene.",
+      "patoisWords": []
+    },
+    {
+      "pageNumber": 5,
+      "text": "Captain Calypso smiles. He loves sharing Grenada's spices! He knows sharing makes everyone happy, just like family. He hopes all the [pickney] will share, too!",
+      "imagePrompt": "Illustration of Captain Calypso waving goodbye from his sailboat as he sails into the sunset. The sky is filled with warm orange and pink colors. The lush green hills of Grenada are silhouetted in the background. Focus on the warm, inviting feeling.",
+      "patoisWords": [
+        {
+          "word": "pickney",
+          "meaning": "child"
+        }
+      ]
+    }
+  ],
+  "ageTrack": "mini",
+  "islandTheme": "Grenada",
+  "readingTimeMinutes": 3,
+  "difficultyLevel": 1,
+  "tierRequired": "starter_mailer",
+  "patoisWords": [
+    {
+      "word": "big up",
+      "meaning": "respect/praise",
+      "pronunciation": "BIG up"
+    },
+    {
+      "word": "pickney",
+      "meaning": "child",
+      "pronunciation": "PICK-nee"
+    }
+  ],
+  "characterId": "Captain Calypso",
+  "culturalElements": [
+    "Grenadian spices (nutmeg, cinnamon, cloves)",
+    "Steelpan music",
+    "Fishing",
+    "Community spirit",
+    "Respect for elders",
+    "Colorful houses",
+    "Tropical landscapes",
+    "Patois language"
+  ]
+}
