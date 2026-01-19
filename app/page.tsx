@@ -41,16 +41,16 @@ export default async function Home() {
         <section className="relative pt-12 pb-20 overflow-hidden bg-gradient-to-b from-emerald-50 via-blue-50 to-white">
           <div className="container grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8 order-2 lg:order-1">
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-block px-4 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-black uppercase tracking-widest">🤖 New for 2026</span>
+                  <span className="inline-block px-4 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-black uppercase tracking-widest">📬 Monthly Mail Club</span>
                   <span className="inline-block px-4 py-1 rounded-full bg-red-100 text-red-600 text-xs font-black uppercase tracking-widest animate-pulse">Limited Spots</span>
                 </div>
                 <h1 className="text-4xl md:text-6xl font-black text-deep leading-[1.1]">
-                  Meet <span className="text-emerald-500">R.O.T.I.</span> — Your Child&apos;s Island Learning Buddy
+                  Raise <span className="text-amber-500">Proud, Confident</span> Caribbean Kids.
                 </h1>
                 <p className="text-lg md:text-xl text-deep/70 font-medium leading-relaxed max-w-xl">
-                  A friendly Caribbean robot that teaches kids ages 6-9 reading, math, science & island culture — 100% safe, fun, and educational!
+                  The monthly mail club that delivers personalized letters, cultural activities, and AI-powered stories to help your child love their roots.
                 </p>
               </div>
 
@@ -78,22 +78,28 @@ export default async function Home() {
               <p className="text-xs font-bold text-deep/40 uppercase tracking-wide">No credit card required • Cancel anytime • COPPA Compliant</p>
             </div>
 
-            <div className="relative order-1 lg:order-2 flex justify-center">
-              <div className="relative w-full max-w-md md:max-w-lg group">
-                <div className="absolute inset-0 bg-emerald-400 rounded-[2.5rem] blur-[60px] opacity-20 group-hover:opacity-30 transition-opacity duration-700"></div>
-                <div className="relative rounded-[2.5rem] overflow-hidden border-[6px] border-white shadow-2xl bg-emerald-100 aspect-video rotate-1 group-hover:rotate-0 transition-transform duration-500">
+            {/* R.O.T.I. SHOWCASE */}
+            <div className="relative order-1 lg:order-2 flex flex-col items-center">
+              <div className="relative w-full max-w-sm md:max-w-md group">
+                <div className="absolute inset-0 bg-amber-400 rounded-[2.5rem] blur-[60px] opacity-20 group-hover:opacity-30 transition-opacity duration-700"></div>
+                <div className="relative rounded-[2.5rem] overflow-hidden border-[6px] border-white shadow-2xl bg-gradient-to-b from-sky-400 to-emerald-400 aspect-square">
                   <Image
                     src="/images/roti-avatar.jpg"
-                    alt="R.O.T.I. - Island Learning Buddy"
+                    alt="R.O.T.I. - Robotic Operational Teaching Interface"
                     fill
                     className="object-cover"
                     priority
                   />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-emerald-900/80 via-emerald-900/40 to-transparent">
-                    <p className="text-white font-black text-xl md:text-2xl drop-shadow-md">Meet R.O.T.I.</p>
-                    <p className="text-emerald-100 text-xs font-bold uppercase tracking-widest">Your Island Learning Buddy</p>
-                  </div>
                 </div>
+              </div>
+
+              {/* R.O.T.I. NAME SPELLED OUT */}
+              <div className="mt-6 text-center bg-white rounded-2xl px-6 py-4 shadow-lg border-2 border-emerald-100">
+                <h3 className="text-2xl md:text-3xl font-black text-emerald-600 mb-1">R.O.T.I.</h3>
+                <p className="text-sm md:text-base font-bold text-deep/70">
+                  <span className="text-amber-500">R</span>obotic <span className="text-amber-500">O</span>perational <span className="text-amber-500">T</span>eaching <span className="text-amber-500">I</span>nterface
+                </p>
+                <p className="text-xs text-deep/50 mt-1 font-medium">Your Child&apos;s Island Learning Buddy 🌴</p>
               </div>
             </div>
           </div>
