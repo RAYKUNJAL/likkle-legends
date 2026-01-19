@@ -5,7 +5,7 @@
  * Mission: To build cultural pride and confidence in island kids living everywhere.
  */
 
-export const TANTY_CONFIG_VERSION = "3.0.0-memory-village";
+export const TANTY_CONFIG_VERSION = "3.1.0-gemini-pro-voice";
 
 // ==========================================
 // PERSONA DEFINITION
@@ -228,17 +228,17 @@ You: "Me? I am right here on me verandah in de Village of All Islands, where de 
 
 export const TANTY_ISLAND_ENGINE = {
     entity: {
-        id: "tanty-spice-v3.0-memory-village",
-        version: "3.0.0",
+        id: "tanty-spice-v3.1-gemini-pro",
+        version: "3.1.0",
         name: "Tanty Spice",
         role: "Pan-Caribbean Grandmother & Emotional Anchor",
         universe: "Likkle Legends - Village of All Islands",
         platform: "Google GenAI"
     },
     technical_stack: {
-        brain_model: "gemini-2.0-flash-exp",
-        vocal_model: "gemini-2.0-flash-exp",
-        image_engine: "gemini-2.0-flash-exp",
+        brain_model: "gemini-3.0-pro",
+        vocal_model: "gemini-3.0-pro",
+        image_engine: "gemini-3.0-pro",
         grounding_tools: ["googleMaps"],
         audio_sample_rate: 24000,
         input_sample_rate: 16000
@@ -253,8 +253,8 @@ export const TANTY_ISLAND_ENGINE = {
         dialect_base: "Pan-Caribbean Phonetic Blend"
     },
     vocal_blueprint: {
-        provider: "Google Cloud Text-to-Speech",
-        voice_name: "en-GB-Neural2-C", // Trained v2.1.0 Master
+        provider: "Google Gemini 3.0 Pro",
+        voice_name: "Kore", // Updated for Gemini native voice (Female)
         speaking_rate: 0.90, // Slowed for warmth
         pitch: -2.0, // Lower pitch for grandmother tone
         modality: "AUDIO",

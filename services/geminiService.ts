@@ -117,7 +117,7 @@ export async function narrateText(text: string): Promise<AudioBuffer | null> {
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash-exp",
+            model: TANTY_ISLAND_ENGINE.technical_stack.vocal_model,
             contents: [{ parts: [{ text: prompt }] }],
             config: {
                 responseModalities: [Modality.AUDIO],
