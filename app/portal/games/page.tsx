@@ -14,14 +14,22 @@ interface Game {
     id: string;
     title: string;
     description: string;
-    thumbnail_url: string;
-    game_url: string;
-    category: string;
-    tier_required: string;
-    play_count: number;
+    thumbnail_url?: string;
+    game_url?: string;
+    category?: string;
+    tier_required?: string;
+    tier?: string;
+    play_count?: number;
     best_score?: number;
-    estimated_time: string;
-    age_range: string;
+    estimated_time?: string;
+    age_range?: string;
+    // From FEATURED_GAMES
+    emoji?: string;
+    gradient?: string;
+    xp?: number;
+    time?: string;
+    isNew?: boolean;
+    isPopular?: boolean;
 }
 
 const GAME_CATEGORIES = [

@@ -14,7 +14,7 @@ export default function Characters({ content }: { content?: any }) {
         </div>
 
         <div className="grid md:grid-cols-3 gap-10">
-          {characters.characters.map((char, i) => (
+          {characters.characters.map((char: any) => (
             <div key={char.name} className="group flex flex-col items-center">
               <div className="w-full aspect-[4/5] rounded-[3rem] overflow-hidden mb-8 shadow-2xl transition-all duration-500 group-hover:scale-[1.03] group-hover:shadow-primary/20 border-8 border-white relative min-h-[400px]">
                 <Image
