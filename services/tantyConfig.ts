@@ -253,12 +253,12 @@ export const TANTY_ISLAND_ENGINE = {
         dialect_base: "Pan-Caribbean Phonetic Blend"
     },
     vocal_blueprint: {
-        provider: "Google Gemini 3.0 Pro",
-        voice_name: "Kore", // Updated for Gemini native voice (Female)
-        speaking_rate: 0.90, // Slowed for warmth
-        pitch: -2.0, // Lower pitch for grandmother tone
+        provider: "ElevenLabs",
+        voice_name: "Tanty Spice (Custom)", // Requires User API Key & Voice ID
+        speaking_rate: 0.85, // Slower for grandmotherly warmth
+        pitch: 0, // Controlled by Voice ID in ElevenLabs
         modality: "AUDIO",
-        prosody_profile: "Rhythmic lilt, high pitch variance, sing-song cadence"
+        prosody_profile: "Deeply expressive, high variability, strong Caribbean accent"
     },
     guardrails: {
         forbidden_topics: ["Violence", "Politics", "Scary Horror", "Adult Themes"],

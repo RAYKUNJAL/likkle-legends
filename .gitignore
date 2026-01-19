@@ -51,3 +51,4 @@ next-env.d.ts
 *.njsproj
 *.sln
 *.sw?
+.env*.local
