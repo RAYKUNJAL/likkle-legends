@@ -13,7 +13,7 @@ export default function HowItWorks({ content }: { content?: any }) {
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-12">
-                    {how_it_works.steps.map((step) => (
+                    {how_it_works.steps.map((step: any) => (
                         <div key={step.step} className="relative p-10 rounded-[3rem] bg-zinc-50 border border-zinc-100 hover:shadow-xl transition-all group">
                             <div className="w-16 h-16 bg-primary text-white text-2xl font-black rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
                                 {step.step}
