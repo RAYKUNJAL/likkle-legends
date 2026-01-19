@@ -25,20 +25,12 @@ export async function getTantyVoice(text: string): Promise<{
     const cleanText = text.trim().substring(0, 1000); // Limit to prevent huge API calls
 
     try {
-        // 1. Try Google Cloud TTS first (most reliable)
-        console.log("[Voice Action] Attempting Google Cloud TTS...");
-        const gcResult = await getTantySpiceVoice(cleanText);
-
-        if (gcResult.success && gcResult.audio) {
-            console.log("[Voice Action] ✅ Google Cloud TTS success");
-            return gcResult;
-        }
-
-        // 2. Try Gemini TTS as backup
-        console.log("[Voice Action] Google Cloud TTS failed, trying Gemini TTS...");
+        // 1. Try Gemini TTS first (Life-like "AI Studio" voice)
+        console.log("[Voice Action] Attempting Gemini TTS (Life-like)...");
         try {
             const { generateGeminiSpeechBase64 } = await import("@/lib/gemini-tts");
-            const geminiAudio = await generateGeminiSpeechBase64(cleanText);
+            // Use "Kore" for the warm, life-like grandmother voice (Gemini native voice)
+            const geminiAudio = await generateGeminiSpeechBase64(cleanText, { voiceName: "Kore" });
 
             if (geminiAudio) {
                 console.log("[Voice Action] ✅ Gemini TTS success");
@@ -46,6 +38,15 @@ export async function getTantyVoice(text: string): Promise<{
             }
         } catch (geminiError) {
             console.warn("[Voice Action] Gemini TTS failed:", geminiError);
+        }
+
+        // 2. Try Google Cloud TTS as reliable fallback (Neural2)
+        console.log("[Voice Action] Gemini TTS failed, trying Google Cloud TTS...");
+        const gcResult = await getTantySpiceVoice(cleanText);
+
+        if (gcResult.success && gcResult.audio) {
+            console.log("[Voice Action] ✅ Google Cloud TTS success");
+            return gcResult;
         }
 
         // 3. Return error - client will use browser speechSynthesis
