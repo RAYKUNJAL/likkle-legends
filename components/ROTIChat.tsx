@@ -53,20 +53,64 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
     ]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isSpeaking, setIsSpeaking] = useState(false);
     const [interactionCount, setInteractionCount] = useState(0);
+    const [voiceEnabled, setVoiceEnabled] = useState(true);
 
     const scrollRef = useRef<HTMLDivElement>(null);
+    const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null);
 
     useEffect(() => {
         if (scrollRef.current) scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }, [messages, isLoading]);
 
+    // Text-to-Speech function using Web Speech API
+    const speakText = (text: string) => {
+        if (!voiceEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;
+
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.9; // Slightly slower for kids
+        utterance.pitch = 1.2; // Slightly higher pitch for friendly robot voice
+        utterance.volume = 1;
+
+        // Try to find a good voice
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v =>
+            v.name.includes('Google') ||
+            v.name.includes('English') ||
+            v.lang.startsWith('en')
+        );
+        if (preferredVoice) utterance.voice = preferredVoice;
+
+        utterance.onstart = () => setIsSpeaking(true);
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+
+        speechSynthRef.current = utterance;
+        window.speechSynthesis.speak(utterance);
+    };
+
+    const stopSpeaking = () => {
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            setIsSpeaking(false);
+        }
+    };
+
     const handleSend = async (overrideText?: string) => {
         const textToSend = overrideText || input;
         if (!textToSend.trim() || isLoading) return;
 
+        // Stop any ongoing speech
+        stopSpeaking();
+
         if (isTrialMode && interactionCount >= 3) {
-            setMessages(prev => [...prev, { role: 'bot', text: "Beep! Our trial time is complete! Ask a grown-up to unlock full access so we can keep learning together! 🤖✨" }]);
+            const trialEndMsg = "Beep! Our trial time is complete! Ask a grown-up to unlock full access so we can keep learning together! 🤖✨";
+            setMessages(prev => [...prev, { role: 'bot', text: trialEndMsg }]);
+            speakText(trialEndMsg);
             if (onUnlock) setTimeout(onUnlock, 4000);
             return;
         }
@@ -94,12 +138,14 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
 
             setMessages(prev => [...prev, { role: 'bot', text: botText }]);
 
+            // Speak the response
+            speakText(botText);
+
         } catch (error) {
             console.error("Chat error", error);
-            setMessages(prev => [...prev, {
-                role: 'bot',
-                text: "Oops! My connection to the island is a bit wavy. Let's try again! 🌊"
-            }]);
+            const errorMsg = "Oops! My connection to the island is a bit wavy. Let's try again! 🌊";
+            setMessages(prev => [...prev, { role: 'bot', text: errorMsg }]);
+            speakText(errorMsg);
         } finally {
             setIsLoading(false);
         }
@@ -118,14 +164,43 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
             <div className="p-4 md:p-6 border-b border-emerald-50 flex items-center justify-between shrink-0 bg-gradient-to-r from-emerald-500 to-teal-500">
                 <div className="flex items-center gap-4 md:gap-6">
                     <div className="relative">
-                        <div className="w-14 h-14 md:w-20 md:h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-emerald-100">
+                        <div className={`w-14 h-14 md:w-20 md:h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-emerald-100 ${isSpeaking ? 'animate-pulse ring-4 ring-amber-400' : ''}`}>
                             <Image src="/images/roti-avatar.jpg" alt="R.O.T.I." fill className="object-cover" />
                         </div>
+                        {isSpeaking && (
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center text-xs border-2 border-white">
+                                🔊
+                            </div>
+                        )}
                     </div>
                     <div className="text-white">
                         <h3 className="font-black text-lg md:text-2xl">R.O.T.I.</h3>
                         <p className="text-emerald-100 font-bold uppercase text-[10px] tracking-widest">Island Learning Buddy</p>
                     </div>
+                </div>
+
+                {/* Voice Controls */}
+                <div className="flex items-center gap-2">
+                    {isSpeaking && (
+                        <button
+                            onClick={stopSpeaking}
+                            className="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-xl text-xs font-bold transition-colors"
+                            aria-label="Stop speaking"
+                        >
+                            🔇 Stop
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setVoiceEnabled(!voiceEnabled)}
+                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${voiceEnabled
+                                ? 'bg-amber-400 text-amber-900'
+                                : 'bg-white/20 text-white'
+                            }`}
+                        aria-label={voiceEnabled ? "Disable voice" : "Enable voice"}
+                        title={voiceEnabled ? "Voice On" : "Voice Off"}
+                    >
+                        {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
+                    </button>
                 </div>
             </div>
 
@@ -152,6 +227,15 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                                 : 'bg-white text-deep rounded-tl-none border-2 border-emerald-100'
                             }`}>
                             <p className="text-sm md:text-lg font-medium leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                            {msg.role === 'bot' && voiceEnabled && (
+                                <button
+                                    onClick={() => speakText(msg.text)}
+                                    className="mt-2 text-xs text-emerald-500 hover:text-emerald-700 font-bold flex items-center gap-1"
+                                    aria-label="Read aloud"
+                                >
+                                    🔊 Read Aloud
+                                </button>
+                            )}
                         </div>
                     </div>
                 ))}
@@ -160,8 +244,8 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                     <div className="flex justify-start">
                         <div className="bg-white border-2 border-emerald-100 rounded-full px-6 py-3 flex items-center gap-2">
                             <div className="w-2 h-2 bg-emerald-300 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '75ms' }}></div>
-                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce delay-75"></div>
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce delay-150"></div>
                             <span className="text-[10px] font-bold text-emerald-600 ml-2">R.O.T.I. is thinking...</span>
                         </div>
                     </div>
