@@ -15,7 +15,6 @@ export async function generateGeminiSpeech(
 ): Promise<ArrayBuffer | null> {
     const { voiceName = TANTY_ISLAND_ENGINE.vocal_blueprint.voice_name } = options;
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    console.log('Gemini TTS: Using API key', apiKey ? 'Configured' : 'MISSING');
 
     if (!apiKey) {
         console.warn('Gemini API key not configured (NEXT_PUBLIC_GEMINI_API_KEY or GEMINI_API_KEY)');
@@ -47,7 +46,6 @@ export async function generateGeminiSpeech(
         const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
 
         if (base64Audio) {
-            console.log('Gemini TTS: Success! Audio received, length:', base64Audio.length);
             // Convert base64 to Buffer
             const pcmBuffer = Buffer.from(base64Audio, 'base64');
             const numChannels = 1;
