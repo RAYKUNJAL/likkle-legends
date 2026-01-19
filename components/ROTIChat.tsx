@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 
 // R.O.T.I. System Prompt
@@ -37,6 +37,16 @@ KNOWLEDGE FOCUS:
 Remember: You are a helpful robot friend. Keep it fun, safe, and educational!
 `;
 
+// Voice Mode Types
+type VoiceMode = "default" | "kid" | "playful" | "calm";
+
+const VOICE_MODE_INFO: Record<VoiceMode, { label: string; emoji: string; description: string }> = {
+    default: { label: "Teacher R.O.T.I.", emoji: "🎓", description: "Warm & clear" },
+    kid: { label: "Kid Mode", emoji: "🧒", description: "Fun & excited!" },
+    playful: { label: "Playful", emoji: "🎮", description: "Upbeat & fun" },
+    calm: { label: "Calm", emoji: "🌊", description: "Gentle & soothing" }
+};
+
 interface ROTIChatProps {
     ageGroup?: string;
     isTrialMode?: boolean;
@@ -56,27 +66,77 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [interactionCount, setInteractionCount] = useState(0);
     const [voiceEnabled, setVoiceEnabled] = useState(true);
+    const [voiceMode, setVoiceMode] = useState<VoiceMode>("default");
+    const [showVoiceMenu, setShowVoiceMenu] = useState(false);
+    const [isLoadingVoice, setIsLoadingVoice] = useState(false);
 
     const scrollRef = useRef<HTMLDivElement>(null);
-    const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     useEffect(() => {
         if (scrollRef.current) scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }, [messages, isLoading]);
 
-    // Text-to-Speech function using Web Speech API
-    const speakText = (text: string) => {
-        if (!voiceEnabled || typeof window === 'undefined' || !window.speechSynthesis) return;
+    // Premium TTS using server-side Gemini
+    const speakTextPremium = useCallback(async (text: string) => {
+        if (!voiceEnabled) return;
 
-        // Cancel any ongoing speech
+        setIsLoadingVoice(true);
+        setIsSpeaking(true);
+
+        try {
+            // Call the server action
+            const response = await fetch('/api/roti-voice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, voiceMode })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.audio) {
+                    // Play the audio
+                    if (audioRef.current) {
+                        audioRef.current.pause();
+                    }
+                    const audio = new Audio(data.audio);
+                    audioRef.current = audio;
+
+                    audio.onended = () => setIsSpeaking(false);
+                    audio.onerror = () => {
+                        setIsSpeaking(false);
+                        // Fallback to browser TTS
+                        speakTextFallback(text);
+                    };
+
+                    await audio.play();
+                    setIsLoadingVoice(false);
+                    return;
+                }
+            }
+
+            // Fallback to browser TTS if server fails
+            speakTextFallback(text);
+        } catch (error) {
+            console.error('[R.O.T.I. Voice] Error:', error);
+            speakTextFallback(text);
+        }
+        setIsLoadingVoice(false);
+    }, [voiceEnabled, voiceMode]);
+
+    // Fallback browser TTS
+    const speakTextFallback = (text: string) => {
+        if (typeof window === 'undefined' || !window.speechSynthesis) {
+            setIsSpeaking(false);
+            return;
+        }
+
         window.speechSynthesis.cancel();
-
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.9; // Slightly slower for kids
-        utterance.pitch = 1.2; // Slightly higher pitch for friendly robot voice
+        utterance.rate = voiceMode === "kid" ? 1.1 : 0.9;
+        utterance.pitch = voiceMode === "kid" ? 1.4 : 1.2;
         utterance.volume = 1;
 
-        // Try to find a good voice
         const voices = window.speechSynthesis.getVoices();
         const preferredVoice = voices.find(v =>
             v.name.includes('Google') ||
@@ -89,28 +149,33 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
         utterance.onend = () => setIsSpeaking(false);
         utterance.onerror = () => setIsSpeaking(false);
 
-        speechSynthRef.current = utterance;
         window.speechSynthesis.speak(utterance);
     };
 
     const stopSpeaking = () => {
+        // Stop premium audio
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current = null;
+        }
+        // Stop browser TTS
         if (typeof window !== 'undefined' && window.speechSynthesis) {
             window.speechSynthesis.cancel();
-            setIsSpeaking(false);
         }
+        setIsSpeaking(false);
+        setIsLoadingVoice(false);
     };
 
     const handleSend = async (overrideText?: string) => {
         const textToSend = overrideText || input;
         if (!textToSend.trim() || isLoading) return;
 
-        // Stop any ongoing speech
         stopSpeaking();
 
         if (isTrialMode && interactionCount >= 3) {
             const trialEndMsg = "Beep! Our trial time is complete! Ask a grown-up to unlock full access so we can keep learning together! 🤖✨";
             setMessages(prev => [...prev, { role: 'bot', text: trialEndMsg }]);
-            speakText(trialEndMsg);
+            speakTextPremium(trialEndMsg);
             if (onUnlock) setTimeout(onUnlock, 4000);
             return;
         }
@@ -121,7 +186,6 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
         setInteractionCount(prev => prev + 1);
 
         try {
-            // Call the server action for R.O.T.I. chat
             const response = await fetch('/api/roti-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -137,15 +201,13 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
             const botText = data.response || "Hmm, my circuits are a bit fuzzy. Can you try again?";
 
             setMessages(prev => [...prev, { role: 'bot', text: botText }]);
-
-            // Speak the response
-            speakText(botText);
+            speakTextPremium(botText);
 
         } catch (error) {
             console.error("Chat error", error);
             const errorMsg = "Oops! My connection to the island is a bit wavy. Let's try again! 🌊";
             setMessages(prev => [...prev, { role: 'bot', text: errorMsg }]);
-            speakText(errorMsg);
+            speakTextPremium(errorMsg);
         } finally {
             setIsLoading(false);
         }
@@ -172,6 +234,11 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                                 🔊
                             </div>
                         )}
+                        {isLoadingVoice && !isSpeaking && (
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-400 rounded-full flex items-center justify-center border-2 border-white animate-spin">
+                                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full" />
+                            </div>
+                        )}
                     </div>
                     <div className="text-white">
                         <h3 className="font-black text-lg md:text-2xl">R.O.T.I.</h3>
@@ -180,7 +247,7 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                 </div>
 
                 {/* Voice Controls */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 relative">
                     {isSpeaking && (
                         <button
                             onClick={stopSpeaking}
@@ -190,17 +257,68 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                             🔇 Stop
                         </button>
                     )}
-                    <button
-                        onClick={() => setVoiceEnabled(!voiceEnabled)}
-                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${voiceEnabled
-                                ? 'bg-amber-400 text-amber-900'
-                                : 'bg-white/20 text-white'
-                            }`}
-                        aria-label={voiceEnabled ? "Disable voice" : "Enable voice"}
-                        title={voiceEnabled ? "Voice On" : "Voice Off"}
-                    >
-                        {voiceEnabled ? '🔊 Voice On' : '🔇 Voice Off'}
-                    </button>
+
+                    {/* Voice Mode Selector */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowVoiceMenu(!showVoiceMenu)}
+                            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${voiceEnabled
+                                    ? 'bg-amber-400 text-amber-900 hover:bg-amber-300'
+                                    : 'bg-white/20 text-white hover:bg-white/30'
+                                }`}
+                            aria-label="Voice settings"
+                            title="Change voice"
+                        >
+                            {VOICE_MODE_INFO[voiceMode].emoji}
+                            <span className="hidden md:inline">{VOICE_MODE_INFO[voiceMode].label}</span>
+                            <span className="text-[8px]">▼</span>
+                        </button>
+
+                        {/* Voice Menu Dropdown */}
+                        {showVoiceMenu && (
+                            <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border-2 border-emerald-100 overflow-hidden z-50 w-48">
+                                <div className="p-2 bg-emerald-50 border-b border-emerald-100">
+                                    <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">🎤 Voice Mode</p>
+                                </div>
+                                {(Object.keys(VOICE_MODE_INFO) as VoiceMode[]).map((mode) => (
+                                    <button
+                                        key={mode}
+                                        onClick={() => {
+                                            setVoiceMode(mode);
+                                            setShowVoiceMenu(false);
+                                        }}
+                                        className={`w-full px-3 py-2 text-left flex items-center gap-2 transition-colors ${voiceMode === mode
+                                                ? 'bg-emerald-100 text-emerald-800'
+                                                : 'hover:bg-gray-50 text-gray-700'
+                                            }`}
+                                    >
+                                        <span className="text-lg">{VOICE_MODE_INFO[mode].emoji}</span>
+                                        <div>
+                                            <p className="text-sm font-bold">{VOICE_MODE_INFO[mode].label}</p>
+                                            <p className="text-[10px] text-gray-500">{VOICE_MODE_INFO[mode].description}</p>
+                                        </div>
+                                        {voiceMode === mode && (
+                                            <span className="ml-auto text-emerald-500">✓</span>
+                                        )}
+                                    </button>
+                                ))}
+                                <div className="p-2 border-t border-gray-100">
+                                    <button
+                                        onClick={() => {
+                                            setVoiceEnabled(!voiceEnabled);
+                                            setShowVoiceMenu(false);
+                                        }}
+                                        className={`w-full px-3 py-2 rounded-lg text-xs font-bold text-center ${voiceEnabled
+                                                ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                                : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
+                                            }`}
+                                    >
+                                        {voiceEnabled ? '🔇 Turn Voice Off' : '🔊 Turn Voice On'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -223,17 +341,18 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[85%] rounded-[1.5rem] px-5 py-4 shadow-sm transition-all ${msg.role === 'user'
-                                ? 'bg-emerald-600 text-white rounded-tr-none'
-                                : 'bg-white text-deep rounded-tl-none border-2 border-emerald-100'
+                            ? 'bg-emerald-600 text-white rounded-tr-none'
+                            : 'bg-white text-deep rounded-tl-none border-2 border-emerald-100'
                             }`}>
                             <p className="text-sm md:text-lg font-medium leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                             {msg.role === 'bot' && voiceEnabled && (
                                 <button
-                                    onClick={() => speakText(msg.text)}
-                                    className="mt-2 text-xs text-emerald-500 hover:text-emerald-700 font-bold flex items-center gap-1"
+                                    onClick={() => speakTextPremium(msg.text)}
+                                    disabled={isSpeaking || isLoadingVoice}
+                                    className="mt-2 text-xs text-emerald-500 hover:text-emerald-700 font-bold flex items-center gap-1 disabled:opacity-50"
                                     aria-label="Read aloud"
                                 >
-                                    🔊 Read Aloud
+                                    {isLoadingVoice ? '⏳ Loading...' : '🔊 Read Aloud'}
                                 </button>
                             )}
                         </div>
@@ -283,6 +402,14 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                     </button>
                 </div>
             </div>
+
+            {/* Click outside to close voice menu */}
+            {showVoiceMenu && (
+                <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowVoiceMenu(false)}
+                />
+            )}
         </div>
     );
 };

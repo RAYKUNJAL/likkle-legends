@@ -163,9 +163,15 @@ export const ROTI_VISUAL = {
 // 🔧 TECHNICAL STACK
 // ============================================
 export const ROTI_TECHNICAL = {
-    brainModel: "gemini-2.0-flash", // Fast, good for chat
-    voiceModel: "gemini-2.0-flash-exp", // TTS model (robotic = perfect for robot!)
-    voiceName: "Puck", // Neutral, slightly robotic
+    brainModel: "gemini-2.0-flash-exp", // Fast, good for chat
+    voiceModel: "gemini-2.5-flash-preview-tts", // Premium TTS model for human-like voice
+    voiceName: "Leda", // Warm, articulate - perfect for teaching kids
+    voiceModes: {
+        default: "Leda",   // Warm educator
+        kid: "Fenrir",     // Youthful, excited
+        playful: "Puck",   // Upbeat, fun
+        calm: "Aoede"      // Gentle, soothing
+    },
     temperature: 0.7, // Balanced creativity
     maxTokens: 500
 };

@@ -1,72 +1,103 @@
-﻿   Γû▓ Next.js 14.1.0
+﻿
+> likkle-legends-mail-club@0.1.0 build
+> next build
+
+   Γû▓ Next.js 14.1.0
    - Environments: .env.local
 
    Creating an optimized production build ...
-node.exe : Failed to 
-compile.
-At C:\Program Files\no
-dejs\npx.ps1:29 char:3
-+   & $NODE_EXE 
-$NPX_CLI_JS $args
-+   ~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~
-    + CategoryInfo    
-          : NotSpeci  
-  fied: (Failed to    
- compile.:String)     
-[], RemoteExcepti    
-on
-    + FullyQualifiedE 
-   rrorId : NativeCo  
-  mmandError
- 
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/70) ...
 
-./app/admin/assets/pag
-e.tsx
-Error: 
-  [31mx[0m 
-Unexpected token 
-`AdminLayout`. 
-Expected jsx 
-identifier
-     ,-[[36;1;4mC:\Us
-ers\RAY\OneDrive\Docum
-ents\GitHub\likkle-leg
-ends\app\admin\assets\
-page.tsx[0m:167:1]
- [2m167[0m |     );
- [2m168[0m | 
- [2m169[0m |     
-return (
- [2m170[0m |        
- <AdminLayout 
-activeSection="media">
-     : [31;1m        
- ^^^^^^^^^^^[0m
- [2m171[0m |        
-     <header 
-className="bg-white 
-border-b 
-border-gray-100 px-8 
-py-6">
- [2m172[0m |        
-         <div 
-className="flex 
-items-center 
-justify-between">
- [2m172[0m |        
-             <div>
-     `----
+   Generating static pages (17/70) 
 
-Caused by:
-    Syntax Error
+   Generating static pages (34/70) 
 
-Import trace for 
-requested module:
-./app/admin/assets/pag
-e.tsx
+   Generating static pages (52/70) 
+
+ Γ£ô Generating static pages (70/70) 
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+Γöî Γùï /                                    151 kB          363 kB
+Γö£ Γùï /_not-found                          0 B                0 B
+Γö£ Γùï /about                               1.49 kB         105 kB
+Γö£ Γùï /account                             7.96 kB         150 kB
+Γö£ ╬╗ /account/children/[id]               6.2 kB          150 kB
+Γö£ Γùï /admin                               2.39 kB         101 kB
+Γö£ Γùï /admin/analytics                     2.77 kB         102 kB
+Γö£ Γùï /admin/announcements                 3.73 kB         153 kB
+Γö£ Γùï /admin/assets                        16.4 kB         173 kB
+Γö£ Γùï /admin/central                       15.2 kB         210 kB
+Γö£ Γùï /admin/characters                    5.16 kB         157 kB
+Γö£ Γùï /admin/cms                           1.88 kB         101 kB
+Γö£ Γùï /admin/content                       2.22 kB         101 kB
+Γö£ Γùï /admin/customers                     4.36 kB         156 kB
+Γö£ Γùï /admin/games                         7.74 kB         164 kB
+Γö£ Γùï /admin/media                         4.87 kB         156 kB
+Γö£ Γùï /admin/messages                      3.65 kB         155 kB
+Γö£ Γùï /admin/orders                        4.83 kB         156 kB
+Γö£ Γùï /admin/settings                      2.25 kB         101 kB
+Γö£ Γùï /admin/verify                        5.35 kB         157 kB
+Γö£ Γùï /analytics                           4 kB            150 kB
+Γö£ ╬╗ /api/admin/seed-cms                  0 B                0 B
+Γö£ ╬╗ /api/elevenlabs-tts                  0 B                0 B
+Γö£ ╬╗ /api/gamification/xp                 0 B                0 B
+Γö£ ╬╗ /api/health                          0 B                0 B
+Γö£ ╬╗ /api/messages                        0 B                0 B
+Γö£ ╬╗ /api/notifications                   0 B                0 B
+Γö£ ╬╗ /api/payments/paypal/confirm         0 B                0 B
+Γö£ ╬╗ /api/payments/paypal/webhooks        0 B                0 B
+Γö£ ╬╗ /api/roti-chat                       0 B                0 B
+Γö£ ╬╗ /api/roti-voice                      0 B                0 B
+Γö£ ╬╗ /api/send-email                      0 B                0 B
+Γö£ ╬╗ /api/tanty-spice                     0 B                0 B
+Γö£ ╬╗ /api/voice/generate                  0 B                0 B
+Γö£ Γùï /characters                          1.49 kB         105 kB
+Γö£ Γùï /checkout                            12.9 kB         155 kB
+Γö£ Γùï /contact                             5.97 kB         162 kB
+Γö£ Γùï /dashboard                           497 B          85.2 kB
+Γö£ Γùï /dashboard/admin/pixels              5.21 kB         140 kB
+Γö£ Γùï /dashboard/printables                2.39 kB         109 kB
+Γö£ Γùï /dashboard/songs                     1.93 kB         109 kB
+Γö£ Γùï /dashboard/stories                   2.25 kB         109 kB
+Γö£ Γùï /educators                           4.17 kB         108 kB
+Γö£ Γùï /faq                                 2.59 kB         106 kB
+Γö£ Γùï /get-started                         5.45 kB         140 kB
+Γö£ Γùï /grandparent                         7.83 kB         152 kB
+Γö£ Γùï /login                               2.44 kB        98.9 kB
+Γö£ Γùï /messages                            5.92 kB         148 kB
+Γö£ Γùï /notifications                       3.74 kB        95.2 kB
+Γö£ Γùï /onboarding/child                    9.34 kB         190 kB
+Γö£ Γùï /opengraph-image.png                 0 B                0 B
+Γö£ Γùï /parent                              8.33 kB         203 kB
+Γö£ Γùï /portal                              15.8 kB         266 kB
+Γö£ Γùï /portal/badges                       7.18 kB         151 kB
+Γö£ Γùï /portal/games                        9.84 kB         154 kB
+Γö£ ╬╗ /portal/games/[id]                   9.26 kB         155 kB
+Γö£ Γùï /portal/lessons                      7.34 kB         154 kB
+Γö£ Γùï /portal/missions                     7.64 kB         149 kB
+Γö£ Γùï /portal/radio                        2.76 kB         203 kB
+Γö£ Γùï /portal/songs                        8.12 kB         155 kB
+Γö£ Γùï /portal/stories                      6.72 kB         160 kB
+Γö£ ╬╗ /portal/stories/[id]                 10.6 kB         202 kB
+Γö£ Γùï /privacy                             1.48 kB         105 kB
+Γö£ Γùï /robots.txt                          0 B                0 B
+Γö£ Γùï /safety                              1.48 kB         105 kB
+Γö£ Γùï /shipping                            1.48 kB         105 kB
+Γö£ Γùï /signup                              3.3 kB         99.8 kB
+Γö£ Γùï /sitemap.xml                         0 B                0 B
+Γö£ Γùï /terms                               1.48 kB         105 kB
+Γöö Γùï /twitter-image.png                   0 B                0 B
++ First Load JS shared by all            84.7 kB
+  Γö£ chunks/8069-df8b415b7dd45135.js      29.1 kB
+  Γö£ chunks/fd9d1056-98dbd6d8ac8bdbf7.js  53.4 kB
+  Γöö other shared chunks (total)          2.26 kB
 
 
-> Build failed 
-because of webpack 
-errors
+Γùï  (Static)   prerendered as static content
+╬╗  (Dynamic)  server-rendered on demand using Node.js
+
