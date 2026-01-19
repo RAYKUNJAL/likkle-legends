@@ -132,9 +132,9 @@ export async function narrateText(text: string): Promise<AudioBuffer | null> {
         if (audioDataBase64) {
             const rawBytes = decodeBase64(audioDataBase64);
             // 2. Save to Cache (store the raw ArrayBuffer)
-            await setCachedAudio(text, rawBytes.buffer);
+            await setCachedAudio(text, rawBytes.buffer as ArrayBuffer);
 
-            return await decodeAudioDataFromRaw(rawBytes.buffer, ctx);
+            return await decodeAudioDataFromRaw(rawBytes.buffer as ArrayBuffer, ctx);
         }
         console.warn("No audio data returned from Gemini.");
         return null;
@@ -177,7 +177,7 @@ export async function generateBirthdaySong(childName: string, guide: string = "T
         const audioDataBase64 = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
         if (audioDataBase64) {
             const rawBytes = decodeBase64(audioDataBase64);
-            return await decodeAudioDataFromRaw(rawBytes.buffer, ctx);
+            return await decodeAudioDataFromRaw(rawBytes.buffer as ArrayBuffer, ctx);
         }
         return null;
     } catch (e) {

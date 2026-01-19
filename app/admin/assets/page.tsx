@@ -324,6 +324,7 @@ export default function AdminAssetDashboard() {
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2">Tier Required</label>
                                     <select
+                                        aria-label="Tier Required"
                                         value={formData.tier_required}
                                         onChange={(e) => setFormData({ ...formData, tier_required: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-xl"
@@ -337,6 +338,7 @@ export default function AdminAssetDashboard() {
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2">Status</label>
                                     <select
+                                        aria-label="Status"
                                         value={formData.is_active ? 'true' : 'false'}
                                         onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'true' })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-xl"

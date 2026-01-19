@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { Music, BookOpen, Download } from 'lucide-react';
+import { Music, BookOpen, Target } from 'lucide-react';
 
 export default function DigitalMagic() {
     return (
