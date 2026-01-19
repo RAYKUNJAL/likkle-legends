@@ -105,6 +105,38 @@ export async function narrateText(text: string): Promise<AudioBuffer | null> {
         return await decodeAudioDataFromRaw(cached, ctx);
     }
 
+    // 2. Try ElevenLabs if Configured (Primary Provider)
+    if (TANTY_ISLAND_ENGINE.vocal_blueprint.provider === 'ElevenLabs') {
+        try {
+            // Dynamic import to avoid build issues if file is missing
+            const { generateSpeech } = await import('@/lib/elevenlabs');
+            const elevenLabsBuffer = await generateSpeech(text, {
+                voice: 'tanty_spice',
+                stability: 0.50,
+                similarityBoost: 0.85,
+                style: 0.50
+            });
+
+            if (elevenLabsBuffer) {
+                // Decode MP3 from ElevenLabs (browser native decode)
+                const decoded = await ctx.decodeAudioData(elevenLabsBuffer);
+
+                // Cache logic would invoke here if we want to store the MP3 buffer or the decoded PCM
+                // For simplicity/consistency with existing cache which expects RAW PCM, we might just store decoded
+                // But existing cache expects ArrayBuffer, let's skip complex caching for now or just cache it if we can. 
+                // However, decoding MP3 consumes the buffer in some contexts. 
+                // `decodeAudioData` detaches the buffer. So we can't cache `elevenLabsBuffer` AFTER decoding.
+                // We should cache `elevenLabsBuffer` (the MP3 bytes) if possible, but our current cache structure
+                // in `decodeAudioDataFromRaw` expects RAW int16 PCM. 
+                // Let's rely on browser cache for now or just return the decoded buffer.
+                return decoded;
+            }
+        } catch (elError) {
+            console.warn("ElevenLabs generation failed, falling back to Gemini:", elError);
+        }
+    }
+
+    // 3. Fallback to Gemini 3.0 Pro
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null);
 
     if (!apiKey) {
@@ -117,7 +149,7 @@ export async function narrateText(text: string): Promise<AudioBuffer | null> {
 
     try {
         const response = await ai.models.generateContent({
-            model: TANTY_ISLAND_ENGINE.technical_stack.vocal_model,
+            model: "gemini-3.0-pro",
             contents: [{ parts: [{ text: prompt }] }],
             config: {
                 responseModalities: [Modality.AUDIO],
