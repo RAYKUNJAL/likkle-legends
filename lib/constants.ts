@@ -3,6 +3,13 @@ import { Character, AdminCharacter, Quest } from './types';
 export const BRAND_NAME = "Likkle Legends";
 export const TANTY_AVATAR = "/images/tanty_spice_avatar.jpg";
 
+export const PRICING_TIERS = [
+    { id: 'free', name: 'Free Explorer' },
+    { id: 'starter_mailer', name: 'Mini Legend' },
+    { id: 'legend', name: 'Big Legend' },
+    { id: 'legends_plus', name: 'Legends Plus' },
+];
+
 export const TANTY_CHARACTER: Character = {
     name: "Tanty Spice",
     role: "The Village Grandmother",

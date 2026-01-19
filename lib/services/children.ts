@@ -29,6 +29,7 @@ export async function createChild(parentId: string, childData: {
     age_track: 'mini' | 'big';
     primary_island: string;
     secondary_island?: string;
+    avatar_id?: string;
 }) {
     const { data, error } = await supabase
         .from('children')
