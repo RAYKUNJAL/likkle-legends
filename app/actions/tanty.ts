@@ -64,7 +64,6 @@ export async function askTantySpice(
     const responseText = response.text?.trim();
 
     if (responseText && responseText.length > 0) {
-      console.log("[Tanty Chat] ✅ Response generated:", responseText.substring(0, 80) + "...");
       return responseText;
     }
 

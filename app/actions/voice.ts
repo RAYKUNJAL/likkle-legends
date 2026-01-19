@@ -26,14 +26,12 @@ export async function getTantyVoice(text: string): Promise<{
 
     try {
         // 1. Try Gemini TTS first (Life-like "AI Studio" voice)
-        console.log("[Voice Action] Attempting Gemini TTS (Life-like)...");
         try {
             const { generateGeminiSpeechBase64 } = await import("@/lib/gemini-tts");
             // Use "Kore" for the warm, life-like grandmother voice (Gemini native voice)
             const geminiAudio = await generateGeminiSpeechBase64(cleanText, { voiceName: "Kore" });
 
             if (geminiAudio) {
-                console.log("[Voice Action] ✅ Gemini TTS success");
                 return { success: true, audio: geminiAudio };
             }
         } catch (geminiError) {
@@ -41,16 +39,13 @@ export async function getTantyVoice(text: string): Promise<{
         }
 
         // 2. Try Google Cloud TTS as reliable fallback (Neural2)
-        console.log("[Voice Action] Gemini TTS failed, trying Google Cloud TTS...");
         const gcResult = await getTantySpiceVoice(cleanText);
 
         if (gcResult.success && gcResult.audio) {
-            console.log("[Voice Action] ✅ Google Cloud TTS success");
             return gcResult;
         }
 
         // 3. Return error - client will use browser speechSynthesis
-        console.log("[Voice Action] All TTS services failed, returning error for browser fallback");
         return {
             success: false,
             error: "Server TTS unavailable. Check API keys: GOOGLE_CLOUD_TTS_API_KEY or GEMINI_API_KEY"
