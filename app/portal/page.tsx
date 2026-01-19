@@ -5,22 +5,27 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
     Sparkles, BookOpen, Music, Palette, Target, Star, Play,
-    Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video, Radio
+    Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video, Radio,
+    Map as MapIcon, Grid
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
-import { getSongs, getStorybooks, getMissions, getPrintables, getVideos } from '@/lib/database';
-import { calculateLevel, BADGES, LEVELS } from '@/lib/gamification';
-import { HeritageMap } from '@/components/HeritageMap';
+import { getSongs, getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
+import { calculateLevel, LEVELS } from '@/lib/gamification';
 import { CultureQuests } from '@/components/CultureQuests';
 import { EmptyState } from '@/components/EmptyState';
 import TantyRadio from '@/components/TantyRadio';
+import IslandVillageMap from '@/components/IslandVillageMap';
+import PremiumVideoPlayer from '@/components/PremiumVideoPlayer';
+import PremiumMusicPlayer from '@/components/PremiumMusicPlayer';
 
 interface Song {
     id: string;
     title: string;
     artist: string;
     thumbnail_url: string;
+    audio_url?: string;
     tier_required: string;
+    xp_reward?: number;
 }
 
 interface Storybook {
@@ -44,22 +49,29 @@ interface Video {
     id: string;
     title: string;
     thumbnail_url: string;
+    video_url?: string;
     duration_seconds: number;
     tier_required: string;
+    xp_reward?: number;
 }
 
 export default function ChildPortalPage() {
-    const { activeChild, canAccess, isSubscribed } = useUser();
+    const { user, activeChild, canAccess, isSubscribed } = useUser();
     const [songs, setSongs] = useState<Song[]>([]);
     const [stories, setStories] = useState<Storybook[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
     const [videos, setVideos] = useState<Video[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [activeSection, setActiveSection] = useState<'home' | 'stories' | 'songs' | 'missions' | 'games' | 'lessons' | 'radio'>('home');
+    const [viewMode, setViewMode] = useState<'map' | 'grid'>('map');
+
+    // Media States
+    const [activeVideo, setActiveVideo] = useState<Video | null>(null);
+    const [activeSong, setActiveSong] = useState<Song | null>(null);
 
     useEffect(() => {
         loadPortalData();
-    }, []);
+    }, [activeChild?.id]);
 
     const loadPortalData = async () => {
         setIsLoading(true);
@@ -81,11 +93,35 @@ export default function ChildPortalPage() {
         }
     };
 
+    const handleMediaComplete = async (type: 'video' | 'song', id: string, xp: number) => {
+        if (!user || !activeChild) return;
+
+        try {
+            await logActivity(
+                user.id,
+                activeChild.id,
+                type,
+                id,
+                xp,
+                0,
+                { title: type === 'video' ? activeVideo?.title : activeSong?.title }
+            );
+
+            // Close player after a bit (the player component usually handles its own close but we clean up state)
+            if (type === 'video') setActiveVideo(null);
+            else setActiveSong(null);
+
+            // Refresh portal data to show new XP
+            loadPortalData();
+        } catch (err) {
+            console.error("Failed to log activity:", err);
+        }
+    };
+
     const currentLevel = activeChild ? calculateLevel(activeChild.total_xp) : LEVELS[0];
 
-    // Kid-friendly navigation items
     const navItems = [
-        { id: 'home', label: 'Home', icon: Sparkles, color: 'from-primary to-accent' },
+        { id: 'home', label: 'Village', icon: MapIcon, color: 'from-primary to-accent' },
         { id: 'stories', label: 'Stories', icon: BookOpen, color: 'from-blue-500 to-cyan-500' },
         { id: 'lessons', label: 'Lessons', icon: Video, color: 'from-indigo-500 to-purple-500' },
         { id: 'songs', label: 'Songs', icon: Music, color: 'from-purple-500 to-pink-500' },
@@ -95,35 +131,33 @@ export default function ChildPortalPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-sky-100 via-purple-50 to-pink-100">
-            {/* Header - Kid Friendly */}
+        <div className="min-h-screen bg-gradient-to-br from-sky-100 via-purple-50 to-pink-100 pb-20">
+            {/* Header */}
             <header className="bg-white/90 backdrop-blur-sm border-b-4 border-primary/20 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4">
                     <div className="flex items-center justify-between h-20">
-                        {/* Logo */}
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center text-white text-2xl">
+                            <Link href="/" className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg hover:scale-105 transition-transform">
                                 ✨
-                            </div>
+                            </Link>
                             <div>
                                 <h1 className="text-xl font-black text-primary">Likkle Legends</h1>
-                                <p className="text-xs text-gray-500">Your Adventure Portal</p>
+                                <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Adventure Portal</p>
                             </div>
                         </div>
 
-                        {/* XP & Level Display */}
                         {activeChild && (
                             <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2 bg-orange-100 px-4 py-2 rounded-full">
+                                <div className="hidden md:flex items-center gap-2 bg-orange-100 px-4 py-2 rounded-full border-2 border-orange-200">
                                     <Flame className="text-orange-500" size={20} />
-                                    <span className="font-black text-orange-600">{activeChild.current_streak}</span>
+                                    <span className="font-black text-orange-600">{activeChild.current_streak} Day Streak!</span>
                                 </div>
 
-                                <div className="flex items-center gap-3 bg-gradient-to-r from-primary to-accent px-4 py-2 rounded-full text-white">
-                                    <span className="text-2xl">{currentLevel.icon}</span>
+                                <div className="flex items-center gap-3 bg-gradient-to-r from-primary to-accent px-5 py-2 rounded-full text-white shadow-lg border-2 border-white/20">
+                                    <span className="text-2xl animate-bounce-slow">{currentLevel.icon}</span>
                                     <div>
-                                        <p className="text-xs opacity-80">Level {currentLevel.level}</p>
-                                        <p className="font-black">{activeChild.total_xp.toLocaleString()} XP</p>
+                                        <p className="text-[10px] uppercase font-black opacity-80 leading-none mb-1">Level {currentLevel.level}</p>
+                                        <p className="font-black tracking-tight">{activeChild.total_xp.toLocaleString()} XP</p>
                                     </div>
                                 </div>
                             </div>
@@ -133,478 +167,318 @@ export default function ChildPortalPage() {
             </header>
 
             <div className="flex">
-                {/* Side Navigation - Big & Colorful */}
-                <nav className="w-28 bg-white/50 backdrop-blur min-h-[calc(100vh-80px)] p-4 space-y-4 sticky top-20">
+                {/* Side Navigation */}
+                <nav className="w-28 bg-white/40 backdrop-blur-md min-h-[calc(100vh-80px)] p-4 space-y-4 sticky top-20 border-r border-white/50">
                     {navItems.map((item) => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveSection(item.id as typeof activeSection)}
-                            className={`w-full aspect-square rounded-3xl flex flex-col items-center justify-center gap-2 transition-all ${activeSection === item.id
-                                ? `bg-gradient-to-br ${item.color} text-white shadow-lg scale-105`
-                                : 'bg-white hover:bg-gray-50 text-gray-600'
+                            onClick={() => {
+                                setActiveSection(item.id as typeof activeSection);
+                                if (item.id === 'home') setViewMode('map');
+                                else setViewMode('grid');
+                            }}
+                            className={`w-full aspect-square rounded-3xl flex flex-col items-center justify-center gap-1 transition-all ${activeSection === item.id
+                                ? `bg-gradient-to-br ${item.color} text-white shadow-xl scale-110 rotate-3 z-10`
+                                : 'bg-white/80 hover:bg-white text-gray-600 shadow-sm hover:scale-105'
                                 }`}
                         >
                             <item.icon size={28} />
-                            <span className="text-xs font-bold">{item.label}</span>
+                            <span className="text-[10px] font-black uppercase tracking-tighter">{item.label}</span>
                         </button>
                     ))}
                 </nav>
 
                 {/* Main Content */}
-                <main className="flex-1 p-8">
-                    {/* Welcome Banner */}
+                <main className="flex-1 p-8 overflow-hidden">
                     {activeSection === 'home' && activeChild && (
-                        <>
-                            <div className="bg-gradient-to-r from-primary via-secondary to-accent rounded-[3rem] p-8 text-white mb-12 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
-                                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24" />
+                        <div className="space-y-12">
+                            {/* Interactive Village Map */}
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg text-3xl">🏠</div>
+                                        <div>
+                                            <h2 className="text-4xl font-black text-blue-900 tracking-tight">Village Map</h2>
+                                            <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">Tap a building to explore!</p>
+                                        </div>
+                                    </div>
 
-                                <div className="relative z-10">
-                                    <h1 className="text-4xl font-black mb-2">
-                                        Welcome back, {activeChild.first_name}! 🌟
-                                    </h1>
-                                    <p className="text-white/80 text-lg mb-4">
-                                        Ready for today's adventure on {activeChild.primary_island}?
-                                    </p>
-
-                                    <div className="flex gap-4">
-                                        <button className="px-6 py-3 bg-white text-primary rounded-2xl font-bold hover:bg-white/90 transition-colors flex items-center gap-2">
-                                            <Play size={20} />
-                                            Continue Story
+                                    <div className="flex bg-white/50 backdrop-blur p-1 rounded-2xl border-2 border-white shadow-sm">
+                                        <button
+                                            onClick={() => setViewMode('map')}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${viewMode === 'map' ? 'bg-primary text-white shadow-md' : 'text-gray-500'}`}
+                                        >
+                                            <MapIcon size={16} /> MAP
                                         </button>
-                                        <button className="px-6 py-3 bg-white/20 text-white rounded-2xl font-bold hover:bg-white/30 transition-colors">
-                                            Today's Mission
+                                        <button
+                                            onClick={() => setViewMode('grid')}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all ${viewMode === 'grid' ? 'bg-primary text-white shadow-md' : 'text-gray-500'}`}
+                                        >
+                                            <Grid size={16} /> GRID
                                         </button>
                                     </div>
                                 </div>
+
+                                {viewMode === 'map' ? (
+                                    <IslandVillageMap onNavigate={(section) => setActiveSection(section as any)} />
+                                ) : (
+                                    <div className="grid grid-cols-4 gap-6">
+                                        {/* Classic Quick Stats Grid */}
+                                        <div className="bg-white rounded-[2.5rem] p-8 text-center shadow-xl border-4 border-blue-50 hover:scale-105 transition-transform">
+                                            <div className="text-5xl mb-4">📚</div>
+                                            <p className="text-4xl font-black text-blue-900">{activeChild.stories_completed}</p>
+                                            <p className="text-blue-500 font-bold uppercase text-xs tracking-widest">Stories Read</p>
+                                        </div>
+                                        {/* ... other stats ... */}
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Heritage Trail Map */}
-                            <div className="mb-12">
-                                <HeritageMap />
-                            </div>
+                            {/* Today's Special Mission */}
+                            <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-[3.5rem] p-12 text-white relative overflow-hidden shadow-2xl shadow-orange-200">
+                                <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
+                                <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full -ml-32 -mb-32 blur-2xl" />
 
-                            {/* Quick Stats - Kid Friendly */}
-                            <div className="grid grid-cols-4 gap-4 mb-12">
-                                <div className="bg-white rounded-3xl p-6 text-center shadow-sm">
-                                    <div className="text-4xl mb-2">📚</div>
-                                    <p className="text-3xl font-black text-gray-900">{activeChild.stories_completed}</p>
-                                    <p className="text-gray-500 text-sm">Stories Read</p>
-                                </div>
-                                <div className="bg-white rounded-3xl p-6 text-center shadow-sm">
-                                    <div className="text-4xl mb-2">🎵</div>
-                                    <p className="text-3xl font-black text-gray-900">{activeChild.songs_listened}</p>
-                                    <p className="text-gray-500 text-sm">Songs Heard</p>
-                                </div>
-                                <div className="bg-white rounded-3xl p-6 text-center shadow-sm">
-                                    <div className="text-4xl mb-2">🎯</div>
-                                    <p className="text-3xl font-black text-gray-900">{activeChild.missions_completed}</p>
-                                    <p className="text-gray-500 text-sm">Missions Done</p>
-                                </div>
-                                <div className="bg-white rounded-3xl p-6 text-center shadow-sm">
-                                    <div className="text-4xl mb-2">🏆</div>
-                                    <p className="text-3xl font-black text-gray-900">{activeChild.earned_badges?.length || 0}</p>
-                                    <p className="text-gray-500 text-sm">Badges Won</p>
+                                <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
+                                    <div className="w-32 h-32 bg-white rounded-[2.5rem] flex items-center justify-center text-6xl shadow-inner animate-float">🎯</div>
+                                    <div className="flex-1 text-center md:text-left">
+                                        <p className="text-orange-100 font-black uppercase tracking-widest text-sm mb-2">Daily Challenge</p>
+                                        <h3 className="text-5xl font-black mb-4">The Patois Pirate Quest</h3>
+                                        <p className="text-xl text-orange-50 font-medium max-w-xl">Learn 5 new Jamaican words and unlock the Golden Cutlass badge!</p>
+                                    </div>
+                                    <button className="px-12 py-6 bg-white text-orange-600 rounded-[2rem] font-black text-2xl shadow-xl hover:scale-110 active:scale-95 transition-all">
+                                        START!
+                                    </button>
                                 </div>
                             </div>
-                        </>
+                        </div>
                     )}
 
                     {/* Stories Section */}
-                    {(activeSection === 'home' || activeSection === 'stories') && (
-                        <section className="mb-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                                        📖
+                    {(activeSection === 'stories') && (
+                        <section className="space-y-8 animate-in fade-in slide-in-from-bottom-5">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-16 h-16 bg-blue-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner">📖</div>
+                                    <div>
+                                        <h2 className="text-4xl font-black text-blue-900 tracking-tight">Island Stories</h2>
+                                        <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">Tales from across the Caribbean</p>
                                     </div>
-                                    Island Stories
-                                </h2>
-                                {activeSection === 'home' && (
-                                    <button
-                                        onClick={() => setActiveSection('stories')}
-                                        className="text-primary font-bold hover:underline"
-                                    >
-                                        See All →
-                                    </button>
-                                )}
+                                </div>
                             </div>
 
-                            {isLoading ? (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {[1, 2, 3, 4].map(i => (
-                                        <div key={i} className="bg-white rounded-3xl p-4 animate-pulse">
-                                            <div className="aspect-[3/4] bg-gray-100 rounded-2xl mb-3" />
-                                            <div className="h-4 bg-gray-100 rounded mb-2" />
-                                            <div className="h-3 bg-gray-100 rounded w-2/3" />
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : stories.length === 0 ? (
-                                <EmptyState
-                                    icon="📖"
-                                    title="No Stories Found"
-                                    message="Our island librarians are busy writing new adventures. Check back soon!"
-                                />
-                            ) : (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {stories.slice(0, activeSection === 'stories' ? 12 : 4).map((story) => {
-                                        const isLocked = !canAccess(story.tier_required);
-
-                                        return (
-                                            <Link
-                                                key={story.id}
-                                                href={isLocked ? '#' : `/portal/stories/${story.id}`}
-                                                className={`bg-white rounded-3xl p-4 shadow-sm hover:shadow-lg transition-all group ${isLocked ? 'opacity-70' : ''
-                                                    }`}
-                                            >
-                                                <div className="relative aspect-[3/4] bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl mb-3 overflow-hidden">
-                                                    {story.cover_image_url ? (
-                                                        <Image
-                                                            src={story.cover_image_url}
-                                                            alt={story.title}
-                                                            fill
-                                                            className="object-cover group-hover:scale-105 transition-transform"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-5xl">
-                                                            📚
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                                {stories.map((story) => {
+                                    const isLocked = !canAccess(story.tier_required);
+                                    return (
+                                        <Link
+                                            key={story.id}
+                                            href={isLocked ? '#' : `/portal/stories/${story.id}`}
+                                            className={`bg-white rounded-[3rem] p-5 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-blue-100 relative ${isLocked ? 'grayscale opacity-80' : ''}`}
+                                        >
+                                            <div className="relative aspect-[3/4] bg-blue-50 rounded-[2.5rem] mb-6 overflow-hidden">
+                                                {story.cover_image_url ? (
+                                                    <Image
+                                                        src={story.cover_image_url}
+                                                        alt={story.title}
+                                                        fill
+                                                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">📚</div>
+                                                )}
+                                                {isLocked && (
+                                                    <div className="absolute inset-0 bg-blue-900/40 backdrop-blur-[2px] flex items-center justify-center">
+                                                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-blue-900 shadow-2xl">
+                                                            <Lock size={40} />
                                                         </div>
-                                                    )}
-
-                                                    {isLocked && (
-                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                                            <Lock className="text-white" size={32} />
-                                                        </div>
-                                                    )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <h3 className="text-xl font-black text-blue-900 mb-2 truncate px-2">{story.title}</h3>
+                                            <div className="flex items-center justify-between px-2">
+                                                <span className="text-xs font-black text-blue-400 uppercase tracking-widest px-3 py-1 bg-blue-50 rounded-full">{story.reading_time_minutes} MINS</span>
+                                                <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg group-hover:bg-accent transition-colors">
+                                                    <Play size={16} fill="white" />
                                                 </div>
-                                                <h3 className="font-bold text-gray-900 mb-1 truncate">{story.title}</h3>
-                                                <p className="text-xs text-gray-500">{story.reading_time_minutes} min read</p>
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </section>
-                    )}
-
-                    {/* Songs Section */}
-                    {(activeSection === 'home' || activeSection === 'songs') && (
-                        <section className="mb-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                                        🎵
-                                    </div>
-                                    Island Songs
-                                </h2>
-                                {activeSection === 'home' && (
-                                    <button
-                                        onClick={() => setActiveSection('songs')}
-                                        className="text-primary font-bold hover:underline"
-                                    >
-                                        See All →
-                                    </button>
-                                )}
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
                             </div>
-
-                            {isLoading ? (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {[1, 2, 3, 4].map(i => (
-                                        <div key={i} className="bg-white rounded-3xl p-4 animate-pulse">
-                                            <div className="aspect-square bg-gray-100 rounded-2xl mb-3" />
-                                            <div className="h-4 bg-gray-100 rounded" />
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : songs.length === 0 ? (
-                                <EmptyState
-                                    icon="🎵"
-                                    title="No Songs Yet"
-                                    message="The steelpan band is taking a break. New tunes coming your way soon!"
-                                />
-                            ) : (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {songs.slice(0, activeSection === 'songs' ? 12 : 4).map((song) => {
-                                        const isLocked = !canAccess(song.tier_required);
-
-                                        return (
-                                            <Link
-                                                key={song.id}
-                                                href={isLocked ? '#' : `/portal/songs?play=${song.id}`}
-                                                className={`block bg-white rounded-3xl p-4 shadow-sm hover:shadow-lg transition-all group cursor-pointer ${isLocked ? 'opacity-70' : ''
-                                                    }`}
-                                            >
-                                                <div className="relative aspect-square bg-gradient-to-br from-purple-200 to-pink-200 rounded-2xl mb-3 overflow-hidden">
-                                                    {song.thumbnail_url ? (
-                                                        <Image
-                                                            src={song.thumbnail_url}
-                                                            alt={song.title}
-                                                            fill
-                                                            className="object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-5xl">
-                                                            🎶
-                                                        </div>
-                                                    )}
-
-                                                    {isLocked ? (
-                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                                            <Lock className="text-white" size={32} />
-                                                        </div>
-                                                    ) : (
-                                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-colors">
-                                                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                                                                <Play className="text-primary ml-1" size={28} />
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <h3 className="font-bold text-gray-900 truncate">{song.title}</h3>
-                                                <p className="text-xs text-gray-500">{song.artist}</p>
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            )}
                         </section>
                     )}
 
                     {/* Lessons Section */}
-                    {(activeSection === 'home' || activeSection === 'lessons') && (
-                        <section className="mb-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                                        🎥
-                                    </div>
-                                    Video Lessons
-                                </h2>
-                                {activeSection === 'home' && (
-                                    <button
-                                        onClick={() => setActiveSection('lessons')}
-                                        className="text-primary font-bold hover:underline"
-                                    >
-                                        See All →
-                                    </button>
-                                )}
+                    {(activeSection === 'lessons') && (
+                        <section className="space-y-8 animate-in fade-in slide-in-from-bottom-5">
+                            <div className="flex items-center gap-5">
+                                <div className="w-16 h-16 bg-indigo-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner">🎥</div>
+                                <div>
+                                    <h2 className="text-4xl font-black text-blue-900 tracking-tight">Village Cinema</h2>
+                                    <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">Learn traditions through film</p>
+                                </div>
                             </div>
 
-                            {isLoading ? (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {[1, 2, 3, 4].map(i => (
-                                        <div key={i} className="bg-white rounded-3xl p-4 animate-pulse">
-                                            <div className="aspect-video bg-gray-100 rounded-2xl mb-3" />
-                                            <div className="h-4 bg-gray-100 rounded mb-2" />
-                                            <div className="h-3 bg-gray-100 rounded w-2/3" />
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {videos.slice(0, activeSection === 'lessons' ? 12 : 4).map((video) => {
-                                        const isLocked = !canAccess(video.tier_required);
-
-                                        return (
-                                            <Link
-                                                key={video.id}
-                                                href={isLocked ? '#' : `/portal/lessons`}
-                                                className={`block bg-white rounded-3xl p-4 shadow-sm hover:shadow-lg transition-all group cursor-pointer ${isLocked ? 'opacity-70' : ''
-                                                    }`}
-                                            >
-                                                <div className="relative aspect-video bg-gradient-to-br from-indigo-200 to-purple-200 rounded-2xl mb-3 overflow-hidden">
-                                                    {video.thumbnail_url ? (
-                                                        <Image
-                                                            src={video.thumbnail_url}
-                                                            alt={video.title}
-                                                            fill
-                                                            className="object-cover group-hover:scale-105 transition-transform"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-4xl">
-                                                            🎥
-                                                        </div>
-                                                    )}
-
-                                                    {isLocked ? (
-                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                                            <Lock className="text-white" size={32} />
-                                                        </div>
-                                                    ) : (
-                                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-colors">
-                                                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                                                                <Play className="text-primary ml-1" size={24} />
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <h3 className="font-bold text-gray-900 mb-1 truncate">{video.title}</h3>
-                                                <p className="text-xs text-gray-500">{Math.round(video.duration_seconds / 60)} min watch</p>
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </section>
-                    )}
-
-                    {/* Missions Section */}
-                    {(activeSection === 'home' || activeSection === 'missions') && (
-                        <section className="mb-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
-                                        🎯
-                                    </div>
-                                    Today's Missions
-                                </h2>
-                            </div>
-
-                            {isLoading ? (
-                                <div className="space-y-4">
-                                    {[1, 2, 3].map(i => (
-                                        <div key={i} className="bg-white rounded-3xl p-6 animate-pulse">
-                                            <div className="h-6 bg-gray-100 rounded mb-2 w-1/3" />
-                                            <div className="h-4 bg-gray-100 rounded w-2/3" />
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : missions.length === 0 ? (
-                                <EmptyState
-                                    icon="🎯"
-                                    title="No Missions Today"
-                                    message="You've earned a rest day! Or you can start a Culture Quest below."
-                                />
-                            ) : (
-                                <div className="space-y-4">
-                                    {missions.map((mission) => (
-                                        <div
-                                            key={mission.id}
-                                            className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-lg transition-all cursor-pointer group flex items-center gap-6"
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                                {videos.map((video) => {
+                                    const isLocked = !canAccess(video.tier_required);
+                                    return (
+                                        <button
+                                            key={video.id}
+                                            onClick={() => !isLocked && setActiveVideo(video)}
+                                            className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-indigo-100 text-left ${isLocked ? 'grayscale opacity-80 cursor-not-allowed' : ''}`}
                                         >
-                                            <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl flex items-center justify-center text-white text-3xl shrink-0">
-                                                🎯
-                                            </div>
-                                            <div className="flex-1">
-                                                <h3 className="text-xl font-bold text-gray-900 mb-1">{mission.title}</h3>
-                                                <p className="text-gray-500">{mission.description}</p>
-                                            </div>
-                                            <div className="text-right shrink-0">
-                                                <p className="text-2xl font-black text-primary">+{mission.xp_reward}</p>
-                                                <p className="text-xs text-gray-400">XP</p>
-                                            </div>
-                                            <ChevronRight className="text-gray-300 group-hover:text-primary transition-colors" size={28} />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                                            <div className="relative aspect-video bg-indigo-50 rounded-[2.5rem] mb-6 overflow-hidden shadow-inner">
+                                                {video.thumbnail_url ? (
+                                                    <Image
+                                                        src={video.thumbnail_url}
+                                                        alt={video.title}
+                                                        fill
+                                                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-7xl opacity-10">🎥</div>
+                                                )}
 
-                            {/* Culture Quests Section */}
-                            <div className="mt-12">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
-                                            🗺️
-                                        </div>
-                                        Culture Quests
-                                    </h2>
-                                </div>
-                                <CultureQuests completedIds={activeChild?.cultural_milestones || []} />
+                                                {!isLocked && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-all">
+                                                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl scale-0 group-hover:scale-100 transition-transform">
+                                                            <Play className="text-indigo-600 ml-1" size={40} fill="currentColor" />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {isLocked && (
+                                                    <div className="absolute inset-0 bg-indigo-950/40 backdrop-blur-[2px] flex items-center justify-center">
+                                                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-indigo-900 shadow-2xl">
+                                                            <Lock size={32} />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl text-white font-black text-xs uppercase tracking-widest">
+                                                    {Math.round(video.duration_seconds / 60)}:00
+                                                </div>
+                                            </div>
+                                            <h3 className="text-2xl font-black text-blue-900 mb-2 truncate px-2">{video.title}</h3>
+                                            <div className="flex items-center gap-3 px-2">
+                                                <Sparkles className="text-yellow-500" size={18} />
+                                                <span className="text-indigo-600 font-black uppercase text-xs">Earn +{video.xp_reward || 50} XP</span>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </section>
                     )}
 
-                    {/* Radio Section */}
-                    {(activeSection === 'home' || activeSection === 'radio') && (
-                        <section className="mb-12">
-                            <div className="flex items-center justify-between mb-8">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-red-500 rounded-3xl flex items-center justify-center text-white text-3xl shadow-lg animate-float">
-                                        📻
-                                    </div>
-                                    <div>
-                                        <h2 className="text-3xl font-black text-gray-900">Heritage Radio</h2>
-                                        <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Live from Likkle Legends Island</p>
-                                    </div>
+                    {/* Songs Section */}
+                    {(activeSection === 'songs') && (
+                        <section className="space-y-8 animate-in fade-in slide-in-from-bottom-5">
+                            <div className="flex items-center gap-5">
+                                <div className="w-16 h-16 bg-pink-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner">🎵</div>
+                                <div>
+                                    <h2 className="text-4xl font-black text-blue-900 tracking-tight">Music Studio</h2>
+                                    <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">rhythms of the caribbean</p>
                                 </div>
-                                {activeSection === 'home' && (
-                                    <button
-                                        onClick={() => setActiveSection('radio')}
-                                        className="px-6 py-3 bg-white border-2 border-orange-100 text-orange-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-orange-50 transition-all hover:scale-105"
-                                    >
-                                        Full Station
-                                    </button>
-                                )}
                             </div>
 
-                            <div className="bg-white rounded-[4rem] p-1 border-4 border-orange-50 shadow-2xl overflow-hidden">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                                {songs.map((song) => {
+                                    const isLocked = !canAccess(song.tier_required);
+                                    return (
+                                        <button
+                                            key={song.id}
+                                            onClick={() => !isLocked && setActiveSong(song)}
+                                            className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-pink-100 text-left ${isLocked ? 'grayscale opacity-80 cursor-not-allowed' : ''}`}
+                                        >
+                                            <div className="relative aspect-square bg-pink-50 rounded-full mb-6 overflow-hidden shadow-2xl ring-4 ring-white group-hover:ring-pink-100 transition-all">
+                                                {song.thumbnail_url ? (
+                                                    <Image
+                                                        src={song.thumbnail_url}
+                                                        alt={song.title}
+                                                        fill
+                                                        className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-6xl opacity-10">🎵</div>
+                                                )}
+
+                                                {!isLocked && (
+                                                    <div className="absolute inset-0 flex items-center justify-center">
+                                                        <div className="w-16 h-16 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all">
+                                                            <Play className="text-pink-600 ml-1" size={32} fill="currentColor" />
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {isLocked && (
+                                                    <div className="absolute inset-0 bg-pink-900/40 backdrop-blur-[2px] flex items-center justify-center">
+                                                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-pink-900 shadow-2xl">
+                                                            <Lock size={24} />
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="text-center px-2">
+                                                <h3 className="text-xl font-black text-blue-900 mb-1 truncate">{song.title}</h3>
+                                                <p className="text-sm text-pink-500 font-bold uppercase tracking-widest">{song.artist}</p>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Missions & Radio Sections (Simplified for now to match high-premium look) */}
+                    {(activeSection === 'missions') && (
+                        <div className="max-w-4xl mx-auto space-y-8">
+                            <div className="flex items-center gap-5 mb-10">
+                                <div className="w-16 h-16 bg-orange-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner">🎯</div>
+                                <div>
+                                    <h2 className="text-4xl font-black text-blue-900 tracking-tight">Mission Hub</h2>
+                                    <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">Complete quests, earn badges</p>
+                                </div>
+                            </div>
+                            <CultureQuests completedIds={activeChild?.cultural_milestones || []} />
+                        </div>
+                    )}
+
+                    {(activeSection === 'radio') && (
+                        <div className="max-w-4xl mx-auto space-y-12">
+                            <div className="flex items-center gap-5 text-center justify-center">
+                                <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-[2.5rem] flex items-center justify-center text-5xl shadow-2xl animate-pulse">📻</div>
+                                <div className="text-left">
+                                    <h2 className="text-5xl font-black text-blue-900 tracking-tighter">Heritage Radio</h2>
+                                    <p className="text-orange-600 font-black uppercase tracking-[0.3em] text-[10px]">Live from Likkle Legends Island</p>
+                                </div>
+                            </div>
+                            <div className="bg-white rounded-[5rem] p-1 shadow-2xl border-8 border-orange-50 overflow-hidden">
                                 <TantyRadio />
                             </div>
-                        </section>
-                    )}
-
-                    {/* Games Section */}
-                    {activeSection === 'games' && (
-                        <section>
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-2xl font-black text-gray-900 flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                                        🎮
-                                    </div>
-                                    Fun Games
-                                </h2>
-                                <Link
-                                    href="/portal/games"
-                                    className="text-primary font-bold hover:underline"
-                                >
-                                    See All →
-                                </Link>
-                            </div>
-
-                            {isLoading ? (
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                    {[1, 2, 3].map(i => (
-                                        <div key={i} className="bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl p-6 h-40 animate-pulse" />
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                    <Link
-                                        href="/portal/games/island-match"
-                                        className="bg-gradient-to-br from-green-400 to-emerald-500 rounded-3xl p-6 text-white cursor-pointer hover:scale-105 transition-transform"
-                                    >
-                                        <div className="text-5xl mb-4">🧠</div>
-                                        <h3 className="text-xl font-black mb-1">Island Match</h3>
-                                        <p className="text-white/80 text-sm">Match Caribbean pairs</p>
-                                    </Link>
-                                    <Link
-                                        href="/portal/games"
-                                        className="bg-gradient-to-br from-purple-400 to-violet-500 rounded-3xl p-6 text-white cursor-pointer hover:scale-105 transition-transform"
-                                    >
-                                        <div className="text-5xl mb-4">✨</div>
-                                        <h3 className="text-xl font-black mb-1">Story Builder</h3>
-                                        <p className="text-white/80 text-sm">Create your own story</p>
-                                    </Link>
-                                    <Link
-                                        href="/portal/games"
-                                        className={`bg-gradient-to-br from-cyan-400 to-teal-500 rounded-3xl p-6 text-white cursor-pointer hover:scale-105 transition-transform relative overflow-hidden ${!canAccess('legends_plus') ? 'opacity-70' : ''}`}
-                                    >
-                                        {!canAccess('legends_plus') && (
-                                            <div className="absolute top-4 right-4">
-                                                <Lock size={24} />
-                                            </div>
-                                        )}
-                                        <div className="text-5xl mb-4">🗺️</div>
-                                        <h3 className="text-xl font-black mb-1">Island Explorer</h3>
-                                        <p className="text-white/80 text-sm">VR island tour</p>
-                                    </Link>
-                                </div>
-                            )}
-                        </section>
+                        </div>
                     )}
                 </main>
             </div>
+
+            {/* Premium Media Players */}
+            {activeVideo && (
+                <PremiumVideoPlayer
+                    video={activeVideo}
+                    onClose={() => setActiveVideo(null)}
+                    onComplete={(xp) => handleMediaComplete('video', activeVideo.id, xp)}
+                />
+            )}
+
+            {activeSong && (
+                <PremiumMusicPlayer
+                    song={activeSong}
+                    onClose={() => setActiveSong(null)}
+                    onComplete={(xp) => handleMediaComplete('song', activeSong.id, xp)}
+                />
+            )}
         </div>
     );
 }

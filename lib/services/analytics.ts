@@ -55,3 +55,26 @@ export async function getAnalyticsSummary() {
         pendingOrders: pendingOrders || 0,
     };
 }
+
+export async function getChildActivities(childId: string, limit = 10) {
+    const { data, error } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('child_id', childId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function getChildBadges(childId: string) {
+    const { data, error } = await supabase
+        .from('badge_earnings')
+        .select('*')
+        .eq('child_id', childId)
+        .order('earned_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+}

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Trophy, Star, Lock, Sparkles, CheckCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Star, Lock, Sparkles, CheckCircle, Clock, Loader2 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
-import { BADGES, LEVELS, calculateLevel } from '@/lib/gamification';
+import { BADGES_LIST, LEVELS, calculateLevel, getChildBadges } from '@/lib/database';
 
 interface Badge {
     id: string;
@@ -18,21 +18,6 @@ interface Badge {
     progress?: number;
     target?: number;
 }
-
-const USER_BADGES: Badge[] = [
-    { id: 'first_story', name: 'Story Starter', description: 'Read your first story', icon: '📖', category: 'stories', rarity: 'common', earned: true, earnedAt: '2025-12-20' },
-    { id: 'bookworm', name: 'Bookworm', description: 'Read 10 stories', icon: '📚', category: 'stories', rarity: 'rare', earned: true, earnedAt: '2025-12-28' },
-    { id: 'story_master', name: 'Story Master', description: 'Read 50 stories', icon: '🏆', category: 'stories', rarity: 'epic', earned: false, progress: 15, target: 50 },
-    { id: 'first_song', name: 'Music Fan', description: 'Listen to your first song', icon: '🎵', category: 'music', rarity: 'common', earned: true, earnedAt: '2025-12-20' },
-    { id: 'melody_maker', name: 'Melody Maker', description: 'Listen to 20 songs', icon: '🎶', category: 'music', rarity: 'rare', earned: true, earnedAt: '2025-12-30' },
-    { id: 'week_warrior', name: 'Week Warrior', description: '7-day learning streak', icon: '🔥', category: 'streaks', rarity: 'rare', earned: false, progress: 5, target: 7 },
-    { id: 'month_master', name: 'Month Master', description: '30-day learning streak', icon: '⭐', category: 'streaks', rarity: 'legendary', earned: false, progress: 5, target: 30 },
-    { id: 'jamaica_explorer', name: 'Jamaica Explorer', description: 'Complete all Jamaica content', icon: '🇯🇲', category: 'islands', rarity: 'epic', earned: false, progress: 7, target: 10 },
-    { id: 'trinidad_explorer', name: 'Trinidad Explorer', description: 'Complete all Trinidad content', icon: '🇹🇹', category: 'islands', rarity: 'epic', earned: false, progress: 3, target: 10 },
-    { id: 'word_wizard', name: 'Word Wizard', description: 'Learn 25 Patois words', icon: '🗣️', category: 'language', rarity: 'rare', earned: false, progress: 18, target: 25 },
-    { id: 'cultural_champion', name: 'Cultural Champion', description: 'Complete a heritage journey', icon: '👑', category: 'cultural', rarity: 'legendary', earned: false, progress: 4, target: 10 },
-    { id: 'first_mission', name: 'Mission Ace', description: 'Complete your first mission', icon: '🎯', category: 'missions', rarity: 'common', earned: true, earnedAt: '2025-12-21' },
-];
 
 const CATEGORIES = [
     { id: 'all', label: 'All Badges' },
@@ -60,16 +45,64 @@ const RARITY_BG = {
 
 export default function BadgesPage() {
     const { activeChild } = useUser();
+    const [badges, setBadges] = useState<Badge[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('all');
     const [showEarned, setShowEarned] = useState<'all' | 'earned' | 'locked'>('all');
 
-    const totalXP = activeChild?.total_xp || 1250;
+    useEffect(() => {
+        if (activeChild?.id) {
+            loadBadges(activeChild.id);
+        } else {
+            // If no child selected (guest/parent only), show mock/static badges as locked
+            const mapped = BADGES_LIST.map(b => ({
+                id: b.id,
+                name: b.name,
+                description: b.description,
+                icon: b.icon,
+                category: b.category as string,
+                rarity: b.rarity as any,
+                earned: false
+            }));
+            setBadges(mapped);
+            setIsLoading(false);
+        }
+    }, [activeChild]);
+
+    const loadBadges = async (childId: string) => {
+        setIsLoading(true);
+        try {
+            const earnings = await getChildBadges(childId);
+            const earnedIds = new Set(earnings.map((e: any) => e.badge_id));
+
+            const mapped = BADGES_LIST.map(b => {
+                const earning = earnings.find((e: any) => e.badge_id === b.id);
+                return {
+                    id: b.id,
+                    name: b.name,
+                    description: b.description,
+                    icon: b.icon,
+                    category: b.category as string,
+                    rarity: earning?.rarity || b.rarity as any,
+                    earned: earnedIds.has(b.id),
+                    earnedAt: earning?.earned_at
+                };
+            });
+            setBadges(mapped);
+        } catch (error) {
+            console.error('Failed to load badges:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const totalXP = activeChild?.total_xp || 0;
     const level = calculateLevel(totalXP);
 
-    const earnedCount = USER_BADGES.filter(b => b.earned).length;
-    const totalCount = USER_BADGES.length;
+    const earnedCount = badges.filter(b => b.earned).length;
+    const totalCount = badges.length;
 
-    const filteredBadges = USER_BADGES.filter(badge => {
+    const filteredBadges = badges.filter(badge => {
         const matchesCategory = activeCategory === 'all' || badge.category === activeCategory;
         const matchesEarned = showEarned === 'all' ||
             (showEarned === 'earned' && badge.earned) ||
@@ -80,47 +113,50 @@ export default function BadgesPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-purple-50">
             {/* Header */}
-            <header className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-                <div className="max-w-6xl mx-auto px-4 py-6">
-                    <div className="flex items-center gap-4 mb-6">
-                        <Link href="/portal" className="p-2 hover:bg-white/10 rounded-xl transition-colors">
+            <header className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 text-white shadow-xl">
+                <div className="max-w-6xl mx-auto px-4 py-8">
+                    <div className="flex items-center gap-6 mb-8">
+                        <Link href="/portal" className="p-3 bg-white/10 hover:bg-white/20 rounded-2xl transition-all border border-white/10 shadow-lg">
                             <ArrowLeft size={24} />
                         </Link>
                         <div>
-                            <h1 className="text-2xl font-black">Achievement Badges</h1>
-                            <p className="text-white/70 text-sm">Collect badges and show your progress!</p>
+                            <h1 className="text-4xl font-black tracking-tight">Achievement Badges</h1>
+                            <p className="text-white/70 font-bold uppercase tracking-widest text-xs mt-1">Collect them all to become a Legend!</p>
                         </div>
                     </div>
 
-                    {/* Stats */}
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-white/10 rounded-2xl p-4 text-center">
-                            <div className="text-3xl font-black">{earnedCount}/{totalCount}</div>
-                            <p className="text-xs text-white/70">Badges Earned</p>
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-3 gap-6">
+                        <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/10 shadow-xl">
+                            <div className="text-4xl font-black">{earnedCount}/{totalCount}</div>
+                            <p className="text-xs font-black uppercase tracking-widest opacity-60">Badges Earned</p>
                         </div>
-                        <div className="bg-white/10 rounded-2xl p-4 text-center">
-                            <div className="text-3xl">{level.icon}</div>
-                            <p className="text-xs text-white/70">{level.name}</p>
+                        <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/10 shadow-xl flex items-center gap-4">
+                            <div className="text-5xl">{level.icon}</div>
+                            <div>
+                                <div className="text-xl font-black leading-none">{level.name}</div>
+                                <p className="text-xs font-black uppercase tracking-widest opacity-60 mt-1">Current Grade</p>
+                            </div>
                         </div>
-                        <div className="bg-white/10 rounded-2xl p-4 text-center">
-                            <div className="text-3xl font-black">{totalXP.toLocaleString()}</div>
-                            <p className="text-xs text-white/70">Total XP</p>
+                        <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/10 shadow-xl">
+                            <div className="text-4xl font-black">{totalXP.toLocaleString()}</div>
+                            <p className="text-xs font-black uppercase tracking-widest opacity-60">Total XP</p>
                         </div>
                     </div>
                 </div>
             </header>
 
-            {/* Filters */}
-            <div className="max-w-6xl mx-auto px-4 -mt-4">
-                <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
-                    <div className="flex flex-wrap gap-2 mb-4">
+            {/* Filters Section */}
+            <div className="max-w-6xl mx-auto px-4 -mt-8">
+                <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-zinc-50">
+                    <div className="flex flex-wrap gap-3 mb-6">
                         {CATEGORIES.map((cat) => (
                             <button
                                 key={cat.id}
                                 onClick={() => setActiveCategory(cat.id)}
-                                className={`px-4 py-2 rounded-xl font-medium text-sm transition-colors ${activeCategory === cat.id
-                                        ? 'bg-primary text-white'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                className={`px-6 py-3 rounded-2xl font-black text-sm transition-all ${activeCategory === cat.id
+                                    ? 'bg-primary text-white shadow-xl scale-105'
+                                    : 'bg-zinc-50 text-deep/40 hover:bg-zinc-100'
                                     }`}
                             >
                                 {cat.label}
@@ -128,18 +164,18 @@ export default function BadgesPage() {
                         ))}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2 p-1 bg-zinc-50 rounded-xl inline-flex">
                         {[
-                            { id: 'all', label: 'All' },
+                            { id: 'all', label: 'All Badges' },
                             { id: 'earned', label: 'Earned' },
                             { id: 'locked', label: 'Locked' },
                         ].map((filter) => (
                             <button
                                 key={filter.id}
                                 onClick={() => setShowEarned(filter.id as typeof showEarned)}
-                                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${showEarned === filter.id
-                                        ? 'bg-gray-900 text-white'
-                                        : 'text-gray-500 hover:bg-gray-100'
+                                className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${showEarned === filter.id
+                                    ? 'bg-white text-deep shadow-md'
+                                    : 'text-deep/30 hover:text-deep/50'
                                     }`}
                             >
                                 {filter.label}
@@ -149,88 +185,90 @@ export default function BadgesPage() {
                 </div>
             </div>
 
-            {/* Badges Grid */}
-            <main className="max-w-6xl mx-auto px-4 py-8">
-                <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {filteredBadges.map((badge) => (
-                        <div
-                            key={badge.id}
-                            className={`rounded-2xl p-6 border-2 transition-all hover:scale-105 ${badge.earned
-                                    ? RARITY_BG[badge.rarity]
-                                    : 'bg-gray-50 border-gray-200 opacity-60'
-                                }`}
-                        >
-                            {/* Badge Icon */}
-                            <div className="relative mb-4">
-                                <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center text-4xl ${badge.earned
-                                        ? `bg-gradient-to-br ${RARITY_COLORS[badge.rarity]} shadow-lg`
-                                        : 'bg-gray-200'
-                                    }`}>
-                                    {badge.earned ? badge.icon : <Lock size={32} className="text-gray-400" />}
+            {/* Badges Display */}
+            <main className="max-w-6xl mx-auto px-4 py-12">
+                {isLoading ? (
+                    <div className="flex flex-col items-center justify-center py-24">
+                        <Loader2 className="animate-spin text-primary mb-4" size={48} />
+                        <p className="font-black text-deep/20 uppercase tracking-widest">Polishing your medals...</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {filteredBadges.map((badge) => (
+                            <div
+                                key={badge.id}
+                                className={`group relative rounded-[2.5rem] p-8 border-2 transition-all duration-300 ${badge.earned
+                                    ? `${RARITY_BG[badge.rarity]} shadow-xl hover:shadow-2xl hover:-translate-y-2`
+                                    : 'bg-zinc-50 border-zinc-100 opacity-40 grayscale hover:grayscale-0 hover:opacity-100'
+                                    }`}
+                            >
+                                {/* Badge Icon Area */}
+                                <div className="relative mb-6">
+                                    <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center text-5xl transition-transform duration-500 group-hover:rotate-12 ${badge.earned
+                                        ? `bg-gradient-to-br ${RARITY_COLORS[badge.rarity]} shadow-2xl ring-4 ring-white`
+                                        : 'bg-zinc-200'
+                                        }`}>
+                                        {badge.earned ? badge.icon : <Lock size={40} className="text-zinc-400" />}
+                                    </div>
+
+                                    {badge.earned && (
+                                        <div className="absolute -bottom-2 right-1/2 translate-x-12 bg-green-500 text-white p-2 rounded-full shadow-lg ring-4 ring-white">
+                                            <CheckCircle size={20} />
+                                        </div>
+                                    )}
                                 </div>
 
-                                {badge.earned && (
-                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-green-500 text-white p-1 rounded-full">
-                                        <CheckCircle size={16} />
-                                    </div>
-                                )}
-                            </div>
+                                {/* Text Content */}
+                                <div className="text-center">
+                                    <h3 className={`text-xl font-black mb-2 leading-tight ${badge.earned ? 'text-deep' : 'text-deep/40'}`}>
+                                        {badge.name}
+                                    </h3>
+                                    <p className="text-xs font-medium text-deep/40 mb-4 h-8 overflow-hidden line-clamp-2">
+                                        {badge.description}
+                                    </p>
 
-                            {/* Badge Info */}
-                            <div className="text-center">
-                                <h3 className={`font-bold mb-1 ${badge.earned ? 'text-gray-900' : 'text-gray-500'}`}>
-                                    {badge.name}
-                                </h3>
-                                <p className="text-xs text-gray-500 mb-3">{badge.description}</p>
-
-                                {/* Rarity Tag */}
-                                <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${badge.rarity === 'common' ? 'bg-gray-200 text-gray-600' :
+                                    {/* Rarity/Category Tag */}
+                                    <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${badge.rarity === 'common' ? 'bg-zinc-200 text-zinc-600' :
                                         badge.rarity === 'rare' ? 'bg-blue-100 text-blue-700' :
                                             badge.rarity === 'epic' ? 'bg-purple-100 text-purple-700' :
-                                                'bg-amber-100 text-amber-700'
-                                    }`}>
-                                    {badge.rarity}
-                                </span>
+                                                'bg-amber-100 text-amber-700 shadow-sm'
+                                        }`}>
+                                        {badge.rarity}
+                                    </span>
 
-                                {/* Progress or Date */}
-                                {badge.earned && badge.earnedAt && (
-                                    <p className="text-xs text-gray-400 mt-2 flex items-center justify-center gap-1">
-                                        <Clock size={12} /> {new Date(badge.earnedAt).toLocaleDateString()}
-                                    </p>
-                                )}
-
-                                {!badge.earned && badge.progress !== undefined && (
-                                    <div className="mt-3">
-                                        <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-primary"
-                                                style={{ width: `${(badge.progress / (badge.target || 1)) * 100}%` }}
-                                            />
+                                    {badge.earned && badge.earnedAt && (
+                                        <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-center gap-2 text-[10px] font-black text-deep/20 uppercase tracking-tighter">
+                                            <Clock size={12} /> {new Date(badge.earnedAt).toLocaleDateString()}
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-1">{badge.progress}/{badge.target}</p>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
 
-                {filteredBadges.length === 0 && (
-                    <div className="text-center py-16">
-                        <Trophy className="text-gray-300 mx-auto mb-4" size={48} />
-                        <p className="text-gray-500">No badges in this category</p>
+                {!isLoading && filteredBadges.length === 0 && (
+                    <div className="py-24 text-center">
+                        <div className="w-24 h-24 bg-zinc-50 rounded-full flex items-center justify-center mx-auto mb-6 text-zinc-200">
+                            <Star size={48} />
+                        </div>
+                        <p className="text-xl font-black text-deep/20">NO BADGES FOUND IN THIS CATEGORY</p>
                     </div>
                 )}
             </main>
 
-            {/* Coming Soon Banner */}
-            <div className="max-w-6xl mx-auto px-4 pb-8">
-                <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-3xl p-8 text-white text-center">
-                    <Sparkles className="mx-auto mb-4" size={40} />
-                    <h3 className="text-2xl font-black mb-2">More Badges Coming!</h3>
-                    <p className="text-white/80 max-w-md mx-auto">
-                        Keep learning and exploring to unlock special seasonal badges and limited-edition achievements!
-                    </p>
+            {/* Newsletter/Next Step */}
+            <div className="max-w-6xl mx-auto px-4 pb-24">
+                <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-[3rem] p-12 text-white text-center shadow-2xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -mr-48 -mt-48 blur-3xl animate-pulse"></div>
+                    <div className="relative z-10">
+                        <Sparkles className="mx-auto mb-6 text-yellow-300" size={60} />
+                        <h3 className="text-4xl font-black mb-4 tracking-tighter">The Legend Treasury is Expanding!</h3>
+                        <p className="text-xl text-white/70 max-w-2xl mx-auto font-medium leading-relaxed">
+                            Our archivists are busy crafting new legendary achievements for the upcoming festivals.
+                            Keep exploring the islands to be the first to claim them!
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,0 +1,48 @@
+﻿app/onboarding/child/page.tsx(86,17): error TS2353: Object literal may only specify known properties, and 'avatar_id' does not exist in type '{ first_name: string; age: number; age_track: "mini" | "big"; primary_island: string; secondary_island?: string | undefined; }'.
+app/portal/games/page.tsx(314,47): error TS2339: Property 'isNew' does not exist on type 'Game | { id: string; title: string; description: string; emoji: string; gradient: string; tier: string; category: string; xp: number; time: string; isNew: boolean; isPopular: boolean; }'.
+  Property 'isNew' does not exist on type 'Game'.
+app/portal/games/page.tsx(319,47): error TS2339: Property 'isPopular' does not exist on type 'Game | { id: string; title: string; description: string; emoji: string; gradient: string; tier: string; category: string; xp: number; time: string; isNew: boolean; isPopular: boolean; }'.
+  Property 'isPopular' does not exist on type 'Game'.
+app/portal/games/page.tsx(344,51): error TS2339: Property 'emoji' does not exist on type 'Game | { id: string; title: string; description: string; emoji: string; gradient: string; tier: string; category: string; xp: number; time: string; isNew: boolean; isPopular: boolean; }'.
+  Property 'emoji' does not exist on type 'Game'.
+app/portal/games/page.tsx(355,99): error TS2339: Property 'xp' does not exist on type 'Game | { id: string; title: string; description: string; emoji: string; gradient: string; tier: string; category: string; xp: number; time: string; isNew: boolean; isPopular: boolean; }'.
+  Property 'xp' does not exist on type 'Game'.
+app/portal/games/page.tsx(359,55): error TS2339: Property 'time' does not exist on type 'Game | { id: string; title: string; description: string; emoji: string; gradient: string; tier: string; category: string; xp: number; time: string; isNew: boolean; isPopular: boolean; }'.
+  Property 'time' does not exist on type 'Game'.
+components/admin/UserManagement.tsx(4,10): error TS2305: Module '"../../lib/constants"' has no exported member 'PRICING_TIERS'.
+components/admin/UserManagement.tsx(91,64): error TS7006: Parameter 't' implicitly has an 'any' type.
+components/admin/UserManagement.tsx(102,65): error TS7006: Parameter 't' implicitly has an 'any' type.
+components/Characters.tsx(17,39): error TS7006: Parameter 'char' implicitly has an 'any' type.
+components/Characters.tsx(17,45): error TS7006: Parameter 'i' implicitly has an 'any' type.
+components/DigitalMagic.tsx(39,30): error TS2304: Cannot find name 'Target'.
+components/HowItWorks.tsx(16,46): error TS7006: Parameter 'step' implicitly has an 'any' type.
+likkle-legend-ai-studio_clone/components/Auth.tsx(27,13): error TS2561: Object literal may only specify known properties, but 'email' does not exist in type 'User'. Did you mean to write 'mail'?
+likkle-legend-ai-studio_clone/components/IslandVoice.tsx(86,47): error TS7006: Parameter 'e' implicitly has an 'any' type.
+likkle-legend-ai-studio_clone/components/IslandVoice.tsx(108,33): error TS18048: 'message.serverContent.modelTurn.parts' is possibly 'undefined'.
+likkle-legend-ai-studio_clone/components/MemberPortal.tsx(3,16): error TS2305: Module '"../types"' has no exported member 'LibraryModule'.
+likkle-legend-ai-studio_clone/components/MemberPortal.tsx(3,42): error TS2305: Module '"../types"' has no exported member 'Mission'.
+likkle-legend-ai-studio_clone/components/MemberPortal.tsx(4,10): error TS2305: Module '"../constants"' has no exported member 'LIBRARY_MODULES'.
+likkle-legend-ai-studio_clone/components/MemberPortal.tsx(4,27): error TS2305: Module '"../constants"' has no exported member 'MISSIONS'.
+likkle-legend-ai-studio_clone/components/MemberPortal.tsx(24,24): error TS2353: Object literal may only specify known properties, and 'points' does not exist in type 'Partial<User>'.
+likkle-legend-ai-studio_clone/components/MemberPortal.tsx(24,37): error TS2339: Property 'points' does not exist on type 'User'.
+likkle-legend-ai-studio_clone/components/MemberPortal.tsx(29,43): error TS7006: Parameter 'm' implicitly has an 'any' type.
+likkle-legend-ai-studio_clone/components/MemberPortal.tsx(29,54): error TS2339: Property 'completedMissions' does not exist on type 'User'.
+likkle-legend-ai-studio_clone/components/MemberPortal.tsx(40,35): error TS2339: Property 'avatar' does not exist on type 'User'.
+likkle-legend-ai-studio_clone/components/MemberPortal.tsx(44,78): error TS2339: Property 'points' does not exist on type 'User'.
+likkle-legend-ai-studio_clone/components/MemberPortal.tsx(121,38): error TS7006: Parameter 'module' implicitly has an 'any' type.
+likkle-legend-ai-studio_clone/components/ParentCommandCenter.tsx(3,16): error TS2305: Module '"../types"' has no exported member 'LibraryModule'.
+likkle-legend-ai-studio_clone/components/ParentCommandCenter.tsx(4,10): error TS2305: Module '"../constants"' has no exported member 'LIBRARY_MODULES'.
+likkle-legend-ai-studio_clone/components/ParentCommandCenter.tsx(42,88): error TS2339: Property 'points' does not exist on type 'User'.
+likkle-legend-ai-studio_clone/components/ParentCommandCenter.tsx(89,50): error TS7006: Parameter 'module' implicitly has an 'any' type.
+likkle-legend-ai-studio_clone/services/geminiService.ts(156,32): error TS2345: Argument of type 'ArrayBufferLike' is not assignable to parameter of type 'ArrayBuffer'.
+  Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength
+likkle-legend-ai-studio_clone/services/paymentService.ts(1,28): error TS2307: Cannot find module '@stripe/stripe-js' or its corresponding type declarations.
+likkle-legend-ai-studio_clone/vite.config.ts(2,39): error TS2307: Cannot find module 'vite' or its corresponding type declarations.
+likkle-legend-ai-studio_clone/vite.config.ts(3,19): error TS2307: Cannot find module '@vitejs/plugin-react' or its corresponding type declarations.
+likkle-legend-ai-studio_clone/vite.config.ts(5,32): error TS7031: Binding element 'mode' implicitly has an 'any' type.
+services/geminiService.ts(135,40): error TS2345: Argument of type 'ArrayBufferLike' is not assignable to parameter of type 'ArrayBuffer'.
+  Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength
+services/geminiService.ts(137,49): error TS2345: Argument of type 'ArrayBufferLike' is not assignable to parameter of type 'ArrayBuffer'.
+  Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength
+services/geminiService.ts(180,49): error TS2345: Argument of type 'ArrayBufferLike' is not assignable to parameter of type 'ArrayBuffer'.
+  Type 'SharedArrayBuffer' is missing the following properties from type 'ArrayBuffer': resizable, resize, detached, transfer, transferToFixedLength

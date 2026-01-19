@@ -1,0 +1,72 @@
+﻿   Γû▓ Next.js 14.1.0
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+node.exe : Failed to 
+compile.
+At C:\Program Files\no
+dejs\npx.ps1:29 char:3
++   & $NODE_EXE 
+$NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Failed to    
+ compile.:String)     
+[], RemoteExcepti    
+on
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+
+./app/admin/assets/pag
+e.tsx
+Error: 
+  [31mx[0m 
+Unexpected token 
+`AdminLayout`. 
+Expected jsx 
+identifier
+     ,-[[36;1;4mC:\Us
+ers\RAY\OneDrive\Docum
+ents\GitHub\likkle-leg
+ends\app\admin\assets\
+page.tsx[0m:167:1]
+ [2m167[0m |     );
+ [2m168[0m | 
+ [2m169[0m |     
+return (
+ [2m170[0m |        
+ <AdminLayout 
+activeSection="media">
+     : [31;1m        
+ ^^^^^^^^^^^[0m
+ [2m171[0m |        
+     <header 
+className="bg-white 
+border-b 
+border-gray-100 px-8 
+py-6">
+ [2m172[0m |        
+         <div 
+className="flex 
+items-center 
+justify-between">
+ [2m172[0m |        
+             <div>
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for 
+requested module:
+./app/admin/assets/pag
+e.tsx
+
+
+> Build failed 
+because of webpack 
+errors

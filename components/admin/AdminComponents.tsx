@@ -8,7 +8,8 @@ import {
     Settings, Bell, BarChart3, FileText, MessageSquare,
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
     Plus, Eye, Edit, Trash2, Download, RefreshCw,
-    Gamepad2, LayoutGrid, Wand2, Sparkles
+    Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap,
+    Database, Smartphone, Accessibility, Lock
 } from 'lucide-react';
 
 // ==========================================
@@ -46,6 +47,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
         { id: 'cms', label: 'Site CMS', icon: Globe, href: '/admin/cms' },
         { id: 'announcements', label: 'Announcements', icon: Megaphone, href: '/admin/announcements' },
         { id: 'analytics', label: 'Analytics', icon: TrendingUp, href: '/admin/analytics' },
+        { id: 'verify', label: 'Launch Verification', icon: ShieldCheck, href: '/admin/verify' },
         { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
     ];
 
@@ -511,5 +513,6 @@ export {
     Settings, Bell, BarChart3, FileText, MessageSquare,
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
     Plus, Eye, Edit, Trash2, Download, RefreshCw,
-    Gamepad2, LayoutGrid, Wand2, Sparkles
+    Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap,
+    Database, Smartphone, Accessibility, Lock
 };

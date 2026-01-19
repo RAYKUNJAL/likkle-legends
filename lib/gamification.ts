@@ -30,32 +30,34 @@ export const LEVELS = [
 
 export const BADGES = {
     // Story Badges
-    first_story: { id: 'first_story', name: 'First Adventure', description: 'Completed your first story', icon: '📖', category: 'stories' },
-    story_explorer: { id: 'story_explorer', name: 'Story Explorer', description: 'Read 10 stories', icon: '🗺️', category: 'stories' },
-    story_master: { id: 'story_master', name: 'Story Master', description: 'Read 50 stories', icon: '📚', category: 'stories' },
+    first_story: { id: 'first_story', name: 'First Adventure', description: 'Completed your first story', icon: '📖', category: 'stories', rarity: 'common' },
+    story_explorer: { id: 'story_explorer', name: 'Story Explorer', description: 'Read 10 stories', icon: '🗺️', category: 'stories', rarity: 'rare' },
+    story_master: { id: 'story_master', name: 'Story Master', description: 'Read 50 stories', icon: '📚', category: 'stories', rarity: 'epic' },
 
     // Music Badges
-    first_song: { id: 'first_song', name: 'First Vibes', description: 'Listened to your first song', icon: '🎶', category: 'music' },
-    music_lover: { id: 'music_lover', name: 'Music Lover', description: 'Listened to 25 songs', icon: '🎧', category: 'music' },
-    steelpan_star: { id: 'steelpan_star', name: 'Steelpan Star', description: 'Listened to 100 songs', icon: '🥁', category: 'music' },
+    first_song: { id: 'first_song', name: 'First Vibes', description: 'Listened to your first song', icon: '🎶', category: 'music', rarity: 'common' },
+    music_lover: { id: 'music_lover', name: 'Music Lover', description: 'Listened to 25 songs', icon: '🎧', category: 'music', rarity: 'rare' },
+    steelpan_star: { id: 'steelpan_star', name: 'Steelpan Star', description: 'Listened to 100 songs', icon: '🥁', category: 'music', rarity: 'epic' },
 
     // Cultural Badges
-    patois_starter: { id: 'patois_starter', name: 'Patois Pickney', description: 'Learned 5 Patois words', icon: '🗣️', category: 'culture' },
-    dialect_master: { id: 'dialect_master', name: 'Dialect Master', description: 'Learned 25 words', icon: '💬', category: 'culture' },
-    island_hopper: { id: 'island_hopper', name: 'Island Hopper', description: 'Explored 5 island VR portals', icon: '✈️', category: 'culture' },
+    patois_starter: { id: 'patois_starter', name: 'Patois Pickney', description: 'Learned 5 Patois words', icon: '🗣️', category: 'language', rarity: 'common' },
+    dialect_master: { id: 'dialect_master', name: 'Dialect Master', description: 'Learned 25 words', icon: '💬', category: 'language', rarity: 'rare' },
+    island_hopper: { id: 'island_hopper', name: 'Island Hopper', description: 'Explored 5 island VR portals', icon: '✈️', category: 'islands', rarity: 'epic' },
 
     // Streak Badges
-    week_warrior: { id: 'week_warrior', name: 'Week Warrior', description: '7-day learning streak', icon: '🔥', category: 'streaks' },
-    month_champion: { id: 'month_champion', name: 'Month Champion', description: '30-day learning streak', icon: '💪', category: 'streaks' },
-    consistency_king: { id: 'consistency_king', name: 'Consistency Crown', description: '100-day streak', icon: '👑', category: 'streaks' },
+    week_warrior: { id: 'week_warrior', name: 'Week Warrior', description: '7-day learning streak', icon: '🔥', category: 'streaks', rarity: 'rare' },
+    month_champion: { id: 'month_champion', name: 'Month Champion', description: '30-day learning streak', icon: '💪', category: 'streaks', rarity: 'epic' },
+    consistency_king: { id: 'consistency_king', name: 'Consistency Crown', description: '100-day streak', icon: '👑', category: 'streaks', rarity: 'legendary' },
 
     // Special Badges
-    ar_pioneer: { id: 'ar_pioneer', name: 'AR Pioneer', description: 'Used AR coloring overlay', icon: '📱', category: 'special' },
-    ai_storyteller: { id: 'ai_storyteller', name: 'AI Storyteller', description: 'Created an AI story', icon: '✨', category: 'special' },
-    family_legacy: { id: 'family_legacy', name: 'Family Legacy', description: 'Added family to heritage tree', icon: '🌳', category: 'special' },
+    ar_pioneer: { id: 'ar_pioneer', name: 'AR Pioneer', description: 'Used AR coloring overlay', icon: '📱', category: 'cultural', rarity: 'epic' },
+    ai_storyteller: { id: 'ai_storyteller', name: 'AI Storyteller', description: 'Created an AI story', icon: '✨', category: 'stories', rarity: 'legendary' },
+    family_legacy: { id: 'family_legacy', name: 'Family Legacy', description: 'Added family to heritage tree', icon: '🌳', category: 'cultural', rarity: 'epic' },
 };
 
 export type BadgeId = keyof typeof BADGES;
+
+export const BADGES_LIST = Object.values(BADGES);
 
 export function calculateLevel(xp: number): typeof LEVELS[0] {
     for (let i = LEVELS.length - 1; i >= 0; i--) {

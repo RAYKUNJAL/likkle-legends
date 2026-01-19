@@ -39,6 +39,7 @@
   ],
   "exclude": [
     "node_modules",
-    "likkle-legends-second"
+    "likkle-legends-second",
+    "likkle-legend-ai-studio_clone"
   ]
 }
