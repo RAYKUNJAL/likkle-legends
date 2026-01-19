@@ -253,12 +253,12 @@ export const TANTY_ISLAND_ENGINE = {
         dialect_base: "Pan-Caribbean Phonetic Blend"
     },
     vocal_blueprint: {
-        provider: "Google Cloud Text-to-Speech",
-        voice_name: "en-GB-Neural2-C",
-        speaking_rate: 0.90,
-        pitch: -2.0,
+        provider: "Google Gemini AI Studio",
+        voice_name: "Kore", // Confirmed from tanty_spice_master.json
+        speaking_rate: 1.0, // Kore controls her own pace
+        pitch: 0, // Kore controls her own pitch
         modality: "AUDIO",
-        prosody_profile: "Rhythmic lilt, warm pitch, measured pace"
+        prosody_profile: "Rhythmic lilt, high pitch variance, sing-song cadence"
     },
     guardrails: {
         forbidden_topics: ["Violence", "Politics", "Scary Horror", "Adult Themes"],
