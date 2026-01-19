@@ -25,14 +25,8 @@ export async function getTantyVoice(text: string): Promise<{
     const cleanText = text.trim().substring(0, 1000); // Limit to prevent huge API calls
 
     try {
-        // 1. Try Google Cloud TTS first (Primary v2.1.0 Model - Tuned Pitch/Rate)
-        const gcResult = await getTantySpiceVoice(cleanText);
-
-        if (gcResult.success && gcResult.audio) {
-            return gcResult;
-        }
-
-        // 2. Try Gemini TTS as backup
+        // 1. Try Gemini TTS first (Native Audio - Supports Accent Prompting)
+        // detailed "Voice Direction" in lib/gemini-tts.ts helps it handle Patois better than Neural2.
         try {
             const { generateGeminiSpeechBase64 } = await import("@/lib/gemini-tts");
             const geminiAudio = await generateGeminiSpeechBase64(cleanText, { voiceName: "Kore" });
@@ -41,7 +35,14 @@ export async function getTantyVoice(text: string): Promise<{
                 return { success: true, audio: geminiAudio };
             }
         } catch (geminiError) {
-            // fail silent to fallback
+            // Fallback silently
+        }
+
+        // 2. Try Google Cloud TTS as backup (Neural2)
+        const gcResult = await getTantySpiceVoice(cleanText);
+
+        if (gcResult.success && gcResult.audio) {
+            return gcResult;
         }
 
         // 3. Return error - client will use browser speechSynthesis
