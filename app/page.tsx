@@ -11,10 +11,10 @@ import HowItWorks from '@/components/HowItWorks';
 import Footer from '@/components/Footer';
 import TantyRadio from '@/components/TantyRadio';
 
-// NEW: Import R.O.T.I. components from submodule
-import ROTIChat from '@/likkle-legends-second/components/ROTIChat';
-import CharacterTabs from '@/likkle-legends-second/components/CharacterTabs';
-import MailingClubSection from '@/likkle-legends-second/components/MailingClubSection';
+// R.O.T.I. components
+import ROTIChat from '@/components/ROTIChat';
+import CharacterTabs from '@/components/CharacterTabs';
+import MailingClubSection from '@/components/MailingClubSection';
 
 import { getMergedSiteContent } from '@/lib/services/cms';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
