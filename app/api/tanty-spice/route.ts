@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 
         const genAI = new GoogleGenerativeAI(API_KEY);
         const model = genAI.getGenerativeModel({
-            model: TANTY_ISLAND_ENGINE.technical_stack.brain_model.includes('gemini-3') ? 'gemini-1.5-flash' : TANTY_ISLAND_ENGINE.technical_stack.brain_model,
+            model: TANTY_ISLAND_ENGINE.technical_stack.brain_model,
             systemInstruction: TANTY_ISLAND_ENGINE.neural_personality.system_instruction,
             generationConfig: {
                 temperature: TANTY_ISLAND_ENGINE.neural_personality.temperature,

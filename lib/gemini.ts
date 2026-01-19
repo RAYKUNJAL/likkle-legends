@@ -50,7 +50,7 @@ export async function getReadingFeedback(age: string, text: string) {
 
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: TANTY_ISLAND_ENGINE.technical_stack.brain_model,
       safetySettings,
     });
     const prompt = `
@@ -108,7 +108,7 @@ export async function getParentSuggestions(ageGroup: string, recentActivity: str
   ];
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings });
+    const model = genAI.getGenerativeModel({ model: TANTY_ISLAND_ENGINE.technical_stack.brain_model, safetySettings });
     const prompt = `Based on a ${ageGroup} year old's activity "${recentActivity}" in ${currentMonth}, suggest 3 warm, Caribbean-themed ways a parent can support their learning today. Keep it short and auntie-like.`;
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -133,7 +133,7 @@ export async function generateAssetMetadata(title: string, type: string) {
 
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: TANTY_ISLAND_ENGINE.technical_stack.brain_model,
       generationConfig: { responseMimeType: "application/json" }
     });
 
