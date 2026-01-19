@@ -11,6 +11,7 @@ type Message = {
 };
 
 import IslandVoice from '@/components/IslandVoice';
+import { askTantySpice } from '@/app/actions/tanty';
 
 export default function TantysPorchSection() {
     const [isLiveMode, setIsLiveMode] = useState(false);
@@ -110,19 +111,10 @@ export default function TantysPorchSection() {
         setIsLoading(true);
 
         try {
-            // Use the updated V3 API route
-            const response = await fetch("/api/tanty-spice", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    messages: [...messages, userMsg].map(m => ({ role: m.role, content: m.content }))
-                }),
-            });
+            // Use Server Action instead of API Route
+            const content = await askTantySpice(messages, text);
 
-            const data = await response.json();
-
-            if (data.role) {
-                const content = data.content;
+            if (content) {
                 setMessages((prev) => [...prev, { role: "assistant", content }]);
 
                 // Auto-speak result for full voice chatbot experience
