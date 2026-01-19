@@ -8,3 +8,6 @@ export * from './services/content';
 export * from './services/orders';
 export * from './services/gamification';
 export * from './services/analytics';
+export * from './services/support';
+export * from './messaging';
+export * from './gamification';

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import {
     AdminLayout, SearchBar, DataTable, StatusBadge, Modal,
     FileUpload, ActionButton, Tabs, EmptyState,
-    Music, Video, BookOpen, FileText, Plus, Edit, Trash2, Eye, Sparkles, Wand2, Package, Search
+    Music, Video, BookOpen, FileText, Plus, Edit, Trash2, Eye, Sparkles, Wand2, Package, Search, RefreshCw
 } from '@/components/admin/AdminComponents';
 import {
     getSongs, createSong, updateSong, deleteSong,
@@ -387,6 +387,6 @@ export default function AdminAssetDashboard() {
                     </div>
                 </div>
             </Modal>
-        </div >
+        </AdminLayout>
     );
 }

@@ -1,36 +1,33 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, ChevronLeft, Sparkles, Check } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Sparkles, Check, Volume2, Globe, Heart, Star, Camera } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { createChild } from '@/lib/database';
 import { useUser } from '@/components/UserContext';
+import { getTantyVoice } from '@/app/actions/voice';
 
-// Island options with flags
 const ISLANDS = [
-    { id: 'jamaica', name: 'Jamaica', flag: '🇯🇲', color: 'from-green-500 to-yellow-400' },
-    { id: 'trinidad', name: 'Trinidad & Tobago', flag: '🇹🇹', color: 'from-red-500 to-black' },
-    { id: 'barbados', name: 'Barbados', flag: '🇧🇧', color: 'from-blue-500 to-yellow-400' },
-    { id: 'guyana', name: 'Guyana', flag: '🇬🇾', color: 'from-green-500 to-red-500' },
-    { id: 'st_lucia', name: 'St. Lucia', flag: '🇱🇨', color: 'from-cyan-400 to-yellow-400' },
-    { id: 'grenada', name: 'Grenada', flag: '🇬🇩', color: 'from-red-500 to-green-500' },
-    { id: 'bahamas', name: 'Bahamas', flag: '🇧🇸', color: 'from-cyan-400 to-yellow-400' },
-    { id: 'haiti', name: 'Haiti', flag: '🇭🇹', color: 'from-blue-600 to-red-600' },
-    { id: 'dominica', name: 'Dominica', flag: '🇩🇲', color: 'from-green-600 to-yellow-400' },
-    { id: 'antigua', name: 'Antigua & Barbuda', flag: '🇦🇬', color: 'from-red-500 to-blue-500' },
-    { id: 'st_vincent', name: 'St. Vincent', flag: '🇻🇨', color: 'from-blue-500 to-green-500' },
-    { id: 'mixed', name: 'Island Explorer', flag: '🌴', color: 'from-primary to-accent' },
+    { id: 'jamaica', name: 'Jamaica', flag: '🇯🇲', color: 'from-green-500 to-yellow-400', fact: 'Island of Reggae & Wood!' },
+    { id: 'trinidad', name: 'Trinidad & Tobago', flag: '🇹🇹', color: 'from-red-600 to-black', fact: 'Home of Steelpan & Soca!' },
+    { id: 'barbados', name: 'Barbados', flag: '🇧🇧', color: 'from-blue-600 to-yellow-400', fact: 'Land of Flying Fish!' },
+    { id: 'guyana', name: 'Guyana', flag: '🇬🇾', color: 'from-green-600 to-red-600', fact: 'Land of Many Waters!' },
+    { id: 'st_lucia', name: 'St. Lucia', flag: '🇱🇨', color: 'from-sky-400 to-yellow-400', fact: 'Home of the Piton Mountains!' },
+    { id: 'grenada', name: 'Grenada', flag: '🇬🇩', color: 'from-red-500 to-green-600', fact: 'The Island of Spice!' },
+    { id: 'bahamas', name: 'Bahamas', flag: '🇧🇸', color: 'from-cyan-400 to-yellow-300', fact: 'Crystal Clear Waters!' },
+    { id: 'antigua', name: 'Antigua & Barbuda', flag: '🇦🇬', color: 'from-red-500 to-blue-600', fact: '365 Beautiful Beaches!' },
+    { id: 'mixed', name: 'Island Explorer', flag: '🌴', color: 'from-primary to-accent', fact: 'Exploring all the islands!' },
 ];
 
 const AVATARS = [
-    { id: 'turtle', emoji: '🐢', name: 'Turtle' },
-    { id: 'parrot', emoji: '🦜', name: 'Parrot' },
-    { id: 'dolphin', emoji: '🐬', name: 'Dolphin' },
-    { id: 'butterfly', emoji: '🦋', name: 'Butterfly' },
-    { id: 'fish', emoji: '🐠', name: 'Fish' },
-    { id: 'crab', emoji: '🦀', name: 'Crab' },
-    { id: 'hummingbird', emoji: '🐦', name: 'Hummingbird' },
-    { id: 'starfish', emoji: '⭐', name: 'Starfish' },
+    { id: 'lion', emoji: '🦁', name: 'Likkle Lion', color: 'bg-orange-100' },
+    { id: 'parrot', emoji: '🦜', name: 'Pretty Parrot', color: 'bg-green-100' },
+    { id: 'dolphin', emoji: '🐬', name: 'Dashing Dolphin', color: 'bg-blue-100' },
+    { id: 'butterfly', emoji: '🦋', name: 'Bright Butterfly', color: 'bg-pink-100' },
+    { id: 'turtle', emoji: '🐢', name: 'Tough Turtle', color: 'bg-emerald-100' },
+    { id: 'crab', emoji: '🦀', name: 'Cool Crab', color: 'bg-red-100' },
 ];
 
 export default function ChildOnboardingPage() {
@@ -38,32 +35,47 @@ export default function ChildOnboardingPage() {
     const { user, refreshChildren } = useUser();
     const [step, setStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSpeaking, setIsSpeaking] = useState(false);
+
     const [formData, setFormData] = useState({
         first_name: '',
         age: 5,
         age_track: 'mini' as 'mini' | 'big',
         primary_island: '',
-        secondary_island: '',
-        avatar_id: 'turtle',
+        avatar_id: 'lion',
     });
 
-    const totalSteps = 4;
+    const steps = [
+        { id: 'name', title: "What's your name?", tanty: "Greetings, Likkle Legend! Tell Tanty your name so we can start our journey!" },
+        { id: 'age', title: "How old are you?", tanty: "Wonderful! And how many birthdays have you celebrated?" },
+        { id: 'island', title: "Where is your family from?", tanty: "Tell me which beautiful island your heart belongs to!" },
+        { id: 'avatar', title: "Choose your Legend Icon!", tanty: "Pick a friend to go on adventures with you!" },
+    ];
 
-    const handleNext = () => {
-        if (step < totalSteps) {
-            setStep(step + 1);
-        }
-    };
+    const currentStepData = steps[step - 1];
 
-    const handleBack = () => {
-        if (step > 1) {
-            setStep(step - 1);
+    const handleNext = () => step < 4 && setStep(step + 1);
+    const handleBack = () => step > 1 && setStep(step - 1);
+
+    const speakTantyInstruction = async () => {
+        if (isSpeaking) return;
+        setIsSpeaking(true);
+        try {
+            const res = await getTantyVoice(currentStepData.tanty);
+            if (res.success && res.audio) {
+                const audio = new Audio(res.audio.startsWith('data:') ? res.audio : `data:audio/mp3;base64,${res.audio}`);
+                audio.onended = () => setIsSpeaking(false);
+                await audio.play();
+            } else {
+                setIsSpeaking(false);
+            }
+        } catch (e) {
+            setIsSpeaking(false);
         }
     };
 
     const handleSubmit = async () => {
         if (!user?.id) return;
-
         setIsSubmitting(true);
         try {
             await createChild(user.id, {
@@ -71,255 +83,211 @@ export default function ChildOnboardingPage() {
                 age: formData.age,
                 age_track: formData.age < 6 ? 'mini' : 'big',
                 primary_island: formData.primary_island,
-                secondary_island: formData.secondary_island || undefined,
+                avatar_id: formData.avatar_id,
             });
-
             await refreshChildren();
             router.push('/portal?welcome=true');
         } catch (error) {
-            console.error('Failed to create child:', error);
-        } finally {
+            console.error('Onboarding error:', error);
             setIsSubmitting(false);
         }
     };
 
     const isStepValid = () => {
-        switch (step) {
-            case 1: return formData.first_name.trim().length > 0;
-            case 2: return formData.age >= 4 && formData.age <= 8;
-            case 3: return formData.primary_island.length > 0;
-            case 4: return formData.avatar_id.length > 0;
-            default: return true;
-        }
+        if (step === 1) return formData.first_name.length > 1;
+        if (step === 3) return !!formData.primary_island;
+        return true;
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-sky-100 via-purple-50 to-pink-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-2xl">
-                {/* Progress Bar */}
-                <div className="mb-8">
-                    <div className="flex justify-between mb-2">
-                        {[1, 2, 3, 4].map((s) => (
-                            <div
-                                key={s}
-                                className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${step === s
-                                    ? 'bg-primary text-white'
-                                    : step > s
+        <div className="min-h-screen bg-[#F0F9FF] flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-blue-200/50 to-transparent"></div>
+            <motion.div
+                animate={{ y: [0, -20, 0] }}
+                transition={{ duration: 4, repeat: Infinity }}
+                className="absolute top-10 left-10 text-6xl opacity-20"
+            >
+                ☁️
+            </motion.div>
+            <motion.div
+                animate={{ y: [0, 20, 0] }}
+                transition={{ duration: 5, repeat: Infinity }}
+                className="absolute bottom-10 right-10 text-6xl opacity-20"
+            >
+                🌴
+            </motion.div>
 
-                                        ? 'bg-green-500 text-white'
-                                        : 'bg-white text-gray-400'
-                                    }`}
-                            >
-                                {step > s ? <Check size={24} /> : s}
-                            </div>
-                        ))}
-                    </div>
-                    <div className="h-2 bg-white rounded-full">
-                        <div
-                            className="h-2 bg-primary rounded-full transition-all"
-                            style={{ width: `${(step / totalSteps) * 100}%` }}
+            {/* Tanty Spice Guide */}
+            <div className="max-w-4xl w-full flex flex-col md:flex-row items-center gap-10 mb-12">
+                <div className="relative shrink-0">
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="w-40 h-40 rounded-full border-8 border-white shadow-2xl overflow-hidden bg-primary relative z-10"
+                    >
+                        <Image
+                            src="/images/tanty_spice_avatar.png"
+                            alt="Tanty Spice"
+                            fill
+                            className="object-cover"
                         />
-                    </div>
+                    </motion.div>
+                    {isSpeaking && (
+                        <motion.div
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ duration: 1, repeat: Infinity }}
+                            className="absolute -inset-4 border-4 border-primary rounded-full"
+                        />
+                    )}
                 </div>
 
-                {/* Card */}
-                <div className="bg-white rounded-[3rem] shadow-xl p-8 md:p-12">
-                    {/* Step 1: Name */}
-                    {step === 1 && (
-                        <div className="text-center">
-                            <div className="text-6xl mb-6">👋</div>
-                            <h1 className="text-3xl font-black text-gray-900 mb-3">
-                                What's your little legend's name?
-                            </h1>
-                            <p className="text-gray-500 mb-8">
-                                We'll use their name to personalize their stories and letters
-                            </p>
+                <div className="flex-1 relative">
+                    <motion.div
+                        key={step}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="bg-white p-8 rounded-[2.5rem] shadow-xl relative"
+                    >
+                        {/* Speech bubble tail */}
+                        <div className="absolute top-1/2 -left-4 -translate-y-1/2 w-8 h-8 bg-white rotate-45 hidden md:block" />
 
-                            <input
-                                type="text"
-                                value={formData.first_name}
-                                onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
-                                placeholder="Enter first name..."
-                                className="w-full max-w-md mx-auto px-6 py-4 text-2xl text-center border-2 border-gray-200 rounded-2xl focus:outline-none focus:border-primary transition-colors"
-                                autoFocus
-                            />
+                        <div className="flex items-start gap-4">
+                            <div className="flex-1">
+                                <p className="text-xl font-bold text-blue-900 leading-relaxed">
+                                    "{currentStepData.tanty}"
+                                </p>
+                            </div>
+                            <button
+                                onClick={speakTantyInstruction}
+                                className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-all ${isSpeaking ? 'bg-primary text-white scale-110' : 'bg-blue-50 text-blue-400 hover:bg-blue-100'}`}
+                                aria-label="Listen to Tanty"
+                            >
+                                <Volume2 size={24} />
+                            </button>
                         </div>
-                    )}
+                    </motion.div>
+                </div>
+            </div>
 
-                    {/* Step 2: Age */}
-                    {step === 2 && (
-                        <div className="text-center">
-                            <div className="text-6xl mb-6">🎂</div>
-                            <h1 className="text-3xl font-black text-gray-900 mb-3">
-                                How old is {formData.first_name}?
-                            </h1>
-                            <p className="text-gray-500 mb-8">
-                                We'll match the content to their age group
-                            </p>
+            {/* Component Card */}
+            <div className="w-full max-w-2xl bg-white rounded-[4rem] shadow-2xl p-10 md:p-16 relative border-8 border-white/50">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={step}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="text-center"
+                    >
+                        <span className="text-xs font-black text-primary uppercase tracking-[0.2em] mb-4 block">Adventure Setup: Step {step}/4</span>
+                        <h2 className="text-4xl font-black text-blue-900 mb-10 tracking-tight">{currentStepData.title}</h2>
 
-                            <div className="flex justify-center gap-4 flex-wrap max-w-lg mx-auto">
-                                {[4, 5, 6, 7, 8].map((age) => (
+                        {/* Step 1: Name */}
+                        {step === 1 && (
+                            <div className="space-y-6">
+                                <div className="text-7xl animate-bounce-slow">🎨</div>
+                                <input
+                                    type="text"
+                                    value={formData.first_name}
+                                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                                    placeholder="Type your name here..."
+                                    className="w-full text-center text-4xl font-black text-blue-900 border-b-8 border-blue-50 focus:border-primary focus:outline-none py-4 placeholder:text-blue-100"
+                                    autoFocus
+                                />
+                            </div>
+                        )}
+
+                        {/* Step 2: Age */}
+                        {step === 2 && (
+                            <div className="flex justify-center flex-wrap gap-4">
+                                {[4, 5, 6, 7, 8].map(age => (
                                     <button
                                         key={age}
-                                        onClick={() => setFormData(prev => ({
-                                            ...prev,
-                                            age,
-                                            age_track: age < 6 ? 'mini' : 'big'
-                                        }))}
-                                        className={`w-20 h-20 rounded-2xl text-3xl font-black transition-all ${formData.age === age
-                                            ? 'bg-primary text-white scale-110 shadow-lg'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                            }`}
+                                        onClick={() => setFormData({ ...formData, age, age_track: age < 6 ? 'mini' : 'big' })}
+                                        className={`w-24 h-24 rounded-3xl text-4xl font-black transition-all ${formData.age === age ? 'bg-primary text-white scale-110 shadow-xl' : 'bg-blue-50 text-blue-400 hover:bg-blue-100'}`}
                                     >
                                         {age}
                                     </button>
                                 ))}
+                                <div className="w-full mt-6">
+                                    <p className="font-bold text-blue-300 uppercase tracking-widest text-xs">
+                                        {formData.age < 6 ? '🌱 Mini Legend Track' : '🌟 Big Legend Track'}
+                                    </p>
+                                </div>
                             </div>
+                        )}
 
-                            <p className="mt-6 text-sm text-gray-400">
-                                {formData.age < 6 ? '🌱 Mini Legends (4-5 years)' : '🌟 Big Legends (6-8 years)'}
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Step 3: Island */}
-                    {step === 3 && (
-                        <div className="text-center">
-                            <div className="text-6xl mb-6">🏝️</div>
-                            <h1 className="text-3xl font-black text-gray-900 mb-3">
-                                Select {formData.first_name}'s heritage island
-                            </h1>
-                            <p className="text-gray-500 mb-8">
-                                We'll feature stories and culture from this island
-                            </p>
-
-                            <div className="grid grid-cols-3 md:grid-cols-4 gap-3 max-w-xl mx-auto">
-                                {ISLANDS.map((island) => (
+                        {/* Step 3: Island */}
+                        {step === 3 && (
+                            <div className="grid grid-cols-3 gap-4">
+                                {ISLANDS.map(island => (
                                     <button
                                         key={island.id}
-                                        onClick={() => setFormData(prev => ({ ...prev, primary_island: island.id }))}
-                                        className={`p-4 rounded-2xl transition-all ${formData.primary_island === island.id
-                                            ? 'bg-primary text-white scale-105 shadow-lg'
-                                            : 'bg-gray-50 hover:bg-gray-100'
-                                            }`}
+                                        onClick={() => setFormData({ ...formData, primary_island: island.id })}
+                                        className={`p-4 rounded-3xl border-4 transition-all ${formData.primary_island === island.id ? 'border-primary bg-primary/5 scale-105 shadow-md' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`}
                                     >
-                                        <div className="text-3xl mb-1">{island.flag}</div>
-                                        <p className={`text-xs font-bold ${formData.primary_island === island.id ? 'text-white' : 'text-gray-600'
-                                            }`}>
-                                            {island.name}
-                                        </p>
+                                        <div className="text-4xl mb-2">{island.flag}</div>
+                                        <p className="text-[10px] font-black text-blue-900 uppercase truncate">{island.name}</p>
                                     </button>
                                 ))}
                             </div>
+                        )}
 
-                            {formData.primary_island && formData.primary_island !== 'mixed' && (
-                                <div className="mt-6">
-                                    <p className="text-sm text-gray-400 mb-2">Optional: Add a second heritage island</p>
-                                    <select
-                                        value={formData.secondary_island}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, secondary_island: e.target.value }))}
-                                        className="px-4 py-2 border border-gray-200 rounded-xl text-sm"
-                                        aria-label="Secondary Island"
-                                    >
-                                        <option value="">None</option>
-                                        {ISLANDS.filter(i => i.id !== formData.primary_island && i.id !== 'mixed').map((island) => (
-                                            <option key={island.id} value={island.id}>
-                                                {island.flag} {island.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                        {/* Step 4: Avatar */}
+                        {step === 4 && (
+                            <div className="space-y-10">
+                                <div className="flex justify-center flex-wrap gap-6">
+                                    {AVATARS.map(avatar => (
+                                        <button
+                                            key={avatar.id}
+                                            onClick={() => setFormData({ ...formData, avatar_id: avatar.id })}
+                                            className={`w-28 h-28 rounded-[2.5rem] text-5xl transition-all flex items-center justify-center ${formData.avatar_id === avatar.id ? 'bg-primary text-white scale-110 shadow-2xl ring-8 ring-primary/20' : `${avatar.color} text-gray-700 hover:scale-105`}`}
+                                        >
+                                            {avatar.emoji}
+                                        </button>
+                                    ))}
                                 </div>
+                                <div className="bg-blue-50 p-6 rounded-[2rem] border-2 border-blue-100">
+                                    <h4 className="font-black text-blue-900 text-lg mb-1">Adventure Passport Ready!</h4>
+                                    <p className="text-blue-700/60 font-medium">Likkle Legend: <span className="text-primary font-black uppercase text-sm">{formData.first_name}</span> from <span className="text-primary font-black uppercase text-sm">{formData.primary_island}</span>.</p>
+                                </div>
+                            </div>
+                        )}
+                    </motion.div>
+                </AnimatePresence>
+
+                {/* Footer Nav */}
+                <div className="mt-16 flex items-center justify-between">
+                    <button
+                        onClick={handleBack}
+                        className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all ${step === 1 ? 'opacity-0 pointer-events-none' : 'text-blue-300 hover:text-blue-500 hover:bg-blue-50'}`}
+                    >
+                        <ChevronLeft size={20} /> Back
+                    </button>
+
+                    {step < 4 ? (
+                        <button
+                            onClick={handleNext}
+                            disabled={!isStepValid()}
+                            className="bg-primary text-white px-10 py-5 rounded-[2rem] font-black text-xl shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:grayscale transition-all flex items-center gap-3"
+                        >
+                            Continue <ChevronRight size={24} />
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleSubmit}
+                            disabled={isSubmitting}
+                            className="bg-gradient-to-r from-primary to-accent text-white px-12 py-5 rounded-[2rem] font-black text-xl shadow-xl shadow-primary/30 hover:scale-110 active:scale-95 disabled:opacity-50 transition-all flex items-center gap-4"
+                        >
+                            {isSubmitting ? 'Setting up...' : (
+                                <>
+                                    <Sparkles size={24} />
+                                    START ADVENTURE!
+                                </>
                             )}
-                        </div>
+                        </button>
                     )}
-
-                    {/* Step 4: Avatar */}
-                    {step === 4 && (
-                        <div className="text-center">
-                            <div className="text-6xl mb-6">✨</div>
-                            <h1 className="text-3xl font-black text-gray-900 mb-3">
-                                Choose {formData.first_name}'s avatar
-                            </h1>
-                            <p className="text-gray-500 mb-8">
-                                This will be their profile icon in the app
-                            </p>
-
-                            <div className="flex justify-center gap-4 flex-wrap max-w-md mx-auto mb-8">
-                                {AVATARS.map((avatar) => (
-                                    <button
-                                        key={avatar.id}
-                                        onClick={() => setFormData(prev => ({ ...prev, avatar_id: avatar.id }))}
-                                        className={`w-20 h-20 rounded-2xl text-4xl transition-all ${formData.avatar_id === avatar.id
-                                            ? 'bg-primary scale-110 shadow-lg ring-4 ring-primary/30'
-                                            : 'bg-gray-100 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        {avatar.emoji}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Summary */}
-                            <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl p-6 max-w-md mx-auto">
-                                <h3 className="font-bold text-gray-900 mb-3">Profile Summary</h3>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm">
-                                        {AVATARS.find(a => a.id === formData.avatar_id)?.emoji}
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="font-black text-lg text-gray-900">{formData.first_name}</p>
-                                        <p className="text-sm text-gray-500">
-                                            Age {formData.age} • {ISLANDS.find(i => i.id === formData.primary_island)?.name}
-                                        </p>
-                                        <p className="text-xs text-primary font-bold">
-                                            {formData.age < 6 ? 'Mini Legend' : 'Big Legend'}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Navigation */}
-                    <div className="flex justify-between mt-10">
-                        {step > 1 ? (
-                            <button
-                                onClick={handleBack}
-                                className="flex items-center gap-2 px-6 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
-                            >
-                                <ChevronLeft size={20} />
-                                Back
-                            </button>
-                        ) : (
-                            <div />
-                        )}
-
-                        {step < totalSteps ? (
-                            <button
-                                onClick={handleNext}
-                                disabled={!isStepValid()}
-                                className="flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-2xl font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Continue
-                                <ChevronRight size={20} />
-                            </button>
-                        ) : (
-                            <button
-                                onClick={handleSubmit}
-                                disabled={!isStepValid() || isSubmitting}
-                                className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-accent text-white rounded-2xl font-bold hover:opacity-90 transition-colors disabled:opacity-50"
-                            >
-                                {isSubmitting ? (
-                                    'Creating Profile...'
-                                ) : (
-                                    <>
-                                        <Sparkles size={20} />
-                                        Start Adventure!
-                                    </>
-                                )}
-                            </button>
-                        )}
-                    </div>
                 </div>
             </div>
         </div>

@@ -6,7 +6,7 @@ import {
     FileUpload, ActionButton, EmptyState,
     Gamepad2, Plus, Edit, Trash2, Eye, Sparkles, Wand2, Settings
 } from '@/components/admin/AdminComponents';
-import { getGames, createGame, updateGame, getCharacters } from '@/lib/database';
+import { getGames, createGame, updateGame, deleteGame, getCharacters } from '@/lib/database';
 import { uploadFile, BUCKETS } from '@/lib/storage';
 import Image from 'next/image';
 
@@ -192,6 +192,17 @@ export default function AdminGameBuilderPage() {
             loadData();
         } catch (error) {
             console.error('Failed to save game:', error);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this game? This action cannot be undone.')) return;
+        try {
+            await deleteGame(id);
+            setGames(prev => prev.filter(g => g.id !== id));
+        } catch (error) {
+            console.error('Failed to delete game:', error);
+            alert('Failed to delete game');
         }
     };
 
@@ -644,7 +655,7 @@ export default function AdminGameBuilderPage() {
                         <div className="flex items-center gap-1">
                             <ActionButton icon={Eye} onClick={() => window.open(`/portal/games/${game.game_url || game.id}`)} title="Preview" />
                             <ActionButton icon={Edit} onClick={() => openEditModal(game)} title="Edit" />
-                            <ActionButton icon={Trash2} onClick={() => { }} variant="danger" title="Delete" />
+                            <ActionButton icon={Trash2} onClick={() => handleDelete(game.id)} variant="danger" title="Delete" />
                         </div>
                     )}
                 />

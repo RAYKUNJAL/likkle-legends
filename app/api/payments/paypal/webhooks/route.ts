@@ -19,6 +19,21 @@ function getSupabaseAdmin(): SupabaseClient {
 
 const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID || '';
 
+// Internal mapping of PayPal Plan IDs to our logic tiers
+const PLAN_TO_TIER: Record<string, string> = {
+    'P-1R150232CG183332XNFLNNBQ': 'starter_mailer', // Starter Monthly
+    'P-0YY72736T56573355NFLOZZQ': 'starter_mailer', // Starter Yearly
+    'P-45M32159VV6033601NFLOOYI': 'legends_plus',   // Plus Monthly
+    'P-2503312149524980NNFLO34Y': 'legends_plus',  // Plus Yearly
+    'P-FAMILY_TEST_ID': 'family_legacy',           // Family Monthly
+    'P-5U054702T9664311ANFLO53': 'family_legacy',  // Family Yearly
+};
+
+// Also pull from env to ensure production IDs are covered
+if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER] = 'starter_mailer';
+if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS] = 'legends_plus';
+if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY] = 'family_legacy';
+
 // Verify PayPal webhook signature
 async function verifyWebhookSignature(req: NextRequest, body: string): Promise<boolean> {
     const transmissionId = req.headers.get('paypal-transmission-id');
@@ -63,14 +78,20 @@ export async function POST(request: NextRequest) {
                     .single();
 
                 if (profile) {
+                    const planId = resource.plan_id;
+                    const tier = PLAN_TO_TIER[planId] || 'starter_mailer';
+
                     await supabase
                         .from('profiles')
                         .update({
                             subscription_status: 'active',
+                            subscription_tier: tier,
                             paypal_subscription_id: subscriptionId,
                             next_billing_date: resource.billing_info?.next_billing_time?.split('T')[0],
                         })
                         .eq('id', profile.id);
+
+                    console.log(`Updated user ${profile.id} to tier ${tier}`);
                 }
                 break;
             }

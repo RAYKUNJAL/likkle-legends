@@ -6,17 +6,18 @@ import Footer from '@/components/Footer';
 import {
     Settings, BarChart3, Users, Sparkles, Plus, ArrowRight,
     Edit, BookOpen, Music, Trophy, Flame, Target, TrendingUp,
-    ChevronRight, Star
+    ChevronRight, Star, Calendar, MapPin, Gift, Download, ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '@/components/UserContext';
-import { calculateLevel } from '@/lib/gamification';
-import { getRecentActivities, getMissions } from '@/lib/database';
+import { calculateLevel, LEVELS } from '@/lib/gamification';
+import { getRecentActivities, getMissions, logActivity } from '@/lib/database';
 import TantyRadio from '@/components/TantyRadio';
+import Image from 'next/image';
 
 export default function ParentDashboard() {
     const { user, children, activeChild, isLoading, isSubscribed } = useUser();
-    const [showAddChildModal, setShowAddChildModal] = useState(false);
     const [activities, setActivities] = useState<any[]>([]);
     const [missions, setMissions] = useState<any[]>([]);
     const [isDataLoading, setIsDataLoading] = useState(false);
@@ -25,14 +26,14 @@ export default function ParentDashboard() {
         if (activeChild) {
             loadDashboardData();
         }
-    }, [activeChild]);
+    }, [activeChild?.id]);
 
     const loadDashboardData = async () => {
         if (!activeChild || !user) return;
         setIsDataLoading(true);
         try {
             const [activitiesData, missionsData] = await Promise.all([
-                getRecentActivities(activeChild.id, 5),
+                getRecentActivities(activeChild.id, 8),
                 getMissions(activeChild.age_track),
             ]);
             setActivities(activitiesData);
@@ -44,325 +45,281 @@ export default function ParentDashboard() {
         }
     };
 
-    // If not logged in, show login prompt
     if (!isLoading && !user) {
         return (
-            <div className="bg-[#FFFDF7] min-h-screen">
+            <div className="bg-slate-50 min-h-screen">
                 <Navbar />
                 <main className="container pt-32 pb-24 text-center">
-                    <h1 className="text-4xl font-black text-deep mb-4">Parent Dashboard</h1>
-                    <p className="text-xl text-deep/60 mb-8">Please log in to access your dashboard.</p>
-                    <Link
-                        href="/login?redirect=/parent"
-                        className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-2xl font-bold hover:bg-primary/90 transition-colors"
-                    >
-                        Sign In →
-                    </Link>
+                    <div className="max-w-md mx-auto bg-white p-12 rounded-[3.5rem] shadow-2xl border-8 border-white">
+                        <ShieldCheck size={64} className="text-primary mx-auto mb-6" />
+                        <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter">Security Area</h1>
+                        <p className="text-slate-500 font-bold mb-10">Please sign in to access the Parent Command Center.</p>
+                        <Link
+                            href="/login?redirect=/parent"
+                            className="block w-full py-5 bg-primary text-white rounded-2xl font-black text-xl hover:scale-105 transition-all shadow-xl shadow-primary/20"
+                        >
+                            Sign In
+                        </Link>
+                    </div>
                 </main>
                 <Footer />
             </div>
         );
     }
 
-    const currentLevel = activeChild ? calculateLevel(activeChild.total_xp) : null;
+    const currentLevel = activeChild ? calculateLevel(activeChild.total_xp) : LEVELS[0];
 
     return (
-        <div className="bg-[#FFFDF7] min-h-screen">
+        <div className="bg-[#F8FAFC] min-h-screen selection:bg-primary selection:text-white">
             <Navbar />
-            <main className="container pt-32 pb-24">
-                <header className="mb-16">
-                    <span className="text-primary font-black uppercase tracking-widest text-sm mb-4 inline-block">Parent Portal</span>
-                    <h1 className="text-5xl lg:text-7xl font-black text-deep mb-4">Parent Dashboard 🏠</h1>
-                    <p className="text-xl text-deep/60">
-                        {user ? `Welcome back, ${user.full_name?.split(' ')[0]}!` : 'Manage your little legend\'s cultural journey.'}
-                    </p>
-                </header>
 
-                <div className="mb-12">
-                    <TantyRadio isLite />
-                </div>
-
-                {isLoading ? (
-                    <div className="grid lg:grid-cols-3 gap-10">
-                        <div className="lg:col-span-2 space-y-10">
-                            <div className="grid sm:grid-cols-2 gap-8">
-                                <div className="bg-white p-10 rounded-[3rem] shadow-xl animate-pulse h-40" />
-                                <div className="bg-white p-10 rounded-[3rem] shadow-xl animate-pulse h-40" />
-                            </div>
-                            <div className="bg-white p-12 rounded-[4rem] shadow-2xl animate-pulse h-64" />
-                        </div>
-                        <div className="space-y-10">
-                            <div className="bg-gradient-to-br from-primary via-orange-500 to-amber-500 p-12 rounded-[4rem] animate-pulse h-80" />
-                        </div>
-                    </div>
-                ) : children.length === 0 ? (
-                    // No children - prompt to add
-                    <div className="bg-white rounded-[4rem] p-16 text-center shadow-xl max-w-2xl mx-auto">
-                        <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-8">
-                            <Users size={48} className="text-primary" />
-                        </div>
-                        <h2 className="text-3xl font-black text-deep mb-4">Add Your First Legend</h2>
-                        <p className="text-deep/60 mb-8">
-                            Create a profile for your child to start tracking their cultural learning journey.
-                        </p>
-                        <Link
-                            href="/onboarding/child"
-                            className="inline-flex items-center gap-3 px-10 py-5 bg-primary text-white rounded-[2rem] font-black text-lg hover:bg-primary/90 transition-all shadow-xl shadow-primary/30"
+            <main className="max-w-7xl mx-auto px-6 pt-36 pb-32">
+                {/* Dashboard Header */}
+                <header className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-16">
+                    <div>
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="flex items-center gap-3 mb-6"
                         >
-                            <Plus size={24} />
-                            Add Child Profile
+                            <span className="w-10 h-[2px] bg-primary"></span>
+                            <span className="text-primary font-black uppercase tracking-[0.3em] text-xs">Command Center</span>
+                        </motion.div>
+                        <motion.h1
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter leading-[0.9]"
+                        >
+                            Parent <br /><span className="text-primary">Dashboard.</span>
+                        </motion.h1>
+                    </div>
+
+                    <div className="flex bg-white p-3 rounded-[2.5rem] shadow-xl border border-slate-100 shadow-slate-200/50">
+                        {children.map((child) => (
+                            <button
+                                key={child.id}
+                                className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${activeChild?.id === child.id ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                {child.first_name}
+                            </button>
+                        ))}
+                        <Link href="/onboarding/child" className="p-3 text-primary hover:bg-primary/5 rounded-2xl transition-colors">
+                            <Plus size={20} />
                         </Link>
                     </div>
-                ) : (
-                    <div className="grid lg:grid-cols-3 gap-10">
-                        {/* Stats */}
-                        <div className="lg:col-span-2 space-y-10">
-                            <div className="grid sm:grid-cols-4 gap-6">
-                                <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-zinc-200/50 border border-zinc-100 group hover:scale-[1.02] transition-transform">
-                                    <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-all">
-                                        <BookOpen size={28} />
-                                    </div>
-                                    <p className="text-sm font-black text-deep/30 uppercase tracking-widest mb-1">Stories</p>
-                                    <p className="text-3xl font-black text-deep tracking-tighter">{activeChild?.stories_completed || 0}</p>
+                </header>
+
+                {/* Top Row: Core Stats */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-16">
+                    <motion.div
+                        whileHover={{ y: -10 }}
+                        className="bg-white p-10 rounded-[3rem] shadow-xl shadow-slate-200/40 flex flex-col justify-between border-4 border-white"
+                    >
+                        <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-[1.5rem] flex items-center justify-center mb-10 shadow-inner">
+                            <BookOpen size={32} />
+                        </div>
+                        <div>
+                            <p className="text-6xl font-black text-slate-900 tracking-tighter mb-2">{activeChild?.stories_completed || 0}</p>
+                            <h4 className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Stories Read</h4>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        whileHover={{ y: -10 }}
+                        className="bg-white p-10 rounded-[3rem] shadow-xl shadow-slate-200/40 flex flex-col justify-between border-4 border-white"
+                    >
+                        <div className="w-16 h-16 bg-pink-50 text-pink-500 rounded-[1.5rem] flex items-center justify-center mb-10 shadow-inner">
+                            <Music size={32} />
+                        </div>
+                        <div>
+                            <p className="text-6xl font-black text-slate-900 tracking-tighter mb-2">{activeChild?.songs_listened || 0}</p>
+                            <h4 className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Songs Listened</h4>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        whileHover={{ y: -10 }}
+                        className="bg-slate-900 p-10 rounded-[3rem] shadow-2xl text-white flex flex-col justify-between relative overflow-hidden"
+                    >
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                        <div className="w-16 h-16 bg-white/10 text-primary rounded-[1.5rem] flex items-center justify-center mb-10 shadow-inner border border-white/10">
+                            <Star size={32} fill="currentColor" />
+                        </div>
+                        <div>
+                            <p className="text-6xl font-black text-white tracking-tighter mb-2">{activeChild?.total_xp.toLocaleString()}</p>
+                            <h4 className="text-white/40 font-black uppercase tracking-widest text-[10px]">Total Legend XP</h4>
+                        </div>
+                    </motion.div>
+
+                    <motion.div
+                        whileHover={{ y: -10 }}
+                        className="bg-gradient-to-br from-primary to-accent p-10 rounded-[3rem] shadow-2xl shadow-primary/30 text-white flex flex-col justify-between"
+                    >
+                        <div className="w-16 h-16 bg-white/20 text-white rounded-[1.5rem] flex items-center justify-center mb-10 shadow-inner border border-white/20 animate-pulse">
+                            <Flame size={32} />
+                        </div>
+                        <div>
+                            <p className="text-6xl font-black text-white tracking-tighter mb-2">{activeChild?.current_streak || 0}</p>
+                            <h4 className="text-white/60 font-black uppercase tracking-widest text-[10px]">Day Learning Streak</h4>
+                        </div>
+                    </motion.div>
+                </div>
+
+                {/* Main Content Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    {/* Left Column: Progress & Activity */}
+                    <div className="lg:col-span-2 space-y-12">
+                        {/* Cultural Milestone Tracker */}
+                        <div className="bg-white p-12 rounded-[4rem] shadow-2xl shadow-slate-200/50 border border-slate-100">
+                            <div className="flex items-center justify-between mb-10">
+                                <div>
+                                    <h3 className="text-4xl font-black text-slate-900 tracking-tight mb-1">Cultural Milestones</h3>
+                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Heritage Journey Tracking</p>
                                 </div>
-                                <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-zinc-200/50 border border-zinc-100 group hover:scale-[1.02] transition-transform">
-                                    <div className="w-14 h-14 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-all">
-                                        <Music size={28} />
-                                    </div>
-                                    <p className="text-sm font-black text-deep/30 uppercase tracking-widest mb-1">Songs</p>
-                                    <p className="text-3xl font-black text-deep tracking-tighter">{activeChild?.songs_listened || 0}</p>
-                                </div>
-                                <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-zinc-200/50 border border-zinc-100 group hover:scale-[1.02] transition-transform">
-                                    <div className="w-14 h-14 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-orange-600 group-hover:text-white transition-all">
-                                        <Flame size={28} />
-                                    </div>
-                                    <p className="text-sm font-black text-deep/30 uppercase tracking-widest mb-1">Streak</p>
-                                    <p className="text-3xl font-black text-deep tracking-tighter">{activeChild?.current_streak || 0} Days</p>
-                                </div>
-                                <div className="bg-white p-8 rounded-[2rem] shadow-xl shadow-zinc-200/50 border border-zinc-100 group hover:scale-[1.02] transition-transform">
-                                    <div className="w-14 h-14 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-amber-600 group-hover:text-white transition-all">
-                                        <Trophy size={28} />
-                                    </div>
-                                    <p className="text-sm font-black text-deep/30 uppercase tracking-widest mb-1">Badges</p>
-                                    <p className="text-3xl font-black text-deep tracking-tighter">{activeChild?.earned_badges?.length || 0}</p>
+                                <div className="bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100">
+                                    <p className="text-slate-900 font-black text-xl">{activeChild?.cultural_milestones?.length || 0}/12</p>
                                 </div>
                             </div>
 
-                            {/* Weekly Missions */}
-                            <div className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-zinc-200/50 border border-zinc-100">
-                                <div className="flex items-center justify-between mb-8">
-                                    <h3 className="text-2xl font-black text-deep flex items-center gap-3">
-                                        <Target className="text-primary" />
-                                        Weekly Missions
-                                    </h3>
-                                    <Link href="/portal" className="text-primary font-bold text-sm hover:underline">
-                                        Open Portal →
-                                    </Link>
-                                </div>
-                                <div className="space-y-4">
-                                    {isDataLoading ? (
-                                        [1, 2].map(i => <div key={i} className="h-20 bg-zinc-50 rounded-2xl animate-pulse" />)
-                                    ) : missions.length === 0 ? (
-                                        <p className="text-zinc-400 font-bold text-center py-4">No active missions</p>
-                                    ) : (
-                                        missions.slice(0, 2).map((mission) => (
-                                            <div key={mission.id} className="flex items-center gap-4 p-5 bg-zinc-50 rounded-[1.5rem] group hover:bg-zinc-100 transition-colors">
-                                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm">
-                                                    <Target className="text-primary" size={20} />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <h4 className="font-bold text-deep">{mission.title}</h4>
-                                                    <p className="text-sm text-deep/40">{mission.estimated_minutes} mins • +{mission.xp_reward} XP</p>
-                                                </div>
-                                                <ChevronRight className="text-zinc-300 group-hover:text-primary transition-colors" />
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Recent Activity */}
-                            <div className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-zinc-200/50 border border-zinc-100">
-                                <h3 className="text-2xl font-black text-deep flex items-center gap-3 mb-8">
-                                    <TrendingUp className="text-green-500" />
-                                    Recent Activity
-                                </h3>
-                                <div className="space-y-4">
-                                    {isDataLoading ? (
-                                        [1, 2, 3].map(i => <div key={i} className="h-12 bg-zinc-50 rounded-2xl animate-pulse" />)
-                                    ) : activities.length === 0 ? (
-                                        <p className="text-zinc-400 font-bold text-center py-4">No recent activity</p>
-                                    ) : (
-                                        activities.map((activity) => (
-                                            <div key={activity.id} className="flex items-center gap-4 py-3 border-b border-zinc-50 last:border-0">
-                                                <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">
-                                                    <Star size={16} />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <p className="font-bold text-deep capitalize text-sm">{activity.activity_type.replace(/_/g, ' ')}</p>
-                                                    <p className="text-xs text-deep/30">{new Date(activity.created_at).toLocaleDateString()}</p>
-                                                </div>
-                                                <span className="font-black text-green-600 text-sm">+{activity.xp_earned} XP</span>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Child Profiles */}
-                            <div className="bg-white p-10 rounded-[3rem] shadow-2xl shadow-zinc-200/50 border border-zinc-100">
-                                <div className="flex items-center justify-between mb-10">
-                                    <h3 className="text-2xl font-black text-deep">Legend Profiles</h3>
-                                    <Link
-                                        href="/onboarding/child"
-                                        className="flex items-center gap-3 text-primary font-black text-xs bg-primary/10 px-5 py-2.5 rounded-full hover:bg-primary hover:text-white transition-all"
+                            <div className="grid grid-cols-4 md:grid-cols-6 gap-6">
+                                {[...Array(12)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className={`aspect-square rounded-[2rem] flex items-center justify-center text-3xl shadow-inner transition-all ${i < (activeChild?.cultural_milestones?.length || 0) ? 'bg-primary/10 text-primary scale-100' : 'bg-slate-50 text-slate-200 opacity-50'}`}
+                                        title={`Milestone ${i + 1}`}
                                     >
-                                        <Plus size={16} /> Add Child
-                                    </Link>
-                                </div>
-                                <div className="space-y-4">
-                                    {children.map((child) => {
-                                        const level = calculateLevel(child.total_xp);
-                                        return (
-                                            <div
-                                                key={child.id}
-                                                className="p-6 rounded-[2rem] border-2 border-primary/10 bg-primary/5 flex items-center justify-between group hover:border-primary transition-all"
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center font-black text-lg shadow-lg shadow-primary/30 group-hover:scale-110 transition-transform">
-                                                        {child.first_name?.charAt(0) || '?'}
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-lg font-black text-deep">{child.first_name}</h4>
-                                                        <p className="text-deep/40 text-xs font-bold">
-                                                            Age {child.age} • {level.name}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <Link
-                                                    href={`/account/children/${child.id}`}
-                                                    className="text-primary font-black uppercase tracking-widest text-[10px] hover:underline flex items-center gap-1.5"
-                                                >
-                                                    <Edit size={12} /> Edit
-                                                </Link>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Quick Links */}
-                            <div className="grid sm:grid-cols-3 gap-6">
-                                <Link
-                                    href="/portal"
-                                    className="bg-gradient-to-br from-blue-500 to-cyan-500 p-8 rounded-[2.5rem] text-white hover:scale-[1.02] transition-transform"
-                                >
-                                    <h4 className="text-xl font-black mb-2">Portal</h4>
-                                    <p className="text-white/80 text-sm">Open Portal</p>
-                                </Link>
-                                <Link
-                                    href="/messages"
-                                    className="bg-gradient-to-br from-green-500 to-emerald-500 p-8 rounded-[2.5rem] text-white hover:scale-[1.02] transition-transform"
-                                >
-                                    <h4 className="text-xl font-black mb-2">Chat</h4>
-                                    <p className="text-white/80 text-sm">Messages</p>
-                                </Link>
-                                <Link
-                                    href="/analytics"
-                                    className="bg-gradient-to-br from-purple-500 to-pink-500 p-8 rounded-[2.5rem] text-white hover:scale-[1.02] transition-transform"
-                                >
-                                    <h4 className="text-xl font-black mb-2">Stats</h4>
-                                    <p className="text-white/80 text-sm">Progress</p>
-                                </Link>
+                                        <Trophy size={24} />
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
-                        {/* Right Sidebar */}
-                        <div className="space-y-10">
-                            {/* Active Child Card */}
-                            {activeChild && (
-                                <div className="bg-gradient-to-br from-primary via-orange-500 to-amber-500 p-12 rounded-[4rem] shadow-2xl text-white relative overflow-hidden">
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
-
-                                    <div className="relative z-10">
-                                        <div className="flex items-center gap-4 mb-6">
-                                            <div className="w-20 h-20 bg-white/20 rounded-3xl flex items-center justify-center text-4xl">
-                                                {currentLevel?.icon || '🌱'}
-                                            </div>
-                                            <div>
-                                                <h3 className="text-2xl font-black">{activeChild.first_name}</h3>
-                                                <p className="text-white/70">{currentLevel?.name || 'Seedling'}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between">
-                                                <span className="text-white/60">Total XP</span>
-                                                <span className="font-bold">{activeChild.total_xp.toLocaleString()}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-white/60">Island</span>
-                                                <span className="font-bold">{activeChild.primary_island || 'Jamaica'}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-white/60">Missions Done</span>
-                                                <span className="font-bold">{activeChild.missions_completed || 0}</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                        {/* Recent Activity Feed */}
+                        <div className="bg-white p-12 rounded-[4rem] shadow-2xl shadow-slate-200/50 border border-slate-100">
+                            <div className="flex items-center justify-between mb-10">
+                                <div>
+                                    <h3 className="text-4xl font-black text-slate-900 tracking-tight mb-1">Recent Activity</h3>
+                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Live Learning Feed</p>
                                 </div>
-                            )}
-
-                            {/* Account Settings */}
-                            <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-zinc-100">
-                                <h4 className="text-2xl font-black text-deep mb-8 flex items-center gap-2">
-                                    <Settings className="text-zinc-400" />
-                                    Account Settings
-                                </h4>
-                                <div className="space-y-6">
-                                    <div className="flex justify-between items-center pb-6 border-b border-zinc-50">
-                                        <span className="text-deep/40 font-black uppercase tracking-widest text-xs">Current Plan</span>
-                                        <span className="text-secondary font-black bg-secondary/10 px-4 py-1.5 rounded-full text-sm capitalize">
-                                            {user?.subscription_tier?.replace(/_/g, ' ') || 'Free'}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center pb-6 border-b border-zinc-50">
-                                        <span className="text-deep/40 font-black uppercase tracking-widest text-xs">Status</span>
-                                        <span className={`font-black px-4 py-1.5 rounded-full text-sm capitalize ${isSubscribed ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                                            }`}>
-                                            {user?.subscription_status || 'Inactive'}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <Link
-                                    href="/account"
-                                    className="w-full mt-10 p-6 border-2 border-zinc-100 text-deep rounded-3xl font-black uppercase tracking-widest text-sm hover:bg-zinc-50 hover:border-primary transition-all block text-center"
+                                <button
+                                    className="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:text-primary transition-colors"
+                                    title="Filter Activity by Date"
+                                    aria-label="Filter activity feed by selecting a date"
                                 >
-                                    Manage Account
-                                </Link>
+                                    <Calendar size={24} />
+                                </button>
                             </div>
 
-                            {/* Upgrade CTA */}
-                            {!isSubscribed && (
-                                <div className="bg-gradient-to-br from-purple-600 to-indigo-700 p-10 rounded-[3rem] text-white">
-                                    <Sparkles size={28} className="mb-4" />
-                                    <h4 className="text-xl font-black mb-3">Unlock Full Experience</h4>
-                                    <p className="text-white/80 text-sm mb-6">
-                                        Get unlimited stories, songs, and monthly physical mail boxes!
-                                    </p>
-                                    <Link
-                                        href="/#pricing"
-                                        className="block w-full py-4 bg-white text-purple-700 rounded-2xl font-black text-center hover:bg-white/90 transition-colors"
-                                    >
-                                        View Plans
-                                    </Link>
-                                </div>
-                            )}
+                            <div className="space-y-6">
+                                {activities.length === 0 ? (
+                                    <div className="text-center py-20 border-4 border-dashed border-slate-50 rounded-[3rem]">
+                                        <TrendingUp size={48} className="text-slate-200 mx-auto mb-4" />
+                                        <p className="text-slate-400 font-black uppercase tracking-widest text-xs">No activity logged yet</p>
+                                    </div>
+                                ) : (
+                                    activities.slice(0, 5).map((activity, idx) => (
+                                        <motion.div
+                                            key={activity.id}
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: idx * 0.1 }}
+                                            className="flex items-center gap-6 p-6 rounded-[2.5rem] hover:bg-slate-50 transition-colors group cursor-default"
+                                        >
+                                            <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-lg text-2xl group-hover:scale-110 transition-transform">
+                                                {activity.activity_type === 'story' ? '📖' : activity.activity_type === 'song' ? '🎵' : '🎯'}
+                                            </div>
+                                            <div className="flex-1">
+                                                <h4 className="text-xl font-black text-slate-900 capitalize tracking-tight leading-tight">
+                                                    Completed {activity.activity_type}
+                                                </h4>
+                                                <p className="text-slate-400 font-medium text-sm">
+                                                    {new Date(activity.created_at).toLocaleDateString(undefined, { weekday: 'long', hour: '2-digit', minute: '2-digit' })}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="flex items-center gap-2 bg-green-50 text-green-600 px-4 py-2 rounded-full font-black text-sm">
+                                                    <Sparkles size={14} /> +{activity.xp_earned} XP
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))
+                                )}
+                            </div>
                         </div>
                     </div>
-                )}
+
+                    {/* Right Column: Mini Cards & Account */}
+                    <div className="space-y-12">
+                        {/* Current Legend Profile Card */}
+                        {activeChild && (
+                            <div className="bg-white p-10 rounded-[4rem] shadow-2xl border-4 border-white overflow-hidden relative group">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-1000"></div>
+
+                                <div className="relative z-10 text-center">
+                                    <div className="w-24 h-24 bg-slate-900 text-white rounded-3xl mx-auto flex items-center justify-center text-4xl shadow-xl mb-6">
+                                        {activeChild.first_name?.charAt(0)}
+                                    </div>
+                                    <h3 className="text-3xl font-black text-slate-900 tracking-tighter mb-1">{activeChild.first_name}</h3>
+                                    <p className="text-slate-400 font-black uppercase tracking-widest text-[10px] mb-8">{currentLevel.name}</p>
+
+                                    <div className="space-y-4 text-left">
+                                        <div className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
+                                            <span className="text-slate-400 font-bold text-xs uppercase">Island</span>
+                                            <span className="text-slate-900 font-black text-sm uppercase">{activeChild.primary_island}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
+                                            <span className="text-slate-400 font-bold text-xs uppercase">Age Track</span>
+                                            <span className="text-slate-900 font-black text-sm uppercase">{activeChild.age_track}</span>
+                                        </div>
+                                    </div>
+
+                                    <Link
+                                        href={`/account/children/${activeChild.id}`}
+                                        className="mt-8 flex items-center justify-center gap-2 text-slate-400 hover:text-primary font-black uppercase tracking-widest text-xs transition-colors"
+                                    >
+                                        <Edit size={14} /> Edit Legend Profile
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Subscription & Rewards */}
+                        <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-12 rounded-[4rem] shadow-2xl text-white relative overflow-hidden">
+                            <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                                className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/5 border-2 border-white/5 rounded-full"
+                            />
+
+                            <div className="relative z-10">
+                                <Gift className="w-12 h-12 text-indigo-300 mb-8" />
+                                <h3 className="text-3xl font-black tracking-tighter mb-4 leading-tight">Unlock Premium Rewards.</h3>
+                                <p className="text-indigo-100/70 font-medium mb-10 text-sm leading-relaxed">
+                                    Upgrade to access high-quality story printables, physical gift boxes, and certified diplomas.
+                                </p>
+
+                                <Link
+                                    href="/#pricing"
+                                    className="block w-full py-5 bg-white text-indigo-700 rounded-2xl font-black text-center shadow-xl hover:scale-105 transition-all text-sm uppercase tracking-widest"
+                                >
+                                    Explore Plans
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Quick Action: Printable Certificate */}
+                        <div className="bg-white p-10 rounded-[4rem] shadow-xl border border-slate-100 text-center">
+                            <Download size={32} className="text-slate-200 mx-auto mb-6" />
+                            <h4 className="text-xl font-black text-slate-900 tracking-tight mb-2">Completion Certificate</h4>
+                            <p className="text-slate-400 text-xs font-medium mb-8 leading-relaxed">Download a custom certificate for reaching Level {currentLevel.level}</p>
+                            <button className="w-full py-4 border-2 border-slate-100 text-slate-400 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:border-primary hover:text-primary transition-all">
+                                Generate PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </main>
+
             <Footer />
         </div>
     );
