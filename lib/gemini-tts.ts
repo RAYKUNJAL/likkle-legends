@@ -28,7 +28,7 @@ export async function generateGeminiSpeech(
             model: TANTY_ISLAND_ENGINE.technical_stack.vocal_model,
             contents: [{
                 parts: [{
-                    text: `${TANTY_ISLAND_ENGINE.neural_personality.system_instruction}. Text to read: ${text}`
+                    text: `[Voice Direction: ${TANTY_ISLAND_ENGINE.vocal_blueprint.prosody_profile}. Tone: Warm Caribbean Grandmother. Emotion: Joyful.] ${text}`
                 }]
             }],
             config: {
