@@ -25,6 +25,8 @@ const quicksand = Quicksand({
 });
 
 import { siteContent } from '@/lib/content';
+import { getMergedSiteContent } from '@/lib/services/cms';
+import NotificationBar from '@/components/landing/NotificationBar';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'),
@@ -52,13 +54,15 @@ import AnalyticsLoader from '@/components/AnalyticsLoader';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import { UserProvider } from '@/components/UserContext';
 import StructuredData from '@/components/StructuredData';
-import TantySpiceWidget from '@/components/TantySpiceWidget';
+// TantySpiceWidget removed - R.O.T.I. is the primary chat interface
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const content = await getMergedSiteContent();
+
   return (
     <html lang="en">
       <head>
@@ -68,11 +72,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${quicksand.variable} font-quicksand antialiased`}
         suppressHydrationWarning
       >
+        <NotificationBar content={content} />
         <AnalyticsLoader />
         <CookieConsentBanner />
         <UserProvider>
           {children}
-          <TantySpiceWidget />
+          {/* Tanty chatbot removed per user request */}
         </UserProvider>
       </body>
     </html>

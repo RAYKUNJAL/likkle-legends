@@ -31,7 +31,7 @@ export async function getSongs(tierRequired?: string) {
 export async function getStorybooks(tierRequired?: string) {
     let query = supabase
         .from('storybooks')
-        .select('*, characters(*)')
+        .select('*')
         .eq('is_active', true)
         .order('display_order', { ascending: true });
 

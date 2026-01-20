@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS games (
     description TEXT,
     thumbnail_url TEXT,
     game_url TEXT, -- External URL or path to game bundle
+    game_type TEXT DEFAULT 'trivia',
     category TEXT DEFAULT 'educational', -- 'match', 'puzzle', 'educational', etc.
     tier_required TEXT DEFAULT 'legends_plus',
     play_count INTEGER DEFAULT 0,
@@ -14,6 +15,7 @@ CREATE TABLE IF NOT EXISTS games (
     age_range TEXT DEFAULT '4-8',
     is_active BOOLEAN DEFAULT true,
     display_order INTEGER DEFAULT 0,
+    game_config JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
