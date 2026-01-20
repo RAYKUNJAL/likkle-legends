@@ -1,7 +1,7 @@
 export const siteContent = {
     meta: {
-        title: "Likkle Legends Mail Club | Caribbean Culture & Confidence for Kids 4–8",
-        description: "A $10/month Caribbean mail club and AI-powered learning world that helps kids 4–8 build identity, emotional literacy, and confidence through letters, songs, stories, and missions.",
+        title: "Likkle Legends | Learning That Feels Like Home",
+        description: "Help your child grow academically while staying connected to Caribbean culture—wherever you live. Stories, songs, activities, and monthly character drops for kids 4-8.",
         canonical_url: "https://likklelegends.com",
         og_image: "/images/logo.png"
     },
@@ -20,17 +20,17 @@ export const siteContent = {
             href: "/"
         },
         links: [
-            { label: "How It Works", href: "#how-it-works" },
-            { label: "What You Get", href: "#what-you-get" },
-            { label: "Characters", href: "#characters" },
-            { label: "Pricing", href: "#pricing" },
-            { label: "Testimonials", href: "#testimonials" }
+            { label: "How It Works", href: "/#how-it-works" },
+            { label: "What You Get", href: "/#offer" },
+            { label: "Characters", href: "/characters" },
+            { label: "Pricing", href: "/pricing" },
+            { label: "Testimonials", href: "/#testimonials" }
         ],
         auth: {
             login_label: "Login",
             login_href: "/login",
             primary_cta: {
-                label: "Start Mail Club",
+                label: "Try $10 Intro",
                 href: "/get-started"
             }
         }
@@ -60,7 +60,7 @@ export const siteContent = {
         },
         hero_media: {
             type: "image",
-            src: "/images/hero.png",
+            src: "/images/hero_landing.png",
             alt: "Child reading a Likkle Legends letter"
         },
         new_mission_chip: {
@@ -189,6 +189,36 @@ export const siteContent = {
                 description: "From steelpan to soca, Sam helps your child find the rhythm in everyday life and express big emotions through music.",
                 image: "/images/steelpan_sam.png"
             }
+        ]
+    },
+    island_radio: {
+        title: "Island Radio",
+        subtitle: "A safe listening space for kids—nursery rhymes, island sounds, and learning songs.",
+        tagline: "Now Available",
+        cta: {
+            label: "Preview Island Radio",
+            href: "/portal/radio"
+        },
+        benefits: [
+            { label: 'Ad-free', description: 'No interruptions or ads', icon: 'shield' },
+            { label: 'Kid-safe', description: 'Curated content only', icon: 'volume' },
+            { label: 'Perfect for', description: 'Car rides & mornings', icon: 'car' }
+        ]
+    },
+    monthly_drop: {
+        title: "New Each Month",
+        subtitle: "A new character arrives every month—plus a new story, a new song, and a new activity.",
+        tagline: "Fresh Content",
+        image: "/images/monthly-drop-preview.png",
+        cta: {
+            label: "See This Month's Drop",
+            href: "/characters"
+        },
+        items: [
+            { label: 'New character', icon: 'users' },
+            { label: 'New story', icon: 'book' },
+            { label: 'New song', icon: 'music' },
+            { label: 'New activity', icon: 'palette' }
         ]
     },
     ai_story_studio: {

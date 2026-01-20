@@ -98,20 +98,37 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                     // Play the audio
                     if (audioRef.current) {
                         audioRef.current.pause();
+                        audioRef.current.src = '';
                     }
-                    const audio = new Audio(data.audio);
+
+                    const audio = new Audio();
+                    // Mobile-friendly attributes
+                    audio.preload = 'auto';
+                    (audio as any).playsInline = true;
+                    (audio as any).webkitPlaysInline = true;
+                    audio.src = data.audio;
                     audioRef.current = audio;
 
                     audio.onended = () => setIsSpeaking(false);
-                    audio.onerror = () => {
+                    audio.onerror = (e) => {
+                        console.warn('[R.O.T.I. Voice] Audio error, falling back to browser TTS:', e);
                         setIsSpeaking(false);
-                        // Fallback to browser TTS
+                        setIsLoadingVoice(false);
                         speakTextFallback(text);
                     };
 
-                    await audio.play();
-                    setIsLoadingVoice(false);
-                    return;
+                    // Handle mobile autoplay restrictions
+                    try {
+                        await audio.play();
+                        setIsLoadingVoice(false);
+                        return;
+                    } catch (playError) {
+                        console.warn('[R.O.T.I. Voice] Autoplay blocked, falling back:', playError);
+                        // On mobile, if autoplay is blocked, fall back to browser TTS
+                        speakTextFallback(text);
+                        setIsLoadingVoice(false);
+                        return;
+                    }
                 }
             }
 
@@ -263,8 +280,8 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                         <button
                             onClick={() => setShowVoiceMenu(!showVoiceMenu)}
                             className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${voiceEnabled
-                                    ? 'bg-amber-400 text-amber-900 hover:bg-amber-300'
-                                    : 'bg-white/20 text-white hover:bg-white/30'
+                                ? 'bg-amber-400 text-amber-900 hover:bg-amber-300'
+                                : 'bg-white/20 text-white hover:bg-white/30'
                                 }`}
                             aria-label="Voice settings"
                             title="Change voice"
@@ -288,8 +305,8 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                                             setShowVoiceMenu(false);
                                         }}
                                         className={`w-full px-3 py-2 text-left flex items-center gap-2 transition-colors ${voiceMode === mode
-                                                ? 'bg-emerald-100 text-emerald-800'
-                                                : 'hover:bg-gray-50 text-gray-700'
+                                            ? 'bg-emerald-100 text-emerald-800'
+                                            : 'hover:bg-gray-50 text-gray-700'
                                             }`}
                                     >
                                         <span className="text-lg">{VOICE_MODE_INFO[mode].emoji}</span>
@@ -309,8 +326,8 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                                             setShowVoiceMenu(false);
                                         }}
                                         className={`w-full px-3 py-2 rounded-lg text-xs font-bold text-center ${voiceEnabled
-                                                ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                                                : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
+                                            ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                            : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
                                             }`}
                                     >
                                         {voiceEnabled ? '🔇 Turn Voice Off' : '🔊 Turn Voice On'}

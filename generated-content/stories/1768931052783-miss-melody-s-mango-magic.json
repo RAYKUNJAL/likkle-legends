@@ -1,0 +1,77 @@
+{
+  "title": "Miss Melody's Mango Magic",
+  "summary": "Miss Melody has a big, juicy mango, but sees her friends are hungry. She shares her mango and learns that sharing brings even more joy.",
+  "pages": [
+    {
+      "pageNumber": 1,
+      "text": "Miss Melody had a [real] [real] big, yellow mango! It smelled so sweet, like sunshine and sugar. She was so happy to have it.",
+      "imagePrompt": "Illustration of Miss Melody, a cheerful young girl with brown skin and braids, holding a large, ripe, yellow mango. She's standing in front of a brightly painted Bajan house with bougainvillea flowers climbing the walls. The sun is shining, and palm trees sway gently in the background.",
+      "patoisWords": [
+        {
+          "word": "real",
+          "meaning": "very"
+        }
+      ]
+    },
+    {
+      "pageNumber": 2,
+      "text": "She saw her friend, David, looking sad. David didn't have any snack. Miss Melody felt sorry for him.",
+      "imagePrompt": "Illustration showing Miss Melody looking at David who is sitting on a small wall looking sad. David is a young boy with short hair wearing a blue shirt and shorts. He is looking down with his head in his hands. A few small rocks surround him. The background has colorful houses with zinc roofs.",
+      "patoisWords": []
+    },
+    {
+      "pageNumber": 3,
+      "text": "Miss Melody cut her mango in half. She gave one half to David. David smiled a [real] big smile!",
+      "imagePrompt": "Illustration of Miss Melody handing half of her mango to David. Both are smiling and holding their respective mango halves. The mangoes are juicy and yellow. The background shows a friendly neighborhood scene with other children playing.",
+      "patoisWords": [
+        {
+          "word": "real",
+          "meaning": "very"
+        }
+      ]
+    },
+    {
+      "pageNumber": 4,
+      "text": "Then, she saw Aisha looking hungry too. Aisha wanted to [lime] [lime] but didn't have a treat! So, Miss Melody shared her mango with Aisha too!",
+      "imagePrompt": "Illustration showing Miss Melody and David offering a piece of their mango to Aisha. Aisha is a young girl with pigtails and a bright yellow dress. They are sitting under the shade of a large flamboyant tree with bright red flowers. The scene is warm and inviting.",
+      "patoisWords": [
+        {
+          "word": "lime",
+          "meaning": "hang out"
+        }
+      ]
+    },
+    {
+      "pageNumber": 5,
+      "text": "Miss Melody had only a little bit of mango left, but she felt so happy! Sharing her mango made everyone smile. Sharing is caring!",
+      "imagePrompt": "Illustration showing Miss Melody, David, and Aisha all sitting together, eating the remaining mango pieces. They are all laughing and smiling. The sun is setting, casting a warm glow over the scene. A small Bajan flag waves gently in the background.",
+      "patoisWords": []
+    }
+  ],
+  "ageTrack": "mini",
+  "islandTheme": "Barbados",
+  "readingTimeMinutes": 3,
+  "difficultyLevel": 1,
+  "tierRequired": "starter_mailer",
+  "patoisWords": [
+    {
+      "word": "real",
+      "meaning": "very",
+      "pronunciation": "REAL"
+    },
+    {
+      "word": "lime",
+      "meaning": "hang out",
+      "pronunciation": "LIME"
+    }
+  ],
+  "characterId": "Miss Melody",
+  "culturalElements": [
+    "Mangoes",
+    "Brightly colored Bajan houses",
+    "Flamboyant trees",
+    "Sharing",
+    "Community",
+    "Bajan flag"
+  ]
+}

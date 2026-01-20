@@ -1,0 +1,19 @@
+// Landing page components barrel export
+export { default as LandingHero } from './LandingHero';
+export { default as ProblemRecognition } from './ProblemRecognition';
+export { default as SolutionDefinition } from './SolutionDefinition';
+export { default as OfferSpotlight } from './OfferSpotlight';
+export { default as FreeTrialSection } from './FreeTrialSection';
+export { default as HowItWorksV2 } from './HowItWorksV2';
+export { default as CharacterRoles } from './CharacterRoles';
+export { default as IslandRadioPreview } from './IslandRadioPreview';
+export { default as MonthlyDropSection } from './MonthlyDropSection';
+export { default as PricingLadderPreview } from './PricingLadderPreview';
+export { default as FinalCTASection } from './FinalCTASection';
+export { default as StickyMobileCTA } from './StickyMobileCTA';
+export { default as ChatbotStaticCard } from './ChatbotStaticCard';
+export { default as FoundersSection } from './FoundersSection';
+export { default as WhoItIsFor } from './WhoItIsFor';
+export { default as EducatorBlock } from './EducatorBlock';
+export { default as StoryStudioLeadMagnet } from './StoryStudioLeadMagnet';
+export { default as FeatureShowcase } from './FeatureShowcase';
