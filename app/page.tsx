@@ -27,9 +27,15 @@ import {
 } from '@/components/landing';
 
 export default async function Home() {
-  const content = await getMergedSiteContent();
+  let content = {} as any;
+  try {
+    content = await getMergedSiteContent();
+  } catch (err) {
+    console.error("Home page CMS fetch error:", err);
+    content = siteContent;
+  }
 
-  const { testimonials } = content;
+  const testimonials = content?.testimonials || siteContent.testimonials;
 
   return (
     <div className="flex flex-col min-h-screen">

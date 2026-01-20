@@ -158,12 +158,11 @@ export default function ChildPortalPage() {
         { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
     ];
 
-    return (
     const portals = [
-            { id: 'stories', label: 'Stories', sub: 'Island Tales', icon: BookOpen, color: 'bg-[#FF9D42]', iconColor: 'text-orange-600', shadow: 'shadow-orange-200' },
-            { id: 'songs', label: 'Songs', sub: 'Island Rhythms', icon: Music, color: 'bg-[#A855F7]', iconColor: 'text-purple-600', shadow: 'shadow-purple-200' },
-            { id: 'missions', label: 'Adventures', sub: 'Island Quests', icon: MapIcon, color: 'bg-[#14B8A6]', iconColor: 'text-teal-600', shadow: 'shadow-teal-200' },
-        ];
+        { id: 'stories', label: 'Stories', sub: 'Island Tales', icon: BookOpen, color: 'bg-[#FF9D42]', iconColor: 'text-orange-600', shadow: 'shadow-orange-200' },
+        { id: 'songs', label: 'Songs', sub: 'Island Rhythms', icon: Music, color: 'bg-[#A855F7]', iconColor: 'text-purple-600', shadow: 'shadow-purple-200' },
+        { id: 'missions', label: 'Adventures', sub: 'Island Quests', icon: MapIcon, color: 'bg-[#14B8A6]', iconColor: 'text-teal-600', shadow: 'shadow-teal-200' },
+    ];
 
     return (
         <div className="min-h-screen bg-[#F0F9FF] font-heading overflow-hidden relative">
