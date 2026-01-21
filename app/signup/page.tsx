@@ -59,6 +59,7 @@ function SignupForm() {
                 password: formData.password,
                 options: {
                     data: {
+                        full_name: 'Parent', // Default name to satisfy trigger constraints
                         child_name: formData.childName,
                         referral_source: referral,
                         chosen_plan: plan
