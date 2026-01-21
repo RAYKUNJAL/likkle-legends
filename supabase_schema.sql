@@ -367,13 +367,23 @@ ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE one_time_purchases ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: Users can only see/edit their own
+DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 
 -- Children: Parents can manage their children
+DROP POLICY IF EXISTS "Parents can view their children" ON children;
 CREATE POLICY "Parents can view their children" ON children FOR SELECT USING (auth.uid() = parent_id);
+
+DROP POLICY IF EXISTS "Parents can insert children" ON children;
 CREATE POLICY "Parents can insert children" ON children FOR INSERT WITH CHECK (auth.uid() = parent_id);
+
+DROP POLICY IF EXISTS "Parents can update children" ON children;
 CREATE POLICY "Parents can update children" ON children FOR UPDATE USING (auth.uid() = parent_id);
+
+DROP POLICY IF EXISTS "Parents can delete children" ON children;
 CREATE POLICY "Parents can delete children" ON children FOR DELETE USING (auth.uid() = parent_id);
 
 -- Content tables are publicly readable
@@ -385,19 +395,36 @@ ALTER TABLE printables ENABLE ROW LEVEL SECURITY;
 ALTER TABLE missions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vr_locations ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public read characters" ON characters;
 CREATE POLICY "Public read characters" ON characters FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read songs" ON songs;
 CREATE POLICY "Public read songs" ON songs FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read storybooks" ON storybooks;
 CREATE POLICY "Public read storybooks" ON storybooks FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read videos" ON videos;
 CREATE POLICY "Public read videos" ON videos FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read printables" ON printables;
 CREATE POLICY "Public read printables" ON printables FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read missions" ON missions;
 CREATE POLICY "Public read missions" ON missions FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read vr_locations" ON vr_locations;
 CREATE POLICY "Public read vr_locations" ON vr_locations FOR SELECT USING (true);
 
 -- Activities: Users can view/insert their own
+DROP POLICY IF EXISTS "Users view own activities" ON activities;
 CREATE POLICY "Users view own activities" ON activities FOR SELECT USING (auth.uid() = profile_id);
+
+DROP POLICY IF EXISTS "Users insert own activities" ON activities;
 CREATE POLICY "Users insert own activities" ON activities FOR INSERT WITH CHECK (auth.uid() = profile_id);
 
 -- Orders: Users can view their own orders
+DROP POLICY IF EXISTS "Users view own orders" ON orders;
 CREATE POLICY "Users view own orders" ON orders FOR SELECT USING (auth.uid() = profile_id);
 
 -- =============================================
@@ -413,12 +440,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS profiles_updated_at ON profiles;
 CREATE TRIGGER profiles_updated_at BEFORE UPDATE ON profiles
 FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS children_updated_at ON children;
 CREATE TRIGGER children_updated_at BEFORE UPDATE ON children
 FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+DROP TRIGGER IF EXISTS orders_updated_at ON orders;
 CREATE TRIGGER orders_updated_at BEFORE UPDATE ON orders
 FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
@@ -432,6 +462,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE OR REPLACE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION handle_new_user();
@@ -445,6 +476,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS orders_generate_number ON orders;
 CREATE TRIGGER orders_generate_number BEFORE INSERT ON orders
 FOR EACH ROW EXECUTE FUNCTION generate_order_number();
 

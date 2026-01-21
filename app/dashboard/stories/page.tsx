@@ -1,17 +1,34 @@
 "use client";
 
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/storage';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { BookOpen, Star, ArrowRight, Lock, Sparkles } from 'lucide-react';
+import { BookOpen, Star, ArrowRight, Lock, Sparkles, RefreshCw } from 'lucide-react';
 
 export default function StorybooksPage() {
-    const stories = [
-        { title: "Dilly and the Magic Mango", status: "Unlocked", difficulty: "Beginner", characters: ["Dilly"], image: "/images/dilly_doubles.png" },
-        { title: "Mango Moko's High View", status: "Unlocked", difficulty: "Intermediate", characters: ["Mango"], image: "/images/mango_moko.png" },
-        { title: "The Steelpan Secret", status: "New", difficulty: "Beginner", characters: ["Sam"], image: "/images/steelpan_sam.png" },
-        { title: "Anansi's Digital Web", status: "Locked", difficulty: "Expert", characters: ["Anansi"], image: "" },
-    ];
+    const [stories, setStories] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStories = async () => {
+            const { data, error } = await supabase
+                .from('storybooks')
+                .select('*')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching stories:', error);
+            } else {
+                setStories(data || []);
+            }
+            setIsLoading(false);
+        };
+
+        fetchStories();
+    }, []);
 
     return (
         <div className="bg-[#FFFDF7] min-h-screen">
@@ -46,19 +63,30 @@ export default function StorybooksPage() {
                     </header>
 
                     <div className="grid md:grid-cols-2 gap-10">
-                        {stories.map((story, i) => (
-                            <div key={i} className={`relative p-8 rounded-[4rem] border-2 transition-all duration-500 overflow-hidden group ${story.status === 'Locked'
-                                    ? 'bg-zinc-100 border-zinc-100 opacity-60 grayscale'
-                                    : 'bg-white border-white shadow-xl shadow-zinc-200/50 hover:shadow-2xl hover:scale-[1.02] hover:border-primary/20'
+                        {isLoading ? (
+                            <div className="col-span-2 flex justify-center py-20">
+                                <RefreshCw className="animate-spin text-primary" size={48} />
+                            </div>
+                        ) : stories.length === 0 ? (
+                            <div className="col-span-2 text-center py-20">
+                                <p className="text-deep/30 font-black text-2xl uppercase tracking-widest">No stories found yet</p>
+                                <p className="text-deep/20 mt-2">Publish from the Admin Studio to see them here!</p>
+                            </div>
+                        ) : stories.map((story, i) => (
+                            <div key={story.id || i} className={`relative p-8 rounded-[4rem] border-2 transition-all duration-500 overflow-hidden group ${!story.is_active
+                                ? 'bg-zinc-100 border-zinc-100 opacity-60 grayscale'
+                                : 'bg-white border-white shadow-xl shadow-zinc-200/50 hover:shadow-2xl hover:scale-[1.02] hover:border-primary/20'
                                 }`}>
                                 <div className="flex gap-8 items-center">
                                     <div className="w-40 h-40 bg-zinc-50 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-inner flex items-center justify-center relative">
-                                        {story.image ? (
-                                            <img src={story.image} alt={story.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                        {(story.cover_image_url || story.image) ? (
+                                            <img src={story.cover_image_url || story.image} alt={story.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                                         ) : (
-                                            <Lock size={48} className="text-zinc-200" />
+                                            <div className="w-full h-full bg-primary/5 flex items-center justify-center">
+                                                <BookOpen size={48} className="text-primary/20" />
+                                            </div>
                                         )}
-                                        {story.status === 'New' && (
+                                        {(story.status === 'New' || i === 0) && (
                                             <div className="absolute top-2 left-2 bg-secondary text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">NEW</div>
                                         )}
                                     </div>
@@ -66,20 +94,20 @@ export default function StorybooksPage() {
                                         <div>
                                             <h3 className="text-2xl font-black text-deep group-hover:text-primary transition-colors">{story.title}</h3>
                                             <div className="flex items-center gap-3 mt-2">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 px-3 py-1 rounded-full">{story.difficulty}</span>
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 px-3 py-1 rounded-full">Level {story.difficulty_level || 1}</span>
                                                 <div className="flex items-center gap-1">
                                                     {[1, 2, 3].map(star => (
-                                                        <Star key={star} size={12} fill={story.status === 'Locked' ? '#E4E4E7' : '#FFD700'} stroke="none" />
+                                                        <Star key={star} size={12} fill={!story.is_active ? '#E4E4E7' : '#FFD700'} stroke="none" />
                                                     ))}
                                                 </div>
                                             </div>
                                         </div>
                                         <button
-                                            disabled={story.status === 'Locked'}
-                                            className={`flex items-center gap-3 text-sm font-black uppercase tracking-widest transition-all ${story.status === 'Locked' ? 'text-zinc-400' : 'text-primary group-hover:gap-5'
+                                            disabled={!story.is_active}
+                                            className={`flex items-center gap-3 text-sm font-black uppercase tracking-widest transition-all ${!story.is_active ? 'text-zinc-400' : 'text-primary group-hover:gap-5'
                                                 }`}
                                         >
-                                            {story.status === 'Locked' ? 'Locked Library' : 'Read Now'} <ArrowRight size={18} />
+                                            {!story.is_active ? 'Locked Library' : 'Read Now'} <ArrowRight size={18} />
                                         </button>
                                     </div>
                                 </div>

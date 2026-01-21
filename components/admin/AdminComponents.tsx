@@ -7,10 +7,20 @@ import {
     Search, Activity, Upload, Music, Video, BookOpen,
     Settings, Bell, BarChart3, FileText, MessageSquare,
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
-    Plus, Eye, Edit, Trash2, Download, RefreshCw,
+    Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap,
-    Database, Smartphone, Accessibility, Lock
+    Database, Smartphone, Accessibility, Lock, Star, Info, Target
 } from 'lucide-react';
+
+export {
+    Users, CreditCard, Package, TrendingUp, AlertCircle,
+    Search, Activity, Upload, Music, Video, BookOpen,
+    Settings, Bell, BarChart3, FileText, MessageSquare,
+    Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
+    Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
+    Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap,
+    Database, Smartphone, Accessibility, Lock, Star, Info
+};
 
 // ==========================================
 // ADMIN DASHBOARD LAYOUT
@@ -37,14 +47,19 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
 
     const navItems = [
         { id: 'overview', label: 'Overview', icon: BarChart3, href: '/admin' },
+        { id: 'leads', label: 'Leads & CRM', icon: Users, href: '/admin/leads' },
         { id: 'customers', label: 'Customers', icon: Users, href: '/admin/customers' },
-        { id: 'orders', label: 'Orders & Fulfillment', icon: Package, href: '/admin/orders' },
+        { id: 'orders', label: 'Orders & Fulfillment', icon: ShoppingCart, href: '/admin/orders' },
         { id: 'content', label: 'Content Library', icon: BookOpen, href: '/admin/content' },
+        { id: 'studio', label: 'Legend AI Studio', icon: Sparkles, href: '/admin/studio' },
         { id: 'characters', label: 'Characters', icon: Palette, href: '/admin/characters' },
-        { id: 'media', label: 'Digital Assets', icon: Package, href: '/admin/assets' },
+        { id: 'personality', label: 'AI Brain & Personality', icon: Zap, href: '/admin/personality' },
+        { id: 'media', label: 'Media Library', icon: Video, href: '/admin/media' },
         { id: 'games', label: 'Game Builder', icon: Gamepad2, href: '/admin/games' },
         { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/admin/messages' },
         { id: 'cms', label: 'Site CMS', icon: Globe, href: '/admin/cms' },
+        { id: 'pixels', label: 'Launch Pixels', icon: Target, href: '/admin/pixels' },
+        { id: 'email-engine', label: 'Growth Agent', icon: Zap, href: '/admin/email-engine' },
         { id: 'announcements', label: 'Announcements', icon: Megaphone, href: '/admin/announcements' },
         { id: 'analytics', label: 'Analytics', icon: TrendingUp, href: '/admin/analytics' },
         { id: 'verify', label: 'Launch Verification', icon: ShieldCheck, href: '/admin/verify' },
@@ -507,12 +522,4 @@ export function Tabs({ tabs, activeTab, onChange }: TabsProps) {
     );
 }
 
-export {
-    Users, CreditCard, Package, TrendingUp, AlertCircle,
-    Search, Activity, Upload, Music, Video, BookOpen,
-    Settings, Bell, BarChart3, FileText, MessageSquare,
-    Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
-    Plus, Eye, Edit, Trash2, Download, RefreshCw,
-    Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap,
-    Database, Smartphone, Accessibility, Lock
-};
+

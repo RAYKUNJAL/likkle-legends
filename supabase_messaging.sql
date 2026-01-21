@@ -46,23 +46,29 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
 
 -- Messages: Users can see messages they sent or received
+DROP POLICY IF EXISTS "Users can view own messages" ON messages;
 CREATE POLICY "Users can view own messages" ON messages 
 FOR SELECT USING (auth.uid() = sender_id OR auth.uid() = recipient_id);
 
+DROP POLICY IF EXISTS "Users can send messages" ON messages;
 CREATE POLICY "Users can send messages" ON messages 
 FOR INSERT WITH CHECK (auth.uid() = sender_id);
 
+DROP POLICY IF EXISTS "Users can mark messages as read" ON messages;
 CREATE POLICY "Users can mark messages as read" ON messages 
 FOR UPDATE USING (auth.uid() = recipient_id);
 
 -- Notifications: Users can only see their own
+DROP POLICY IF EXISTS "Users can view own notifications" ON notifications;
 CREATE POLICY "Users can view own notifications" ON notifications 
 FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can mark notifications read" ON notifications;
 CREATE POLICY "Users can mark notifications read" ON notifications 
 FOR UPDATE USING (auth.uid() = user_id);
 
 -- Announcements: Public read
+DROP POLICY IF EXISTS "Public read announcements" ON announcements;
 CREATE POLICY "Public read announcements" ON announcements 
 FOR SELECT USING (is_active = true);
 

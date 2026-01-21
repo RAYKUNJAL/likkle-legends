@@ -7,60 +7,115 @@ import { getSiteContent } from '@/lib/services/cms';
 import { saveContentAction } from '@/app/actions/cms';
 import { Loader2, Check, Save, RotateCcw } from 'lucide-react';
 
-// Simple JSON Editor Component using textarea
-function JsonEditor({ initialData, onSave, label }: { initialData: any, onSave: (data: any) => Promise<void>, label: string }) {
-    const [jsonString, setJsonString] = useState(JSON.stringify(initialData, null, 2));
-    const [error, setError] = useState<string | null>(null);
+// Visual Editor Component for structured content
+function VisualEditor({ initialData, onSave, label }: { initialData: any, onSave: (data: any) => Promise<void>, label: string }) {
+    const [data, setData] = useState(initialData);
     const [isSaving, setIsSaving] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
-    const handleSave = async () => {
-        try {
-            setError(null);
-            setIsSaving(true);
-            const parsed = JSON.parse(jsonString);
-            await onSave(parsed);
-            setIsSuccess(true);
-            setTimeout(() => setIsSuccess(false), 2000);
-        } catch (e: any) {
-            setError("Invalid JSON format");
-        } finally {
-            setIsSaving(false);
+    const updateField = (path: string[], value: any) => {
+        const newData = { ...data };
+        let current = newData;
+        for (let i = 0; i < path.length - 1; i++) {
+            current = current[path[i]];
         }
+        current[path[path.length - 1]] = value;
+        setData(newData);
+    };
+
+    const renderFields = (obj: any, path: string[] = []) => {
+        if (!obj) return null;
+
+        return Object.entries(obj).map(([key, value]) => {
+            const currentPath = [...path, key];
+            const fieldId = currentPath.join('.');
+
+            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                return (
+                    <div key={fieldId} className="border-l-2 border-gray-100 pl-6 space-y-4 my-6">
+                        <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">{key.replace(/_/g, ' ')}</h4>
+                        {renderFields(value, currentPath)}
+                    </div>
+                );
+            }
+
+            if (Array.isArray(value)) {
+                return (
+                    <div key={fieldId} className="space-y-4 my-6">
+                        <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">{key.replace(/_/g, ' ')} (Array)</h4>
+                        <p className="text-[10px] text-amber-500 font-bold italic">Arrays still require JSON editing for safely adding/removing items for now.</p>
+                        <textarea
+                            value={JSON.stringify(value, null, 2)}
+                            onChange={(e) => {
+                                try {
+                                    const parsed = JSON.parse(e.target.value);
+                                    updateField(currentPath, parsed);
+                                } catch (e) { }
+                            }}
+                            className="w-full h-32 font-mono text-xs p-3 bg-gray-50 border rounded-xl"
+                        />
+                    </div>
+                );
+            }
+
+            return (
+                <div key={fieldId} className="space-y-1">
+                    <label className="text-xs font-bold text-gray-600 block px-1">{key.replace(/_/g, ' ')}</label>
+                    {typeof value === 'string' && value.length > 100 ? (
+                        <textarea
+                            value={value as string}
+                            onChange={(e) => updateField(currentPath, e.target.value)}
+                            className="w-full h-24 p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                        />
+                    ) : (
+                        <input
+                            type={typeof value === 'number' ? 'number' : 'text'}
+                            value={value as string | number}
+                            onChange={(e) => updateField(currentPath, typeof value === 'number' ? parseFloat(e.target.value) : e.target.value)}
+                            className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                        />
+                    )}
+                </div>
+            );
+        });
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl border shadow-sm space-y-4">
-            <div className="flex justify-between items-center">
-                <h3 className="font-bold text-lg capitalize">{label}</h3>
-                <div className="flex items-center gap-2">
-                    {error && <span className="text-red-500 text-sm">{error}</span>}
-                    {isSuccess && <span className="text-green-600 text-sm flex items-center gap-1"><Check size={14} /> Saved</span>}
+        <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
+            <div className="flex justify-between items-center border-b pb-6">
+                <div>
+                    <h3 className="font-black text-2xl capitalize text-gray-900">{label.replace(/_/g, ' ')}</h3>
+                    <p className="text-sm text-gray-500">Edit content fields visually.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    {isSuccess && <span className="text-green-600 text-sm font-bold flex items-center gap-1"><Check size={16} /> Saved Successfully</span>}
                     <button
-                        onClick={() => setJsonString(JSON.stringify(initialData, null, 2))}
-                        className="p-2 hover:bg-gray-100 rounded-lg text-gray-400"
-                        title="Reset to original"
+                        onClick={() => setData(initialData)}
+                        className="p-3 bg-gray-50 hover:bg-gray-100 rounded-xl text-gray-400 transition-colors"
+                        title="Reset"
                     >
-                        <RotateCcw size={18} />
+                        <RotateCcw size={20} />
                     </button>
                     <button
-                        onClick={handleSave}
+                        onClick={async () => {
+                            setIsSaving(true);
+                            await onSave(data);
+                            setIsSuccess(true);
+                            setIsSaving(false);
+                            setTimeout(() => setIsSuccess(false), 3000);
+                        }}
                         disabled={isSaving}
-                        className="btn btn-primary py-2 px-4 text-sm flex items-center gap-2"
+                        className="bg-primary text-white py-3 px-8 rounded-xl font-bold flex items-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                     >
-                        {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                        {isSaving ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
                         Save Changes
                     </button>
                 </div>
             </div>
-            <p className="text-xs text-gray-500">Edit the JSON configuration below. Be careful with formatting.</p>
-            <textarea
-                value={jsonString}
-                onChange={(e) => setJsonString(e.target.value)}
-                aria-label={`Edit ${label} JSON`}
-                className="w-full h-[400px] font-mono text-sm p-4 bg-slate-50 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none resize-y"
-                spellCheck={false}
-            />
+
+            <div className="max-w-3xl space-y-2">
+                {renderFields(data)}
+            </div>
         </div>
     );
 }
@@ -79,15 +134,6 @@ export default function CmsPage() {
     async function loadContent(section: string) {
         setLoading(true);
         try {
-            // In a client component, we should probably fetch via an API route or server action wrapper if getSiteContent is safe for client? 
-            // getSiteContent imports 'supabase' from storage (client safe) but also 'admin' (server only).
-            // So we CANNOT use getSiteContent directly here if it imports server-only code.
-            // We need to fetch via the Seeder API (GET) or a Server Action.
-            // Let's use a server action wrapper that returns the data, OR just fetch from the seeder API if we implement GET there.
-            // ACTUALLY: getSiteContent is reading from public table, so it should be fine IF we separate the write logic.
-            // BUT 'lib/services/cms.ts' imports 'createAdminClient' which might break on client.
-            // SAFE BET: Use a Server Action to fetch.
-
             const { getSiteContentAction } = await import('@/app/actions/cms-fetch');
             const data = await getSiteContentAction(section);
             setContent(data);
@@ -100,25 +146,26 @@ export default function CmsPage() {
 
     async function handleSave(newContent: any) {
         await saveContentAction(activeSection, newContent);
-        // Reload to confirm persistence
+        // We don't necessarily need to reload everything if we trust the local state, 
+        // but let's re-fetch to be safe and clear any stale metadata.
         await loadContent(activeSection);
     }
 
     return (
-        <AdminLayout activeSection="content">
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-2xl font-black text-deep">Site Content Management</h1>
-                    <p className="text-gray-500">Edit the landing page content live.</p>
-                </div>
+        <AdminLayout activeSection="cms">
+            <div className="space-y-8 p-4">
+                <header>
+                    <h1 className="text-3xl font-black text-gray-900">Site Content Management</h1>
+                    <p className="text-gray-500">Update landing page copy and settings live.</p>
+                </header>
 
-                <div className="flex flex-wrap gap-2 pb-4 border-b">
+                <div className="flex flex-wrap gap-2 pb-2">
                     {sections.map(section => (
                         <button
                             key={section}
                             onClick={() => setActiveSection(section)}
-                            className={`px-4 py-2 rounded-full text-sm font-bold transition-all capitalize ${activeSection === section
-                                ? 'bg-deep text-white shadow-lg'
+                            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all capitalize shadow-sm ${activeSection === section
+                                ? 'bg-deep text-white shadow-deep/20 scale-105'
                                 : 'bg-white border text-gray-500 hover:bg-gray-50'
                                 }`}
                         >
@@ -128,15 +175,16 @@ export default function CmsPage() {
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center py-20">
-                        <Loader2 className="animate-spin text-primary" size={32} />
+                    <div className="flex flex-col items-center justify-center py-32 bg-white rounded-[2rem] border border-gray-100 shadow-sm">
+                        <Loader2 className="animate-spin text-primary mb-4" size={48} />
+                        <p className="text-gray-400 font-bold animate-pulse">Loading {activeSection} data...</p>
                     </div>
                 ) : (
-                    <JsonEditor
+                    <VisualEditor
                         label={activeSection}
                         initialData={content}
                         onSave={handleSave}
-                        key={`${activeSection}-${JSON.stringify(content)}`} // Force remount on section change
+                        key={`${activeSection}-${content ? Object.keys(content).length : 0}`}
                     />
                 )}
             </div>

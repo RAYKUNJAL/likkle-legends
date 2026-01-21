@@ -9,6 +9,9 @@ interface AnalyticsConfig {
     facebook_pixel_id: string;
     google_analytics_id: string;
     tiktok_pixel_id: string;
+    snapchat_pixel_id?: string;
+    google_tag_manager_id?: string;
+    meta_verification_code?: string;
 }
 
 export default function AnalyticsLoader() {
@@ -17,67 +20,54 @@ export default function AnalyticsLoader() {
     const [consentGiven, setConsentGiven] = useState(false);
 
     // CRITICAL: COPPA/GDPR-K Compliance
-    // Never load tracking scripts in child-directed areas
     const isChildArea = pathname?.startsWith('/portal') || pathname?.startsWith('/onboarding/child');
 
-    if (isChildArea) return null;
-
     useEffect(() => {
-        // 1. Check for initial consent
         const checkConsent = () => {
             const consent = localStorage.getItem('cookie_consent');
-            if (consent === 'true') {
-                setConsentGiven(true);
-            }
+            if (consent === 'true') setConsentGiven(true);
         };
-
         checkConsent();
-
-        // 2. Listen for real-time updates from CookieBanner
-        const handleConsentUpdate = () => {
-            checkConsent();
-        };
-
-        window.addEventListener('cookie_consent_updated', handleConsentUpdate);
-
-        return () => {
-            window.removeEventListener('cookie_consent_updated', handleConsentUpdate);
-        };
+        window.addEventListener('cookie_consent_updated', checkConsent);
+        return () => window.removeEventListener('cookie_consent_updated', checkConsent);
     }, []);
 
     useEffect(() => {
-        // Only fetch settings if consent is given. 
-        // This saves a DB call for users who decline or haven't decided.
         if (!consentGiven) return;
-
         const fetchSettings = async () => {
             try {
-                const { data } = await supabase
-                    .from('site_settings')
-                    .select('value')
-                    .eq('key', 'analytics')
-                    .single();
-
-                if (data?.value) {
-                    setConfig({
-                        facebook_pixel_id: data.value.facebook_pixel_id || '',
-                        google_analytics_id: data.value.google_analytics_id || '',
-                        tiktok_pixel_id: data.value.tiktok_pixel_id || '',
-                    });
-                }
+                const { data } = await supabase.from('site_settings').select('value').eq('key', 'analytics').single();
+                if (data?.value) setConfig(data.value);
             } catch (err) {
                 console.error('Failed to load analytics settings', err);
             }
         };
-
         fetchSettings();
     }, [consentGiven]);
 
-    // If no consent or no config, render nothing
+    if (isChildArea) return null;
     if (!consentGiven || !config) return null;
 
     return (
         <>
+            {/* Meta Verification */}
+            {config.meta_verification_code && (
+                <meta name="facebook-domain-verification" content={config.meta_verification_code} />
+            )}
+
+            {/* Google Tag Manager */}
+            {config.google_tag_manager_id && (
+                <Script id="google-tag-manager" strategy="afterInteractive">
+                    {`
+                        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                        })(window,document,'script','dataLayer','${config.google_tag_manager_id}');
+                    `}
+                </Script>
+            )}
+
             {/* Google Analytics 4 */}
             {config.google_analytics_id && (
                 <>
@@ -131,6 +121,22 @@ export default function AnalyticsLoader() {
                         ttq.load('${config.tiktok_pixel_id}');
                         ttq.page();
                       }(window, document, 'ttq');
+                    `}
+                </Script>
+            )}
+
+            {/* Snapchat Pixel */}
+            {config.snapchat_pixel_id && (
+                <Script id="snapchat-pixel" strategy="afterInteractive">
+                    {`
+                        (function(e,t,n){if(e.snaptr)return;var a=e.snaptr=function()
+                        {a.handleRequest?a.handleRequest.apply(a,arguments):a.queue.push(arguments)};
+                        a.queue=[];var s='script';var r=t.createElement(s);r.async=!0;
+                        r.src=n;var i=t.getElementsByTagName(s)[0];
+                        i.parentNode.insertBefore(r,i)})(window,document,
+                        'https://sc-static.net/scevent.min.js');
+                        snaptr('init', '${config.snapchat_pixel_id}');
+                        snaptr('track', 'PAGE_VIEW');
                     `}
                 </Script>
             )}

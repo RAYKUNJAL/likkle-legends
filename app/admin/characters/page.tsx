@@ -29,12 +29,23 @@ export default function AdminCharactersPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingCharacter, setEditingCharacter] = useState<Character | null>(null);
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        id?: string;
+        name: string;
+        role: string;
+        tagline: string;
+        description: string;
+        personality_traits: string[];
+        image_url: string;
+        model_3d_url: string;
+        voice_id: string;
+        is_active: boolean;
+    }>({
         name: '',
         role: '',
         tagline: '',
         description: '',
-        personality_traits: [] as string[],
+        personality_traits: [],
         image_url: '',
         model_3d_url: '',
         voice_id: '',
@@ -49,7 +60,12 @@ export default function AdminCharactersPage() {
     const loadCharacters = async () => {
         setIsLoading(true);
         try {
-            const data = await getCharacters();
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { getAdminCharacters } = await import('@/app/actions/admin');
+            const data = await getAdminCharacters(session.access_token);
             setCharacters(data as Character[]);
         } catch (error) {
             console.error('Failed to load characters:', error);
@@ -91,11 +107,17 @@ export default function AdminCharactersPage() {
 
     const handleSubmit = async () => {
         try {
-            if (editingCharacter) {
-                await updateCharacter(editingCharacter.id, formData);
-            } else {
-                await createCharacter(formData);
-            }
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { saveAdminCharacter } = await import('@/app/actions/admin');
+
+            const dataToSave = { ...formData };
+            if (editingCharacter) dataToSave.id = editingCharacter.id;
+
+            await saveAdminCharacter(session.access_token, dataToSave);
+
             setShowModal(false);
             setEditingCharacter(null);
             resetForm();

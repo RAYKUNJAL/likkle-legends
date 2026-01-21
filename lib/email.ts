@@ -50,12 +50,15 @@ export const WELCOME_EMAIL_TEMPLATE = (name: string) => `
 <html>
 <head>
     <style>
-        body { font-family: sans-serif; color: #333; line-height: 1.6; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(to right, #FF9F1C, #FF4081); padding: 20px; border-radius: 10px 10px 0 0; text-align: center; color: white; }
-        .content { background: #f9f9f9; padding: 20px; border-radius: 0 0 10px 10px; }
-        .button { display: inline-block; padding: 10px 20px; background-color: #FF4081; color: white; text-decoration: none; border-radius: 20px; font-weight: bold; margin-top: 20px; }
-        .footer { text-align: center; font-size: 12px; color: #999; margin-top: 20px; }
+        body { font-family: 'Segoe UI', sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 0; background: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #FF9F1C, #FF4081); padding: 30px; text-align: center; color: white; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 30px; }
+        .button { display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #FF4081, #FF9F1C); color: white; text-decoration: none; border-radius: 30px; font-weight: bold; margin-top: 20px; }
+        .footer { text-align: center; font-size: 12px; color: #999; padding: 20px; background: #f9f9f9; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
     </style>
 </head>
 <body>
@@ -80,6 +83,252 @@ export const WELCOME_EMAIL_TEMPLATE = (name: string) => `
         </div>
         <div class="footer">
             <p>© ${new Date().getFullYear()} Likkle Legends Mail Club. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+export const ONBOARDING_DAY_2_TEMPLATE = (name: string, childName: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 0; background: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #4CAF50, #2196F3); padding: 30px; text-align: center; color: white; }
+        .content { padding: 30px; }
+        .tip-box { background: #E3F2FD; border-left: 4px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        .button { display: inline-block; padding: 14px 28px; background: #4CAF50; color: white; text-decoration: none; border-radius: 30px; font-weight: bold; }
+        .footer { text-align: center; font-size: 12px; color: #999; padding: 20px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Day 2: Getting Started Tips 🚀</h1>
+        </div>
+        <div class="content">
+            <p>Hi ${name},</p>
+            <p>How's ${childName || 'your little legend'} enjoying the adventure so far?</p>
+            <div class="tip-box">
+                <strong>💡 Pro Tip:</strong> Try starting with the Story Studio! It creates personalized stories featuring ${childName || 'your child'}'s name and their favorite Caribbean island.
+            </div>
+            <p>Here are 3 things to try today:</p>
+            <ol>
+                <li>🎵 Listen to a Caribbean nursery rhyme together</li>
+                <li>📖 Create your first personalized story</li>
+                <li>🏆 Complete a fun mission to earn XP</li>
+            </ol>
+            <center>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://likklelegends.com'}/portal" class="button">Continue the Adventure</a>
+            </center>
+        </div>
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Likkle Legends. Unsubscribe preferences in your account settings.</p>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+export const ONBOARDING_DAY_7_TEMPLATE = (name: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 0; background: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 16px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #9C27B0, #673AB7); padding: 30px; text-align: center; color: white; }
+        .content { padding: 30px; }
+        .progress { background: #f0f0f0; border-radius: 20px; height: 20px; margin: 20px 0; overflow: hidden; }
+        .progress-bar { background: linear-gradient(90deg, #9C27B0, #E91E63); height: 100%; width: 15%; border-radius: 20px; }
+        .button { display: inline-block; padding: 14px 28px; background: #9C27B0; color: white; text-decoration: none; border-radius: 30px; font-weight: bold; }
+        .footer { text-align: center; font-size: 12px; color: #999; padding: 20px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>One Week In! 🎉</h1>
+        </div>
+        <div class="content">
+            <p>Hi ${name},</p>
+            <p>It's been a week since you joined Likkle Legends! Here's how to make the most of your membership:</p>
+            <p><strong>Your Progress:</strong></p>
+            <div class="progress"><div class="progress-bar"></div></div>
+            <p style="text-align: center; color: #666;">Keep going to unlock badges!</p>
+            <p>Have you tried these features yet?</p>
+            <ul>
+                <li>🌴 VR Island Explorer</li>
+                <li>🎮 Cultural Games</li>
+                <li>📄 Printable Coloring Pages</li>
+            </ul>
+            <center>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://likklelegends.com'}/portal" class="button">Explore Now</a>
+            </center>
+        </div>
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Likkle Legends.</p>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+export const ABANDONED_CHECKOUT_TEMPLATE = (name: string, childName: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 0; background: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 16px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #FF9F1C, #FF5722); padding: 30px; text-align: center; color: white; }
+        .content { padding: 30px; }
+        .highlight { background: #FFF3E0; border: 2px dashed #FF9F1C; padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; }
+        .button { display: inline-block; padding: 14px 28px; background: #FF5722; color: white; text-decoration: none; border-radius: 30px; font-weight: bold; }
+        .footer { text-align: center; font-size: 12px; color: #999; padding: 20px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>You Left Something Behind! 🛒</h1>
+        </div>
+        <div class="content">
+            <p>Hi ${name},</p>
+            <p>We noticed ${childName || 'your little one'}'s adventure was paused at checkout. Don't worry – your cart is still waiting!</p>
+            <div class="highlight">
+                <p style="font-size: 24px; margin: 0;">🌴 Likkle Legends Subscription</p>
+                <p style="color: #666; margin: 10px 0;">Personalized stories, games, and monthly mail!</p>
+            </div>
+            <p>Complete your order now and ${childName || 'your child'} can start exploring the Caribbean islands today!</p>
+            <center>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://likklelegends.com'}/checkout" class="button">Complete My Order</a>
+            </center>
+            <p style="text-align: center; color: #999; font-size: 12px; margin-top: 20px;">Need help? Reply to this email and we'll assist you.</p>
+        </div>
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Likkle Legends.</p>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+export const SUBSCRIPTION_CONFIRMATION_TEMPLATE = (name: string, tier: string, childName: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 0; background: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 16px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #4CAF50, #8BC34A); padding: 30px; text-align: center; color: white; }
+        .content { padding: 30px; }
+        .order-box { background: #E8F5E9; border-radius: 12px; padding: 20px; margin: 20px 0; }
+        .button { display: inline-block; padding: 14px 28px; background: #4CAF50; color: white; text-decoration: none; border-radius: 30px; font-weight: bold; }
+        .footer { text-align: center; font-size: 12px; color: #999; padding: 20px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>You're All Set! ✅</h1>
+        </div>
+        <div class="content">
+            <p>Hi ${name},</p>
+            <p>Great news! Your Likkle Legends subscription is now active. ${childName || 'Your child'} is ready to explore!</p>
+            <div class="order-box">
+                <p><strong>Plan:</strong> ${tier || 'Legends Plus'}</p>
+                <p><strong>Status:</strong> ✅ Active</p>
+                <p><strong>Next Billing:</strong> In 30 days</p>
+            </div>
+            <p><strong>What's Next?</strong></p>
+            <ul>
+                <li>📦 Your first mail kit is being prepared!</li>
+                <li>🎮 Unlimited access to the Kid Portal</li>
+                <li>📖 Create personalized stories anytime</li>
+            </ul>
+            <center>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://likklelegends.com'}/portal" class="button">Start Exploring</a>
+            </center>
+        </div>
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Likkle Legends. Questions? Reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+export const SUPPORT_REPLY_TEMPLATE = (parentName: string, originalSubject: string, replyText: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 0; background: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 16px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #2196F3, #03A9F4); padding: 20px; text-align: center; color: white; }
+        .content { padding: 30px; }
+        .reply-box { background: #E3F2FD; border-left: 4px solid #2196F3; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .footer { text-align: center; font-size: 12px; color: #999; padding: 20px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Re: ${originalSubject || 'Your Support Request'}</h2>
+        </div>
+        <div class="content">
+            <p>Hi ${parentName},</p>
+            <p>Thank you for reaching out to Likkle Legends! Here's our response:</p>
+            <div class="reply-box">
+                ${replyText.replace(/\n/g, '<br>')}
+            </div>
+            <p>If you have any more questions, simply reply to this email.</p>
+            <p>Warm regards,<br><strong>The Likkle Legends Team</strong> 🌴</p>
+        </div>
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Likkle Legends Mail Club.</p>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+export const WIN_BACK_TEMPLATE = (name: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 0; background: #f4f4f4; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 16px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #E91E63, #9C27B0); padding: 30px; text-align: center; color: white; }
+        .content { padding: 30px; }
+        .highlight { background: #FCE4EC; padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0; }
+        .button { display: inline-block; padding: 14px 28px; background: #E91E63; color: white; text-decoration: none; border-radius: 30px; font-weight: bold; }
+        .footer { text-align: center; font-size: 12px; color: #999; padding: 20px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>We Miss You! 💔</h1>
+        </div>
+        <div class="content">
+            <p>Hi ${name},</p>
+            <p>It's been a while since we've seen you at Likkle Legends. The islands miss your little adventurer!</p>
+            <div class="highlight">
+                <p style="font-size: 20px; margin: 0;">🌴 <strong>New Adventures Await!</strong></p>
+                <p style="color: #666;">We've added new stories, games, and missions since your last visit.</p>
+            </div>
+            <p>Come back and see what's new – your progress is still saved!</p>
+            <center>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://likklelegends.com'}/portal" class="button">Return to the Islands</a>
+            </center>
+        </div>
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Likkle Legends. Unsubscribe in account settings.</p>
         </div>
     </div>
 </body>
