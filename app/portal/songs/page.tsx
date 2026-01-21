@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
     ArrowLeft, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
-    Heart, Shuffle, Repeat, ListMusic, Music2, Clock, Star, Lock
+    Heart, Shuffle, Repeat, ListMusic, Music2, Clock, Star, Lock, Loader2, Radio
 } from 'lucide-react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/components/UserContext';
 import { supabase } from '@/lib/storage';
 import { EmptyState } from '@/components/EmptyState';
-import { Radio } from 'lucide-react';
 
 interface Song {
     id: string;
@@ -28,7 +27,7 @@ interface Song {
     is_favorite?: boolean;
 }
 
-export default function SongsPage() {
+function SongsPageContent() {
     const { activeChild, canAccess } = useUser();
     const [songs, setSongs] = useState<Song[]>([]);
     const [currentSong, setCurrentSong] = useState<Song | null>(null);
@@ -477,5 +476,17 @@ function SongCard({
                 </button>
             </div>
         </div>
+    );
+}
+
+export default function SongsPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-purple-50">
+                <Loader2 className="animate-spin text-purple-600" size={48} />
+            </div>
+        }>
+            <SongsPageContent />
+        </Suspense>
     );
 }
