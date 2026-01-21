@@ -149,7 +149,7 @@ export async function narrateText(text: string): Promise<AudioBuffer | null> {
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-3.0-pro",
+            model: "gemini-1.5-pro",
             contents: [{ parts: [{ text: prompt }] }],
             config: {
                 responseModalities: [Modality.AUDIO],
