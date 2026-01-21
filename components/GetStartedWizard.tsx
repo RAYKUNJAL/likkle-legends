@@ -79,7 +79,7 @@ export default function GetStartedWizard() {
                         className="flex-1 flex flex-col justify-center items-center text-center space-y-8"
                     >
                         <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center text-4xl mb-4">👋</div>
-                        <h2 className="text-4xl lg:text-5xl font-black text-deep leading-tight">Let's build a box for your little legend.</h2>
+                        <h2 className="text-4xl lg:text-5xl font-black text-deep leading-tight">Let's start the adventure for your little legend.</h2>
                         <p className="text-xl text-deep/60">First things first, what is their name?</p>
                         <form onSubmit={handleNameSubmit} className="w-full max-w-md">
                             <input
