@@ -1,6 +1,7 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FAQ from '@/components/FAQ';
+import { siteContent } from '@/lib/content';
 import { getMergedSiteContent } from '@/lib/services/cms';
 import { CheckCircle2 } from 'lucide-react';
 
