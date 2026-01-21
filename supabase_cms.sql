@@ -12,13 +12,13 @@ ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
 
 -- 3. Policies
 -- Public can read everything
+DROP POLICY IF EXISTS "Public read site_settings" ON site_settings;
 CREATE POLICY "Public read site_settings" ON site_settings 
     FOR SELECT 
     USING (true);
 
 -- Only Admins can update/insert
--- Assuming you have an 'admin_users' table or similar logic. 
--- For now, we'll use a specific email check or the admin_users table if exists.
+DROP POLICY IF EXISTS "Admins can manage site_settings" ON site_settings;
 CREATE POLICY "Admins can manage site_settings" ON site_settings 
     FOR ALL 
     USING (
@@ -35,6 +35,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_site_settings_modtime ON site_settings;
 CREATE TRIGGER update_site_settings_modtime
     BEFORE UPDATE ON site_settings
     FOR EACH ROW

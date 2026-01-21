@@ -21,12 +21,17 @@ CREATE TABLE IF NOT EXISTS games (
 );
 
 ALTER TABLE games ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read games" ON games;
 CREATE POLICY "Public read games" ON games FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Admins can manage games" ON games;
 CREATE POLICY "Admins can manage games" ON games FOR ALL USING (
     auth.uid() IN (SELECT id FROM admin_users) OR
     auth.uid() IN (SELECT id FROM profiles WHERE is_admin = true)
 );
 
 -- Update trigger for games
+DROP TRIGGER IF EXISTS games_updated_at ON games;
 CREATE TRIGGER games_updated_at BEFORE UPDATE ON games
 FOR EACH ROW EXECUTE FUNCTION update_updated_at();

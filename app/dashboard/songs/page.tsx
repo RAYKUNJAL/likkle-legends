@@ -1,18 +1,34 @@
 "use client";
 
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/storage';
 import Sidebar from '@/components/Sidebar';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { Music, Play, Heart, Share2, Sparkles } from 'lucide-react';
+import { Music, Play, Heart, Share2, Sparkles, RefreshCw } from 'lucide-react';
 
 export default function NurserySongsPage() {
-    const songs = [
-        { title: "Brown Girl in the Ring", duration: "2:45", category: "Classic", icon: "🥥" },
-        { title: "One, Two, Buckle My Shoe (Reggae Remix)", duration: "3:12", category: "Education", icon: "👟" },
-        { title: "The Anansi Beat", duration: "4:01", category: "Folklore", icon: "🕷️" },
-        { title: "Coconut Tree Swing", duration: "2:30", category: "Lullaby", icon: "🌴" },
-        { title: "Steelpan Morning", duration: "5:20", category: "Instrumental", icon: "🎵" },
-    ];
+    const [songs, setSongs] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchSongs = async () => {
+            const { data, error } = await supabase
+                .from('songs')
+                .select('*')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching songs:', error);
+            } else {
+                setSongs(data || []);
+            }
+            setIsLoading(false);
+        };
+
+        fetchSongs();
+    }, []);
 
     return (
         <div className="bg-[#FFFDF7] min-h-screen">

@@ -44,7 +44,13 @@ export default function AdminCustomersPage() {
     const loadCustomers = async () => {
         setIsLoading(true);
         try {
-            const { profiles, total } = await getAllProfiles(100, 0);
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { getAllProfilesAdmin } = await import('@/app/actions/admin');
+            const { profiles, total } = await getAllProfilesAdmin(session.access_token, 100, 0);
+
             setCustomers(profiles as Customer[]);
             setTotalCount(total);
         } catch (error) {

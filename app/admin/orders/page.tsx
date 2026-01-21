@@ -50,7 +50,13 @@ export default function AdminOrdersPage() {
     const loadOrders = async () => {
         setIsLoading(true);
         try {
-            const { orders: ordersData, total } = await getAllOrders(undefined, 100, 0);
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { getAllOrdersAdmin } = await import('@/app/actions/admin');
+            const { orders: ordersData, total } = await getAllOrdersAdmin(session.access_token, activeTab, 100, 0);
+
             setOrders(ordersData as Order[]);
             setTotalCount(total);
         } catch (error) {
@@ -62,7 +68,13 @@ export default function AdminOrdersPage() {
 
     const handleUpdateStatus = async (orderId: string, status: string, tracking?: string) => {
         try {
-            await updateOrderStatus(orderId, status, tracking);
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { updateOrderStatusAdmin } = await import('@/app/actions/admin');
+            await updateOrderStatusAdmin(session.access_token, orderId, status, tracking);
+
             await loadOrders();
             setSelectedOrder(null);
         } catch (error) {
@@ -252,8 +264,8 @@ export default function AdminOrdersPage() {
                                         <div className={`flex-1 ${i > 0 ? 'h-1 mr-2' : ''} ${isActive ? 'bg-green-500' : 'bg-gray-200'
                                             }`} />
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${isCurrent ? 'bg-primary text-white' :
-                                                isActive ? 'bg-green-500 text-white' :
-                                                    'bg-gray-200 text-gray-500'
+                                            isActive ? 'bg-green-500 text-white' :
+                                                'bg-gray-200 text-gray-500'
                                             }`}>
                                             {i + 1}
                                         </div>

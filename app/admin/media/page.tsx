@@ -1,77 +1,59 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
     AdminLayout, SearchBar, DataTable, StatusBadge, Modal, Tabs,
     FileUpload, ActionButton, EmptyState,
-    Music, Video, Plus, Edit, Trash2, Eye, Upload
+    Music, Video, Plus, Edit, Trash2, Eye, Upload, BookOpen, FileText, Sparkles, RefreshCw
 } from '@/components/admin/AdminComponents';
-import { getSongs, getVideos, createSong, createVideo, updateSong, updateVideo } from '@/lib/database';
 import { uploadFile, BUCKETS } from '@/lib/storage';
+import Image from 'next/image';
 
-interface Song {
-    id: string;
-    title: string;
-    artist: string;
-    audio_url: string;
-    video_url?: string;
-    thumbnail_url?: string;
-    duration_seconds?: number;
-    tier_required: string;
-    category: string;
-    age_track: string;
-    play_count: number;
-    is_active: boolean;
-    created_at: string;
-}
+type AssetCategory = 'songs' | 'videos' | 'printables' | 'storybooks';
 
-interface VideoItem {
-    id: string;
-    title: string;
-    description?: string;
-    video_url: string;
-    thumbnail_url?: string;
-    duration_seconds?: number;
-    tier_required: string;
-    category: string;
-    age_track: string;
-    is_active: boolean;
-    created_at: string;
-}
-
-export default function AdminMediaPage() {
-    const [activeTab, setActiveTab] = useState('songs');
-    const [songs, setSongs] = useState<Song[]>([]);
-    const [videos, setVideos] = useState<VideoItem[]>([]);
+function MediaManagerContent() {
+    const searchParams = useSearchParams();
+    const tabParam = searchParams.get('tab') as AssetCategory;
+    const [activeTab, setActiveTab] = useState<AssetCategory>(tabParam || 'songs');
+    const [assets, setAssets] = useState<any[]>([]);
     const [search, setSearch] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [editingItem, setEditingItem] = useState<Song | VideoItem | null>(null);
-    const [formData, setFormData] = useState({
+    const [isAILoading, setIsAILoading] = useState(false);
+    const [editingItem, setEditingItem] = useState<any | null>(null);
+    const [formData, setFormData] = useState<any>({
         title: '',
         artist: 'Likkle Legends',
         description: '',
         tier_required: 'starter_mailer',
-        category: 'nursery',
+        category: 'general',
         age_track: 'all',
+        island_origin: 'Caribbean',
         audio_url: '',
         video_url: '',
         thumbnail_url: '',
+        file_url: '',
+        url: '', // for storybooks
+        cover_image_url: '',
+        preview_url: '',
+        is_active: true
     });
 
     useEffect(() => {
         loadMedia();
-    }, []);
+    }, [activeTab]);
 
     const loadMedia = async () => {
         setIsLoading(true);
         try {
-            const [songsData, videosData] = await Promise.all([
-                getSongs(),
-                getVideos(),
-            ]);
-            setSongs(songsData as Song[]);
-            setVideos(videosData as VideoItem[]);
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { getAdminContent } = await import('@/app/actions/admin');
+            const data = await getAdminContent(session.access_token, activeTab);
+            setAssets(data);
         } catch (error) {
             console.error('Failed to load media:', error);
         } finally {
@@ -79,36 +61,63 @@ export default function AdminMediaPage() {
         }
     };
 
-    const handleFileUpload = async (file: File, type: 'audio' | 'video' | 'thumbnail') => {
-        const bucket = type === 'audio' ? BUCKETS.SONGS : type === 'video' ? BUCKETS.VIDEOS : BUCKETS.SONGS;
+    const handleFileUpload = async (file: File, type: 'main' | 'thumbnail') => {
+        let bucket: any = BUCKETS.SONGS;
+        if (activeTab === 'songs') bucket = BUCKETS.SONGS;
+        else if (activeTab === 'videos') bucket = BUCKETS.VIDEOS;
+        else if (activeTab === 'printables') bucket = BUCKETS.PRINTABLES;
+        else if (activeTab === 'storybooks') bucket = BUCKETS.STORYBOOKS;
+
         const result = await uploadFile(bucket, file);
 
         if (result) {
-            if (type === 'audio') {
-                setFormData(prev => ({ ...prev, audio_url: result.url }));
-            } else if (type === 'video') {
-                setFormData(prev => ({ ...prev, video_url: result.url }));
-            } else {
-                setFormData(prev => ({ ...prev, thumbnail_url: result.url }));
-            }
+            setFormData((prev: any) => {
+                const updates = { ...prev };
+                if (type === 'main') {
+                    if (activeTab === 'songs') updates.audio_url = result.url;
+                    else if (activeTab === 'videos') updates.video_url = result.url;
+                    else if (activeTab === 'printables') updates.pdf_url = result.url;
+                    else if (activeTab === 'storybooks') updates.url = result.url;
+                } else {
+                    if (activeTab === 'storybooks') updates.cover_image_url = result.url;
+                    else if (activeTab === 'printables') updates.preview_url = result.url;
+                    else updates.thumbnail_url = result.url;
+                }
+                return updates;
+            });
+        }
+    };
+
+    const handleMagicAI = async () => {
+        if (!formData.title) return;
+        setIsAILoading(true);
+        try {
+            const { generateAssetMetadata } = await import('@/lib/gemini');
+            const aiData = await generateAssetMetadata(formData.title, activeTab);
+            setFormData((prev: any) => ({
+                ...prev,
+                description: aiData.description,
+                tags: aiData.tags
+            }));
+        } catch (error) {
+            console.error("AI metadata failed", error);
+        } finally {
+            setIsAILoading(false);
         }
     };
 
     const handleSubmit = async () => {
         try {
-            if (activeTab === 'songs') {
-                if (editingItem) {
-                    await updateSong(editingItem.id, formData);
-                } else {
-                    await createSong(formData);
-                }
-            } else {
-                if (editingItem) {
-                    await updateVideo(editingItem.id, formData);
-                } else {
-                    await createVideo(formData);
-                }
-            }
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { saveAdminContent } = await import('@/app/actions/admin');
+
+            const dataToSave = { ...formData };
+            if (editingItem) dataToSave.id = editingItem.id;
+
+            await saveAdminContent(session.access_token, activeTab, dataToSave);
 
             setShowModal(false);
             setEditingItem(null);
@@ -119,59 +128,73 @@ export default function AdminMediaPage() {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this asset?')) return;
+        try {
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { deleteAdminContent } = await import('@/app/actions/admin');
+            await deleteAdminContent(session.access_token, activeTab, id);
+            loadMedia();
+        } catch (error) {
+            console.error('Delete failed', error);
+        }
+    };
+
     const resetForm = () => {
         setFormData({
             title: '',
             artist: 'Likkle Legends',
             description: '',
             tier_required: 'starter_mailer',
-            category: 'nursery',
+            category: 'general',
             age_track: 'all',
+            island_origin: 'Caribbean',
             audio_url: '',
             video_url: '',
             thumbnail_url: '',
+            url: '',
+            cover_image_url: '',
+            preview_url: '',
+            is_active: true
         });
     };
 
-    const openEditModal = (item: Song | VideoItem) => {
+    const openEditModal = (item: any) => {
         setEditingItem(item);
-        setFormData({
-            title: item.title,
-            artist: 'artist' in item ? item.artist : 'Likkle Legends',
-            description: 'description' in item ? item.description || '' : '',
-            tier_required: item.tier_required,
-            category: item.category,
-            age_track: item.age_track,
-            audio_url: 'audio_url' in item ? item.audio_url : '',
-            video_url: item.video_url || '',
-            thumbnail_url: item.thumbnail_url || '',
-        });
+        setFormData({ ...item });
         setShowModal(true);
     };
 
-    const filteredSongs = songs.filter(s =>
-        s.title.toLowerCase().includes(search.toLowerCase()) ||
-        s.artist.toLowerCase().includes(search.toLowerCase())
+    const filteredAssets = assets.filter(a =>
+        a.title?.toLowerCase().includes(search.toLowerCase()) ||
+        a.artist?.toLowerCase().includes(search.toLowerCase())
     );
 
-    const filteredVideos = videos.filter(v =>
-        v.title.toLowerCase().includes(search.toLowerCase())
-    );
+    const getThumbnail = (item: any) => {
+        return item.thumbnail_url || item.cover_image_url || item.preview_url;
+    };
+
+    const getMainUrl = (item: any) => {
+        return item.audio_url || item.video_url || item.url || item.pdf_url;
+    };
 
     return (
         <AdminLayout activeSection="media">
             <header className="bg-white border-b border-gray-100 px-8 py-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black text-gray-900">Media Library</h1>
-                        <p className="text-gray-500">Manage songs, videos, and audio content</p>
+                        <h1 className="text-3xl font-black text-gray-900">Media & Content</h1>
+                        <p className="text-gray-500">Manage all digital learning assets</p>
                     </div>
                     <button
                         onClick={() => { resetForm(); setEditingItem(null); setShowModal(true); }}
-                        className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors"
+                        className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
                     >
                         <Plus size={20} />
-                        Add {activeTab === 'songs' ? 'Song' : 'Video'}
+                        Add {activeTab.slice(0, -1)}
                     </button>
                 </div>
             </header>
@@ -179,11 +202,13 @@ export default function AdminMediaPage() {
             <div className="p-8">
                 <Tabs
                     tabs={[
-                        { id: 'songs', label: 'Songs', count: songs.length },
-                        { id: 'videos', label: 'Videos', count: videos.length },
+                        { id: 'songs', label: 'Songs', count: activeTab === 'songs' ? assets.length : undefined },
+                        { id: 'videos', label: 'Videos', count: activeTab === 'videos' ? assets.length : undefined },
+                        { id: 'printables', label: 'Printables', count: activeTab === 'printables' ? assets.length : undefined },
+                        { id: 'storybooks', label: 'Storybooks', count: activeTab === 'storybooks' ? assets.length : undefined },
                     ]}
                     activeTab={activeTab}
-                    onChange={setActiveTab}
+                    onChange={(id) => setActiveTab(id as AssetCategory)}
                 />
 
                 <SearchBar
@@ -193,271 +218,175 @@ export default function AdminMediaPage() {
                     onRefresh={loadMedia}
                 />
 
-                {activeTab === 'songs' ? (
-                    <DataTable
-                        data={filteredSongs}
-                        isLoading={isLoading}
-                        emptyMessage="No songs uploaded yet"
-                        columns={[
-                            {
-                                key: 'title',
-                                label: 'Song',
-                                render: (song) => (
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-                                            <Music className="text-white" size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-gray-900">{song.title}</p>
-                                            <p className="text-xs text-gray-400">{song.artist}</p>
-                                        </div>
-                                    </div>
-                                ),
-                            },
-                            {
-                                key: 'category',
-                                label: 'Category',
-                                render: (song) => <span className="capitalize">{song.category}</span>,
-                            },
-                            {
-                                key: 'tier_required',
-                                label: 'Tier',
-                                render: (song) => (
-                                    <StatusBadge status={song.tier_required.replace('_', ' ')} variant="info" />
-                                ),
-                            },
-                            {
-                                key: 'play_count',
-                                label: 'Plays',
-                                render: (song) => song.play_count.toLocaleString(),
-                            },
-                            {
-                                key: 'is_active',
-                                label: 'Status',
-                                render: (song) => (
-                                    <StatusBadge
-                                        status={song.is_active ? 'Active' : 'Inactive'}
-                                        variant={song.is_active ? 'success' : 'default'}
-                                    />
-                                ),
-                            },
-                        ]}
-                        actions={(song) => (
-                            <div className="flex items-center gap-1">
-                                <ActionButton icon={Eye} onClick={() => window.open(song.audio_url)} title="Preview" />
-                                <ActionButton icon={Edit} onClick={() => openEditModal(song)} title="Edit" />
-                                <ActionButton icon={Trash2} onClick={() => { }} variant="danger" title="Delete" />
-                            </div>
-                        )}
-                    />
-                ) : (
-                    <DataTable
-                        data={filteredVideos}
-                        isLoading={isLoading}
-                        emptyMessage="No videos uploaded yet"
-                        columns={[
-                            {
-                                key: 'title',
-                                label: 'Video',
-                                render: (video) => (
-                                    <div className="flex items-center gap-3">
-                                        {video.thumbnail_url ? (
-                                            <img src={video.thumbnail_url} alt="" className="w-16 h-10 object-cover rounded-lg" />
+                <DataTable
+                    data={filteredAssets}
+                    isLoading={isLoading}
+                    emptyMessage={`No ${activeTab} found.`}
+                    columns={[
+                        {
+                            key: 'title',
+                            label: 'Asset',
+                            render: (item) => (
+                                <div className="flex items-center gap-3">
+                                    <div className="relative w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+                                        {getThumbnail(item) ? (
+                                            <Image src={getThumbnail(item)} alt="" fill className="object-cover" />
                                         ) : (
-                                            <div className="w-16 h-10 bg-gradient-to-br from-secondary to-accent rounded-lg flex items-center justify-center">
-                                                <Video className="text-white" size={18} />
-                                            </div>
+                                            activeTab === 'songs' ? <Music className="text-gray-400" /> : <Video className="text-gray-400" />
                                         )}
-                                        <div>
-                                            <p className="font-bold text-gray-900">{video.title}</p>
-                                            <p className="text-xs text-gray-400">{video.category}</p>
-                                        </div>
                                     </div>
-                                ),
-                            },
-                            {
-                                key: 'tier_required',
-                                label: 'Tier',
-                                render: (video) => (
-                                    <StatusBadge status={video.tier_required.replace('_', ' ')} variant="info" />
-                                ),
-                            },
-                            {
-                                key: 'age_track',
-                                label: 'Age',
-                                render: (video) => <span className="capitalize">{video.age_track}</span>,
-                            },
-                            {
-                                key: 'is_active',
-                                label: 'Status',
-                                render: (video) => (
-                                    <StatusBadge
-                                        status={video.is_active ? 'Active' : 'Inactive'}
-                                        variant={video.is_active ? 'success' : 'default'}
-                                    />
-                                ),
-                            },
-                        ]}
-                        actions={(video) => (
-                            <div className="flex items-center gap-1">
-                                <ActionButton icon={Eye} onClick={() => window.open(video.video_url)} title="Preview" />
-                                <ActionButton icon={Edit} onClick={() => openEditModal(video)} title="Edit" />
-                                <ActionButton icon={Trash2} onClick={() => { }} variant="danger" title="Delete" />
-                            </div>
-                        )}
-                    />
-                )}
+                                    <div>
+                                        <p className="font-bold text-gray-900">{item.title}</p>
+                                        <p className="text-xs text-gray-400">{item.artist || item.category}</p>
+                                    </div>
+                                </div>
+                            ),
+                        },
+                        {
+                            key: 'tier_required',
+                            label: 'Tier',
+                            render: (item) => (
+                                <StatusBadge status={item.tier_required.replace('_', ' ')} variant="info" />
+                            ),
+                        },
+                        {
+                            key: 'age_track',
+                            label: 'Age',
+                            render: (item) => <span className="capitalize">{item.age_track}</span>,
+                        },
+                        {
+                            key: 'is_active',
+                            label: 'Status',
+                            render: (item) => (
+                                <StatusBadge
+                                    status={item.is_active ? 'Active' : 'Private'}
+                                    variant={item.is_active ? 'success' : 'default'}
+                                />
+                            ),
+                        },
+                    ]}
+                    actions={(item) => (
+                        <div className="flex items-center gap-1">
+                            {getMainUrl(item) && <ActionButton icon={Eye} onClick={() => window.open(getMainUrl(item))} title="Preview" />}
+                            <ActionButton icon={Edit} onClick={() => openEditModal(item)} title="Edit" />
+                            <ActionButton icon={Trash2} onClick={() => handleDelete(item.id)} variant="danger" title="Delete" />
+                        </div>
+                    )}
+                />
             </div>
 
-            {/* Upload Modal */}
             <Modal
                 isOpen={showModal}
                 onClose={() => { setShowModal(false); setEditingItem(null); resetForm(); }}
-                title={editingItem ? `Edit ${activeTab === 'songs' ? 'Song' : 'Video'}` : `Add New ${activeTab === 'songs' ? 'Song' : 'Video'}`}
+                title={editingItem ? `Edit ${activeTab.slice(0, -1)}` : `Add New ${activeTab.slice(0, -1)}`}
                 size="lg"
             >
                 <div className="space-y-6">
-                    {/* Title */}
-                    <div>
-                        <label htmlFor="title" className="block text-sm font-bold text-gray-700 mb-2">Title *</label>
-                        <input
-                            id="title"
-                            type="text"
-                            value={formData.title}
-                            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            placeholder="Enter title..."
-                        />
-                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Title *</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20"
+                                        placeholder="Enter title..."
+                                    />
+                                    <button
+                                        onClick={handleMagicAI}
+                                        disabled={!formData.title || isAILoading}
+                                        className="px-3 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-200 transition-colors disabled:opacity-50"
+                                        title="AI Metadata Magic"
+                                    >
+                                        {isAILoading ? <RefreshCw className="animate-spin" size={18} /> : <Sparkles size={18} />}
+                                    </button>
+                                </div>
+                            </div>
 
-                    {/* Artist (songs only) */}
-                    {activeTab === 'songs' && (
-                        <div>
-                            <label htmlFor="artist" className="block text-sm font-bold text-gray-700 mb-2">Artist</label>
-                            <input
-                                id="artist"
-                                type="text"
-                                value={formData.artist}
-                                onChange={(e) => setFormData(prev => ({ ...prev, artist: e.target.value }))}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            />
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl"
+                                    rows={3}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Tier Required</label>
+                                    <select
+                                        value={formData.tier_required}
+                                        onChange={(e) => setFormData({ ...formData, tier_required: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl"
+                                    >
+                                        <option value="free">Free</option>
+                                        <option value="starter_mailer">Starter Mailer</option>
+                                        <option value="legends_plus">Legends Plus</option>
+                                        <option value="family_legacy">Family Legacy</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Age Track</label>
+                                    <select
+                                        value={formData.age_track}
+                                        onChange={(e) => setFormData({ ...formData, age_track: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl"
+                                    >
+                                        <option value="all">All Ages</option>
+                                        <option value="mini">Mini (4-5)</option>
+                                        <option value="big">Big (6-8)</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                    )}
 
-                    {/* Description (videos only) */}
-                    {activeTab === 'videos' && (
-                        <div>
-                            <label htmlFor="description" className="block text-sm font-bold text-gray-700 mb-2">Description</label>
-                            <textarea
-                                id="description"
-                                value={formData.description}
-                                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                rows={3}
-                            />
-                        </div>
-                    )}
-
-                    {/* File Uploads */}
-                    <div className="grid md:grid-cols-2 gap-4">
-                        {activeTab === 'songs' ? (
+                        <div className="space-y-4">
+                            <label className="block text-sm font-bold text-gray-700">Media Files</label>
                             <FileUpload
-                                accept="audio/mpeg,audio/mp3,audio/wav"
-                                onUpload={(file) => handleFileUpload(file, 'audio')}
-                                label="Upload Audio File"
-                                description="MP3, WAV up to 50MB"
-                                maxSize={50}
+                                accept={activeTab === 'songs' ? 'audio/*' : activeTab === 'videos' ? 'video/*' : 'application/pdf,image/*'}
+                                onUpload={(file) => handleFileUpload(file, 'main')}
+                                label={`Upload ${activeTab.slice(0, -1)}`}
+                                description={getMainUrl(formData) ? 'File uploaded!' : 'Drop file here'}
                             />
-                        ) : (
+
+                            <label className="block text-sm font-bold text-gray-700">Thumbnail</label>
                             <FileUpload
-                                accept="video/mp4,video/webm,video/quicktime"
-                                onUpload={(file) => handleFileUpload(file, 'video')}
-                                label="Upload Video File"
-                                description="MP4, WebM up to 100MB"
-                                maxSize={100}
+                                accept="image/*"
+                                onUpload={(file) => handleFileUpload(file, 'thumbnail')}
+                                label="Upload Thumbnail"
+                                description="Image preview"
                             />
-                        )}
-
-                        <FileUpload
-                            accept="image/png,image/jpeg,image/webp"
-                            onUpload={(file) => handleFileUpload(file, 'thumbnail')}
-                            label="Upload Thumbnail"
-                            description="PNG, JPG up to 5MB"
-                            maxSize={5}
-                        />
-                    </div>
-
-                    {/* Preview URLs */}
-                    {(formData.audio_url || formData.video_url) && (
-                        <div className="bg-gray-50 p-4 rounded-xl">
-                            <p className="text-xs font-bold text-gray-500 mb-1">Uploaded File:</p>
-                            <p className="text-sm text-primary truncate">{formData.audio_url || formData.video_url}</p>
-                        </div>
-                    )}
-
-                    {/* Settings */}
-                    <div className="grid md:grid-cols-3 gap-4">
-                        <div>
-                            <label htmlFor="tier_required" className="block text-sm font-bold text-gray-700 mb-2">Tier Required</label>
-                            <select
-                                id="tier_required"
-                                value={formData.tier_required}
-                                onChange={(e) => setFormData(prev => ({ ...prev, tier_required: e.target.value }))}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            >
-                                <option value="starter_mailer">Starter Mailer</option>
-                                <option value="legends_plus">Legends Plus</option>
-                                <option value="family_legacy">Family Legacy</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="category" className="block text-sm font-bold text-gray-700 mb-2">Category</label>
-                            <select
-                                id="category"
-                                value={formData.category}
-                                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            >
-                                <option value="nursery">Nursery</option>
-                                <option value="cultural">Cultural</option>
-                                <option value="educational">Educational</option>
-                                <option value="lesson">Lesson</option>
-                                <option value="story">Story</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="age_track" className="block text-sm font-bold text-gray-700 mb-2">Age Track</label>
-                            <select
-                                id="age_track"
-                                value={formData.age_track}
-                                onChange={(e) => setFormData(prev => ({ ...prev, age_track: e.target.value }))}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            >
-                                <option value="all">All Ages</option>
-                                <option value="mini">Mini (4-5)</option>
-                                <option value="big">Big (6-8)</option>
-                            </select>
                         </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
                         <button
-                            onClick={() => { setShowModal(false); setEditingItem(null); resetForm(); }}
-                            className="px-6 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-bold transition-colors"
+                            onClick={() => setShowModal(false)}
+                            className="px-6 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200 transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleSubmit}
-                            disabled={!formData.title || (!formData.audio_url && !formData.video_url && !editingItem)}
-                            className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
                         >
-                            {editingItem ? 'Save Changes' : 'Upload'}
+                            {editingItem ? 'Save Changes' : 'Upload Asset'}
                         </button>
                     </div>
                 </div>
             </Modal>
         </AdminLayout>
+    );
+}
+
+export default function AdminMediaPage() {
+    return (
+        <Suspense fallback={<AdminLayout activeSection="media"><div className="p-8">Loading Media...</div></AdminLayout>}>
+            <MediaManagerContent />
+        </Suspense>
     );
 }

@@ -77,24 +77,35 @@ ALTER TABLE missions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE printables ENABLE ROW LEVEL SECURITY;
 
 -- Create public read policies
+DROP POLICY IF EXISTS "Public read training_materials" ON training_materials;
 CREATE POLICY "Public read training_materials" ON training_materials FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read characters" ON characters;
 CREATE POLICY "Public read characters" ON characters FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read missions" ON missions;
 CREATE POLICY "Public read missions" ON missions FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read printables" ON printables;
 CREATE POLICY "Public read printables" ON printables FOR SELECT USING (true);
 
 -- Admin insert/update/delete policies (requires admin role)
+DROP POLICY IF EXISTS "Admin manage storybooks" ON storybooks;
 CREATE POLICY "Admin manage storybooks" ON storybooks FOR ALL USING (
     EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid())
 );
 
+DROP POLICY IF EXISTS "Admin manage songs" ON songs;
 CREATE POLICY "Admin manage songs" ON songs FOR ALL USING (
     EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid())
 );
 
+DROP POLICY IF EXISTS "Admin manage training_materials" ON training_materials;
 CREATE POLICY "Admin manage training_materials" ON training_materials FOR ALL USING (
     EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid())
 );
 
+DROP POLICY IF EXISTS "Admin manage characters" ON characters;
 CREATE POLICY "Admin manage characters" ON characters FOR ALL USING (
     EXISTS (SELECT 1 FROM admin_users WHERE id = auth.uid())
 );
