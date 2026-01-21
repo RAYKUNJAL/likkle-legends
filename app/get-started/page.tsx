@@ -13,7 +13,7 @@ export default function GetStartedPage() {
                     </div>
                 </Link>
                 <div className="text-sm font-bold text-deep/40 hidden md:block uppercase tracking-widest">
-                    Build Your Box
+                    Join the Club
                 </div>
             </header>
 

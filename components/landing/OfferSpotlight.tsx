@@ -82,7 +82,7 @@ export default function OfferSpotlight() {
                                 </div>
                                 <div>
                                     <p className="text-xs font-bold text-amber-600 uppercase tracking-wide">What Arrives</p>
-                                    <h3 className="font-bold text-deep text-lg">In the Mailbox</h3>
+                                    <h3 className="font-bold text-deep text-lg">In The Envelope</h3>
                                 </div>
                             </div>
 

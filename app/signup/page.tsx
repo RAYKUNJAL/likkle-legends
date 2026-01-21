@@ -2,24 +2,114 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Mail, Lock, User, Sparkles } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { ArrowLeft, Mail, Lock, User, Sparkles, Loader2 } from 'lucide-react';
+import { supabase } from '@/lib/supabase-client';
+import { useState, useEffect, Suspense } from 'react';
 
-import { useState, useEffect } from 'react';
+// Wrap the actual form content in suspense because it uses useSearchParams
+function SignupForm() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
 
-export default function SignupPage() {
+    // Safety check for searchParams availability
+    const plan = searchParams?.get('plan') || 'mail_club';
+    const referral = searchParams?.get('referral') || 'direct';
+
     const [mounted, setMounted] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const [formData, setFormData] = useState({
+        childName: '',
+        email: '',
+        password: '',
+        agreed: false
+    });
 
     useEffect(() => {
         setMounted(true);
+        // Clean up any stale sessions
+        const cleanSession = async () => {
+            await supabase.auth.signOut();
+        };
+        cleanSession();
     }, []);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
+
+    const handleSignup = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        setIsLoading(true);
+
+        try {
+            if (!formData.agreed) throw new Error("Please agree to the Terms and Privacy Policy.");
+            if (!formData.email || !formData.password || !formData.childName) throw new Error("Please fill in all fields.");
+
+            // 1. Sign up with Supabase
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.password,
+                options: {
+                    data: {
+                        child_name: formData.childName,
+                        referral_source: referral,
+                        chosen_plan: plan
+                    }
+                }
+            });
+
+            if (authError) throw authError;
+
+            // 2. Create Profile Record (if not handled by trigger)
+            if (authData.user) {
+                // Determine subscription tier based on plan selection
+                const tier = plan.includes('plus') ? 'legends_plus' : 'starter_mailer';
+
+                // Safe upsert to profile
+                const { error: profileError } = await supabase.from('profiles').upsert({
+                    id: authData.user.id,
+                    email: formData.email,
+                    role: 'parent',
+                    subscription_tier: tier,
+                    subscription_status: 'trial', // Start in trial/pending until payment
+                    onboarding_completed: false,
+                    parent_name: 'Parent', // Default until updated
+                });
+
+                if (profileError) {
+                    console.warn("Profile creation warning (might be handled by trigger):", profileError);
+                }
+
+                // 3. Create Child Profile
+                // We'll do this in onboarding, but store temp data if needed
+            }
+
+            // 4. Redirect to Checkout or Onboarding
+            router.push(`/checkout?plan=${plan}&uid=${authData.user?.id}`);
+
+        } catch (err: any) {
+            console.error("Signup error:", err);
+            setError(err.message || "Something went wrong. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     if (!mounted) return null;
 
     return (
         <div className="min-h-screen bg-[#FFFDF7] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
             {/* Background elements */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-primary opacity-5 blur-[100px] -mr-48 -mt-48"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary opacity-5 blur-[100px] -ml-48 -mb-48"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary opacity-5 blur-[100px] -mr-48 -mt-48 pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary opacity-5 blur-[100px] -ml-48 -mb-48 pointer-events-none"></div>
 
             <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
                 <Link href="/" className="flex justify-center mb-10 group">
@@ -47,7 +137,13 @@ export default function SignupPage() {
 
             <div className="mt-12 sm:mx-auto sm:w-full sm:max-w-[480px] relative z-10 px-4">
                 <div className="bg-white py-12 px-10 shadow-2xl shadow-zinc-200/50 rounded-[3.5rem] border border-zinc-100 relative overflow-hidden">
-                    <form className="space-y-8">
+                    {error && (
+                        <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-bold text-center">
+                            {error}
+                        </div>
+                    )}
+
+                    <form className="space-y-8" onSubmit={handleSignup}>
                         <div>
                             <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Child's Name</label>
                             <div className="relative">
@@ -56,8 +152,12 @@ export default function SignupPage() {
                                 </div>
                                 <input
                                     type="text"
+                                    name="childName"
+                                    value={formData.childName}
+                                    onChange={handleChange}
                                     placeholder="Kai..."
                                     className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
+                                    required
                                 />
                             </div>
                         </div>
@@ -70,8 +170,12 @@ export default function SignupPage() {
                                 </div>
                                 <input
                                     type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
                                     placeholder="you@heritage.com"
                                     className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
+                                    required
                                 />
                             </div>
                         </div>
@@ -84,8 +188,13 @@ export default function SignupPage() {
                                 </div>
                                 <input
                                     type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
                                     placeholder="••••••••"
                                     className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
+                                    required
+                                    minLength={6}
                                 />
                             </div>
                         </div>
@@ -93,7 +202,10 @@ export default function SignupPage() {
                         <div className="flex items-start gap-3 px-1">
                             <input
                                 type="checkbox"
+                                name="agreed"
                                 id="coppa-consent"
+                                checked={formData.agreed}
+                                onChange={handleChange}
                                 className="mt-1 w-5 h-5 rounded border-zinc-200 text-primary focus:ring-primary/20"
                                 required
                             />
@@ -105,10 +217,17 @@ export default function SignupPage() {
                         </div>
 
                         <button
-                            type="button"
-                            className="w-full flex justify-center py-6 px-10 border border-transparent rounded-[2rem] shadow-xl shadow-primary/20 text-xl font-black text-white bg-primary hover:scale-[1.02] active:scale-95 transition-all focus:outline-none ring-offset-4 focus:ring-4 focus:ring-primary/40 group"
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full flex justify-center py-6 px-10 border border-transparent rounded-[2rem] shadow-xl shadow-primary/20 text-xl font-black text-white bg-primary hover:scale-[1.02] active:scale-95 transition-all focus:outline-none ring-offset-4 focus:ring-4 focus:ring-primary/40 group disabled:opacity-70 disabled:cursor-not-allowed"
                         >
-                            Start Adventure <Sparkles size={24} className="ml-3 group-hover:rotate-12 transition-transform" />
+                            {isLoading ? (
+                                <Loader2 className="animate-spin" size={24} />
+                            ) : (
+                                <>
+                                    Start Adventure <Sparkles size={24} className="ml-3 group-hover:rotate-12 transition-transform" />
+                                </>
+                            )}
                         </button>
                     </form>
 
@@ -127,5 +246,13 @@ export default function SignupPage() {
                 </p>
             </div>
         </div>
+    );
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#FFFDF7] flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={48} /></div>}>
+            <SignupForm />
+        </Suspense>
     );
 }
