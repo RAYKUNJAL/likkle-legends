@@ -43,7 +43,7 @@ export const siteContent = {
         headline: "Raise Proud, Confident Caribbean Kids.",
         subheadline: "The monthly mail club that delivers personalized letters, cultural activities, and AI-powered stories to help your child love their roots.",
         primary_cta: {
-            label: "Build Your Child's Box",
+            label: "Start Your Child's Adventure",
             href: "/get-started"
         },
         secondary_cta: {

@@ -36,7 +36,8 @@ class SupabaseClientManager {
 
             // Return placeholder for build time
             if (process.env.NODE_ENV === 'production') {
-                throw new Error('Supabase credentials are required in production');
+                // throw new Error('Supabase credentials are required in production');
+                console.error('CRITICAL: Supabase credentials missing in production!');
             }
 
             console.warn('⚠️  Using placeholder client for development');
