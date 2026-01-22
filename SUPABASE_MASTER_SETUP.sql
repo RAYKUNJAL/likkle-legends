@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     phone TEXT,
     avatar_url TEXT,
     is_admin BOOLEAN DEFAULT FALSE,
+    role TEXT DEFAULT 'parent',
     
     -- Subscription Info
     subscription_tier TEXT DEFAULT 'free', -- 'starter_mailer', 'legends_plus', 'family_legacy'
@@ -573,11 +574,20 @@ CREATE TRIGGER update_orders_ts BEFORE UPDATE ON orders FOR EACH ROW EXECUTE FUN
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, full_name, email)
-    VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name', NEW.email);
+    INSERT INTO public.profiles (id, full_name, email, role, subscription_tier)
+    VALUES (
+        NEW.id, 
+        COALESCE(NEW.raw_user_meta_data->>'full_name', 'Parent'), 
+        NEW.email,
+        'parent',
+        COALESCE(NEW.raw_user_meta_data->>'chosen_plan', 'free')
+    )
+    ON CONFLICT (id) DO UPDATE SET
+        email = EXCLUDED.email,
+        full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name);
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE OR REPLACE TRIGGER on_auth_user_created
