@@ -4,41 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-const characters = [
-    {
-        name: 'Tanty Spice',
-        role: 'Story Guide',
-        oneLiner: 'The heart of the village with wisdom for every moment',
-        teaches: 'Folklore, values, emotional wisdom',
-        image: '/images/tanty_spice.png',
-        color: 'amber'
-    },
-    {
-        name: 'Mango Moko',
-        role: 'Confidence Coach',
-        oneLiner: 'Sees children from a higher perspective',
-        teaches: 'Self-esteem, perspective, cultural pride',
-        image: '/images/mango_moko.png',
-        color: 'emerald'
-    },
-    {
-        name: 'Steelpan Sam',
-        role: 'Music Guide',
-        oneLiner: 'Everything in the world has a beat',
-        teaches: 'Rhythm, expression, Caribbean music',
-        image: '/images/steelpan_sam.png',
-        color: 'blue'
-    },
-    {
-        name: 'R.O.T.I.',
-        role: 'Learning Buddy',
-        oneLiner: 'A friendly helper for island adventures',
-        teaches: 'Letters, numbers, exploration',
-        image: '/images/roti-avatar.jpg',
-        color: 'cyan'
-    }
-];
-
 const colorMap: Record<string, { bg: string; border: string; text: string }> = {
     amber: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-600' },
     emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600' },
@@ -48,7 +13,8 @@ const colorMap: Record<string, { bg: string; border: string; text: string }> = {
 
 export default function CharacterRoles({ content }: { content: any }) {
     const charactersData = content.characters?.characters || [];
-    const colors = ['amber', 'emerald', 'blue', 'cyan'];
+    // Colors aligned with: R.O.T.I (Cyan), Tanty (Amber), Dilly (Blue/Playful), Benny (Emerald/Nature)
+    const colors = ['cyan', 'amber', 'blue', 'emerald'];
 
     return (
         <section className="py-20 bg-gradient-to-b from-white to-zinc-50">

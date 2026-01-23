@@ -56,6 +56,8 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
         { id: 'personality', label: 'AI Brain & Personality', icon: Zap, href: '/admin/personality' },
         { id: 'media', label: 'Media Library', icon: Video, href: '/admin/media' },
         { id: 'games', label: 'Game Builder', icon: Gamepad2, href: '/admin/games' },
+        { id: 'voice', label: 'Voice AI Demo', icon: MessageSquare, href: '/voice-demo' },
+        { id: 'blog', label: 'Blog Manager', icon: MessageSquare, href: '/admin/blog' },
         { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/admin/messages' },
         { id: 'cms', label: 'Site CMS', icon: Globe, href: '/admin/cms' },
         { id: 'pixels', label: 'Launch Pixels', icon: Target, href: '/admin/pixels' },

@@ -12,7 +12,7 @@ const nextConfig = {
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
               font-src 'self' https://fonts.gstatic.com;
               img-src 'self' blob: data: https://*.supabase.co https://www.paypalobjects.com https://api.dicebear.com https://ui-avatars.com;
-              connect-src 'self' https://*.supabase.co https://www.paypal.com https://api.elevenlabs.io;
+              connect-src 'self' https://*.supabase.co https://www.paypal.com https://api.elevenlabs.io https://generativelanguage.googleapis.com;
               frame-src 'self' https://www.paypal.com;
               object-src 'none';
               base-uri 'self';
@@ -54,6 +54,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'ui-avatars.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.likklelegends.com',
       },
     ],
   },
