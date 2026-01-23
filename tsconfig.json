@@ -40,6 +40,9 @@
   "exclude": [
     "node_modules",
     "likkle-legends-second",
-    "likkle-legend-ai-studio_clone"
+    "likkle-legend-ai-studio_clone",
+    "temp_plex",
+    "temp_plex_2",
+    "voice-server"
   ]
 }
