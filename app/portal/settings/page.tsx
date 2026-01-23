@@ -12,7 +12,8 @@ import Link from 'next/link';
 
 export default function SettingsPage() {
     const router = useRouter();
-    const { user, profile, isLoading: userLoading } = useUser();
+    const { user, isLoading: userLoading } = useUser();
+    const profile = user; // Map user to profile for local state consistency
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
@@ -112,12 +113,14 @@ export default function SettingsPage() {
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-2 px-1">Parent Name</label>
+                                    <label htmlFor="parent_name" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-2 px-1">Parent Name</label>
                                     <input
                                         type="text"
+                                        id="parent_name"
                                         value={formData.parent_name}
                                         onChange={(e) => setFormData(prev => ({ ...prev, parent_name: e.target.value }))}
                                         className="w-full px-6 py-4 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all font-bold text-deep"
+                                        placeholder="Your full name"
                                     />
                                 </div>
                                 <div>
@@ -143,9 +146,11 @@ export default function SettingsPage() {
                                 </div>
                                 <input
                                     type="checkbox"
+                                    id="marketing_opt_in"
                                     checked={formData.marketing_opt_in}
                                     onChange={(e) => setFormData(prev => ({ ...prev, marketing_opt_in: e.target.checked }))}
                                     className="w-6 h-6 rounded-lg border-zinc-200 text-primary focus:ring-primary/20"
+                                    aria-label="Opt-in to marketing emails"
                                 />
                             </div>
                         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Check, Star, Heart, MapPin, Sparkles, ShieldCheck, Search } from 'lucide-react';
 import { CARIBBEAN_ISLANDS } from '@/lib/islands';
@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 export default function GetStartedWizard() {
     const router = useRouter();
     const [step, setStep] = useState(0);
+    const [mounted, setMounted] = useState(false);
     const [data, setData] = useState({
         childName: '',
         ageGroup: '',
@@ -18,6 +19,10 @@ export default function GetStartedWizard() {
     });
 
     const [searchTerm, setSearchTerm] = useState("");
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Filter islands based on search
     const filteredIslands = CARIBBEAN_ISLANDS.filter(island =>
@@ -55,6 +60,8 @@ export default function GetStartedWizard() {
         center: { x: 0, opacity: 1 },
         exit: { x: -50, opacity: 0 },
     };
+
+    if (!mounted) return null;
 
     return (
         <div className="w-full max-w-2xl mx-auto min-h-[500px] flex flex-col relative">
@@ -128,9 +135,7 @@ export default function GetStartedWizard() {
                 )}
 
 
-
-                // ... inside the render (Step 2) ...
-
+                {/* Step 2: Island Selection */}
                 {step === 2 && (
                     <motion.div
                         key="step2"
@@ -238,7 +243,7 @@ export default function GetStartedWizard() {
 
                         <div className="mt-8 grid grid-cols-3 gap-4 text-center">
                             <div className="p-4 bg-white/50 rounded-2xl">
-                                <ShieldCheck className="w-8 h-8 text-deep/20 mx-auto mb-2" /> // ShieldCheck import? Need to add to imports
+                                <ShieldCheck className="w-8 h-8 text-deep/20 mx-auto mb-2" />
                                 <p className="text-xs font-bold text-deep/60">Cancel Anytime</p>
                             </div>
                             <div className="p-4 bg-white/50 rounded-2xl">
