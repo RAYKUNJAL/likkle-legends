@@ -8,9 +8,9 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: `
               default-src 'self';
-              script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.paypal.com https://www.paypalobjects.com;
+              script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.paypal.com https://www.paypalobjects.com https://static.cloudflareinsights.com;
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-              font-src 'self' https://fonts.gstatic.com;
+              font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai;
               img-src 'self' blob: data: https://*.supabase.co https://www.paypalobjects.com https://api.dicebear.com https://ui-avatars.com;
               connect-src 'self' https://*.supabase.co https://www.paypal.com https://api.elevenlabs.io https://generativelanguage.googleapis.com;
               frame-src 'self' https://www.paypal.com;
