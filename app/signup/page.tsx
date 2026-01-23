@@ -3,22 +3,31 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Mail, Lock, User, Sparkles, Loader2 } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase-client';
 import { useState, useEffect, Suspense } from 'react';
+import { sendWelcomeEmailAction } from '@/app/actions/user-actions';
 
-// Wrap the actual form content in suspense because it uses useSearchParams
+// Signup Form Component
 function SignupForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    // Safety check for searchParams availability
-    const plan = searchParams?.get('plan') || 'mail_club';
-    const referral = searchParams?.get('referral') || 'direct';
+    // Helpers
+    const getParam = (key: string, fallback: string) => {
+        try {
+            return searchParams?.get(key) || fallback;
+        } catch {
+            return fallback;
+        }
+    };
 
-    const [mounted, setMounted] = useState(false);
+    const plan = getParam('plan', 'mail_club');
+    const referral = getParam('referral', 'direct');
+
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [debugMsg, setDebugMsg] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         childName: '',
@@ -27,13 +36,12 @@ function SignupForm() {
         agreed: false
     });
 
+    // Cleanup session on mount
     useEffect(() => {
-        setMounted(true);
-        // Clean up any stale sessions
-        const cleanSession = async () => {
-            await supabase.auth.signOut();
+        const resetSession = async () => {
+            await supabase.auth.signOut().catch(() => { });
         };
-        cleanSession();
+        resetSession();
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,75 +55,113 @@ function SignupForm() {
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+        setDebugMsg(null);
         setIsLoading(true);
 
         try {
+            // 1. Validation
             if (!formData.agreed) throw new Error("Please agree to the Terms and Privacy Policy.");
             if (!formData.email || !formData.password || !formData.childName) throw new Error("Please fill in all fields.");
+            if (formData.password.length < 6) throw new Error("Password must be at least 6 characters.");
 
-            // 1. Sign up with Supabase
+            console.log("Starting signup flow for:", formData.email);
+
+            // 2. Auth Signup
+            // We pass metadata so the database trigger can populate fields immediately
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
                     data: {
-                        full_name: 'Parent', // Default name to satisfy trigger constraints
+                        full_name: 'Parent', // Default
                         child_name: formData.childName,
                         referral_source: referral,
                         chosen_plan: plan,
-                        marketing_opt_in: true // Commercial grade default
+                        marketing_opt_in: true
                     }
                 }
             });
 
             if (authError) {
-                // Specific error handling for commercial grade
+                console.error("Auth Error:", authError);
                 if (authError.message.includes('already registered')) {
-                    throw new Error("This email is already registered. Please log in instead.");
+                    throw new Error("This email is already registered. Please log in.");
                 }
                 throw authError;
             }
 
-            if (authData.user) {
-                // 2. Trigger Welcome Email (Non-blocking)
-                const { sendWelcomeEmailAction } = await import('@/app/actions/user-actions');
-                sendWelcomeEmailAction(formData.email, 'Parent').catch(err =>
-                    console.error("Welcome email failed in background:", err)
-                );
-
-                // 3. Create/Update Profile Record (Robust Fallback)
-                const tier = plan.includes('plus') ? 'legends_plus' : 'starter_mailer';
-                const { error: profileError } = await supabase.from('profiles').upsert({
-                    id: authData.user.id,
-                    email: formData.email,
-                    role: 'parent',
-                    subscription_tier: tier,
-                    subscription_status: 'inactive',
-                    onboarding_completed: false,
-                    parent_name: 'Parent',
-                    marketing_opt_in: true
-                });
-
-                if (profileError) {
-                    console.warn("Manual profile upsert warning (trigger might have handled it):", profileError.message);
-                }
+            if (!authData.user) {
+                throw new Error("No user created. Please check your email for confirmation or try again.");
             }
 
-            // 4. Redirect to Checkout or Onboarding
-            router.push(`/checkout?plan=${plan}&uid=${authData.user?.id}`);
+            const userId = authData.user.id;
+            console.log("User created:", userId);
+
+            // 3. Robust Profile Creation (Double Check)
+            // Even if the DB trigger runs, we ensure the profile is correct via client-side check
+            try {
+                const tier = plan.includes('plus') ? 'legends_plus' : 'starter_mailer';
+
+                // Try to select first to see if trigger worked
+                const { data: existingProfile } = await supabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('id', userId)
+                    .single();
+
+                if (existingProfile) {
+                    console.log("Profile exists (trigger likely worked), updating...");
+                    await supabase.from('profiles').update({
+                        subscription_tier: tier,
+                        parent_name: 'Parent',
+                        marketing_opt_in: true,
+                        // We don't overwrite child_name here as it's not on profiles table usually, 
+                        // but we rely on the flow to create children later or triggered by DB
+                    }).eq('id', userId);
+                } else {
+                    console.log("Profile missing, manually inserting...");
+                    const { error: insertError } = await supabase.from('profiles').insert({
+                        id: userId,
+                        email: formData.email,
+                        role: 'parent',
+                        subscription_tier: tier,
+                        subscription_status: 'inactive',
+                        onboarding_completed: false,
+                        parent_name: 'Parent',
+                        marketing_opt_in: true
+                    });
+
+                    if (insertError) {
+                        console.warn("Manual insertion warning (might be unnecessary):", insertError.message);
+                        // Don't fail the whole flow if this fails - auth is successful
+                    }
+                }
+            } catch (profileErr) {
+                console.warn("Profile sync issue (non-fatal):", profileErr);
+            }
+
+            // 4. Welcome Email (Fire and Forget)
+            try {
+                // Using imported action safely
+                sendWelcomeEmailAction(formData.email, 'Parent').catch(e => console.error("Email send bg error:", e));
+            } catch (e) {
+                console.warn("Could not dispatch welcome email:", e);
+            }
+
+            // 5. Success - Redirect
+            router.push(`/checkout?plan=${plan}&uid=${userId}`);
 
         } catch (err: any) {
-            console.error("Signup error:", err);
-            setError(err.message || "Something went wrong. Please try again.");
+            console.error("Critical Signup Failure:", err);
+            setError(err.message || "An unexpected error occurred. Please try again.");
+            setDebugMsg(err.toString());
         } finally {
             setIsLoading(false);
         }
     };
 
-    if (!mounted) return null;
-
     return (
-        <div className="min-h-screen bg-[#FFFDF7] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="min-h-screen bg-[#FFFDF7] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
             {/* Background elements */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-primary opacity-5 blur-[100px] -mr-48 -mt-48 pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary opacity-5 blur-[100px] -ml-48 -mb-48 pointer-events-none"></div>
@@ -147,8 +193,17 @@ function SignupForm() {
             <div className="mt-12 sm:mx-auto sm:w-full sm:max-w-[480px] relative z-10 px-4">
                 <div className="bg-white py-12 px-10 shadow-2xl shadow-zinc-200/50 rounded-[3.5rem] border border-zinc-100 relative overflow-hidden">
                     {error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-bold text-center">
-                            {error}
+                        <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-bold text-center flex flex-col items-center gap-2">
+                            <div className="flex items-center gap-2">
+                                <AlertCircle size={20} />
+                                <span>{error}</span>
+                            </div>
+                            {debugMsg && process.env.NODE_ENV !== 'production' && (
+                                <details className="text-xs text-left w-full mt-2 opacity-70">
+                                    <summary>Debug Details</summary>
+                                    <pre className="whitespace-pre-wrap mt-1">{debugMsg}</pre>
+                                </details>
+                            )}
                         </div>
                     )}
 
@@ -258,9 +313,14 @@ function SignupForm() {
     );
 }
 
+// Main Page with Suspense Boundary
 export default function SignupPage() {
     return (
-        <Suspense fallback={<div className="min-h-screen bg-[#FFFDF7] flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={48} /></div>}>
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#FFFDF7] flex items-center justify-center">
+                <Loader2 className="animate-spin text-primary" size={48} />
+            </div>
+        }>
             <SignupForm />
         </Suspense>
     );
