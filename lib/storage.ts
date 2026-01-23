@@ -60,7 +60,7 @@ export async function initializeStorageBuckets() {
                 'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg',
                 'video/mp4', 'video/webm', 'video/quicktime',
                 'model/gltf-binary', 'model/gltf+json',
-                'application/pdf',
+                'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             ],
         });
 

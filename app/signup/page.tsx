@@ -62,35 +62,43 @@ function SignupForm() {
                         full_name: 'Parent', // Default name to satisfy trigger constraints
                         child_name: formData.childName,
                         referral_source: referral,
-                        chosen_plan: plan
+                        chosen_plan: plan,
+                        marketing_opt_in: true // Commercial grade default
                     }
                 }
             });
 
-            if (authError) throw authError;
+            if (authError) {
+                // Specific error handling for commercial grade
+                if (authError.message.includes('already registered')) {
+                    throw new Error("This email is already registered. Please log in instead.");
+                }
+                throw authError;
+            }
 
-            // 2. Create Profile Record (if not handled by trigger)
             if (authData.user) {
-                // Determine subscription tier based on plan selection
-                const tier = plan.includes('plus') ? 'legends_plus' : 'starter_mailer';
+                // 2. Trigger Welcome Email (Non-blocking)
+                const { sendWelcomeEmailAction } = await import('@/app/actions/user-actions');
+                sendWelcomeEmailAction(formData.email, 'Parent').catch(err =>
+                    console.error("Welcome email failed in background:", err)
+                );
 
-                // Safe upsert to profile
+                // 3. Create/Update Profile Record (Robust Fallback)
+                const tier = plan.includes('plus') ? 'legends_plus' : 'starter_mailer';
                 const { error: profileError } = await supabase.from('profiles').upsert({
                     id: authData.user.id,
                     email: formData.email,
                     role: 'parent',
                     subscription_tier: tier,
-                    subscription_status: 'trial', // Start in trial/pending until payment
+                    subscription_status: 'inactive',
                     onboarding_completed: false,
-                    parent_name: 'Parent', // Default until updated
+                    parent_name: 'Parent',
+                    marketing_opt_in: true
                 });
 
                 if (profileError) {
-                    console.warn("Profile creation warning (might be handled by trigger):", profileError);
+                    console.warn("Manual profile upsert warning (trigger might have handled it):", profileError.message);
                 }
-
-                // 3. Create Child Profile
-                // We'll do this in onboarding, but store temp data if needed
             }
 
             // 4. Redirect to Checkout or Onboarding

@@ -35,10 +35,16 @@ CREATE TABLE IF NOT EXISTS profiles (
     has_grandparent_dashboard BOOLEAN DEFAULT false,
     has_heritage_dna_story BOOLEAN DEFAULT false,
     
+    -- Commercial Grade Features
+    marketing_opt_in BOOLEAN DEFAULT true,
+    data_usage_consent BOOLEAN DEFAULT true,
+    last_login_at TIMESTAMPTZ,
+    
     -- Metadata
     onboarding_completed BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ -- For soft delete
 );
 
 
@@ -468,7 +474,9 @@ BEGIN
         email, 
         role, 
         subscription_tier,
-        subscription_status
+        subscription_status,
+        parent_name,
+        marketing_opt_in
     )
     VALUES (
         NEW.id,
@@ -476,7 +484,9 @@ BEGIN
         NEW.email,
         'parent',
         COALESCE(NEW.raw_user_meta_data->>'chosen_plan', 'free'),
-        'inactive'
+        'inactive',
+        COALESCE(NEW.raw_user_meta_data->>'full_name', 'Parent'),
+        COALESCE((NEW.raw_user_meta_data->>'marketing_opt_in')::boolean, true)
     )
     ON CONFLICT (id) DO UPDATE SET
         email = EXCLUDED.email,
@@ -487,7 +497,8 @@ BEGIN
     
 EXCEPTION WHEN OTHERS THEN
     -- Log the error but DON'T fail the user signup
-    RAISE WARNING 'Profile creation in trigger failed for user %: %', NEW.id, SQLERRM;
+    -- The profile can be created later via the client-side upsert
+    RAISE WARNING 'Profile creation in trigger failed for user %: % (this is non-fatal)', NEW.id, SQLERRM;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
