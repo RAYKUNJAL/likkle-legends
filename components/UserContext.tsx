@@ -43,6 +43,8 @@ interface Profile {
   has_grandparent_dashboard: boolean;
   has_heritage_dna_story: boolean;
   onboarding_completed: boolean;
+  parent_name?: string;
+  marketing_opt_in?: boolean;
   is_admin?: boolean;
 }
 
