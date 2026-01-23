@@ -78,7 +78,7 @@ export default function PricingLadderPreview({ content }: { content: any }) {
 
                     <div className="text-center mt-8">
                         <Link
-                            href="/get-started"
+                            href="/pricing"
                             className="inline-flex items-center gap-2 text-deep/60 hover:text-deep font-bold transition-colors group"
                         >
                             Compare All Plans

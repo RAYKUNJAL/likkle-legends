@@ -299,7 +299,7 @@ export default function ParentDashboard() {
                                 </p>
 
                                 <Link
-                                    href="/#pricing"
+                                    href="/pricing"
                                     className="block w-full py-5 bg-white text-indigo-700 rounded-2xl font-black text-center shadow-xl hover:scale-105 transition-all text-sm uppercase tracking-widest"
                                 >
                                     Explore Plans
