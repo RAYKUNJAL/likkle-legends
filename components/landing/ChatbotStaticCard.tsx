@@ -4,7 +4,7 @@ import { Bot, Shield } from 'lucide-react';
 
 export default function ChatbotStaticCard() {
     return (
-        <section className="py-16 bg-zinc-50">
+        <section id="tanty" className="py-16 bg-zinc-50">
             <div className="container">
                 <div className="max-w-2xl mx-auto">
                     <div className="bg-white rounded-2xl p-8 border border-zinc-200 shadow-sm">

@@ -500,8 +500,8 @@ export const siteContent = {
             {
                 title: "Platform",
                 links: [
-                    { label: "How It Works", href: "#how-it-works" },
-                    { label: "Pricing", href: "#pricing" },
+                    { label: "How It Works", href: "/#how-it-works" },
+                    { label: "Pricing", href: "/pricing" },
                     { label: "Blog", href: "/blog" },
                     { label: "Child Portal", href: "/portal" },
                     { label: "Parent Dashboard", href: "/parent" }
