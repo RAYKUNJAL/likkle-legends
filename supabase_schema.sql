@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS profiles (
     email TEXT UNIQUE,
     phone TEXT,
     avatar_url TEXT,
+    role TEXT DEFAULT 'parent', -- 'parent', 'admin'
+    parent_name TEXT,
     
     -- Subscription Info
     subscription_tier TEXT DEFAULT 'free', -- 'starter_mailer', 'legends_plus', 'family_legacy'
@@ -38,6 +40,7 @@ CREATE TABLE IF NOT EXISTS profiles (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
 
 -- 2. Children Profiles (up to 3 for Family Legacy)
 CREATE TABLE IF NOT EXISTS children (
@@ -373,6 +376,9 @@ CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.ui
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
 -- Children: Parents can manage their children
 DROP POLICY IF EXISTS "Parents can view their children" ON children;
 CREATE POLICY "Parents can view their children" ON children FOR SELECT USING (auth.uid() = parent_id);
@@ -452,15 +458,39 @@ DROP TRIGGER IF EXISTS orders_updated_at ON orders;
 CREATE TRIGGER orders_updated_at BEFORE UPDATE ON orders
 FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- Auto-create profile on user signup
+-- Auto-create profile on user signup (with robust error handling)
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, full_name, email)
-    VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name', NEW.email);
+    INSERT INTO public.profiles (
+        id, 
+        full_name, 
+        email, 
+        role, 
+        subscription_tier,
+        subscription_status
+    )
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.raw_user_meta_data->>'full_name', 'Parent'),
+        NEW.email,
+        'parent',
+        COALESCE(NEW.raw_user_meta_data->>'chosen_plan', 'free'),
+        'inactive'
+    )
+    ON CONFLICT (id) DO UPDATE SET
+        email = EXCLUDED.email,
+        full_name = COALESCE(EXCLUDED.full_name, public.profiles.full_name),
+        updated_at = NOW();
+    
+    RETURN NEW;
+    
+EXCEPTION WHEN OTHERS THEN
+    -- Log the error but DON'T fail the user signup
+    RAISE WARNING 'Profile creation in trigger failed for user %: %', NEW.id, SQLERRM;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE OR REPLACE TRIGGER on_auth_user_created

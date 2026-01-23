@@ -23,6 +23,7 @@ export const siteContent = {
             { label: "How It Works", href: "/#how-it-works" },
             { label: "What You Get", href: "/#offer" },
             { label: "Characters", href: "/characters" },
+            { label: "Blog", href: "/blog" },
             { label: "Pricing", href: "/pricing" },
             { label: "Testimonials", href: "/#testimonials" }
         ],
@@ -120,7 +121,7 @@ export const siteContent = {
                 label: "TANTY'S PORCH",
                 title: "Safe AI Chat & Emotional Support",
                 description: "Tanty Spice is always online to help children express big feelings, share folklore stories, and learn island wisdom in a safe, moderated environment.",
-                media: "/images/tanty-porch-preview.png"
+                media: "/images/tanty_spice_avatar.jpg"
             },
             {
                 label: "AI READING BUDDY",
@@ -159,35 +160,63 @@ export const siteContent = {
     },
     characters: {
         id: "characters",
-        title: "Meet the Village Legends",
+        title: "The Guides of the Island",
         characters: [
             {
+                id: "roti",
+                name: "R.O.T.I.",
+                role: "Your Child’s Island Learning Buddy",
+                tagline: "“Beep boop! Ready to learn?”",
+                description: "A friendly guide who helps children learn step by step through stories, games, and gentle encouragement.",
+                brand_role: "Primary guide and onboarding companion",
+                parent_value: [
+                    "Helps kids stay focused without pressure",
+                    "Makes learning routines feel fun and familiar",
+                    "Guides children through lessons independently"
+                ],
+                image: "https://www.likklelegends.com/assets/characters/roti.png"
+            },
+            {
+                id: "tanty_spice",
                 name: "Tanty Spice",
                 role: "Village Heart & Wisdom",
                 tagline: "“Everything Cook & Curry, me darlin'.”",
-                description: "Tanty Spice is the heart of the village, teaching emotional regulation through comfort food and ancestral wisdom. She's always ready with a story and a warm hug.",
-                image: "/images/tanty_spice_avatar.jpg"
+                description: "A warm, caring presence who helps lessons land with kindness, patience, and reassurance.",
+                brand_role: "Emotional anchor and trust builder for parents",
+                parent_value: [
+                    "Supports emotional development and confidence",
+                    "Creates a sense of safety and calm",
+                    "Balances learning with compassion"
+                ],
+                image: "https://www.likklelegends.com/assets/characters/tanty-spice.png"
             },
             {
+                id: "dilly_doubles",
                 name: "Dilly Doubles",
-                role: "Food & Traditions Expert",
-                tagline: "“Ready for a Caribbean journey?”",
-                description: "Dilly knows every street food spot in Trinidad and loves sharing the magic of doubles, bakes, and buss-up-shot with curious kids.",
-                image: "/images/dilly_doubles.png"
+                role: "Joy & Sharing Guide",
+                tagline: "“Sharing is the island way!”",
+                description: "A playful island friend who teaches curiosity, sharing, and community through fun and laughter.",
+                brand_role: "Cultural joy engine and standout IP character",
+                parent_value: [
+                    "Introduces culture naturally without lectures",
+                    "Encourages kids to try new things",
+                    "Builds social skills through playful stories"
+                ],
+                image: "https://www.likklelegends.com/assets/characters/dilly-doubles.png"
             },
             {
-                name: "Mango Moko",
-                role: "Perspective & Pride Guide",
-                tagline: "“Stand tall, little legend.”",
-                description: "Perched high on her moko jumbie stilts, Mango teaches kids to see themselves with pride and view challenges from a higher perspective.",
-                image: "/images/mango_moko.png"
-            },
-            {
-                name: "Steelpan Sam",
-                role: "Music & Rhythm Master",
-                tagline: "“Everything in the world has a beat.”",
-                description: "From steelpan to soca, Sam helps your child find the rhythm in everyday life and express big emotions through music.",
-                image: "/images/steelpan_sam.png"
+                id: "benny_of_shadows",
+                name: "Benny of Shadows",
+                role: "Nature & Balance Guardian",
+                tagline: "“Listen... the earth is speaking.”",
+                description: "A calm guide who helps children slow down, listen, and learn from the world around them.",
+                brand_role: "Quiet guide that balances technology with nature",
+                parent_value: [
+                    "Encourages patience and self-regulation",
+                    "Builds respect for nature and balance",
+                    "Adds depth without fear or overstimulation"
+                ],
+                image: "https://www.likklelegends.com/assets/characters/benny-of-shadows.png"
             }
         ]
     },
@@ -206,12 +235,12 @@ export const siteContent = {
         ]
     },
     monthly_drop: {
-        title: "New Each Month",
-        subtitle: "A new character arrives every month—plus a new story, a new song, and a new activity.",
+        title: "A new island friend every month",
+        subtitle: "Each month, children meet a new visiting character with a special story or lesson — giving them something exciting to look forward to.",
         tagline: "Fresh Content",
-        image: "/images/monthly-drop-preview.png",
+        image: "https://www.likklelegends.com/assets/characters/monthly-silhouette.png",
         cta: {
-            label: "See This Month's Drop",
+            label: "Meet this month’s island friend",
             href: "/characters"
         },
         items: [
@@ -473,6 +502,7 @@ export const siteContent = {
                 links: [
                     { label: "How It Works", href: "#how-it-works" },
                     { label: "Pricing", href: "#pricing" },
+                    { label: "Blog", href: "/blog" },
                     { label: "Child Portal", href: "/portal" },
                     { label: "Parent Dashboard", href: "/parent" }
                 ]
