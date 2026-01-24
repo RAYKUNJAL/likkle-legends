@@ -51,8 +51,8 @@ export default function GetStartedWizard() {
 
     // Step 4: Recommendation (Redirect Logic)
     const handlePlanSelect = (plan: string) => {
-        // We could pass data via query params or context, but for MVP just go to checkout
-        router.push(`/checkout?plan=${plan}&referral=quiz`);
+        // Redirect to signup first to create account, then it will auto-redirect to checkout
+        router.push(`/signup?plan=${plan}&referral=quiz&childName=${encodeURIComponent(data.childName)}`);
     };
 
     const slideVariants = {
