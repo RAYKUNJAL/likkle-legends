@@ -1,12 +1,48 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Component, ErrorInfo } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
-import { Check, ShieldCheck, Sparkles, Gift, X } from 'lucide-react';
+import { Check, ShieldCheck, Sparkles, Gift, AlertCircle, Loader2 } from 'lucide-react';
 import { SUBSCRIPTION_PLANS, UPSELLS, getLocalizedPrice, SubscriptionTier } from '@/lib/paypal';
 import { detectCountry, GeoInfo } from '@/lib/geo-routing';
 import { supabase } from '@/lib/storage';
 import { useUser } from '@/components/UserContext';
+
+// Simple Error Boundary Component
+class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
+    constructor(props: { children: React.ReactNode }) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(error: any) {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error: any, errorInfo: ErrorInfo) {
+        console.error("Checkout Error Boundary caught:", error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="p-8 text-center bg-red-50 rounded-3xl border border-red-100">
+                    <AlertCircle className="mx-auto text-red-500 mb-4" size={48} />
+                    <h2 className="text-2xl font-bold text-red-700 mb-2">Something went wrong</h2>
+                    <p className="text-red-600 mb-6">We encountered an issue loading the checkout. Please refresh the page.</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="btn btn-primary px-6 py-3"
+                    >
+                        Refresh Page
+                    </button>
+                </div>
+            );
+        }
+
+        return this.props.children;
+    }
+}
 
 interface CheckoutFlowProps {
     selectedTier?: SubscriptionTier;
@@ -14,7 +50,7 @@ interface CheckoutFlowProps {
     onError?: (error: unknown) => void;
 }
 
-export default function CheckoutFlow({ selectedTier, onSuccess, onError }: CheckoutFlowProps) {
+function CheckoutFlowContent({ selectedTier, onSuccess, onError }: CheckoutFlowProps) {
     const [step, setStep] = useState<'plan' | 'upsells' | 'payment' | 'success'>('plan');
     const [activeTier, setActiveTier] = useState<SubscriptionTier>(selectedTier || 'legends_plus');
     const [geoInfo, setGeoInfo] = useState<GeoInfo | null>(null);
@@ -22,10 +58,13 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentBillingCycle, setPaymentBillingCycle] = useState<'month' | 'year'>('month');
 
+    // Safe user access
     const { user, isLoading: authLoading } = useUser();
     const [configError, setConfigError] = useState<string | null>(null);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         detectCountry().then(setGeoInfo);
 
         // Config Validation
@@ -36,7 +75,7 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
                 setConfigError("Missing PayPal Client ID. Check console.");
             }
         }
-    }, [user]);
+    }, []);
 
     // Force annual billing for Family Legacy (no monthly plan exists)
     useEffect(() => {
@@ -44,6 +83,9 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
             setPaymentBillingCycle('year');
         }
     }, [activeTier]);
+
+    // Don't render until mounted to avoid hydration mismatch
+    if (!mounted) return <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-primary" size={32} /></div>;
 
     const plan = SUBSCRIPTION_PLANS[activeTier];
     const grandparentUpsell = UPSELLS.grandparent_dashboard;
@@ -73,14 +115,17 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
         // Payment approved
 
         try {
-            if (!user) {
+            // Robust auth check
+            let currentUserId = user?.id;
+
+            if (!currentUserId) {
                 // Fallback if useUser is slow, check session directly
                 const { data: { session } } = await supabase.auth.getSession();
-                if (!session) {
-                    alert("Please sign in to complete your subscription.");
-                    // In a real app, save state and redirect. For now, prompt.
-                    throw new Error('User not authenticated');
+                if (!session?.user) {
+                    // Instead of alerting, maybe store pending state? For now alert
+                    throw new Error("Please sign in to complete your subscription.");
                 }
+                currentUserId = session.user.id;
             }
 
             // Save subscription to database
@@ -88,8 +133,6 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    // User token handled by cookie or header if using Supabase Auth Helper? 
-                    // Manual header here looks correct for client-side fetch if we grab session
                 },
                 body: JSON.stringify({
                     subscriptionId: data.subscriptionID,
@@ -98,6 +141,7 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
                     addGrandparent,
                     currency: displayPrice.currency,
                     billingCycle: paymentBillingCycle,
+                    userId: currentUserId // Explicitly pass ID to be safe
                 }),
             });
 
@@ -118,7 +162,7 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
     };
 
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto animate-fade-in">
             {/* Progress Steps */}
             <div className="flex items-center justify-center gap-4 mb-8">
                 {['plan', 'upsells', 'payment'].map((s, i) => (
@@ -355,42 +399,58 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
                             </div>
                         </div>
 
-                        {/* PayPal Button */}
+                        {/* PayPal Button or Free Trial Button */}
                         <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                            <PayPalScriptProvider
-                                options={{
-                                    clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'test',
-                                    vault: true,
-                                    intent: 'subscription',
-                                    currency: displayPrice.currency,
-                                }}
-                            >
-                                {configError && (
-                                    <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl mb-4 text-sm font-medium">
-                                        ⚠️ {configError}
-                                    </div>
-                                )}
-                                <PayPalButtons
-                                    style={{
-                                        layout: 'vertical',
-                                        color: 'gold',
-                                        shape: 'rect',
-                                        label: 'subscribe',
+                            {displayPrice.price === 0 ? (
+                                <button
+                                    onClick={() => handlePayPalApprove({ subscriptionID: 'TRIAL', orderID: 'TRIAL_ORDER' })}
+                                    disabled={isProcessing}
+                                    className="w-full py-4 bg-primary text-white rounded-xl font-bold text-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                                >
+                                    {isProcessing ? (
+                                        <>Starting Access <Loader2 className="animate-spin" /></>
+                                    ) : (
+                                        <>Start My 7-Day Free Pass <Sparkles size={20} /></>
+                                    )}
+                                </button>
+                            ) : (
+                                <PayPalScriptProvider
+                                    options={{
+                                        clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'test',
+                                        vault: true,
+                                        intent: 'subscription',
+                                        currency: displayPrice.currency,
                                     }}
-                                    createSubscription={(data, actions) => {
-                                        return actions.subscription.create({
-                                            plan_id: paymentBillingCycle === 'year' ? (plan.paypalPlanIdYearly || '') : plan.paypalPlanId,
-                                        });
-                                    }}
-                                    onApprove={handlePayPalApprove}
-                                    onError={(err) => {
-                                        console.error('PayPal error:', err);
-                                        onError?.(err);
-                                    }}
-                                />
-                            </PayPalScriptProvider>
+                                >
+                                    {configError && (
+                                        <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl mb-4 text-sm font-medium">
+                                            ⚠️ {configError}
+                                        </div>
+                                    )}
+                                    <PayPalButtons
+                                        style={{
+                                            layout: 'vertical',
+                                            color: 'gold',
+                                            shape: 'rect',
+                                            label: 'subscribe',
+                                        }}
+                                        createSubscription={(data, actions) => {
+                                            // TODO: Validate that user exists first?
+                                            return actions.subscription.create({
+                                                plan_id: paymentBillingCycle === 'year' ? (plan.paypalPlanIdYearly || '') : plan.paypalPlanId,
+                                                custom_id: user?.id // Pass user ID as custom ID
+                                            });
+                                        }}
+                                        onApprove={handlePayPalApprove}
+                                        onError={(err) => {
+                                            console.error('PayPal error:', err);
+                                            onError?.(err);
+                                        }}
+                                    />
+                                </PayPalScriptProvider>
+                            )}
 
-                            {isProcessing && (
+                            {isProcessing && displayPrice.price > 0 && (
                                 <div className="mt-4 text-center text-gray-500">
                                     Processing your subscription...
                                 </div>
@@ -428,13 +488,22 @@ export default function CheckoutFlow({ selectedTier, onSuccess, onError }: Check
                         Your subscription is now active. Let's set up your child's profile to start their Caribbean adventure!
                     </p>
                     <a
-                        href="/onboarding/child"
+                        href="/onboarding/welcome"
                         className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary/90 transition-colors"
                     >
-                        Set Up Child Profile →
+                        Enter Mission Control →
                     </a>
                 </div>
             )}
         </div>
+    );
+}
+
+// Default export wrapper
+export default function CheckoutFlow(props: CheckoutFlowProps) {
+    return (
+        <ErrorBoundary>
+            <CheckoutFlowContent {...props} />
+        </ErrorBoundary>
     );
 }

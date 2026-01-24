@@ -53,15 +53,21 @@ class SupabaseClientManager {
             throw new Error('Invalid Supabase URL');
         }
 
-        const key = useServiceRole && serviceKey ? serviceKey : anonKey;
+        const key = (useServiceRole && serviceKey ? serviceKey : anonKey).trim();
 
         // Create client with production options
+        const authOptions = useServiceRole ? {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false,
+        } : {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+        };
+
         const client = createClient(url, key, {
-            auth: {
-                persistSession: true,
-                autoRefreshToken: true,
-                detectSessionInUrl: true,
-            },
+            auth: authOptions,
             global: {
                 headers: {
                     'x-client-info': 'likkle-legends-platform',
@@ -110,10 +116,9 @@ class SupabaseClientManager {
 
             // Simple query to test connection
             const { error } = await client
-                .from('profiles')
+                .from('storybooks')
                 .select('count')
-                .limit(1)
-                .single();
+                .limit(1);
 
             if (error && !error.message.includes('zero rows')) {
                 return {

@@ -1,8 +1,13 @@
+
 // Story Generator
-// Generates age-appropriate Caribbean-themed stories
+// Generates age-appropriate Caribbean-themed stories with Quality Gates and Registry Integration
+// Migration: V2 Architecture
 
 import { contentGenerator } from '../core';
-import { CONTENT_CONFIG, PATOIS_WORDS, STORY_THEMES } from '../config';
+import { CONTENT_CONFIG } from '../config';
+import { CHARACTER_REGISTRY, getCharacterContext } from '../../registries/characters';
+import { ISLAND_REGISTRY, getIslandContext } from '../../registries/islands';
+import { QualityGatesService, QAReport } from '../../services/quality-gates';
 
 export interface StoryPage {
     pageNumber: number;
@@ -11,205 +16,152 @@ export interface StoryPage {
     patoisWords?: Array<{ word: string; meaning: string }>;
 }
 
-export interface GeneratedStory {
+export interface ParentNote {
+    whyItHelps: string;
+    offlineFollowup: string;
+    whatToSayAfter: string;
+}
+
+export interface GeneratedStoryContentKit {
     title: string;
     summary: string;
     pages: StoryPage[];
-    ageTrack: 'mini' | 'big';
-    islandTheme: string;
-    readingTimeMinutes: number;
-    difficultyLevel: number;
-    tierRequired: string;
-    patoisWords: Array<{ word: string; meaning: string; pronunciation: string }>;
-    characterId?: string;
-    culturalElements: string[];
+    moral: string;
+    parentNote: ParentNote;
+    metadata: {
+        ageTrack: 'mini' | 'big';
+        islandTheme: string;
+        readingTimeMinutes: number;
+        difficultyLevel: number;
+        tierRequired: string;
+        patoisWords: Array<{ word: string; meaning: string }>;
+        characterId: string;
+        culturalElements: string[];
+    };
+    qaReport: QAReport;
 }
 
 export interface StoryGenerationParams {
     ageTrack?: 'mini' | 'big';
-    island?: string;
+    island?: string; // Island ID (e.g., 'TT', 'JM')
     theme?: string;
-    characterName?: string;
+    characterId?: string;
     customPrompt?: string;
 }
 
 export class StoryGenerator {
     /**
-     * Generate a complete story with all metadata
+     * Generate a complete story with all metadata and quality checks
      */
-    async generateStory(params: StoryGenerationParams = {}): Promise<GeneratedStory> {
+    async generateStory(params: StoryGenerationParams = {}): Promise<GeneratedStoryContentKit> {
+        // Defaults
         const ageTrack = params.ageTrack || (Math.random() > 0.5 ? 'mini' : 'big');
         const ageConfig = CONTENT_CONFIG.ageGroups[ageTrack];
-        const island = params.island || contentGenerator.getRandomIsland();
+
+        // Resolve Island
+        const islandId = params.island || this.getRandomIslandId();
+        const islandPack = ISLAND_REGISTRY[islandId] || ISLAND_REGISTRY['TT']; // Fallback to TT if missing
+
+        // Resolve Character
+        const characterId = params.characterId || 'roti'; // Default host
+        const characterPack = CHARACTER_REGISTRY[characterId];
+
         const theme = params.theme || contentGenerator.getRandomTheme();
-        const characterName = params.characterName || contentGenerator.getRandomCharacter();
 
-        // Get Patois words for the island
-        const islandPatoisWords = PATOIS_WORDS[island as keyof typeof PATOIS_WORDS] || PATOIS_WORDS.Jamaica;
-        const selectedPatoisWords = this.selectRandomPatoisWords(islandPatoisWords, ageTrack === 'mini' ? 2 : 4);
+        console.log(`📖 Generating story: ${islandPack.display_name} - ${theme} (${ageTrack}) hosted by ${characterPack.display_name}`);
 
-        // Build the story generation prompt
-        const prompt = this.buildStoryPrompt({
-            ageTrack,
-            ageConfig,
-            island,
-            theme,
-            characterName,
-            patoisWords: selectedPatoisWords,
-            customPrompt: params.customPrompt,
-        });
+        // Build the system instructions (Context Injection)
+        const systemInstruction = `You are the "Likkle Legends" AI Storyteller.
+        
+        **YOUR IDENTITY:**
+        ${getCharacterContext(characterId)}
+        
+        **CULTURAL CONTEXT:**
+        ${getIslandContext(islandPack.id)}
+        
+        **TASK:**
+        Write a kid-safe, culturally authentic story for ${ageTrack === 'mini' ? 'Preschoolers (3-5)' : 'Young Readers (6-8)'}.
+        
+        **REQUIREMENTS:**
+        1. MORAL: Start with a clear positive lesson.
+        2. TONE: Gentle, encouraging, no scary elements.
+        3. LANGUAGE: Use English with specific island dialect words from the context provided above.
+        4. STRUCTURE: ${ageTrack === 'mini' ? 'Simple repetition, 4 pages' : 'Simple plot, 6 pages'}.
+        `;
 
-        // Generate story using Gemini
-        const storyData = await contentGenerator.generateJSON<any>(
-            prompt,
-            this.getStorySchema(),
-            {
-                systemInstruction: `You are an expert children's book author specializing in Caribbean cultural stories. Create engaging, educational, and culturally authentic stories for children aged ${ageConfig.min}-${ageConfig.max}. Always include positive values, respect for Caribbean culture, and age-appropriate language.`,
-                temperature: 0.9,
-            }
-        );
-
-        // Validate content
-        const validation = contentGenerator.validateContent(JSON.stringify(storyData));
-        if (!validation.safe) {
-            console.warn('Story validation issues:', validation.issues);
-            // Optionally retry or modify
-        }
-
-        // Format the response
-        const story: GeneratedStory = {
-            title: storyData.title,
-            summary: storyData.summary,
-            pages: storyData.pages.map((page: any, index: number) => ({
-                pageNumber: index + 1,
-                text: page.text,
-                imagePrompt: page.imagePrompt,
-                patoisWords: page.patoisWords,
-            })),
-            ageTrack,
-            islandTheme: island,
-            readingTimeMinutes: ageConfig.readingTime,
-            difficultyLevel: ageConfig.difficulty,
-            tierRequired: ageConfig.tier,
-            patoisWords: selectedPatoisWords,
-            characterId: characterName,
-            culturalElements: storyData.culturalElements || [],
-        };
-
-        return story;
-    }
-
-    /**
-     * Build the story generation prompt
-     */
-    private buildStoryPrompt(params: {
-        ageTrack: 'mini' | 'big';
-        ageConfig: any;
-        island: string;
-        theme: string;
-        characterName: string;
-        patoisWords: any[];
-        customPrompt?: string;
-    }): string {
-        const { ageTrack, ageConfig, island, theme, characterName, patoisWords, customPrompt } = params;
-
-        return `Generate an engaging Caribbean children's story with the following requirements:
-
-**STORY PARAMETERS:**
-- Age Group: ${ageTrack} (${ageConfig.min}-${ageConfig.max} years old)
-- Word Count: Approximately ${ageConfig.wordCount} words
-- Island Setting: ${island}
-- Theme: ${theme}
-- Main Character: ${characterName}
-- Reading Level: ${ageConfig.difficulty}/5 difficulty
-
-**CULTURAL REQUIREMENTS:**
-- Incorporate ${patoisWords.length} Patois/Creole words: ${patoisWords.map(w => `"${w.word}" (${w.meaning})`).join(', ')}
-- Include authentic Caribbean cultural elements (food, music, traditions, values)
-- Emphasize positive values: respect for elders, kindness, community, family
-- Reflect Caribbean landscapes, colors, and atmosphere
-
-**STORY STRUCTURE:**
-- Create ${ageTrack === 'mini' ? '4-5' : '6-8'} pages
-- Each page should be ${ageTrack === 'mini' ? '2-3' : '4-5'} sentences
-- Include a clear beginning, middle, and end
-- Have a positive lesson or message
-- End with warmth and encouragement
-
-**LANGUAGE GUIDELINES:**
-${ageTrack === 'mini'
-                ? '- Use simple, repetitive sentences\n- Focus on concrete objects and actions\n- Include sounds and rhythms\n- Vocabulary should be basic and familiar'
-                : '- Use varied sentence structure\n- Include some descriptive language\n- Can have a simple subplot\n- Vocabulary can be slightly more advanced with context clues'
-            }
-
-**PATOIS INTEGRATION:**
-- Weave Patois words naturally into the story
-- Always follow with context clues or explanations
-- Mark Patois words with [square brackets] for glossary
-
-**IMAGE PROMPTS:**
-- For each page, provide a detailed illustration prompt
-- Describe the scene, character positions, setting details, and mood
-- Keep descriptions child-friendly and culturally authentic
-- Mention specific Caribbean elements (palm trees, colorful houses, tropical flowers, etc.)
-
-${customPrompt ? `\n**ADDITIONAL INSTRUCTIONS:**\n${customPrompt}` : ''}
-
-Return the story in the specified JSON format.`;
-    }
-
-    /**
-     * Get the JSON schema for story response
-     */
-    private getStorySchema() {
-        return {
-            title: "String - Catchy, culturally themed title",
-            summary: "String - 2-3 sentence summary of the story",
-            pages: [
+        // Build the Prompt
+        const prompt = `Write a story about "${theme}".
+        
+        Return the result as a JSON object matching this structure:
+        {
+            "title": "Story Title",
+            "summary": "Brief summary",
+            "moral": "The lesson learned",
+            "pages": [
                 {
-                    text: "String - Page text with [patois words] in brackets",
-                    imagePrompt: "String - Detailed prompt for illustration",
-                    patoisWords: [
-                        { word: "String", meaning: "String" }
-                    ]
+                    "text": "The story text for this page. Emphasize rhythm and sensory details.",
+                    "imagePrompt": "Description for the illustration. Include Caribbean elements: ${islandPack.symbols.landmarks[0] || 'Beach'}, ${islandPack.symbols.national_bird || 'Birds'}.",
+                    "patoisWords": [{"word": "example", "meaning": "definition"}]
                 }
             ],
-            culturalElements: ["Array of strings - Cultural elements featured"],
-        };
-    }
+            "parentNote": {
+                "whyItHelps": "Educational benefit",
+                "offlineFollowup": "Activity to do after reading",
+                "whatToSayAfter": "Conversation starter question"
+            },
+            "culturalElements": ["List specific foods/music/places mentioned"]
+        }`;
 
-    /**
-     * Select random Patois words for the story
-     */
-    private selectRandomPatoisWords(words: any[], count: number): any[] {
-        const shuffled = [...words].sort(() => Math.random() - 0.5);
-        return shuffled.slice(0, Math.min(count, words.length));
-    }
+        // Generate JSON
+        const rawContent = await contentGenerator.generateJSON<any>(prompt, {}, {
+            systemInstruction,
+            temperature: 0.7 // Slightly lower for more coherent stories
+        });
 
-    /**
-     * Generate multiple stories in batch
-     */
-    async generateBatch(count: number, params: StoryGenerationParams = {}): Promise<GeneratedStory[]> {
-        const stories: GeneratedStory[] = [];
+        // Run Quality Gates
+        const qaReport = await QualityGatesService.runGates(
+            rawContent,
+            islandPack,
+            characterPack.voice_bible,
+            {} // Schema check logic handled inside generateJSON mostly, but strict schema could be passed here
+        );
 
-        for (let i = 0; i < count; i++) {
-            try {
-                console.log(`Generating story ${i + 1}/${count}...`);
-                const story = await this.generateStory(params);
-                stories.push(story);
-
-                // Add delay to avoid rate limiting
-                if (i < count - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
-            } catch (error) {
-                console.error(`Failed to generate story ${i + 1}:`, error);
-            }
+        if (!qaReport.safety_passed) {
+            throw new Error(`Story failed Safety Gate: ${qaReport.flags.join(", ")}`);
         }
 
-        return stories;
+        // Construct Final Content Kit
+        const contentKit: GeneratedStoryContentKit = {
+            title: rawContent.title,
+            summary: rawContent.summary,
+            pages: rawContent.pages.map((p: any, i: number) => ({
+                pageNumber: i + 1,
+                text: p.text,
+                imagePrompt: p.imagePrompt,
+                patoisWords: p.patoisWords
+            })),
+            moral: rawContent.moral,
+            parentNote: rawContent.parentNote,
+            metadata: {
+                ageTrack,
+                islandTheme: islandPack.display_name,
+                readingTimeMinutes: ageConfig.readingTime,
+                difficultyLevel: ageConfig.difficulty,
+                tierRequired: ageConfig.tier,
+                patoisWords: rawContent.pages.flatMap((p: any) => p.patoisWords || []),
+                characterId: characterId,
+                culturalElements: rawContent.culturalElements || []
+            },
+            qaReport
+        };
+
+        return contentKit;
+    }
+
+    private getRandomIslandId(): string {
+        const keys = Object.keys(ISLAND_REGISTRY);
+        return keys[Math.floor(Math.random() * keys.length)];
     }
 }
 
-// Export singleton instance
 export const storyGenerator = new StoryGenerator();

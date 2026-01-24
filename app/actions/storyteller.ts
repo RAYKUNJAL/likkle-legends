@@ -20,3 +20,18 @@ export async function createStoryAction(inputs: StoryInputs) {
         };
     }
 }
+
+
+import { getTantyVoice } from "./voice";
+
+export async function readStorySegment(text: string) {
+    try {
+        const result = await getTantyVoice(text);
+        if (result.success && result.audio) {
+            return { success: true, audio: result.audio };
+        }
+        return { success: false, error: result.error || "Failed to generate audio" };
+    } catch (error) {
+        return { success: false, error: "Audio generation failed" };
+    }
+}

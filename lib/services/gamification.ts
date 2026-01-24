@@ -30,6 +30,38 @@ export async function logActivity(
     if (xpEarned > 0) {
         await addXP(childId, xpEarned, activityType);
     }
+    // Check for badges
+    await checkBadgeUnlock(childId, activityType);
+}
+
+import { BADGES } from '@/lib/gamification';
+
+async function checkBadgeUnlock(childId: string, activityType: string) {
+    // 1. Get counts
+    const { count } = await supabase
+        .from('activities')
+        .select('*', { count: 'exact', head: true })
+        .eq('child_id', childId)
+        .eq('activity_type', activityType);
+
+    if (!count) return;
+
+    // 2. Define Rules (Simple MVP map)
+    const rules = [
+        { type: 'story', threshold: 1, badge: BADGES.first_story.id },
+        { type: 'story', threshold: 10, badge: BADGES.story_explorer.id },
+        { type: 'story', threshold: 50, badge: BADGES.story_master.id },
+        { type: 'song', threshold: 1, badge: BADGES.first_song.id },
+        { type: 'song', threshold: 25, badge: BADGES.music_lover.id },
+        { type: 'song', threshold: 100, badge: BADGES.steelpan_star.id },
+    ];
+
+    // 3. Check and Award
+    for (const rule of rules) {
+        if (activityType === rule.type && count >= rule.threshold) {
+            await earnBadge(childId, rule.badge);
+        }
+    }
 }
 
 export async function getRecentActivities(childId: string, limit = 20) {

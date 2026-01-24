@@ -61,20 +61,31 @@ export class ContentGenerator {
      */
     async generateJSON<T>(prompt: string, schema: any, options?: GenerationOptions): Promise<T> {
         try {
-            const fullPrompt = `${prompt}\n\nIMPORTANT: Return ONLY valid JSON matching this schema. No markdown, no explanations, just raw JSON.\n\nSchema: ${JSON.stringify(schema, null, 2)}`;
+            const fullPrompt = `${prompt}\n\nIMPORTANT: Return ONLY valid JSON matching this schema. No markdown, no explanations, just raw JSON. Ensure all strings are properly escaped, especially newlines (use \\n). \n\nSchema: ${JSON.stringify(schema, null, 2)}`;
 
             const text = await this.generateText(fullPrompt, options);
 
             // Clean response - remove markdown code blocks if present
             let cleanedText = text.trim();
-            if (cleanedText.startsWith('```json')) {
-                cleanedText = cleanedText.replace(/^```json\n/, '').replace(/\n```$/, '');
-            } else if (cleanedText.startsWith('```')) {
-                cleanedText = cleanedText.replace(/^```\n/, '').replace(/\n```$/, '');
-            }
+            // Remove markdown code blocks (more robust regex)
+            cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
 
-            const parsed = JSON.parse(cleanedText);
-            return parsed as T;
+            try {
+                const parsed = JSON.parse(cleanedText);
+                return parsed as T;
+            } catch (parseError) {
+                // Attempt to fix common "control character" errors by escaping newlines in strings
+                // This is a naive attempt but might save some cases
+                try {
+                    const fixedText = cleanedText.replace(/\n/g, '\\n');
+                    const parsed = JSON.parse(fixedText);
+                    return parsed as T;
+                } catch (retryError) {
+                    console.error('JSON Parse Error:', parseError);
+                    console.error('Cleaned content snippet:', cleanedText.substring(0, 200) + '...');
+                    throw parseError;
+                }
+            }
         } catch (error) {
             console.error('Error generating JSON:', error);
             throw new Error('Failed to generate valid JSON content');

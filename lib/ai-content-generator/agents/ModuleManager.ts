@@ -1,76 +1,126 @@
-// Module Manager Agent
-// Orchestrates multiple generators to build a cohesive educational module
 
-import { storyGenerator } from '../generators/story-generator';
-import { songGenerator } from '../generators/song-generator';
-import { printableGenerator } from '../generators/printable-generator';
-import { videoGenerator } from '../generators/video-generator';
 import { contentGenerator } from '../core';
+import { storyGenerator, GeneratedStory } from '../generators/story-generator';
+import { songGenerator, GeneratedSong } from '../generators/song-generator';
+import { videoGenerator, GeneratedVideoScript } from '../generators/video-generator';
+import { printableGenerator, GeneratedPrintable } from '../generators/printable-generator';
 
-export interface EducationalModule {
+export interface CompleteModule {
     id: string;
     title: string;
-    theme: string;
     island: string;
-    ageGroup: 'mini' | 'big';
-    content: {
-        story: any;
-        song: any;
-        printable: any;
-        videoScript: any;
-    };
+    theme: string;
+    ageGroup: "mini" | "big";
     metadata: {
+        createdAt: string;
         educationalGoal: string;
-        curriculumTags: string[];
+        generatedBy: string;
+    };
+    content: {
+        story: GeneratedStory;
+        song: GeneratedSong;
+        videoScript: GeneratedVideoScript;
+        printable: GeneratedPrintable;
     };
 }
 
 export class ModuleManagerAgent {
+
     /**
-     * Create a full educational module from a single topic or prompt
+     * Build a complete educational module
      */
-    async buildCompleteModule(userObjective: string, ageGroup: 'mini' | 'big' = 'mini'): Promise<EducationalModule> {
-        console.log(`🤖 [ModuleManagerAgent] Starting build for: "${userObjective}"...`);
+    async buildCompleteModule(objective: string, ageGroup: "mini" | "big" = "mini"): Promise<CompleteModule> {
+        console.log(`🤖 Module Manager initiating build: "${objective}" (${ageGroup})`);
 
-        // 1. Analyze the objective to pick a suitable island and refine the theme
-        const analysis = await contentGenerator.generateJSON<any>(
-            `Analyze this educational objective: "${userObjective}". 
-            Pick the most relevant Caribbean island and a refined theme title.
-            Return JSON: { "island": string, "theme": string, "educationalGoal": string, "tags": string[] }`,
-            { island: "string", theme: "string", educationalGoal: "string", tags: ["string"] }
-        );
+        // 1. Plan the Module
+        const plan = await this.planModule(objective, ageGroup);
+        console.log(`📋 Plan approved: ${plan.island} - ${plan.theme}`);
 
-        const { island, theme, educationalGoal, tags } = analysis;
+        // 2. Execute Generators in Parallel
+        console.log(`🚀 Dispatching sub-agents...`);
 
-        // 2. Run generators in parallel (or sequence for simpler debugging)
-        console.log(`🤖 [ModuleManagerAgent] Generating 4-part content suite for ${island}...`);
+        const [story, song, video, printable] = await Promise.all([
+            // Story Agent
+            storyGenerator.generateStory({
+                island: plan.island,
+                theme: plan.theme,
+                ageTrack: ageGroup,
+                customPrompt: `Focus on: ${plan.storyFocus}`
+            }),
 
-        const [story, song, printable, videoScript] = await Promise.all([
-            storyGenerator.generateStory({ island, theme, ageTrack: ageGroup, customPrompt: `Focus on: ${userObjective}` }),
-            songGenerator.generateSong({ island, topic: theme, ageTrack: ageGroup }),
-            printableGenerator.generatePrintable({ island, theme, ageTrack: ageGroup }),
-            videoGenerator.generateScript({ island, topic: theme, ageTrack: ageGroup })
+            // Song Agent
+            songGenerator.generateSong({
+                island: plan.island,
+                topic: plan.theme,
+                ageTrack: ageGroup,
+                category: "educational"
+            }),
+
+            // Video Agent
+            videoGenerator.generateScript({
+                island: plan.island,
+                topic: plan.theme,
+                ageTrack: ageGroup,
+                durationMinutes: ageGroup === 'mini' ? 3 : 5
+            }),
+
+            // Printable Agent
+            printableGenerator.generatePrintable({
+                island: plan.island,
+                theme: plan.theme,
+                ageTrack: ageGroup,
+                type: "worksheet"
+            })
         ]);
 
-        console.log(`✅ [ModuleManagerAgent] Module "${theme}" build complete.`);
+        console.log(`✅ All assets generated successfully!`);
 
+        // 3. Assemble Module
         return {
-            id: `module_${Date.now()}`,
-            title: theme,
-            theme,
-            island,
-            ageGroup,
+            id: `mod_${Date.now()}`,
+            title: story.title, // Use story title as main module title for now
+            island: plan.island,
+            theme: plan.theme,
+            ageGroup: ageGroup,
+            metadata: {
+                createdAt: new Date().toISOString(),
+                educationalGoal: plan.educationalGoal,
+                generatedBy: "Legend AI Module Manager"
+            },
             content: {
                 story,
                 song,
-                printable,
-                videoScript
-            },
-            metadata: {
-                educationalGoal,
-                curriculumTags: tags
+                videoScript: video,
+                printable
             }
         };
+    }
+
+    /**
+     * Create a cohesive plan for the module
+     */
+    private async planModule(objective: string, ageGroup: string): Promise<{
+        island: string;
+        theme: string;
+        storyFocus: string;
+        educationalGoal: string;
+    }> {
+        const systemInstruction = `You are a curriculum planner for "Likkle Legends". 
+        Analyze the user's objective and create a cohesive plan for a learning module.
+        Select the most appropriate Caribbean island conform to the objective if none is specified.`;
+
+        const prompt = `Objective: "${objective}"
+        Target Age: ${ageGroup}
+        
+        Return a JSON plan:
+        {
+            "island": "Name of Island (must be one of: Jamaica, Trinidad and Tobago, Barbados, Saint Lucia, Grenada, Antigua and Barbuda, Dominica, Saint Vincent and the Grenadines)",
+            "theme": "Main theme (e.g. Carnvial, Sea Life, Food)",
+            "storyFocus": "Specific angle for the story",
+            "educationalGoal": "Overarching learning goal for this module"
+        }`;
+
+        return await contentGenerator.generateJSON(prompt, {}, { systemInstruction });
     }
 }
 

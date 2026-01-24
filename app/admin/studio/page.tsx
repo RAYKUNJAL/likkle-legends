@@ -14,6 +14,8 @@ import {
     runModuleManagerAgent,
     publishModuleToLive
 } from '@/app/actions/agents';
+import { runAgentGeneration } from '@/app/actions/island-brain';
+import { ContentType } from '@/lib/types';
 
 type AgentType = 'manager' | 'story' | 'song' | 'printable' | 'video';
 
@@ -36,25 +38,34 @@ export default function LegendAIStudio() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("No session");
 
-            let data;
+            let contentType: ContentType = 'story_bedtime';
+
+            // Map Studio Agent to IslandBrain ContentType
             switch (activeAgent) {
-                case 'manager':
-                    data = await runModuleManagerAgent(session.access_token, prompt, ageGroup);
-                    break;
-                case 'story':
-                    data = await runStoryAgent(session.access_token, { customPrompt: prompt, ageTrack: ageGroup });
-                    break;
-                case 'song':
-                    data = await runSongAgent(session.access_token, { topic: prompt, ageTrack: ageGroup });
-                    break;
-                case 'printable':
-                    data = await runPrintableAgent(session.access_token, { theme: prompt, ageTrack: ageGroup });
-                    break;
-                case 'video':
-                    data = await runVideoAgent(session.access_token, { topic: prompt, ageTrack: ageGroup });
-                    break;
+                case 'manager': contentType = 'monthly_drop_bundle'; break;
+                case 'story': contentType = 'story_bedtime'; break;
+                case 'song': contentType = 'song_video_script'; break;
+                case 'printable': contentType = 'printable_cards_text'; break;
+                case 'video': contentType = 'song_video_script'; break; // Reusing script for now or add video_script type
             }
-            setResult(data);
+
+            const res = await runAgentGeneration(
+                session.access_token,
+                contentType,
+                prompt,
+                'TT', // Default Island
+                { age_group: ageGroup }
+            );
+
+            if (res.success) {
+                setResult(res.content);
+                // Automatically refresh admin queue if needed? 
+                // The result is 'pending' admin review.
+                alert("Content Generated and sent to Admin Queue!");
+            } else {
+                throw new Error(res.error);
+            }
+
         } catch (error) {
             console.error("Generation failed", error);
             alert("Generation failed. Check console.");
@@ -205,91 +216,20 @@ export default function LegendAIStudio() {
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {activeAgent === 'manager' && (
-                                <div className="bg-white rounded-[3rem] border border-gray-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                    <div className="p-10 border-b border-gray-100 flex items-center justify-between">
-                                        <div>
-                                            <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-full mb-2 inline-block">
-                                                Complete Module Generated
-                                            </span>
-                                            <h2 className="text-3xl font-black text-gray-900">{result.title}</h2>
-                                            <p className="text-gray-500 font-medium">{result.island} • {result.metadata.educationalGoal}</p>
-                                        </div>
-                                        <button
-                                            onClick={handlePublish}
-                                            disabled={isPublishing || !!publishedId}
-                                            className={`px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition-all ${publishedId ? 'bg-green-500 text-white' : 'bg-deep text-white hover:bg-black active:scale-95'}`}
-                                        >
-                                            {isPublishing ? (
-                                                <RefreshCw size={18} className="animate-spin" />
-                                            ) : publishedId ? (
-                                                <CheckCircle2 size={18} />
-                                            ) : (
-                                                <Star size={18} />
-                                            )}
-                                            {isPublishing ? 'Publishing...' : publishedId ? 'Island is Live!' : 'Publish to Live'}
-                                        </button>
-                                    </div>
-
-                                    <div className="p-10 grid md:grid-cols-2 gap-8">
-                                        <div className="space-y-6">
-                                            <div className="p-6 bg-orange-50 rounded-3xl border border-orange-100">
-                                                <h4 className="font-black text-orange-900 mb-2 flex items-center gap-2">
-                                                    <BookOpen size={18} /> Storybook
-                                                </h4>
-                                                <p className="text-sm text-orange-800 line-clamp-3">{result.content.story.summary}</p>
-                                                <button className="mt-4 text-xs font-black text-orange-900 uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
-                                                    View Preview <ChevronRight size={14} />
-                                                </button>
-                                            </div>
-
-                                            <div className="p-6 bg-blue-50 rounded-3xl border border-blue-100">
-                                                <h4 className="font-black text-blue-900 mb-2 flex items-center gap-2">
-                                                    <Music size={18} /> Song & Lyrics
-                                                </h4>
-                                                <p className="text-sm text-blue-800 line-clamp-3">{result.content.song.description}</p>
-                                                <button className="mt-4 text-xs font-black text-blue-900 uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
-                                                    View Preview <ChevronRight size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-6">
-                                            <div className="p-6 bg-purple-50 rounded-3xl border border-purple-100">
-                                                <h4 className="font-black text-purple-900 mb-2 flex items-center gap-2">
-                                                    <Download size={18} /> Printable Activity
-                                                </h4>
-                                                <p className="text-sm text-purple-800 line-clamp-3">{result.content.printable.description}</p>
-                                                <button className="mt-4 text-xs font-black text-purple-900 uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
-                                                    View Preview <ChevronRight size={14} />
-                                                </button>
-                                            </div>
-
-                                            <div className="p-6 bg-emerald-50 rounded-3xl border border-emerald-100">
-                                                <h4 className="font-black text-emerald-900 mb-2 flex items-center gap-2">
-                                                    <Video size={18} /> Video Script
-                                                </h4>
-                                                <p className="text-sm text-emerald-800 line-clamp-3">{result.content.videoScript.description}</p>
-                                                <button className="mt-4 text-xs font-black text-emerald-900 uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
-                                                    View Preview <ChevronRight size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <div className="bg-white rounded-[3rem] border border-gray-100 shadow-sm p-10 animate-in fade-in zoom-in-95 duration-500">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className="text-2xl font-black text-gray-900">{result.title || "Generated Content"}</h2>
+                                    <span className="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg font-bold text-xs">
+                                        Status: {result.admin_status || 'Pending Review'}
+                                    </span>
                                 </div>
-                            )}
-
-                            {activeAgent !== 'manager' && (
-                                <div className="bg-white rounded-[3rem] border border-gray-100 shadow-sm p-10 animate-in fade-in zoom-in-95 duration-500">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <h2 className="text-2xl font-black text-gray-900">{result.title}</h2>
-                                        <button className="px-6 py-2 bg-primary text-white rounded-lg font-bold text-sm">Save to Library</button>
-                                    </div>
-                                    <pre className="p-6 bg-gray-50 rounded-2xl text-xs overflow-auto max-h-[600px] font-mono">
-                                        {JSON.stringify(result, null, 2)}
-                                    </pre>
+                                <div className="p-4 bg-blue-50 text-blue-800 rounded-2xl mb-6 text-sm">
+                                    <strong>Next Step:</strong> Go to the <a href="/admin/ai-review" className="underline font-bold">Verification Queue</a> to approve this content for families.
                                 </div>
-                            )}
+                                <pre className="p-6 bg-gray-50 rounded-2xl text-xs overflow-auto max-h-[600px] font-mono">
+                                    {JSON.stringify(result, null, 2)}
+                                </pre>
+                            </div>
                         </div>
                     )}
                 </div>

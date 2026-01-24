@@ -1,110 +1,85 @@
-// Printable Activity Generator
-// Generates coloring pages, puzzles, and worksheets for kids
 
 import { contentGenerator } from '../core';
-import { CONTENT_CONFIG } from '../config';
+import { CONTENT_CONFIG, IMAGE_STYLE } from '../config';
 
 export interface GeneratedPrintable {
     title: string;
     description: string;
-    type: 'coloring' | 'puzzle' | 'worksheet' | 'craft';
-    theme: string;
-    island: string;
-    ageTrack: 'mini' | 'big';
-    educationalObjective: string;
-    aiPrompt: string; // The prompt for DALL-E/Midjourney/Gemini Image
-    instructions: string;
-    difficulty: number;
+    type: "worksheet" | "coloring_page" | "activity_pack";
+    targetAge: "mini" | "big";
+    islandTheme?: string;
+    educationalGoal: string;
+    content: {
+        instructions: string;
+        sections: {
+            title: string;
+            type: "text" | "drawing_area" | "matching" | "tracing" | "maze";
+            content: string; // Description of what to render or the text itself
+            items?: { label: string; matchId?: string }[]; // For matching/lists
+        }[];
+    };
+    imagePrompt: string; // Prompt to generate the visual base of the printable
 }
 
-export interface PrintableGenerationParams {
-    type?: 'coloring' | 'puzzle' | 'worksheet' | 'craft';
+export interface PrintableGenerationOptions {
     theme?: string;
     island?: string;
-    ageTrack?: 'mini' | 'big';
+    ageTrack?: "mini" | "big";
+    type?: "worksheet" | "coloring_page";
 }
 
 export class PrintableGenerator {
+
     /**
-     * Generate a printable activity idea and image prompt
+     * Generate a printable activity
      */
-    async generatePrintable(params: PrintableGenerationParams = {}): Promise<GeneratedPrintable> {
-        const type = params.type || this.getRandomType();
-        const island = params.island || contentGenerator.getRandomIsland();
-        const ageTrack = params.ageTrack || 'mini';
-        const theme = params.theme || contentGenerator.getRandomTheme();
+    async generatePrintable(options: PrintableGenerationOptions): Promise<GeneratedPrintable> {
+        const island = options.island || contentGenerator.getRandomIsland();
+        const theme = options.theme || contentGenerator.getRandomTheme();
+        const ageTrack = options.ageTrack || 'mini';
+        const type = options.type || 'worksheet';
 
-        const prompt = this.buildPrintablePrompt({ type, island, theme, ageTrack });
+        console.log(`🎨 Generating ${type} for ${island} about "${theme}" (${ageTrack})...`);
 
-        const data = await contentGenerator.generateJSON<any>(
-            prompt,
-            this.getSchema(),
-            {
-                systemInstruction: `You are an educational designer for children's activities. Create engaging, Caribbean-themed printable activities that are fun and educational.`,
-                temperature: 0.8,
-            }
-        );
-
-        return {
-            title: data.title,
-            description: data.description,
-            type: data.type || type,
-            theme,
-            island,
-            ageTrack,
-            educationalObjective: data.educationalObjective,
-            aiPrompt: data.aiPrompt,
-            instructions: data.instructions,
-            difficulty: ageTrack === 'mini' ? 1 : 3,
-        };
-    }
-
-    private buildPrintablePrompt(params: {
-        type: string;
-        island: string;
-        theme: string;
-        ageTrack: string;
-    }): string {
-        const { type, island, theme, ageTrack } = params;
-
-        return `Design a Caribbean-themed ${type} for children aged ${ageTrack === 'mini' ? '3-5' : '6-8'}.
+        const systemInstruction = `You are an expert educational content designer for "Likkle Legends".
+        Create a fun, printable activity sheet (worksheet or coloring page) for children.
         
-        **PARAMETERS:**
-        - Activity Type: ${type}
-        - Theme: ${theme}
-        - Island Influence: ${island}
+        Target Audience: ${ageTrack === 'mini' ? 'Preschool (3-5 years)' : 'Early Primary (6-8 years)'}.
+        Island Theme: ${island}.
+        Activity Theme: ${theme}.
+        Type: ${type}.
         
-        **REQUIREMENTS:**
-        - The activity should be culturally authentic and age-appropriate.
-        - For "coloring": Provide a detailed prompt for a black-and-white line art illustration.
-        - For "puzzle": Describe a word search, maze, or matching game theme.
-        - For "worksheet": Focus on counting, letters, or Caribbean facts.
-        - For "craft": Provide simple instructions for something kids can make.
-        
-        **OUTPUT:**
-        1. A catchy title.
-        2. A warm description (Tanty Spice style).
-        3. The educational objective.
-        4. A detailed AI prompt for the visual part of the printable (High contrast black and white for coloring/puzzles).
-        5. Step-by-step instructions for the parent/child.
-        
-        Return in JSON format.`;
-    }
+        Style: Caribbean-focused, engaging, simple instructions.`;
 
-    private getSchema() {
-        return {
-            title: "String",
-            description: "String",
-            educationalObjective: "String",
-            aiPrompt: "String - Detailed prompt for image generation",
-            instructions: "String - How to use/complete the activity",
-            type: "String"
-        };
-    }
+        const prompt = `Design a ${type} about ${theme} set in ${island}.
+        
+        Return the result as a JSON object with this schema:
+        {
+            "title": "Fun Activity Title",
+            "description": "Brief description of the activity for parents/teachers",
+            "type": "${type}",
+            "targetAge": "${ageTrack}",
+            "islandTheme": "${island}",
+            "educationalGoal": "What the child learns",
+            "content": {
+                "instructions": "Simple instructions for the child",
+                "sections": [
+                    {
+                        "title": "Section Title (e.g. Color the Flag, Trace the words)",
+                        "type": "text | drawing_area | matching | tracing | maze",
+                        "content": "Description of what belongs here. If it's a maze, describe the start/end. If tracing, provide the words.",
+                        "items": [{"label": "Item 1"}, {"label": "Item 2"}] (optional for lists/matching)
+                    }
+                ]
+            },
+            "imagePrompt": "Detailed prompt to generate the black and white line art or visual layout for this worksheet. Essential for 'coloring_page' type."
+        }`;
 
-    private getRandomType(): 'coloring' | 'puzzle' | 'worksheet' | 'craft' {
-        const types: Array<'coloring' | 'puzzle' | 'worksheet' | 'craft'> = ['coloring', 'puzzle', 'worksheet', 'craft'];
-        return types[Math.floor(Math.random() * types.length)];
+        return await contentGenerator.generateJSON<GeneratedPrintable>(prompt, {}, {
+            systemInstruction,
+            temperature: 0.7,
+            maxTokens: 4000
+        });
     }
 }
 

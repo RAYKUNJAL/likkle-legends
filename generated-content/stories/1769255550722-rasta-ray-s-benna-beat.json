@@ -1,0 +1,79 @@
+{
+  "title": "Rasta Ray's Benna Beat",
+  "summary": "Rasta Ray loves to drum! He learns from his Grandpa how to play the special Benna rhythm, and shares his music with everyone in Antigua.",
+  "pages": [
+    {
+      "pageNumber": 1,
+      "text": "Rasta Ray lives in a bright yellow house in Antigua. He loves to play his drum, boom, boom, boom! He wants to learn to play real Caribbean music.",
+      "imagePrompt": "Illustration: Rasta Ray, a cheerful boy with dreadlocks, sits outside a bright yellow Antiguan house. Palm trees sway in the background. He's holding a small drum, smiling widely.",
+      "patoisWords": []
+    },
+    {
+      "pageNumber": 2,
+      "text": "Grandpa says, \"Ray, come learn the Benna beat!\" Benna is old-time Antiguan music. It makes everyone feel [irie] [feeling good].",
+      "imagePrompt": "Illustration: Rasta Ray sits at the feet of his Grandpa, who is an older man with a kind face and a big smile. Grandpa is holding a larger drum and demonstrating how to play. The scene is set on a porch overlooking the Caribbean Sea.",
+      "patoisWords": [
+        {
+          "word": "irie",
+          "meaning": "feeling good/great"
+        }
+      ]
+    },
+    {
+      "pageNumber": 3,
+      "text": "Grandpa beats the drum, 'dum-ta-dum, dum-ta-dum'. Rasta Ray tries too! He’s getting better. Time for [nyam] [to eat] some mangoes!",
+      "imagePrompt": "Illustration: Close-up of Rasta Ray's hands on the drum, following Grandpa's instructions. A plate of juicy mangoes sits nearby. Colorful tropical flowers are visible.",
+      "patoisWords": [
+        {
+          "word": "nyam",
+          "meaning": "to eat"
+        }
+      ]
+    },
+    {
+      "pageNumber": 4,
+      "text": "After he [nyams] [eats] mangoes, Ray plays the Benna beat for his friends. Boom! Boom! They dance and sing. Everyone feels the irie rhythm!",
+      "imagePrompt": "Illustration: Rasta Ray is playing his drum for a group of children, all smiling and dancing. They are surrounded by colorful houses and lush greenery. The setting should feel festive and joyful.",
+      "patoisWords": [
+        {
+          "word": "nyams",
+          "meaning": "eats"
+        }
+      ]
+    },
+    {
+      "pageNumber": 5,
+      "text": "Rasta Ray learned to share his music. Now everyone in Antigua can feel the irie Benna beat! What music makes YOU feel good?",
+      "imagePrompt": "Illustration: A wide shot of the village with happy people listening and dancing to Rasta Ray's music. The sun is setting, casting a warm glow over the scene. A sense of community and joy should be evident.",
+      "patoisWords": []
+    }
+  ],
+  "ageTrack": "mini",
+  "islandTheme": "Antigua and Barbuda",
+  "readingTimeMinutes": 3,
+  "difficultyLevel": 1,
+  "tierRequired": "starter_mailer",
+  "patoisWords": [
+    {
+      "word": "nyam",
+      "meaning": "to eat",
+      "pronunciation": "NYAM"
+    },
+    {
+      "word": "irie",
+      "meaning": "feeling good/great",
+      "pronunciation": "EYE-ree"
+    }
+  ],
+  "characterId": "Rasta Ray",
+  "culturalElements": [
+    "Antigua and Barbuda setting",
+    "Benna music",
+    "Patois language",
+    "Mangoes",
+    "Respect for elders",
+    "Community",
+    "Caribbean drums",
+    "Colorful houses"
+  ]
+}

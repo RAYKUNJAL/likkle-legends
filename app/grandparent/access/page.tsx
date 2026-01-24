@@ -17,17 +17,23 @@ export default function GrandparentAccessPage() {
         setIsLoading(true);
         setError(null);
 
-        // Simulate verification logic
-        setTimeout(() => {
-            if (accessCode.toUpperCase() === 'LEGEND24') {
-                // Redirect to a specific child ID for demo purposes
-                // In production, the code would map to a child_id in Supabase
-                router.push('/grandparent?childId=demo-child');
+        try {
+            // Dynamically import the action
+            const { verifyFamilyAccessCode } = await import('@/app/actions/grandparent');
+
+            const result = await verifyFamilyAccessCode(accessCode);
+
+            if (result.success && result.childId) {
+                router.push(`/grandparent?childId=${result.childId}`);
             } else {
-                setError('Invalid access code. Please check with the parents.');
+                setError(result.error || 'Invalid access code. Please check with the parents.');
                 setIsLoading(false);
             }
-        }, 1500);
+        } catch (err) {
+            console.error(err);
+            setError('System error. Please try again.');
+            setIsLoading(false);
+        }
     };
 
     return (

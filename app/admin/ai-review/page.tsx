@@ -1,0 +1,142 @@
+
+"use client";
+
+import { useState, useEffect } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { GeneratedContent } from '@/lib/types';
+import { CheckCircle2, XCircle, Clock, Search, RefreshCw, BookOpen, Music, ShieldAlert } from 'lucide-react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+
+export default function AdminContentQueue() {
+    const [content, setContent] = useState<GeneratedContent[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
+    const supabase = createClientComponentClient();
+
+    useEffect(() => {
+        fetchQueue();
+    }, [filter]);
+
+    const fetchQueue = async () => {
+        setLoading(true);
+        const { data } = await supabase
+            .from('generated_content')
+            .select('*')
+            .eq('admin_status', filter)
+            .order('created_at', { ascending: false });
+
+        if (data) {
+            const mapped = data.map((item: any) => ({ ...item, content_id: item.id }));
+            setContent(mapped as unknown as GeneratedContent[]);
+        }
+        setLoading(false);
+    };
+
+    const updateStatus = async (id: string, status: 'approved' | 'rejected') => {
+        const { error } = await supabase
+            .from('generated_content')
+            .update({ admin_status: status })
+            .eq('id', id);
+
+        if (!error) {
+            setContent(prev => prev.filter(c => c.content_id !== id));
+        }
+    };
+
+    return (
+        <div className="bg-slate-50 min-h-screen">
+            <Navbar />
+            <main className="container pt-36 pb-24">
+                <div className="flex justify-between items-center mb-12">
+                    <div>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tighter">AI Verification Queue</h1>
+                        <p className="text-slate-500 font-medium mt-2">Review content before it reaches families.</p>
+                    </div>
+
+                    <div className="flex gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
+                        {(['pending', 'approved', 'rejected'] as const).map(status => (
+                            <button
+                                key={status}
+                                onClick={() => setFilter(status)}
+                                className={`px-4 py-2 rounded-xl font-bold uppercase text-xs tracking-wider transition-all ${filter === status ? 'bg-slate-900 text-white' : 'text-slate-400 hover:text-slate-600'}`}
+                            >
+                                {status}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {loading ? (
+                    <div className="text-center py-20 text-slate-400">Loading queue...</div>
+                ) : content.length === 0 ? (
+                    <div className="text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
+                        <CheckCircle2 className="mx-auto text-green-500 mb-4" size={48} />
+                        <h3 className="text-2xl font-black text-slate-900">All caught up!</h3>
+                        <p className="text-slate-400">No {filter} content to review.</p>
+                    </div>
+                ) : (
+                    <div className="grid gap-6">
+                        {content.map(item => (
+                            <div key={item.content_id} className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                                <div className="flex gap-8">
+                                    <div className="w-64 shrink-0 space-y-4">
+                                        <div className="flex gap-2 mb-2">
+                                            <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                                {item.island_id}
+                                            </span>
+                                            <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                                {item.content_type}
+                                            </span>
+                                        </div>
+
+                                        <div className="bg-slate-50 p-4 rounded-2xl text-xs text-slate-500 space-y-2">
+                                            <div className="flex justify-between">
+                                                <strong>Safety Gate:</strong>
+                                                <span className={item.qa_report?.safety_passed ? 'text-green-600' : 'text-red-500'}>
+                                                    {item.qa_report?.safety_passed ? 'PASS' : 'FAIL'}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <strong>Cultural Gate:</strong>
+                                                <span className={item.qa_report?.cultural_passed ? 'text-green-600' : 'text-red-500'}>
+                                                    {item.qa_report?.cultural_passed ? 'PASS' : 'FAIL'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex-1 border-l border-slate-100 pl-8">
+                                        <h3 className="text-2xl font-black text-slate-900 mb-4">{item.title}</h3>
+                                        <div className="prose prose-sm max-w-none text-slate-600 mb-6 bg-slate-50 p-6 rounded-2xl">
+                                            <pre className="whitespace-pre-wrap font-sans text-sm">
+                                                {JSON.stringify(item.payload, null, 2)}
+                                            </pre>
+                                        </div>
+
+                                        {filter === 'pending' && (
+                                            <div className="flex gap-4">
+                                                <button
+                                                    onClick={() => updateStatus(item.content_id, 'approved')}
+                                                    className="px-8 py-3 bg-slate-900 hover:bg-green-600 text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center gap-2"
+                                                >
+                                                    <CheckCircle2 size={16} /> Approve for Parents
+                                                </button>
+                                                <button
+                                                    onClick={() => updateStatus(item.content_id, 'rejected')}
+                                                    className="px-8 py-3 bg-white border-2 border-slate-200 hover:border-red-500 hover:text-red-500 text-slate-500 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center gap-2"
+                                                >
+                                                    <XCircle size={16} /> Reject
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </main>
+        </div>
+    );
+}

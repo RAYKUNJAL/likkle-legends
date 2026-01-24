@@ -136,9 +136,13 @@ export class EnhancedDatabasePoster {
      */
     private async testConnection(): Promise<boolean> {
         try {
-            const { success } = await supabaseManager.testConnection();
-            return success;
-        } catch {
+            const result = await supabaseManager.testConnection();
+            if (!result.success) {
+                console.error('❌ Database connection check failed:', result.error);
+            }
+            return result.success;
+        } catch (error: any) {
+            console.error('❌ Database connection check exception:', error.message);
             return false;
         }
     }

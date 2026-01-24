@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
     Sparkles, BookOpen, Music, Palette, Target, Star, Play,
     Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video, Radio,
-    Map as MapIcon, Grid
+    Map as MapIcon, Grid, Wand2
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { getSongs, getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
@@ -159,7 +159,7 @@ export default function ChildPortalPage() {
     ];
 
     const portals = [
-        { id: 'stories', label: 'Stories', sub: 'Island Tales', icon: BookOpen, color: 'bg-[#FF9D42]', iconColor: 'text-orange-600', shadow: 'shadow-orange-200' },
+        { id: 'story-studio', label: 'Story Studio', sub: 'Create Magic', icon: Wand2, color: 'bg-[#FF9D42]', iconColor: 'text-orange-600', shadow: 'shadow-orange-200', href: '/portal/story-studio' },
         { id: 'songs', label: 'Songs', sub: 'Island Rhythms', icon: Music, color: 'bg-[#A855F7]', iconColor: 'text-purple-600', shadow: 'shadow-purple-200' },
         { id: 'missions', label: 'Adventures', sub: 'Island Quests', icon: MapIcon, color: 'bg-[#14B8A6]', iconColor: 'text-teal-600', shadow: 'shadow-teal-200' },
     ];
@@ -243,7 +243,13 @@ export default function ChildPortalPage() {
                                 {portals.map((portal) => (
                                     <button
                                         key={portal.id}
-                                        onClick={() => setActiveSection(portal.id as any)}
+                                        onClick={() => {
+                                            if (portal.href) {
+                                                router.push(portal.href);
+                                            } else {
+                                                setActiveSection(portal.id as any);
+                                            }
+                                        }}
                                         className={`group relative h-[400px] rounded-[4rem] ${portal.color} p-1 shadow-2xl ${portal.shadow} hover:-translate-y-4 transition-all duration-500 overflow-hidden`}
                                     >
                                         <div className="h-full bg-white/10 group-hover:bg-transparent rounded-[3.8rem] transition-colors p-8 flex flex-col items-center justify-center gap-6 text-white text-center">

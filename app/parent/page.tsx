@@ -15,6 +15,7 @@ import { calculateLevel, LEVELS } from '@/lib/gamification';
 import { getRecentActivities, getMissions, logActivity } from '@/lib/database';
 import TantyRadio from '@/components/TantyRadio';
 import Image from 'next/image';
+import ContentReviewFeed from '@/components/island-brain/ContentReviewFeed';
 
 export default function ParentDashboard() {
     const { user, children, activeChild, isLoading, isSubscribed } = useUser();
@@ -250,6 +251,9 @@ export default function ParentDashboard() {
 
                     {/* Right Column: Mini Cards & Account */}
                     <div className="space-y-12">
+                        {/* Content Approval Queue (New) */}
+                        <ContentReviewFeed />
+
                         {/* Current Legend Profile Card */}
                         {activeChild && (
                             <div className="bg-white p-10 rounded-[4rem] shadow-2xl border-4 border-white overflow-hidden relative group">
@@ -304,6 +308,37 @@ export default function ParentDashboard() {
                                 >
                                     Explore Plans
                                 </Link>
+                            </div>
+                        </div>
+
+                        {/* Family Access Card */}
+                        <div className="bg-white p-10 rounded-[4rem] shadow-2xl border-4 border-white relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-40 h-40 bg-orange-50 rounded-full -mr-20 -mt-20 group-hover:scale-150 transition-transform duration-700"></div>
+                            <div className="relative z-10">
+                                <div className="w-14 h-14 bg-orange-100 text-orange-500 rounded-[1.5rem] flex items-center justify-center mb-6 shadow-inner">
+                                    <Users size={28} />
+                                </div>
+                                <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">My Family Circle</h3>
+                                <p className="text-slate-400 text-xs font-medium mb-6 leading-relaxed">
+                                    Invite up to 2 grandparents to follow {activeChild?.first_name}'s journey for free.
+                                </p>
+
+                                <div className="bg-slate-50 p-4 rounded-2xl border-2 border-dashed border-slate-200 mb-6 flex items-center justify-between">
+                                    <code className="text-xl font-black text-slate-700 tracking-widest uppercase">
+                                        LEGEND-{user?.id?.slice(0, 4)}
+                                    </code>
+                                    <button
+                                        onClick={() => navigator.clipboard.writeText(`Join Likkle Legends with code: LEGEND-${user?.id?.slice(0, 4)}`)}
+                                        className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                        title="Copy Code"
+                                    >
+                                        <div className="text-xs font-bold uppercase">Copy</div>
+                                    </button>
+                                </div>
+
+                                <button className="w-full py-4 bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-primary transition-all shadow-lg hover:shadow-primary/30">
+                                    Manage Family
+                                </button>
                             </div>
                         </div>
 
