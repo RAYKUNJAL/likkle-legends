@@ -30,7 +30,7 @@ function SignupForm() {
     const [debugMsg, setDebugMsg] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
-        childName: '',
+        childName: getParam('childName', ''),
         email: '',
         password: '',
         agreed: false
