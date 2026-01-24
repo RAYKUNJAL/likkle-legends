@@ -1,0 +1,73 @@
+{
+  "title": "Miss Melody and the Mango Festival",
+  "summary": "Miss Melody loves her village in Saint Vincent! When the Mango Festival needs help, everyone comes together to make it the best ever. This story celebrates community spirit and the joy of helping others.",
+  "pages": [
+    {
+      "pageNumber": 1,
+      "text": "Miss Melody lives in a bright, sunny village in Saint Vincent. Her house is painted yellow like a ripe mango! She loves to sing and dance, especially when it's time for the Mango Festival.",
+      "imagePrompt": "Illustration of Miss Melody, a friendly Black woman with a warm smile, standing in front of her small, bright yellow house in a Caribbean village. Palm trees sway gently in the background. Colorful flowers like hibiscus and bougainvillea are blooming. The sky is a clear blue.",
+      "patoisWords": []
+    },
+    {
+      "pageNumber": 2,
+      "text": "Oh no! Miss Lily, who always makes the best mango juice, is feeling sick. She needs help! Miss Melody says, \"We have to help Miss Lily make her famous juice! It's a [likkle] [little] bit of a problem, but we can fix it!\"",
+      "imagePrompt": "Miss Melody looking concerned, talking to other villagers (children and adults) gathered near a small wooden table. Miss Lily is inside her house, visible through a window, looking unwell. A basket of ripe mangoes sits on the table.",
+      "patoisWords": [
+        {
+          "word": "likkle",
+          "meaning": "little"
+        }
+      ]
+    },
+    {
+      "pageNumber": 3,
+      "text": "Everyone helps! Little Timmy picks the juiciest mangoes. Auntie Rose peels them carefully. Miss Melody stirs the juice with a big spoon, singing a happy song. The whole village smells like sweet mangoes!",
+      "imagePrompt": "Various villagers, young and old, working together to make mango juice. Timmy, a young boy, is handing mangoes to Auntie Rose, who is peeling them. Miss Melody is stirring a large pot of juice with a wooden spoon. The scene is full of activity and bright colors.",
+      "patoisWords": []
+    },
+    {
+      "pageNumber": 4,
+      "text": "The Mango Festival is a success! Everyone enjoys the delicious mango juice. Miss Lily feels better seeing everyone happy. \"[Big up] [Respect/Praise] to everyone for helping!\" she says with a smile.",
+      "imagePrompt": "The Mango Festival in full swing. Villagers are dancing, laughing, and drinking mango juice. Miss Lily is sitting in a chair, smiling and waving. Miss Melody is leading a song with a tambourine. Colorful flags and decorations adorn the scene.",
+      "patoisWords": [
+        {
+          "word": "big up",
+          "meaning": "respect/praise"
+        }
+      ]
+    },
+    {
+      "pageNumber": 5,
+      "text": "Helping each other makes our village strong and happy. Just like a sweet, ripe mango! When we work together, even small problems become big celebrations. You can help too!",
+      "imagePrompt": "Miss Melody hugging a group of children under a large mango tree. The sun is setting, casting a warm golden glow on the village. The houses are lit with lanterns, creating a cozy and inviting atmosphere.",
+      "patoisWords": []
+    }
+  ],
+  "ageTrack": "mini",
+  "islandTheme": "Saint Vincent and the Grenadines",
+  "readingTimeMinutes": 3,
+  "difficultyLevel": 1,
+  "tierRequired": "starter_mailer",
+  "patoisWords": [
+    {
+      "word": "likkle",
+      "meaning": "little",
+      "pronunciation": "LICK-ul"
+    },
+    {
+      "word": "big up",
+      "meaning": "respect/praise",
+      "pronunciation": "BIG up"
+    }
+  ],
+  "characterId": "Miss Melody",
+  "culturalElements": [
+    "Mangoes",
+    "Mango Festival",
+    "Community Spirit",
+    "Respect for Elders",
+    "Caribbean Music",
+    "Patois Language",
+    "Brightly colored houses"
+  ]
+}

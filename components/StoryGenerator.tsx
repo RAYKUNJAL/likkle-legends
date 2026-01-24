@@ -40,6 +40,43 @@ export default function StoryGenerator() {
         }
     };
 
+    // Audio State
+    const [audioState, setAudioState] = useState<{ id: string; loading: boolean; playing: boolean }>({ id: '', loading: false, playing: false });
+    const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
+
+    const handleReadSegment = async (text: string, id: string) => {
+        if (audioState.playing && audioState.id === id) {
+            audioEl?.pause();
+            setAudioState({ ...audioState, playing: false });
+            return;
+        }
+
+        if (audioState.playing && audioState.id !== id) {
+            audioEl?.pause();
+        }
+
+        setAudioState({ id, loading: true, playing: false });
+
+        try {
+            // Import dynamically to avoid server/client issues if needed, but here simple import work
+            const { readStorySegment } = await import('@/app/actions/storyteller');
+            const res = await readStorySegment(text);
+
+            if (res.success && res.audio) {
+                const audio = new Audio(res.audio);
+                audio.onended = () => setAudioState(prev => ({ ...prev, playing: false }));
+                await audio.play();
+                setAudioEl(audio);
+                setAudioState({ id, loading: false, playing: true });
+            } else {
+                setAudioState({ id: '', loading: false, playing: false });
+            }
+        } catch (e) {
+            console.error(e);
+            setAudioState({ id: '', loading: false, playing: false });
+        }
+    };
+
     // Helper to get field config
     const getField = (id: string) => form.fields.find(f => f.id === id);
 
@@ -166,12 +203,39 @@ export default function StoryGenerator() {
                                     <div className="w-14 h-14 bg-primary/20 text-primary rounded-2xl flex items-center justify-center mb-4">
                                         <BookOpen size={28} />
                                     </div>
-                                    <h3 className="text-3xl font-black text-white mb-4 leading-tight">{result.title}</h3>
+                                    <div className="flex items-start justify-between">
+                                        <h3 className="text-3xl font-black text-white mb-4 leading-tight">{result.title}</h3>
+                                        <button
+                                            onClick={() => handleReadSegment(result.title, 'title')}
+                                            className={`p-3 rounded-full transition-all ${audioState.id === 'title' && audioState.playing ? 'bg-primary text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                                            disabled={audioState.loading && audioState.id === 'title'}
+                                        >
+                                            {audioState.loading && audioState.id === 'title' ? (
+                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            ) : (
+                                                <Volume2 size={20} className={audioState.id === 'title' && audioState.playing ? 'animate-pulse' : ''} />
+                                            )}
+                                        </button>
+                                    </div>
+
                                     <div className="space-y-6">
                                         {result.content.split('\n\n').map((para, i) => (
-                                            <p key={i} className="text-xl font-medium text-white/80 leading-relaxed italic">
-                                                {para.replace(/\[READING ASSISTANT TRIGGER\]/g, '✨')}
-                                            </p>
+                                            <div key={i} className="group relative">
+                                                <p className="text-xl font-medium text-white/80 leading-relaxed italic pr-12">
+                                                    {para.replace(/\[READING ASSISTANT TRIGGER\]/g, '✨')}
+                                                </p>
+                                                <button
+                                                    onClick={() => handleReadSegment(para, `para-${i}`)}
+                                                    className={`absolute top-0 right-0 p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 ${audioState.id === `para-${i}` ? 'opacity-100' : ''} ${audioState.id === `para-${i}` && audioState.playing ? 'bg-primary text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                                                    disabled={audioState.loading && audioState.id === `para-${i}`}
+                                                >
+                                                    {audioState.loading && audioState.id === `para-${i}` ? (
+                                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    ) : (
+                                                        <Volume2 size={16} />
+                                                    )}
+                                                </button>
+                                            </div>
                                         ))}
                                     </div>
                                     <div className="pt-8 border-t border-white/10 mt-8 space-y-4">

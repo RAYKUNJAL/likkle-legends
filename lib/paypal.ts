@@ -61,6 +61,23 @@ export const SUBSCRIPTION_PLANS = {
         ],
         margin: 0.56,
     },
+    trial_access: {
+        id: 'trial_access',
+        name: '7-Day Free Pass',
+        paypalPlanId: 'TRIAL',
+        paypalPlanIdYearly: 'TRIAL',
+        price: 0.00,
+        priceYearly: 0.00,
+        interval: 'month',
+        description: 'Full access to Digital Portal & AI Studio for 7 days',
+        features: [
+            'Unlimited AI Story Studio',
+            'Interactive Child Portal',
+            'Digital "Postcard" Access',
+            'No credit card required',
+        ],
+        margin: 0,
+    },
 };
 
 export const UPSELLS = {

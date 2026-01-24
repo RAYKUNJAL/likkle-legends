@@ -1,0 +1,79 @@
+{
+  "title": "Rasta Ray and the Callaloo Surprise",
+  "summary": "Rasta Ray loves to eat! But he's sad because he misses his grandma's special callaloo. With the help of his friends, he learns that sharing and trying new things can bring even more joy than his favorite dish.",
+  "pages": [
+    {
+      "pageNumber": 1,
+      "text": "Rasta Ray lived in a bright yellow house in Trinidad. He loved the sunshine and the mango trees! But today, Rasta Ray was [tabanca] [tabanca = sad] because he missed his Grandma's callaloo.",
+      "imagePrompt": "Illustration of Rasta Ray, a small boy with dreadlocks, sitting sadly on the steps of a bright yellow wooden house. A mango tree laden with ripe mangoes is in the background. Sunlight shines brightly. Include some colorful tropical flowers like hibiscus around the house.",
+      "patoisWords": [
+        {
+          "word": "tabanca",
+          "meaning": "heartbroken, very sad"
+        }
+      ]
+    },
+    {
+      "pageNumber": 2,
+      "text": "His friend, Mari, saw Rasta Ray's face. \"What's wrong, Ray?\" she asked. Rasta Ray sighed, \"I want Grandma's callaloo!\"",
+      "imagePrompt": "Illustration of Rasta Ray sitting on the steps, looking sad. Mari, a girl with braided hair and a bright pink dress, kneels beside him, looking concerned. The yellow house is in the background.",
+      "patoisWords": []
+    },
+    {
+      "pageNumber": 3,
+      "text": "Mari smiled. \"My Auntie makes yummy roti! Come, let's ask her to share.\" They walked to Auntie's house, but a [maco] [maco = nosey person] was watching them from behind a curtain!",
+      "imagePrompt": "Illustration of Rasta Ray and Mari walking hand-in-hand down a path lined with palm trees. In the background, a brightly colored house with a curtain slightly pulled back, revealing a shadowy figure. The sky is a clear blue.",
+      "patoisWords": [
+        {
+          "word": "maco",
+          "meaning": "nosy person, someone who gossips"
+        }
+      ]
+    },
+    {
+      "pageNumber": 4,
+      "text": "Auntie gave them warm roti filled with curried chickpeas. Rasta Ray took a bite. \"Mmm!\" he said. \"It's good, but it's not callaloo!\"",
+      "imagePrompt": "Illustration of Auntie, a kind-looking woman with a headwrap, handing Rasta Ray and Mari roti. Rasta Ray is taking a bite with a thoughtful expression. A pot with curry is visible in the background.",
+      "patoisWords": []
+    },
+    {
+      "pageNumber": 5,
+      "text": "Then, Papa came by with a big pot of pelau! Everyone shared and laughed. Rasta Ray realized sharing good food with friends is even better than callaloo! Sharing makes everyone happy. Now he wasn't [tabanca] anymore!",
+      "imagePrompt": "Illustration of Rasta Ray, Mari, Auntie, and Papa sitting around a table outside Auntie's house. They are laughing and sharing food. Papa is holding a pot of pelau. The sky is a warm orange color.",
+      "patoisWords": [
+        {
+          "word": "tabanca",
+          "meaning": "heartbroken, very sad"
+        }
+      ]
+    }
+  ],
+  "ageTrack": "mini",
+  "islandTheme": "Trinidad and Tobago",
+  "readingTimeMinutes": 3,
+  "difficultyLevel": 1,
+  "tierRequired": "starter_mailer",
+  "patoisWords": [
+    {
+      "word": "tabanca",
+      "meaning": "heartbroken",
+      "pronunciation": "tah-BAN-kah"
+    },
+    {
+      "word": "maco",
+      "meaning": "nosy/gossip",
+      "pronunciation": "MAH-koh"
+    }
+  ],
+  "characterId": "Rasta Ray",
+  "culturalElements": [
+    "Trinidad and Tobago setting",
+    "Callaloo",
+    "Roti",
+    "Pelau",
+    "Sharing food",
+    "Community spirit",
+    "Respect for elders (Auntie and Papa)",
+    "Patois/Creole language"
+  ]
+}

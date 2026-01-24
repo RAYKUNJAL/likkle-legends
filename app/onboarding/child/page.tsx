@@ -86,7 +86,7 @@ export default function ChildOnboardingPage() {
                 avatar_id: formData.avatar_id,
             });
             await refreshChildren();
-            router.push('/portal?welcome=true');
+            router.push('/onboarding/complete');
         } catch (error) {
             console.error('Onboarding error:', error);
             setIsSubmitting(false);
