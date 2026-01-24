@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { supabase } from '@/lib/storage';
+import { supabase } from '@/lib/supabase-client';
 
 // ==========================================
 // TYPES
@@ -145,7 +145,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     } catch (error) {
       console.error('Error refreshing children:', error);
     }
-  }, [user?.id, activeChild]);
+  }, [user?.id]);
 
   // Refresh notifications
   const refreshNotifications = useCallback(async () => {
@@ -227,12 +227,13 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
 
       // Restore active child from localStorage
       const savedChildId = localStorage.getItem('activeChildId');
-      if (savedChildId && children.length > 0) {
-        const child = children.find(c => c.id === savedChildId);
-        if (child) setActiveChildState(child);
+      if (savedChildId) {
+        // We handle setting active child inside refreshChildren usually,
+        // or we can do it here if children are already loaded.
+        // But since refreshChildren is async, we should probably do it after it's done or within it.
       }
     }
-  }, [user?.id, refreshChildren, refreshNotifications, children]);
+  }, [user?.id, refreshChildren, refreshNotifications]);
 
   // Subscribe to real-time notifications
   useEffect(() => {

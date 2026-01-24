@@ -5,20 +5,11 @@ import { revalidatePath } from 'next/cache';
 import { GeneratedContent, ContentType, ContentRequest } from '@/lib/types';
 import { saveGeneratedContent } from '@/lib/content-store';
 import { IslandBrainOrchestrator } from '@/lib/agent-orchestrator';
-import { createClient } from '@supabase/supabase-js';
+import { supabase, supabaseAdmin } from '@/lib/supabase-client';
 import { generateContentAudio } from '@/lib/services/audio-service';
-
-// Helper to get a client that can verify the token
-function getSupabase() {
-    return createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-}
 
 // Helper to verify user and return ID
 async function verifyUser(token: string) {
-    const supabase = getSupabase();
     const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) throw new Error("Unauthorized");
     return user;
@@ -30,21 +21,8 @@ async function verifyUser(token: string) {
 
 export async function fetchGeneratedContent(token: string) {
     const user = await verifyUser(token);
-    const supabase = getSupabase(); // Use anon key, RLS will handle it if we pass token? 
-    // Actually with anon key on server, we don't have the session context automatically.
-    // We should use Service Role but Query with user ID.
 
-    // Better: Use Service Role for data fetching to ensure we bypass RLS issues 
-    // if the RLS policies rely on auth.uid() which isn't present in a raw REST call 
-    // unless we set the auth header.
-    // Simplest: Query with Service Verification.
-
-    const adminClient = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    const { data, error } = await adminClient
+    const { data, error } = await supabaseAdmin
         .from('generated_content')
         .select('*')
         .eq('family_id', user.id)
@@ -64,12 +42,8 @@ export async function fetchGeneratedContent(token: string) {
 
 export async function approveContentAction(token: string, contentId: string) {
     const user = await verifyUser(token);
-    const adminClient = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
 
-    const { error } = await adminClient
+    const { error } = await supabaseAdmin
         .from('generated_content')
         .update({
             is_approved_for_kid: true,
@@ -86,12 +60,8 @@ export async function approveContentAction(token: string, contentId: string) {
 
 export async function rejectContentAction(token: string, contentId: string) {
     const user = await verifyUser(token);
-    const adminClient = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
 
-    const { error } = await adminClient
+    const { error } = await supabaseAdmin
         .from('generated_content')
         .delete()
         .eq('id', contentId)
