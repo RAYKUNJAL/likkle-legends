@@ -6,6 +6,7 @@ import { GeneratedContent, ContentType, ContentRequest } from '@/lib/types';
 import { saveGeneratedContent } from '@/lib/content-store';
 import { IslandBrainOrchestrator } from '@/lib/agent-orchestrator';
 import { createClient } from '@supabase/supabase-js';
+import { generateContentAudio } from '@/lib/services/audio-service';
 
 // Helper to get a client that can verify the token
 function getSupabase() {
@@ -129,6 +130,18 @@ export async function runAgentGeneration(
         return { success: true, content };
     } catch (error: any) {
         console.error("Agent Generation Failed:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function generateContentAudioAction(token: string, contentId: string) {
+    await verifyUser(token);
+    try {
+        const audioUrl = await generateContentAudio(contentId);
+        revalidatePath('/admin/ai-review');
+        return { success: true, audioUrl };
+    } catch (error: any) {
+        console.error("Audio Generation Failed:", error);
         return { success: false, error: error.message };
     }
 }
