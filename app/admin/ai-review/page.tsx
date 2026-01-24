@@ -7,11 +7,13 @@ import { GeneratedContent } from '@/lib/types';
 import { CheckCircle2, XCircle, Clock, Search, RefreshCw, BookOpen, Music, ShieldAlert } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { approveContentAction, rejectContentAction, generateContentAudioAction } from '@/app/actions/island-brain';
 
 export default function AdminContentQueue() {
     const [content, setContent] = useState<GeneratedContent[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
+    const [generatingAudio, setGeneratingAudio] = useState<string | null>(null);
     const supabase = createClientComponentClient();
 
     useEffect(() => {
@@ -31,6 +33,26 @@ export default function AdminContentQueue() {
             setContent(mapped as unknown as GeneratedContent[]);
         }
         setLoading(false);
+    };
+
+    const handleGenerateAudio = async (contentId: string) => {
+        setGeneratingAudio(contentId);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const res = await generateContentAudioAction(session.access_token, contentId);
+            if (res.success) {
+                alert("Audio generated successfully!");
+                fetchQueue();
+            } else {
+                alert("Failed: " + res.error);
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setGeneratingAudio(null);
+        }
     };
 
     const updateStatus = async (id: string, status: 'approved' | 'rejected') => {
@@ -89,7 +111,7 @@ export default function AdminContentQueue() {
                                                 {item.content_type}
                                             </span>
                                         </div>
-
+                                        
                                         <div className="bg-slate-50 p-4 rounded-2xl text-xs text-slate-500 space-y-2">
                                             <div className="flex justify-between">
                                                 <strong>Safety Gate:</strong>
@@ -103,26 +125,56 @@ export default function AdminContentQueue() {
                                                     {item.qa_report?.cultural_passed ? 'PASS' : 'FAIL'}
                                                 </span>
                                             </div>
+                                            {item.metadata?.audio_url && (
+                                                <div className="mt-4 p-2 bg-green-50 rounded-lg text-green-700 font-bold text-center">
+                                                    🎵 Audio Ready
+                                                </div>
+                                            )}
                                         </div>
+
+                                        <button 
+                                            onClick={() => handleGenerateAudio(item.content_id)}
+                                            disabled={!!generatingAudio}
+                                            className="w-full py-3 bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2"
+                                        >
+                                            {generatingAudio === item.content_id ? (
+                                                <>
+                                                    <RefreshCw size={14} className="animate-spin" />
+                                                    Generating...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Music size={14} />
+                                                    {item.metadata?.audio_url ? 'Regenerate Audio' : 'Generate Audio'}
+                                                </>
+                                            )}
+                                        </button>
                                     </div>
 
                                     <div className="flex-1 border-l border-slate-100 pl-8">
-                                        <h3 className="text-2xl font-black text-slate-900 mb-4">{item.title}</h3>
+                                        <div className="flex justify-between items-start mb-4">
+                                            <h3 className="text-2xl font-black text-slate-900">{item.title}</h3>
+                                            {item.metadata?.audio_url && (
+                                                <audio controls className="h-10">
+                                                    <source src={item.metadata.audio_url} type="audio/wav" />
+                                                </audio>
+                                            )}
+                                        </div>
                                         <div className="prose prose-sm max-w-none text-slate-600 mb-6 bg-slate-50 p-6 rounded-2xl">
                                             <pre className="whitespace-pre-wrap font-sans text-sm">
                                                 {JSON.stringify(item.payload, null, 2)}
                                             </pre>
                                         </div>
-
+                                        
                                         {filter === 'pending' && (
                                             <div className="flex gap-4">
-                                                <button
+                                                <button 
                                                     onClick={() => updateStatus(item.content_id, 'approved')}
                                                     className="px-8 py-3 bg-slate-900 hover:bg-green-600 text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center gap-2"
                                                 >
                                                     <CheckCircle2 size={16} /> Approve for Parents
                                                 </button>
-                                                <button
+                                                <button 
                                                     onClick={() => updateStatus(item.content_id, 'rejected')}
                                                     className="px-8 py-3 bg-white border-2 border-slate-200 hover:border-red-500 hover:text-red-500 text-slate-500 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center gap-2"
                                                 >
@@ -132,11 +184,11 @@ export default function AdminContentQueue() {
                                         )}
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
                 )}
             </main>
+            <Footer />
         </div>
     );
 }
