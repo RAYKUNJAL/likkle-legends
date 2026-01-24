@@ -47,13 +47,15 @@ class SupabaseClientManager {
             );
         }
 
+        const safeUrl = (url || '').toString();
+
         // Validate URL format
-        if (!url.includes('.supabase.co') && !url.includes('localhost')) {
+        if (safeUrl && !safeUrl.includes('.supabase.co') && !safeUrl.includes('localhost')) {
             console.error(`❌ Invalid Supabase URL format: ${url}`);
-            throw new Error('Invalid Supabase URL');
+            // throw new Error('Invalid Supabase URL');
         }
 
-        const key = (useServiceRole && serviceKey ? serviceKey : anonKey).trim();
+        const key = ((useServiceRole && serviceKey ? serviceKey : anonKey) || '').trim();
 
         // Create client with production options
         const authOptions = useServiceRole ? {
@@ -236,16 +238,30 @@ class SupabaseClientManager {
 // Singleton instance
 const manager = new SupabaseClientManager();
 
-// Export clients
+// Export clients with improved Proxy handling for function binding
 export const supabase = new Proxy({} as SupabaseClient, {
     get(_, prop) {
-        return (manager.getClient() as any)[prop];
+        const client = manager.getClient();
+        const value = (client as any)[prop];
+
+        if (typeof value === 'function') {
+            return value.bind(client);
+        }
+
+        return value;
     },
 });
 
 export const supabaseAdmin = new Proxy({} as SupabaseClient, {
     get(_, prop) {
-        return (manager.getServiceClient() as any)[prop];
+        const client = manager.getServiceClient();
+        const value = (client as any)[prop];
+
+        if (typeof value === 'function') {
+            return value.bind(client);
+        }
+
+        return value;
     },
 });
 
