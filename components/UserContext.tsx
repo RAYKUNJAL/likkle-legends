@@ -195,12 +195,27 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     return userLevel >= requiredLevel;
   }, [user]);
 
-  // Initialize on mount
+  // Initialize on mount with timeout protection
   useEffect(() => {
+    let mounted = true;
+
     const initialize = async () => {
+      if (!mounted) return;
       setIsLoading(true);
-      await refreshUser();
-      setIsLoading(false);
+
+      // Timeout to prevent infinite loading state
+      const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000));
+
+      try {
+        await Promise.race([
+          refreshUser(),
+          timeoutPromise
+        ]);
+      } catch (err) {
+        console.error("Auth initialization failed:", err);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
     };
 
     initialize();
@@ -216,7 +231,10 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [refreshUser]);
 
   // Load children when user changes

@@ -239,32 +239,9 @@ class SupabaseClientManager {
 // Singleton instance
 const manager = new SupabaseClientManager();
 
-// Export clients with improved Proxy handling for function binding
-export const supabase = new Proxy({} as SupabaseClient, {
-    get(_, prop) {
-        const client = manager.getClient();
-        const value = (client as any)[prop];
-
-        if (typeof value === 'function') {
-            return value.bind(client);
-        }
-
-        return value;
-    },
-});
-
-export const supabaseAdmin = new Proxy({} as SupabaseClient, {
-    get(_, prop) {
-        const client = manager.getServiceClient();
-        const value = (client as any)[prop];
-
-        if (typeof value === 'function') {
-            return value.bind(client);
-        }
-
-        return value;
-    },
-});
+// Export clients directly - bypassing Proxy to ensure stability
+export const supabase = manager.getClient();
+export const supabaseAdmin = manager.getServiceClient();
 
 // Export manager for advanced usage
 export const supabaseManager = manager;
