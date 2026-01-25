@@ -10,77 +10,77 @@ export const metadata = {
 
 const tiers = [
     {
-        id: 'entry_mail_intro',
-        name: '$10 Intro Experience',
-        price: '$10',
-        billing: 'one-time',
-        recommended: true,
-        badge: 'Most Popular',
-        description: 'Perfect first step for new families',
-        highlights: [
-            'Physical mail moment (letter + activity)',
-            'Digital unlock bundle',
-            'Songs & Island Radio access',
-            'Mini story (read or audio)',
-            'Printable flash cards',
-            'Club-only surprise'
-        ],
-        cta: 'Try $10 Intro',
-        href: '/get-started',
-        color: 'emerald'
-    },
-    {
-        id: 'core_membership',
-        name: 'Digital Membership',
-        price: '$19',
+        id: 'starter_mailer',
+        name: 'Starter Mailer',
+        price: '$9.99',
         billing: '/month',
         recommended: false,
-        description: 'Ongoing learning and entertainment',
+        badge: 'Great Start',
+        description: 'Perfect for children just beginning their heritage journey',
         highlights: [
-            'Full story library access',
-            'Island Radio (ad-free)',
-            'Monthly new content drops',
-            'Printable learning kits',
-            'Parent guides and prompts'
+            'Personalized character letter monthly',
+            'Coloring postcard & sticker sheet',
+            'Alphabet flashcard',
+            'QR-triggered 360° Island VR Portal',
+            'Digital "Postcard" Access'
         ],
-        cta: 'Become a Member',
-        href: '/get-started',
+        cta: 'Choose Starter',
+        href: '/signup?plan=starter_mailer',
         color: 'blue'
     },
     {
-        id: 'culture_builder',
-        name: 'Culture Builder',
-        price: '$39',
+        id: 'legends_plus',
+        name: 'Legends Plus',
+        price: '$19.99',
+        billing: '/month',
+        recommended: true,
+        badge: 'Most Popular',
+        description: 'Everything in Starter + Premium Storybook & AI Studio',
+        highlights: [
+            'Everything in Starter Mailer',
+            'Premium cardstock storybook',
+            'Unlimited AI Story Studio',
+            'AR Character Overlay',
+            'Parent 1-on-1 AI Coaching'
+        ],
+        cta: 'Choose Plus',
+        href: '/signup?plan=legends_plus',
+        color: 'emerald'
+    },
+    {
+        id: 'family_legacy',
+        name: 'Family Legacy',
+        price: '$34.99',
         billing: '/month',
         recommended: false,
-        description: 'Deeper cultural learning',
+        badge: 'Full Experience',
+        description: 'The ultimate cultural package for up to 3 children',
         highlights: [
-            'Everything in Membership',
-            'Exclusive stories & character arcs',
-            'Seasonal cultural modules',
-            'Parent culture mini-lessons',
-            'Downloadable packs & collectibles',
-            'Early access to new features'
+            'Everything in Legends Plus',
+            'Quarterly Heritage Box',
+            'Up to 3 child profiles',
+            'Printable Family Tree Kit',
+            'Grandparent Mirror Dashboard'
         ],
-        cta: 'Upgrade to Culture Builder',
-        href: '/get-started',
+        cta: 'Choose Family',
+        href: '/signup?plan=family_legacy',
         color: 'purple'
     },
     {
-        id: 'annual',
-        name: 'Annual Plans',
-        price: '$190',
-        billing: '/year',
+        id: 'trial_access',
+        name: '7-Day Free Pass',
+        price: '$0',
+        billing: '/7 days',
         recommended: false,
-        description: 'Save with annual commitment',
+        description: 'Try the digital experience risk-free',
         highlights: [
-            'Digital Membership: $190/year (save $38)',
-            'Culture Builder: $390/year (save $78)',
-            'Lock in current pricing',
-            'Perfect for gifting'
+            'Unlimited AI Story Studio',
+            'Interactive Child Portal',
+            'Digital "Postcard" Access',
+            'No credit card required'
         ],
-        cta: 'Save with Annual',
-        href: '/get-started',
+        cta: 'Get Free Pass',
+        href: '/signup?plan=trial_access',
         color: 'amber'
     }
 ];
