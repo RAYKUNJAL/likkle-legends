@@ -31,63 +31,34 @@ class SupabaseClientManager {
 
         // Validation
         if (!url || !anonKey) {
-            console.error('❌ Missing Supabase credentials');
-            console.error('   Required: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY');
+            console.warn('⚠️  Supabase credentials missing. Using placeholder.');
+            return createClient('https://placeholder.supabase.co', 'placeholder');
+        }
 
-            // Return placeholder for build time
-            if (process.env.NODE_ENV === 'production') {
-                // throw new Error('Supabase credentials are required in production');
-                console.error('CRITICAL: Supabase credentials missing in production!');
+        if (useServiceRole && serviceKey) {
+            return createClient(url, serviceKey, {
+                auth: { persistSession: false, autoRefreshToken: false }
+            });
+        }
+
+        // Use Browser Client for better Next.js App Router support (cookies, etc.)
+        if (typeof window !== 'undefined') {
+            try {
+                const { createBrowserClient } = require('@supabase/auth-helpers-nextjs');
+                return createBrowserClient(url, anonKey);
+            } catch (e) {
+                console.warn("createBrowserClient failed, falling back to standard client", e);
             }
-
-            console.warn('⚠️  Using placeholder client for development');
-            return createClient(
-                'https://placeholder.supabase.co',
-                'placeholder-key'
-            );
         }
 
-        const safeUrl = (url || '').toString();
-
-        // Validate URL format
-        if (safeUrl && !safeUrl.includes('.supabase.co') && !safeUrl.includes('localhost')) {
-            console.error(`❌ Invalid Supabase URL format: ${url}`);
-            // throw new Error('Invalid Supabase URL');
-        }
-
-        const key = ((useServiceRole && serviceKey ? serviceKey : anonKey) || '').trim();
-
-        // Create client with production options
-        const authOptions = useServiceRole ? {
-            persistSession: false,
-            autoRefreshToken: false,
-            detectSessionInUrl: false,
-        } : {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true,
-            storageKey: 'sb-yvoyywnxaammsfwgjvkp-auth-token',
-        };
-
-        const client = createClient(url, key, {
-            auth: authOptions,
-            global: {
-                headers: {
-                    'x-client-info': 'likkle-legends-platform',
-                },
-            },
-            db: {
-                schema: 'public',
-            },
-            realtime: {
-                params: {
-                    eventsPerSecond: 10,
-                },
-            },
+        return createClient(url, anonKey, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true,
+                flowType: 'pkce'
+            }
         });
-
-        console.log(`✅ Supabase client initialized (${useServiceRole ? 'Service Role' : 'Anon'})`);
-        return client;
     }
 
     /**

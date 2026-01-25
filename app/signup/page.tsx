@@ -59,6 +59,8 @@ function SignupForm() {
         }));
     };
 
+    const [isEmailSent, setIsEmailSent] = useState(false);
+
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
@@ -73,14 +75,14 @@ function SignupForm() {
 
             console.log("Starting signup flow for:", formData.email);
 
-            // 2. Auth Signup
-            // We pass metadata so the database trigger can populate fields immediately
+            // 2. Auth Signup with PKCE / Callback handle
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
+                    emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/checkout`,
                     data: {
-                        full_name: 'Parent', // Default
+                        full_name: 'Parent',
                         child_name: formData.childName,
                         referral_source: referral,
                         chosen_plan: plan,
@@ -90,7 +92,6 @@ function SignupForm() {
             });
 
             if (authError) {
-                console.error("Auth Error:", authError);
                 if (authError.message.includes('already registered')) {
                     throw new Error("This email is already registered. Please log in.");
                 }
@@ -98,89 +99,66 @@ function SignupForm() {
             }
 
             if (!authData.user) {
-                throw new Error("No user created. Please check your email for confirmation or try again.");
+                throw new Error("Could not create account. Please try again.");
             }
 
             const userId = authData.user.id;
-            console.log("User created:", userId);
-            trackEvent('signup_auth_success', { userId, plan });
+            trackEvent('signup_initiated', { userId, plan });
 
-            // 3. Robust Profile Creation (Double Check)
-            // Even if the DB trigger runs, we ensure the profile is correct via client-side check
-            try {
-                const tier = plan.includes('plus') ? 'legends_plus' : 'starter_mailer';
+            // 3. Welcome Email
+            sendWelcomeEmailAction(formData.email, 'Parent').catch(e => console.error("Email send bg error:", e));
 
-                // Try to select first to see if trigger worked
-                const { data: existingProfile } = await supabase
-                    .from('profiles')
-                    .select('id')
-                    .eq('id', userId)
-                    .single();
+            // 4. Handle Confirmation State
+            if (!authData.session) {
+                // If no session, it means email confirmation is likely enabled
+                setIsEmailSent(true);
+            } else {
+                // Success - Redirect to checkout
+                const planToTier: Record<string, string> = {
+                    'mail_club': 'starter_mailer',
+                    'starter_mailer': 'starter_mailer',
+                    'legends_plus': 'legends_plus',
+                    'annual_plus': 'legends_plus',
+                    'family_legacy': 'family_legacy'
+                };
 
-                if (existingProfile) {
-                    console.log("Profile exists (trigger likely worked), updating...");
-                    await supabase.from('profiles').update({
-                        subscription_tier: tier,
-                        parent_name: 'Parent',
-                        marketing_opt_in: true,
-                        // We don't overwrite child_name here as it's not on profiles table usually, 
-                        // but we rely on the flow to create children later or triggered by DB
-                    }).eq('id', userId);
-                } else {
-                    console.log("Profile missing, manually inserting...");
-                    const { error: insertError } = await supabase.from('profiles').insert({
-                        id: userId,
-                        email: formData.email,
-                        role: 'parent',
-                        subscription_tier: tier,
-                        subscription_status: 'inactive',
-                        onboarding_completed: false,
-                        parent_name: 'Parent',
-                        marketing_opt_in: true
-                    });
+                const normalizedPlan = planToTier[plan] || 'legends_plus';
+                const cycle = (plan === 'annual_plus' || plan === 'legends_plus_annual') ? 'year' : 'month';
 
-                    if (insertError) {
-                        console.warn("Manual insertion warning (might be unnecessary):", insertError.message);
-                        // Don't fail the whole flow if this fails - auth is successful
-                    }
-                }
-            } catch (profileErr) {
-                console.warn("Profile sync issue (non-fatal):", profileErr);
+                router.push(`/checkout?plan=${normalizedPlan}&cycle=${cycle}&uid=${userId}&childName=${encodeURIComponent(formData.childName)}`);
             }
-
-            // 4. Welcome Email (Fire and Forget)
-            try {
-                // Using imported action safely
-                sendWelcomeEmailAction(formData.email, 'Parent').catch(e => console.error("Email send bg error:", e));
-            } catch (e) {
-                console.warn("Could not dispatch welcome email:", e);
-            }
-
-            // 5. Success - Map plan to valid subscription tier record
-            const planToTier: Record<string, string> = {
-                'mail_club': 'starter_mailer',
-                'starter_mailer': 'starter_mailer',
-                'legends_plus': 'legends_plus',
-                'annual_plus': 'legends_plus',
-                'legends_plus_annual': 'legends_plus',
-                'family_legacy': 'family_legacy'
-            };
-
-            const normalizedPlan = planToTier[plan] || 'legends_plus';
-            const cycle = (plan === 'annual_plus' || plan === 'legends_plus_annual') ? 'year' : 'month';
-            console.log("Redirecting to checkout with plan:", normalizedPlan, "cycle:", cycle);
-
-            // Redirect
-            router.push(`/checkout?plan=${normalizedPlan}&cycle=${cycle}&uid=${userId}&childName=${encodeURIComponent(formData.childName)}`);
 
         } catch (err: any) {
             console.error("Critical Signup Failure:", err);
-            setError(err.message || "An unexpected error occurred. Please try again.");
+            setError(err.message || "An unexpected error occurred.");
             setDebugMsg(err.toString());
         } finally {
             setIsLoading(false);
         }
     };
+
+    if (isEmailSent) {
+        return (
+            <div className="min-h-screen bg-[#FFFDF7] flex flex-col justify-center py-12 px-4 font-sans text-center">
+                <div className="max-w-md mx-auto bg-white p-12 rounded-[3.5rem] shadow-2xl border border-zinc-100">
+                    <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
+                        <Mail size={40} />
+                    </div>
+                    <h2 className="text-3xl font-black text-deep mb-4">Check your email!</h2>
+                    <p className="text-deep/50 font-bold mb-8">
+                        We've sent a magic link to <span className="text-primary">{formData.email}</span>.
+                        Click it to confirm your account and start the adventure!
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="w-full py-4 bg-zinc-100 text-deep font-black rounded-2xl hover:bg-zinc-200 transition-all"
+                    >
+                        Try again
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#FFFDF7] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
