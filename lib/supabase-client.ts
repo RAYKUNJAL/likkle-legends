@@ -66,6 +66,7 @@ class SupabaseClientManager {
             persistSession: true,
             autoRefreshToken: true,
             detectSessionInUrl: true,
+            storageKey: 'sb-yvoyywnxaammsfwgjvkp-auth-token',
         };
 
         const client = createClient(url, key, {
