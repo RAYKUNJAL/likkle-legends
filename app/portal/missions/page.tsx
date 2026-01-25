@@ -14,7 +14,7 @@ interface Mission {
     title: string;
     description: string;
     type: 'daily' | 'weekly' | 'special';
-    xp_reward: number;
+    reward_xp: number;
     progress: number;
     target: number;
     icon: string;
@@ -41,7 +41,7 @@ export default function MissionsPage() {
                     title: m.title,
                     description: m.description,
                     type: m.mission_type || 'daily',
-                    xp_reward: m.xp_reward || 50,
+                    reward_xp: m.reward_xp || 50,
                     progress: 0, // Need to fetch user progress separately
                     target: m.completion_target || 1,
                     icon: m.icon || '🎯',
@@ -226,7 +226,7 @@ export default function MissionsPage() {
 
                                             <div className="flex items-center gap-2 bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
                                                 <Zap size={14} />
-                                                <span className="font-bold text-sm">+{mission.xp_reward} XP</span>
+                                                <span className="font-bold text-sm">+{mission.reward_xp} XP</span>
                                             </div>
                                         </div>
 

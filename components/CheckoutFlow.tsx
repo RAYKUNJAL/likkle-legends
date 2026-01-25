@@ -7,6 +7,7 @@ import { SUBSCRIPTION_PLANS, UPSELLS, getLocalizedPrice, SubscriptionTier } from
 import { detectCountry, GeoInfo } from '@/lib/geo-routing';
 import { supabase } from '@/lib/storage';
 import { useUser } from '@/components/UserContext';
+import { trackEvent } from '@/lib/analytics';
 
 // Simple Error Boundary Component
 class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
@@ -169,6 +170,18 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
             }
 
             setStep('success');
+
+            // Track Conversion
+            trackEvent('purchase', {
+                value: totalPrice,
+                currency: displayPrice.currency,
+                items: [{
+                    item_id: activeTier,
+                    item_name: plan.name,
+                    price: totalPrice
+                }]
+            });
+
             onSuccess?.(data.subscriptionID || data.orderID || '');
         } catch (error) {
             console.error('Payment confirmation failed:', error);
@@ -394,6 +407,11 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                 } else {
                                     setStep('shipping');
                                 }
+                                trackEvent('begin_checkout', {
+                                    value: totalPrice,
+                                    currency: displayPrice.currency,
+                                    items: [{ item_id: activeTier, item_name: plan.name }]
+                                });
                             }}
                             className="px-8 py-4 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary/90 transition-colors"
                         >

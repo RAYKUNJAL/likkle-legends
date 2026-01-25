@@ -16,7 +16,7 @@ interface PremiumMusicPlayerProps {
         artist: string;
         audio_url?: string;
         thumbnail_url?: string;
-        xp_reward?: number;
+        reward_xp?: number;
     };
     onClose: () => void;
     onComplete: (xp: number) => void;
@@ -57,7 +57,7 @@ export default function PremiumMusicPlayer({ song, onClose, onComplete }: Premiu
             origin: { y: 0.7 }
         });
         setTimeout(() => {
-            onComplete(song.xp_reward || 25);
+            onComplete(song.reward_xp || 25);
         }, 3000);
     };
 
@@ -160,7 +160,7 @@ export default function PremiumMusicPlayer({ song, onClose, onComplete }: Premiu
                                 <span>Island Beats</span>
                                 <div className="flex items-center gap-1 text-primary">
                                     <Sparkles size={12} />
-                                    <span>+{song.xp_reward || 25} XP</span>
+                                    <span>+{song.reward_xp || 25} XP</span>
                                 </div>
                             </div>
                         </div>

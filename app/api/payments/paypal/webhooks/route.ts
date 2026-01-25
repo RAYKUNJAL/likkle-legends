@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
+import { sendEmail, SUBSCRIPTION_CONFIRMATION_TEMPLATE } from '@/lib/email';
 
 const supabase = supabaseAdmin;
 
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
 
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('id')
+                    .select('id, parent_name, email')
                     .or(`paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`)
                     .single();
 
@@ -77,6 +78,25 @@ export async function POST(request: NextRequest) {
                         .eq('id', profile.id);
 
                     console.log(`Updated user ${profile.id} to tier ${tier}`);
+
+                    // Fetch child name for personalized email
+                    const { data: child } = await supabase
+                        .from('children')
+                        .select('first_name')
+                        .eq('parent_id', profile.id)
+                        .limit(1)
+                        .single();
+
+                    // Send Branded Confirmation Email
+                    await sendEmail({
+                        to: profile.email || subscriberEmail,
+                        subject: "You're Offially in the Club! 🌴",
+                        html: SUBSCRIPTION_CONFIRMATION_TEMPLATE(
+                            profile.parent_name || "Legend Parent",
+                            tier.replace('_', ' ').toUpperCase(),
+                            child?.first_name || "your little legend"
+                        )
+                    });
                 }
                 break;
             }

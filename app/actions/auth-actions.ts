@@ -125,9 +125,46 @@ export async function forgotPasswordAction(email: string): Promise<SignupResult>
             return { success: true, emailSent: true };
         }
 
+
         return { success: false, error: "Failed to generate link." };
     } catch (err: any) {
         console.error("[AUTH] Reset Password Error:", err);
+        return { success: false, error: err.message };
+    }
+}
+
+/**
+ * Branded Magic Link Action
+ */
+export async function sendMagicLinkAction(email: string): Promise<SignupResult> {
+    try {
+        console.log(`[AUTH] Initiating branded magic link for: ${email}`);
+
+        const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'magiclink',
+            email: email,
+            options: {
+                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback?next=/portal`
+            }
+        });
+
+        if (error) {
+            console.error("[AUTH] Magic link generation failed:", error.message);
+            return { success: false, error: error.message };
+        }
+
+        if (data?.properties?.action_link) {
+            await sendEmail({
+                to: email,
+                subject: "Your Likkle Legends Login Link 🌴",
+                html: CONFIRMATION_EMAIL_TEMPLATE("Legend Parent", data.properties.action_link)
+            });
+            return { success: true, emailSent: true };
+        }
+
+        return { success: false, error: "Failed to generate magic link." };
+    } catch (err: any) {
+        console.error("[AUTH] Magic Link Error:", err);
         return { success: false, error: err.message };
     }
 }

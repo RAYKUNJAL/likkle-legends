@@ -8,19 +8,19 @@
 ## 🚨 Required for Production (Add to Vercel)
 
 ### Supabase (Database & Auth) - CRITICAL
-- [ ] `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Public anon key
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` - Service role key (server-side only)
+- [x] `NEXT_PUBLIC_SUPABASE_URL` - Provided in `SECRETS_FOR_VERCEL.txt`
+- [x] `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Provided in `SECRETS_FOR_VERCEL.txt`
+- [x] `SUPABASE_SERVICE_ROLE_KEY` - Provided in `SECRETS_FOR_VERCEL.txt`
 
 ### PayPal (Payments) - CRITICAL
-- [ ] `NEXT_PUBLIC_PAYPAL_CLIENT_ID` - PayPal client ID
-- [ ] `PAYPAL_CLIENT_SECRET` - PayPal secret
-- [ ] `NEXT_PUBLIC_PAYPAL_PLAN_STARTER` - Starter plan ID
-- [ ] `NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS` - Legends Plus plan ID
-- [ ] `NEXT_PUBLIC_PAYPAL_PLAN_FAMILY` - Family Legacy plan ID
+- [x] `NEXT_PUBLIC_PAYPAL_CLIENT_ID` - Provided in `SECRETS_FOR_VERCEL.txt`
+- [x] `PAYPAL_CLIENT_SECRET` - Provided in `SECRETS_FOR_VERCEL.txt`
+- [x] `NEXT_PUBLIC_PAYPAL_PLAN_STARTER` - Provided in `SECRETS_FOR_VERCEL.txt`
+- [x] `NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS` - Provided in `SECRETS_FOR_VERCEL.txt`
+- [x] `NEXT_PUBLIC_PAYPAL_PLAN_FAMILY` - Provided in `SECRETS_FOR_VERCEL.txt`
 
 ### Resend (Email) - RECOMMENDED
-- [ ] `RESEND_API_KEY` - For transactional emails
+- [x] `RESEND_API_KEY` - Provided in `SECRETS_FOR_VERCEL.txt`
 
 ### Analytics - RECOMMENDED
 - [ ] `NEXT_PUBLIC_GA_ID` - Google Analytics 4 ID
