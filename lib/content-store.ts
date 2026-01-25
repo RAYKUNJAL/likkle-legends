@@ -1,18 +1,7 @@
-
-import { createClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from './supabase-client';
 import { GeneratedContent } from './types';
 
-// Use service role key for backend operations if available, otherwise anon
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-let supabase: any;
-
-if (supabaseUrl && supabaseKey) {
-    supabase = createClient(supabaseUrl, supabaseKey);
-} else {
-    console.warn("⚠️ Supabase credentials not found. ContentStore will operate in Mock Mode.");
-}
+const supabase = supabaseAdmin;
 
 export async function saveGeneratedContent(content: GeneratedContent) {
     if (!supabase) {

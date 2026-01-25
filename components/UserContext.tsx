@@ -278,7 +278,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     };
   }, [user?.id, refreshNotifications]);
 
-  const value: UserContextType = {
+  const value: UserContextType = React.useMemo(() => ({
     user,
     children,
     activeChild,
@@ -293,7 +293,19 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     tierLevel: user ? (TIER_LEVELS[user.subscription_tier] || 0) : 0,
     unreadCount,
     refreshNotifications,
-  };
+  }), [
+    user,
+    children,
+    activeChild,
+    isLoading,
+    setActiveChild,
+    refreshUser,
+    refreshChildren,
+    logout,
+    canAccess,
+    unreadCount,
+    refreshNotifications
+  ]);
 
   return (
     <UserContext.Provider value={value}>

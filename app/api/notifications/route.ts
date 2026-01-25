@@ -1,21 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
-let supabase: SupabaseClient | null = null;
-
-function getSupabase(): SupabaseClient {
-    if (!supabase) {
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-        if (!url || !key) {
-            throw new Error('Missing Supabase environment variables');
-        }
-
-        supabase = createClient(url, key);
-    }
-    return supabase;
-}
+const client = supabaseAdmin;
 
 // Get notifications for a user
 export async function GET(request: NextRequest) {
@@ -29,7 +15,8 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Missing user_id' }, { status: 400 });
         }
 
-        const client = getSupabase();
+
+
 
         let query = client
             .from('notifications')
@@ -76,7 +63,8 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ error: 'Missing user_id' }, { status: 400 });
         }
 
-        const client = getSupabase();
+
+
 
         if (mark_all) {
             // Mark all notifications as read
@@ -122,7 +110,8 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'Missing id or user_id' }, { status: 400 });
         }
 
-        const client = getSupabase();
+
+
 
         const { error } = await client
             .from('notifications')
