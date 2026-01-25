@@ -73,12 +73,24 @@ export async function signupAction(formData: {
             } else if (linkData?.properties?.action_link) {
                 // 3. Send Branded Email via Resend
                 console.log("[AUTH] Sending branded confirmation email via Resend...");
-                await sendEmail({
+                const emailResult = await sendEmail({
                     to: formData.email,
                     subject: "Welcome to the Islands! Confirm your Likkle Legends account 🌴",
                     html: CONFIRMATION_EMAIL_TEMPLATE(formData.childName || "Parent", linkData.properties.action_link)
                 });
-                return { success: true, emailSent: true, userId };
+
+                if (!emailResult.success) {
+                    console.error("[AUTH] Email sending failed:", emailResult.error);
+                    // We still return success=true for the signup itself, but correct the emailSent flag
+                    // This allows the UI to show "Account created, but email failed" if we wanted, 
+                    // or we rely on Supabase's default email if configured.
+                    // For now, let's treat it as a success but maybe we should warn?
+                    // Actually, if we return emailSent: false, the UI might handle it differently?
+                    // The UI currently just checks 'success'. 
+                    // Let's keep it simple: we assume if this failed, the user needs to know.
+                }
+
+                return { success: true, emailSent: emailResult.success, userId };
             }
         } catch (adminErr) {
             console.error("[AUTH] Admin API or Resend failure:", adminErr);
