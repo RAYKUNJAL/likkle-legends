@@ -9,5 +9,6 @@
   "tierRequired": "starter_mailer",
   "durationSeconds": 120,
   "thumbnailPrompt": "Vibrant illustration for a children's song about fishing in Trinidad and Tobago. Depict a family of four (two parents, two children) in a colorful fishing boat on turquoise water. The children are holding fishing rods and smiling. The father is rowing the boat, and the mother is pointing at a fish jumping out of the water. The background features a tropical island with lush green hills, palm trees, and a bright blue sky. Include musical notes swirling around the boat and incorporate traditional Caribbean patterns and colors. Include the instruments Steelpan and the Shakers around the boat",
-  "educationalValue": "This song teaches children about the Caribbean tradition of fishing, family time, and being grateful for nature. It also introduces a simple Trinidadian Patois phrase 'Dat ting nice!' meaning 'That thing is nice!'"
+  "educationalValue": "This song teaches children about the Caribbean tradition of fishing, family time, and being grateful for nature. It also introduces a simple Trinidadian Patois phrase 'Dat ting nice!' meaning 'That thing is nice!'",
+  "audio_url": "https://yvoyywnxaammsfwgjvkp.supabase.co/storage/v1/object/public/songs/generated/songs/1769255570208-fisherman-song.wav"
 }

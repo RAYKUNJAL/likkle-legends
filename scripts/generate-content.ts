@@ -137,7 +137,7 @@ async function generateStories(options: CLIOptions) {
 
     console.log(`\n✅ Generated ${stories.length} ${stories.length === 1 ? 'story' : 'stories'}:`);
     stories.forEach((story, i) => {
-        console.log(`  ${i + 1}. "${story.title}" (${story.islandTheme}, ${story.ageTrack})`);
+        console.log(`  ${i + 1}. "${story.title}" (${story.metadata.islandTheme}, ${story.metadata.ageTrack})`);
     });
 
     if (options.autoPost && !options.dryRun) {

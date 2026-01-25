@@ -9,5 +9,6 @@
   "tierRequired": "starter_mailer",
   "durationSeconds": 75,
   "thumbnailPrompt": "A vibrant cartoon illustration showing children of various ethnicities dancing on a sunny beach in Barbados. A steelpan player is in the background, along with palm trees swaying in the breeze. One child is holding a kite, another is splashing in a puddle with colorful rain boots. The sky is a mix of bright blue and fluffy white clouds, with a small rainbow visible in the distance. Include a Caribbean-style house in the background with bright colors.",
-  "educationalValue": "Teaches children about different types of weather, counting from one to three, and introduces a Bajan expression."
+  "educationalValue": "Teaches children about different types of weather, counting from one to three, and introduces a Bajan expression.",
+  "audio_url": "https://yvoyywnxaammsfwgjvkp.supabase.co/storage/v1/object/public/songs/generated/songs/1769255404977-bajan-weather-song.wav"
 }

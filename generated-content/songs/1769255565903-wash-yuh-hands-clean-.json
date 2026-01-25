@@ -9,5 +9,6 @@
   "tierRequired": "starter_mailer",
   "durationSeconds": 120,
   "thumbnailPrompt": "A vibrant and colorful illustration of children dancing to soca music in a tropical Caribbean setting with palm trees, a steelpan drum, and clear blue ocean in the background. The children are actively washing their hands at an outdoor sink with soap bubbles floating around them. The sun is shining brightly, and the overall mood is cheerful and energetic. The title \"Wash Yuh Hands Clean!\" is prominently displayed in a fun, cartoonish font. One child holds a roti.",
-  "educationalValue": "Teaches children the importance of handwashing to prevent the spread of germs and stay healthy. Introduces simple Patois and Caribbean cultural references."
+  "educationalValue": "Teaches children the importance of handwashing to prevent the spread of germs and stay healthy. Introduces simple Patois and Caribbean cultural references.",
+  "audio_url": "https://yvoyywnxaammsfwgjvkp.supabase.co/storage/v1/object/public/songs/generated/songs/1769255565903-wash-yuh-hands-clean-.wav"
 }

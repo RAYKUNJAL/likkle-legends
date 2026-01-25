@@ -22,7 +22,7 @@ export interface ParentNote {
     whatToSayAfter: string;
 }
 
-export interface GeneratedStoryContentKit {
+export interface GeneratedStory {
     title: string;
     summary: string;
     pages: StoryPage[];
@@ -53,7 +53,7 @@ export class StoryGenerator {
     /**
      * Generate a complete story with all metadata and quality checks
      */
-    async generateStory(params: StoryGenerationParams = {}): Promise<GeneratedStoryContentKit> {
+    async generateStory(params: StoryGenerationParams = {}): Promise<GeneratedStory> {
         // Defaults
         const ageTrack = params.ageTrack || (Math.random() > 0.5 ? 'mini' : 'big');
         const ageConfig = CONTENT_CONFIG.ageGroups[ageTrack];
@@ -131,7 +131,7 @@ export class StoryGenerator {
         }
 
         // Construct Final Content Kit
-        const contentKit: GeneratedStoryContentKit = {
+        const contentKit: GeneratedStory = {
             title: rawContent.title,
             summary: rawContent.summary,
             pages: rawContent.pages.map((p: any, i: number) => ({
@@ -161,6 +161,30 @@ export class StoryGenerator {
     private getRandomIslandId(): string {
         const keys = Object.keys(ISLAND_REGISTRY);
         return keys[Math.floor(Math.random() * keys.length)];
+    }
+
+    /**
+     * Generate multiple stories in batch
+     */
+    async generateBatch(count: number, params: StoryGenerationParams = {}): Promise<GeneratedStory[]> {
+        const stories: GeneratedStory[] = [];
+
+        for (let i = 0; i < count; i++) {
+            try {
+                console.log(`Generating story ${i + 1}/${count}...`);
+                const story = await this.generateStory(params);
+                stories.push(story);
+
+                // Rate limiting delay
+                if (i < count - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+            } catch (error) {
+                console.error(`Failed to generate story ${i + 1}:`, error);
+            }
+        }
+
+        return stories;
     }
 }
 
