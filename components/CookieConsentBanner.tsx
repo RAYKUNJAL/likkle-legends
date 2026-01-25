@@ -12,6 +12,7 @@ export const CookieConsentBanner: React.FC = () => {
 
     const handleAccept = () => {
         localStorage.setItem('likkle_cookie_consent', 'true');
+        window.dispatchEvent(new Event('likkle_cookie_consent_updated'));
         setShow(false);
     };
 
@@ -25,7 +26,7 @@ export const CookieConsentBanner: React.FC = () => {
                     <h4 className="font-heading font-black text-blue-950 text-lg">We use cookies for magic!</h4>
                     <p className="text-xs font-bold text-blue-900/70 mt-1 max-w-xl">
                         Essential cookies help us save your stories and keep the village safe. We do not use third-party tracking ads.
-                        <a href="#" className="underline text-blue-600 ml-1 hover:text-blue-800">Read Cookie Policy</a>.
+                        <a href="/privacy" className="underline text-blue-600 ml-1 hover:text-blue-800">Read Cookie Policy</a>.
                     </p>
                 </div>
                 <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">

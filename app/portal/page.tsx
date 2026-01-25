@@ -26,7 +26,7 @@ interface Song {
     thumbnail_url: string;
     audio_url?: string;
     tier_required: string;
-    xp_reward?: number;
+    reward_xp?: number;
 }
 
 interface Storybook {
@@ -42,7 +42,7 @@ interface Mission {
     id: string;
     title: string;
     description: string;
-    xp_reward: number;
+    reward_xp: number;
     mission_type: string;
 }
 
@@ -53,7 +53,7 @@ interface Video {
     video_url?: string;
     duration_seconds: number;
     tier_required: string;
-    xp_reward?: number;
+    reward_xp?: number;
 }
 
 export default function ChildPortalPage() {
@@ -398,7 +398,7 @@ export default function ChildPortalPage() {
                                                     <h3 className="text-2xl font-black text-blue-900 mb-2 truncate px-2">{video.title}</h3>
                                                     <div className="flex items-center gap-3 px-2">
                                                         <Sparkles className="text-yellow-500" size={18} />
-                                                        <span className="text-indigo-600 font-black uppercase text-xs">Earn +{video.xp_reward || 50} XP</span>
+                                                        <span className="text-indigo-600 font-black uppercase text-xs">Earn +{video.reward_xp || 50} XP</span>
                                                     </div>
                                                 </button>
                                             );

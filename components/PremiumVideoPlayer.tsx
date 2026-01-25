@@ -15,7 +15,7 @@ interface PremiumVideoPlayerProps {
         title: string;
         video_url?: string;
         thumbnail_url?: string;
-        xp_reward?: number;
+        reward_xp?: number;
     };
     onClose: () => void;
     onComplete: (xp: number) => void;
@@ -60,7 +60,7 @@ export default function PremiumVideoPlayer({ video, onClose, onComplete }: Premi
             origin: { y: 0.6 }
         });
         setTimeout(() => {
-            onComplete(video.xp_reward || 50);
+            onComplete(video.reward_xp || 50);
         }, 3000);
     };
 
@@ -175,7 +175,7 @@ export default function PremiumVideoPlayer({ video, onClose, onComplete }: Premi
                                     <div className="flex items-center gap-4">
                                         <div className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl flex items-center gap-2 border border-white/20">
                                             <Sparkles className="text-yellow-400" size={20} />
-                                            <span className="text-white font-black">+{video.xp_reward || 50} XP</span>
+                                            <span className="text-white font-black">+{video.reward_xp || 50} XP</span>
                                         </div>
                                         <button
                                             className="text-white/80 hover:text-white"

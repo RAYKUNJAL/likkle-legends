@@ -187,8 +187,14 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     // Free content is accessible to everyone (even guests)
     if (tierRequired === 'free' || !tierRequired) return true;
 
-    // Anything else requires a logged-in user
+    // Anything else requires a logged-in user and active status
     if (!user) return false;
+
+    // Status protection: past_due and canceled users get dropped to 'free' access level
+    const isStatusActive = ['active', 'trialing'].includes(user.subscription_status);
+    if (!isStatusActive) {
+      return tierRequired === 'free' || !tierRequired;
+    }
 
     const userLevel = TIER_LEVELS[user.subscription_tier] || 0;
     const requiredLevel = TIER_LEVELS[tierRequired] || 0;

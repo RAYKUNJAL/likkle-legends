@@ -24,12 +24,12 @@ export default function AnalyticsLoader() {
 
     useEffect(() => {
         const checkConsent = () => {
-            const consent = localStorage.getItem('cookie_consent');
+            const consent = localStorage.getItem('likkle_cookie_consent');
             if (consent === 'true') setConsentGiven(true);
         };
         checkConsent();
-        window.addEventListener('cookie_consent_updated', checkConsent);
-        return () => window.removeEventListener('cookie_consent_updated', checkConsent);
+        window.addEventListener('likkle_cookie_consent_updated', checkConsent);
+        return () => window.removeEventListener('likkle_cookie_consent_updated', checkConsent);
     }, []);
 
     useEffect(() => {

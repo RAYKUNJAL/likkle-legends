@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { SUBSCRIPTION_PLANS, SubscriptionTier } from '@/lib/paypal';
 import { getFulfillmentHub } from '@/lib/geo-routing';
+import { sendEmail, ADMIN_NEW_ORDER_TEMPLATE } from '@/lib/email';
 
 const supabase = supabaseAdmin;
 
@@ -88,6 +89,29 @@ export async function POST(request: NextRequest) {
             notification_type: 'subscription',
             action_url: '/onboarding/child',
         });
+
+        // 4. Send Admin Alert Email
+        try {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('email, parent_name')
+                .eq('id', userIdToUpdate)
+                .single();
+
+            if (profile) {
+                await sendEmail({
+                    to: 'legends@likklelegends.com', // Admin inbox
+                    subject: `🚀 SALE ALERT: ${tier.toUpperCase()}`,
+                    html: ADMIN_NEW_ORDER_TEMPLATE(
+                        profile.parent_name || "New Parent",
+                        tier.replace('_', ' ').toUpperCase(),
+                        profile.email || "No Email"
+                    )
+                });
+            }
+        } catch (alertErr) {
+            console.error('[ADMIN] Failed to send sale alert:', alertErr);
+        }
 
         return NextResponse.json({
             success: true,

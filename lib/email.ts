@@ -167,8 +167,12 @@ export const ONBOARDING_DAY_2_TEMPLATE = (name: string, childName: string) => `
                 <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://likklelegends.com'}/portal" class="button">Continue the Adventure</a>
             </center>
         </div>
+
         <div class="footer">
-            <p>© ${new Date().getFullYear()} Likkle Legends. Unsubscribe preferences in your account settings.</p>
+            <p>© ${new Date().getFullYear()} Likkle Legends. Safe for kids. Trusted by parents. 🛡️</p>
+            <p style="font-size: 10px; color: #94a3b8; margin-top: 10px;">
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://likklelegends.com'}/portal/settings" style="color: #94a3b8; text-decoration: underline;">Unsubscribe</a>
+            </p>
         </div>
     </div>
 </body>
@@ -403,9 +407,36 @@ export const RESET_PASSWORD_EMAIL_TEMPLATE = (name: string, resetLink: string) =
             <a href="${resetLink}" class="button">Reset Password</a>
             <p style="margin-top: 30px; font-size: 12px; color: #94a3b8;">This link will expire in 1 hour. If you didn't request this, you can ignore this email.</p>
         </div>
+
+
         <div class="footer">
             <p>© ${new Date().getFullYear()} Likkle Legends. Protecting our village, one legend at a time. 🛡️</p>
+            <p style="font-size: 10px; color: #cbd5e1; margin-top: 20px;">
+                You received this because you are a member of the Likkle Legends village.<br>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://likklelegends.com'}/portal/settings" style="color: #94a3b8; text-decoration: underline;">Manage Email Preferences</a>
+            </p>
         </div>
+    </div>
+</body>
+</html>
+`;
+
+export const ADMIN_NEW_ORDER_TEMPLATE = (parentName: string, tier: string, email: string) => `
+<!DOCTYPE html>
+<html>
+<body style="font-family: sans-serif; line-height: 1.6; color: #333;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h2 style="color: #ff6b35;">🎉 New Subscription!</h2>
+        <p>A new Legend has joined the village.</p>
+        <div style="background: #fdf2f0; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Parent:</strong> ${parentName}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Tier:</strong> ${tier}</p>
+            <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+        </div>
+        <p>Check the admin dashboard for shipping details if applicable.</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+        <p style="font-size: 12px; color: #999;">Likkle Legends Internal Alert</p>
     </div>
 </body>
 </html>
