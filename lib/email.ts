@@ -36,10 +36,28 @@ export async function sendEmail({ to, subject, html }: EmailPayload) {
             html,
         });
 
+        if (data.error) {
+            throw data.error;
+        }
+
         return { success: true, data };
-    } catch (error) {
-        console.error('Failed to send email:', error);
-        return { success: false, error };
+    } catch (error: any) {
+        console.error('Failed to send email with custom domain:', error);
+
+        // Fallback to onboarding@resend.dev (only works if 'to' is the registered test email)
+        try {
+            console.log('Attempting fallback to onboarding@resend.dev...');
+            const fallbackData = await resend.emails.send({
+                from: 'onboarding@resend.dev',
+                to,
+                subject: `[Fallback] ${subject}`,
+                html: html,
+            });
+            return { success: true, data: fallbackData };
+        } catch (fallbackError) {
+            console.error('Fallback email also failed:', fallbackError);
+            return { success: false, error };
+        }
     }
 }
 
