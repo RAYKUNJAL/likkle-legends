@@ -1,22 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase-client';
 import { XP_ACTIONS, calculateLevel, BADGES, LEVELS } from '@/lib/gamification';
 
-let supabase: SupabaseClient | null = null;
-
-function getSupabase(): SupabaseClient {
-    if (!supabase) {
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-        if (!url || !key) {
-            throw new Error('Missing Supabase environment variables');
-        }
-
-        supabase = createClient(url, key);
-    }
-    return supabase;
-}
+const client = supabaseAdmin;
 
 // Award XP to a child
 export async function POST(request: NextRequest) {
@@ -33,7 +19,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid action type' }, { status: 400 });
         }
 
-        const client = getSupabase();
+
+        const client = supabaseAdmin;
+
 
         // Get current child data
         const { data: child, error: childError } = await client
@@ -141,7 +129,7 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Missing child_id' }, { status: 400 });
         }
 
-        const client = getSupabase();
+        const client = supabaseAdmin;
 
         // Get child data
         const { data: child, error: childError } = await client
