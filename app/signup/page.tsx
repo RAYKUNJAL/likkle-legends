@@ -7,6 +7,7 @@ import { ArrowLeft, Mail, Lock, User, Sparkles, Loader2, AlertCircle } from 'luc
 import { supabase } from '@/lib/supabase-client';
 import { useState, useEffect, Suspense } from 'react';
 import { sendWelcomeEmailAction } from '@/app/actions/user-actions';
+import { trackEvent } from '@/lib/analytics';
 
 // Signup Form Component
 function SignupForm() {
@@ -42,6 +43,7 @@ function SignupForm() {
             await supabase.auth.signOut().catch(() => { });
         };
         resetSession();
+        trackEvent('signup_viewed', { plan });
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,6 +98,7 @@ function SignupForm() {
 
             const userId = authData.user.id;
             console.log("User created:", userId);
+            trackEvent('signup_auth_success', { userId, plan });
 
             // 3. Robust Profile Creation (Double Check)
             // Even if the DB trigger runs, we ensure the profile is correct via client-side check
@@ -148,8 +151,22 @@ function SignupForm() {
                 console.warn("Could not dispatch welcome email:", e);
             }
 
-            // 5. Success - Redirect
-            router.push(`/checkout?plan=${plan}&uid=${userId}`);
+            // 5. Success - Map plan to valid subscription tier record
+            const planToTier: Record<string, string> = {
+                'mail_club': 'starter_mailer',
+                'starter_mailer': 'starter_mailer',
+                'legends_plus': 'legends_plus',
+                'annual_plus': 'legends_plus',
+                'legends_plus_annual': 'legends_plus',
+                'family_legacy': 'family_legacy'
+            };
+
+            const normalizedPlan = planToTier[plan] || 'legends_plus';
+            const cycle = (plan === 'annual_plus' || plan === 'legends_plus_annual') ? 'year' : 'month';
+            console.log("Redirecting to checkout with plan:", normalizedPlan, "cycle:", cycle);
+
+            // Redirect
+            router.push(`/checkout?plan=${normalizedPlan}&cycle=${cycle}&uid=${userId}&childName=${encodeURIComponent(formData.childName)}`);
 
         } catch (err: any) {
             console.error("Critical Signup Failure:", err);
