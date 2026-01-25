@@ -81,16 +81,11 @@ export async function signupAction(formData: {
 
                 if (!emailResult.success) {
                     console.error("[AUTH] Email sending failed:", emailResult.error);
-                    // We still return success=true for the signup itself, but correct the emailSent flag
-                    // This allows the UI to show "Account created, but email failed" if we wanted, 
-                    // or we rely on Supabase's default email if configured.
-                    // For now, let's treat it as a success but maybe we should warn?
-                    // Actually, if we return emailSent: false, the UI might handle it differently?
-                    // The UI currently just checks 'success'. 
-                    // Let's keep it simple: we assume if this failed, the user needs to know.
+                    // Return error to the client so they know email failed
+                    return { success: false, error: "Account created, but email failed to send. " + ((emailResult.error as any)?.message || "Check domain settings.") };
                 }
 
-                return { success: true, emailSent: emailResult.success, userId };
+                return { success: true, emailSent: true, userId };
             }
         } catch (adminErr) {
             console.error("[AUTH] Admin API or Resend failure:", adminErr);
