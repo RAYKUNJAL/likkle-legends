@@ -53,10 +53,16 @@ export async function sendEmail({ to, subject, html }: EmailPayload) {
                 subject: `[Fallback] ${subject}`,
                 html: html,
             });
+
+            if (fallbackData.error) {
+                console.error('Fallback returned error:', fallbackData.error);
+                return { success: false, error: fallbackData.error };
+            }
+
             return { success: true, data: fallbackData };
         } catch (fallbackError) {
             console.error('Fallback email also failed:', fallbackError);
-            return { success: false, error };
+            return { success: false, error: fallbackError };
         }
     }
 }
