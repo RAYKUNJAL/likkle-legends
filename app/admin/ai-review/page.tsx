@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { supabase } from '@/lib/supabase-client';
 import { GeneratedContent } from '@/lib/types';
 import { CheckCircle2, XCircle, Clock, Search, RefreshCw, BookOpen, Music, ShieldAlert } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -14,7 +14,8 @@ export default function AdminContentQueue() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
     const [generatingAudio, setGeneratingAudio] = useState<string | null>(null);
-    const supabase = createClientComponentClient();
+
+
 
     useEffect(() => {
         fetchQueue();
