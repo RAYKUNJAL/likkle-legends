@@ -12,7 +12,8 @@ function getResend(): Resend | null {
     return _resend;
 }
 
-const FROM_EMAIL = 'legends@likklelegends.com'; // Or 'onboarding@resend.dev' for testing
+const FROM_EMAIL = 'onboarding@resend.dev'; // Force Sandbox for debugging
+// const FROM_EMAIL = 'legends@likklelegends.com';
 
 export interface EmailPayload {
     to: string;
