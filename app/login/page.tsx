@@ -1,19 +1,28 @@
+
 "use client";
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase-client';
 
-export default function Login() {
+function LoginForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+        const errorParam = searchParams.get('error');
+        if (errorParam === 'auth-callback-failed') {
+            setError("The magic link expired or was already used. Please request a new one.");
+        }
+    }, [searchParams]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -110,12 +119,24 @@ export default function Login() {
                 </form>
 
                 <div className="text-center space-y-4 pt-4">
-                    <Link href="#" className="text-sm font-bold text-primary hover:underline">Forgot password?</Link>
+                    <Link href="/forgot-password" className="text-sm font-bold text-primary hover:underline">Forgot password?</Link>
                     <div className="text-sm text-deep/40">
                         Don't have an account? <Link href="/signup" className="text-secondary font-bold hover:underline">Start your adventure</Link>
                     </div>
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function Login() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="animate-spin text-primary" size={48} />
+            </div>
+        }>
+            <LoginForm />
+        </Suspense>
     );
 }

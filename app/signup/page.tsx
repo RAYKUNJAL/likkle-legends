@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, Lock, User, Sparkles, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase-client';
 import { useState, useEffect, Suspense } from 'react';
-import { sendWelcomeEmailAction } from '@/app/actions/user-actions';
+import { signupAction } from '@/app/actions/auth-actions';
 import { trackEvent } from '@/lib/analytics';
 
 // Signup Form Component
@@ -73,44 +73,27 @@ function SignupForm() {
             if (!formData.email || !formData.password || !formData.childName) throw new Error("Please fill in all fields.");
             if (formData.password.length < 6) throw new Error("Password must be at least 6 characters.");
 
-            console.log("Starting signup flow for:", formData.email);
-
-            // 2. Auth Signup with PKCE / Callback handle
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+            // 2. Call Branded Signup Action
+            const result = await signupAction({
                 email: formData.email,
                 password: formData.password,
-                options: {
-                    emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/checkout`,
-                    data: {
-                        full_name: 'Parent',
-                        child_name: formData.childName,
-                        referral_source: referral,
-                        chosen_plan: plan,
-                        marketing_opt_in: true
-                    }
-                }
+                childName: formData.childName,
+                plan: plan,
+                referral: referral
             });
 
-            if (authError) {
-                if (authError.message.includes('already registered')) {
+            if (!result.success) {
+                if (result.error?.includes('already registered')) {
                     throw new Error("This email is already registered. Please log in.");
                 }
-                throw authError;
+                throw new Error(result.error || "Could not create account.");
             }
 
-            if (!authData.user) {
-                throw new Error("Could not create account. Please try again.");
-            }
-
-            const userId = authData.user.id;
+            const userId = result.userId;
             trackEvent('signup_initiated', { userId, plan });
 
-            // 3. Welcome Email
-            sendWelcomeEmailAction(formData.email, 'Parent').catch(e => console.error("Email send bg error:", e));
-
-            // 4. Handle Confirmation State
-            if (!authData.session) {
-                // If no session, it means email confirmation is likely enabled
+            // 3. Handle State
+            if (result.emailSent) {
                 setIsEmailSent(true);
             } else {
                 // Success - Redirect to checkout

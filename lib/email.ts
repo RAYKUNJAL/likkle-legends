@@ -89,6 +89,49 @@ export const WELCOME_EMAIL_TEMPLATE = (name: string) => `
 </html>
 `;
 
+export const CONFIRMATION_EMAIL_TEMPLATE = (name: string, confirmationLink: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; line-height: 1.6; margin: 0; padding: 0; background: #fffdf7; }
+        .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 40px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; }
+        .header { background: #0f172a; padding: 40px; text-align: center; color: white; }
+        .content { padding: 40px; text-align: center; }
+        .welcome-text { font-size: 14px; font-weight: 800; color: #ff6b35; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; display: block; }
+        .title { font-size: 32px; font-weight: 900; color: #0f172a; margin: 0 0 20px 0; line-height: 1.1; }
+        .description { font-size: 16px; color: #64748b; margin-bottom: 30px; }
+        .button { display: inline-block; padding: 20px 40px; background: #ff6b35; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 20px rgba(255,107,53,0.3); transition: all 0.3s ease; }
+        .footer { text-align: center; font-size: 12px; color: #94a3b8; padding: 40px; background: #f8fafc; }
+        .link-text { font-size: 12px; color: #94a3b8; margin-top: 30px; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin:0; font-family: 'Arial Black', sans-serif;">Likkle Legends</h1>
+        </div>
+        <div class="content">
+            <span class="welcome-text">Adventure is calling</span>
+            <h2 class="title">Confirm Your Village Account</h2>
+            <p class="description">Hi ${name}, welcome to the club! We're so excited to have you join our Caribbean journey. Click the button below to verify your email and start your adventure.</p>
+            
+            <a href="${confirmationLink}" class="button">Confirm Account</a>
+            
+            <p class="link-text">
+                If the button doesn't work, copy and paste this link into your browser:<br>
+                ${confirmationLink}
+            </p>
+        </div>
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Likkle Legends. Safe for kids. Trusted by parents. 🛡️</p>
+            <p>If you didn't create an account, you can safely ignore this email.</p>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
 export const ONBOARDING_DAY_2_TEMPLATE = (name: string, childName: string) => `
 <!DOCTYPE html>
 <html>
@@ -329,6 +372,39 @@ export const WIN_BACK_TEMPLATE = (name: string) => `
         </div>
         <div class="footer">
             <p>© ${new Date().getFullYear()} Likkle Legends. Unsubscribe in account settings.</p>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+export const RESET_PASSWORD_EMAIL_TEMPLATE = (name: string, resetLink: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; color: #1e293b; line-height: 1.6; margin: 0; padding: 0; background: #fffdf7; }
+        .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 40px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
+        .header { background: #ff6b35; padding: 40px; text-align: center; color: white; }
+        .content { padding: 40px; text-align: center; }
+        .title { font-size: 28px; font-weight: 900; color: #0f172a; margin-bottom: 20px; }
+        .button { display: inline-block; padding: 18px 36px; background: #0f172a; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; margin-top: 20px; }
+        .footer { text-align: center; font-size: 12px; color: #94a3b8; padding: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin:0;">Likkle Legends</h1>
+        </div>
+        <div class="content">
+            <h2 class="title">Reset Your Password</h2>
+            <p>Hi ${name}, did you forget your magic key? No problem! Click the button below to set a new password for your Village account.</p>
+            <a href="${resetLink}" class="button">Reset Password</a>
+            <p style="margin-top: 30px; font-size: 12px; color: #94a3b8;">This link will expire in 1 hour. If you didn't request this, you can ignore this email.</p>
+        </div>
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Likkle Legends. Protecting our village, one legend at a time. 🛡️</p>
         </div>
     </div>
 </body>
