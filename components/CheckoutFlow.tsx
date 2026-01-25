@@ -46,17 +46,34 @@ class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError:
 
 interface CheckoutFlowProps {
     selectedTier?: SubscriptionTier;
+    initialBillingCycle?: 'month' | 'year';
+    initialChildName?: string;
     onSuccess?: (subscriptionId: string) => void;
     onError?: (error: unknown) => void;
 }
 
-function CheckoutFlowContent({ selectedTier, onSuccess, onError }: CheckoutFlowProps) {
-    const [step, setStep] = useState<'plan' | 'upsells' | 'payment' | 'success'>('plan');
-    const [activeTier, setActiveTier] = useState<SubscriptionTier>(selectedTier || 'legends_plus');
+function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildName, onSuccess, onError }: CheckoutFlowProps) {
+    const [step, setStep] = useState<'plan' | 'upsells' | 'shipping' | 'payment' | 'success'>('plan');
+
+    // Normalize tier to ensure it's valid
+    const initialTier = (selectedTier && SUBSCRIPTION_PLANS[selectedTier]) ? selectedTier : 'legends_plus';
+    const [activeTier, setActiveTier] = useState<SubscriptionTier>(initialTier);
+
     const [geoInfo, setGeoInfo] = useState<GeoInfo | null>(null);
     const [addGrandparent, setAddGrandparent] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [paymentBillingCycle, setPaymentBillingCycle] = useState<'month' | 'year'>('month');
+    const [paymentBillingCycle, setPaymentBillingCycle] = useState<'month' | 'year'>(initialBillingCycle || 'month');
+
+    // Shipping Address State
+    const [shippingData, setShippingData] = useState({
+        name: initialChildName || '',
+        line1: '',
+        line2: '',
+        city: '',
+        state: '',
+        postalCode: '',
+        country: '',
+    });
 
     // Safe user access
     const { user, isLoading: authLoading } = useUser();
@@ -87,7 +104,7 @@ function CheckoutFlowContent({ selectedTier, onSuccess, onError }: CheckoutFlowP
     // Don't render until mounted to avoid hydration mismatch
     if (!mounted) return <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-primary" size={32} /></div>;
 
-    const plan = SUBSCRIPTION_PLANS[activeTier];
+    const plan = SUBSCRIPTION_PLANS[activeTier] || SUBSCRIPTION_PLANS['legends_plus'];
     const grandparentUpsell = UPSELLS.grandparent_dashboard;
 
     // Determine base price to display (monthly or yearly / 12)
@@ -141,7 +158,8 @@ function CheckoutFlowContent({ selectedTier, onSuccess, onError }: CheckoutFlowP
                     addGrandparent,
                     currency: displayPrice.currency,
                     billingCycle: paymentBillingCycle,
-                    userId: currentUserId // Explicitly pass ID to be safe
+                    userId: currentUserId, // Explicitly pass ID to be safe
+                    shipping: (activeTier === 'trial_access') ? null : shippingData
                 }),
             });
 
@@ -165,22 +183,28 @@ function CheckoutFlowContent({ selectedTier, onSuccess, onError }: CheckoutFlowP
         <div className="max-w-4xl mx-auto animate-fade-in">
             {/* Progress Steps */}
             <div className="flex items-center justify-center gap-4 mb-8">
-                {['plan', 'upsells', 'payment'].map((s, i) => (
-                    <div key={s} className="flex items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step === s
-                            ? 'bg-primary text-white'
-                            : ['plan', 'upsells', 'payment'].indexOf(step) > i
-                                ? 'bg-green-500 text-white'
-                                : 'bg-gray-200 text-gray-500'
-                            }`}>
-                            {['plan', 'upsells', 'payment'].indexOf(step) > i ? <Check size={20} /> : i + 1}
+                {['plan', 'upsells', 'shipping', 'payment'].map((s, i) => {
+                    // Skip shipping on digital only if we want, but keeping it for consistency
+                    const isDigital = activeTier === 'trial_access';
+                    if (s === 'shipping' && isDigital) return null;
+
+                    return (
+                        <div key={s} className="flex items-center">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${step === s
+                                ? 'bg-primary text-white'
+                                : ['plan', 'upsells', 'shipping', 'payment'].indexOf(step) > ['plan', 'upsells', 'shipping', 'payment'].indexOf(s)
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-gray-200 text-gray-500'
+                                }`}>
+                                {['plan', 'upsells', 'shipping', 'payment'].indexOf(step) > ['plan', 'upsells', 'shipping', 'payment'].indexOf(s) ? <Check size={20} /> : i + 1}
+                            </div>
+                            {i < 3 && (
+                                <div className={`w-16 h-1 mx-2 ${['plan', 'upsells', 'shipping', 'payment'].indexOf(step) > i ? 'bg-green-500' : 'bg-gray-200'
+                                    }`} />
+                            )}
                         </div>
-                        {i < 2 && (
-                            <div className={`w-16 h-1 mx-2 ${['plan', 'upsells', 'payment'].indexOf(step) > i ? 'bg-green-500' : 'bg-gray-200'
-                                }`} />
-                        )}
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Step 1: Choose Plan */}
@@ -364,8 +388,111 @@ function CheckoutFlowContent({ selectedTier, onSuccess, onError }: CheckoutFlowP
                             ← Back
                         </button>
                         <button
-                            onClick={() => setStep('payment')}
+                            onClick={() => {
+                                if (activeTier === 'trial_access') {
+                                    setStep('payment');
+                                } else {
+                                    setStep('shipping');
+                                }
+                            }}
                             className="px-8 py-4 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary/90 transition-colors"
+                        >
+                            Proceed to {activeTier === 'trial_access' ? 'Payment' : 'Shipping'} →
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Step 2.5: Shipping Address */}
+            {step === 'shipping' && (
+                <div className="max-w-xl mx-auto">
+                    <h2 className="text-3xl font-black text-center text-gray-900 mb-2">Shipping Address</h2>
+                    <p className="text-center text-gray-500 mb-8">Where should we send your monthly Likkle Legends mail?</p>
+
+                    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 space-y-4">
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
+                            <input
+                                type="text"
+                                value={shippingData.name}
+                                onChange={(e) => setShippingData({ ...shippingData, name: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                                placeholder="Recipient Name"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">Address Line 1</label>
+                            <input
+                                type="text"
+                                value={shippingData.line1}
+                                onChange={(e) => setShippingData({ ...shippingData, line1: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                                placeholder="Street address"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-1">Address Line 2 (Optional)</label>
+                            <input
+                                type="text"
+                                value={shippingData.line2}
+                                onChange={(e) => setShippingData({ ...shippingData, line2: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                                placeholder="Apt, Suite, etc."
+                            />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">City</label>
+                                <input
+                                    type="text"
+                                    value={shippingData.city}
+                                    onChange={(e) => setShippingData({ ...shippingData, city: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">State / Province</label>
+                                <input
+                                    type="text"
+                                    value={shippingData.state}
+                                    onChange={(e) => setShippingData({ ...shippingData, state: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Postal Code</label>
+                                <input
+                                    type="text"
+                                    value={shippingData.postalCode}
+                                    onChange={(e) => setShippingData({ ...shippingData, postalCode: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Country</label>
+                                <input
+                                    type="text"
+                                    value={shippingData.country}
+                                    onChange={(e) => setShippingData({ ...shippingData, country: e.target.value })}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-center gap-4 mt-8">
+                        <button
+                            onClick={() => setStep('upsells')}
+                            className="px-6 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
+                        >
+                            ← Back
+                        </button>
+                        <button
+                            onClick={() => setStep('payment')}
+                            disabled={!shippingData.name || !shippingData.line1 || !shippingData.city || !shippingData.postalCode || !shippingData.country}
+                            className="px-8 py-4 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
                         >
                             Proceed to Payment →
                         </button>
@@ -468,7 +595,13 @@ function CheckoutFlowContent({ selectedTier, onSuccess, onError }: CheckoutFlowP
                         </div>
 
                         <button
-                            onClick={() => setStep('upsells')}
+                            onClick={() => {
+                                if (activeTier === 'trial_access') {
+                                    setStep('upsells');
+                                } else {
+                                    setStep('shipping');
+                                }
+                            }}
                             className="w-full mt-6 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
                         >
                             ← Back

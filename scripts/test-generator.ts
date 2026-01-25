@@ -24,10 +24,10 @@ async function testStoryGeneration() {
 
         console.log('✅ Story generated successfully!');
         console.log(`   Title: "${story.title}"`);
-        console.log(`   Island: ${story.islandTheme}`);
-        console.log(`   Age Track: ${story.ageTrack}`);
+        console.log(`   Island: ${story.metadata.islandTheme}`);
+        console.log(`   Age Track: ${story.metadata.ageTrack}`);
         console.log(`   Pages: ${story.pages.length}`);
-        console.log(`   Patois Words: ${story.patoisWords.length}`);
+        console.log(`   Patois Words: ${story.metadata.patoisWords.length}`);
         console.log(`\n   Summary: ${story.summary}`);
 
         return story;

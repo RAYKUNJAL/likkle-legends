@@ -9,5 +9,6 @@
   "tierRequired": "starter_mailer",
   "durationSeconds": 90,
   "thumbnailPrompt": "A vibrant and colorful illustration for a children's song about handwashing. Depict happy Grenadian children dancing on a sunny beach with palm trees in the background. One child is demonstrating how to wash their hands at an outdoor sink. Include musical notes floating in the air and a steelpan drum in the foreground. The children are wearing colorful Caribbean clothing. The overall style should be cheerful and cartoonish.",
-  "educationalValue": "Teaches children the importance of handwashing to prevent the spread of germs and stay healthy. Introduces the Grenadian phrase \"Tek care\" (Take care)."
+  "educationalValue": "Teaches children the importance of handwashing to prevent the spread of germs and stay healthy. Introduces the Grenadian phrase \"Tek care\" (Take care).",
+  "audio_url": "https://yvoyywnxaammsfwgjvkp.supabase.co/storage/v1/object/public/songs/generated/songs/1769252996862-wash-yuh-hand-every-day-.wav"
 }

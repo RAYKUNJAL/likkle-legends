@@ -9,5 +9,6 @@
   "tierRequired": "starter_mailer",
   "durationSeconds": 120,
   "thumbnailPrompt": "A vibrant, cartoon-style illustration for a children's song. The scene depicts a sunny Caribbean beach in Saint Vincent and the Grenadines. In the foreground, three children of diverse ethnicities are dancing and playing musical instruments: a steelpan, a ukulele, and a pair of maracas. In the background, an adult figure (grandfather or father) is teaching a child how to fish from a colorful wooden fishing boat. The turquoise ocean is filled with cartoon fish. Palm trees sway gently in the breeze. The overall mood is cheerful, bright, and musical, with visual sound waves emanating from the instruments. The style should be reminiscent of a classic children's book illustration, with bold colors and simple shapes.",
-  "educationalValue": "This song teaches children about fishing traditions in Saint Vincent and the Grenadines, promotes family and community values, introduces simple Patois words, and encourages ocean conservation."
+  "educationalValue": "This song teaches children about fishing traditions in Saint Vincent and the Grenadines, promotes family and community values, introduces simple Patois words, and encourages ocean conservation.",
+  "audio_url": "https://yvoyywnxaammsfwgjvkp.supabase.co/storage/v1/object/public/songs/generated/songs/1768931066225-fishing-time-in-vincy.wav"
 }

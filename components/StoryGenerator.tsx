@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Sparkles, Wand2, BookOpen, User, AlertCircle } from 'lucide-react';
+import { Sparkles, Wand2, BookOpen, User, AlertCircle, Volume2 } from 'lucide-react';
 import { createStoryAction } from '@/app/actions/story';
 import { siteContent } from '@/lib/content';
 import PrintStudio from '@/components/PrintStudio';

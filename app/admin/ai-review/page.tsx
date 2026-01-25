@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -15,25 +14,28 @@ export default function AdminContentQueue() {
     const [filter, setFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
     const [generatingAudio, setGeneratingAudio] = useState<string | null>(null);
 
-
-
     useEffect(() => {
         fetchQueue();
     }, [filter]);
 
     const fetchQueue = async () => {
         setLoading(true);
-        const { data } = await supabase
-            .from('generated_content')
-            .select('*')
-            .eq('admin_status', filter)
-            .order('created_at', { ascending: false });
+        try {
+            const { data } = await supabase
+                .from('generated_content')
+                .select('*')
+                .eq('admin_status', filter)
+                .order('created_at', { ascending: false });
 
-        if (data) {
-            const mapped = data.map((item: any) => ({ ...item, content_id: item.id }));
-            setContent(mapped as unknown as GeneratedContent[]);
+            if (data) {
+                const mapped = data.map((item: any) => ({ ...item, content_id: item.id }));
+                setContent(mapped as unknown as GeneratedContent[]);
+            }
+        } catch (err) {
+            console.error("Failed to fetch queue:", err);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const handleGenerateAudio = async (contentId: string) => {
@@ -111,7 +113,7 @@ export default function AdminContentQueue() {
                                                 {item.content_type}
                                             </span>
                                         </div>
-                                        
+
                                         <div className="bg-slate-50 p-4 rounded-2xl text-xs text-slate-500 space-y-2">
                                             <div className="flex justify-between">
                                                 <strong>Safety Gate:</strong>
@@ -132,7 +134,7 @@ export default function AdminContentQueue() {
                                             )}
                                         </div>
 
-                                        <button 
+                                        <button
                                             onClick={() => handleGenerateAudio(item.content_id)}
                                             disabled={!!generatingAudio}
                                             className="w-full py-3 bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2"
@@ -165,16 +167,16 @@ export default function AdminContentQueue() {
                                                 {JSON.stringify(item.payload, null, 2)}
                                             </pre>
                                         </div>
-                                        
+
                                         {filter === 'pending' && (
                                             <div className="flex gap-4">
-                                                <button 
+                                                <button
                                                     onClick={() => updateStatus(item.content_id, 'approved')}
                                                     className="px-8 py-3 bg-slate-900 hover:bg-green-600 text-white rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center gap-2"
                                                 >
                                                     <CheckCircle2 size={16} /> Approve for Parents
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => updateStatus(item.content_id, 'rejected')}
                                                     className="px-8 py-3 bg-white border-2 border-slate-200 hover:border-red-500 hover:text-red-500 text-slate-500 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors flex items-center gap-2"
                                                 >
@@ -184,8 +186,9 @@ export default function AdminContentQueue() {
                                         )}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            </div>
+                        ))}
+                    </div>
                 )}
             </main>
             <Footer />

@@ -10,6 +10,8 @@ import { SubscriptionTier } from '@/lib/paypal';
 function CheckoutContent() {
     const searchParams = useSearchParams();
     const plan = searchParams.get('plan') as SubscriptionTier | null;
+    const cycle = searchParams.get('cycle') as 'month' | 'year' | null;
+    const childName = searchParams.get('childName') || '';
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-sky-50 via-white to-amber-50">
@@ -31,6 +33,8 @@ function CheckoutContent() {
             <main className="py-12 px-4">
                 <CheckoutFlow
                     selectedTier={plan || undefined}
+                    initialBillingCycle={cycle || undefined}
+                    initialChildName={childName}
                     onSuccess={(subscriptionId) => {
                         // Success handling
                     }}

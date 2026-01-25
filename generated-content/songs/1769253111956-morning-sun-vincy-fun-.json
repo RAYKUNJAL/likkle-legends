@@ -9,5 +9,6 @@
   "tierRequired": "starter_mailer",
   "durationSeconds": 90,
   "thumbnailPrompt": "Vibrant and colorful cartoon illustration of children dancing and playing steelpan music on a sunny beach in St. Vincent. In the background, lush green hills, palm trees, and clear blue water are visible. One child is holding a plate of bakes and saltfish. The children are wearing bright clothing and have happy expressions. Musical notes float around them. The words \"Morning Sun, Vincy Fun!\" are written in a playful font at the top.",
-  "educationalValue": "Teaches children about daily routines, Caribbean food, and the landscape of St. Vincent and the Grenadines. Introduces counting and encourages physical activity."
+  "educationalValue": "Teaches children about daily routines, Caribbean food, and the landscape of St. Vincent and the Grenadines. Introduces counting and encourages physical activity.",
+  "audio_url": "https://yvoyywnxaammsfwgjvkp.supabase.co/storage/v1/object/public/songs/generated/songs/1769253111956-morning-sun-vincy-fun-.wav"
 }

@@ -9,5 +9,6 @@
   "tierRequired": "starter_mailer",
   "durationSeconds": 120,
   "thumbnailPrompt": "A vibrant and colorful illustration depicting a bustling market scene in Antigua and Barbuda. Children are dancing to steelpan music near stalls overflowing with tropical fruits (mangoes, pineapples, bananas) and vegetables (sweet potatoes, pumpkins). Vendors with smiling faces are interacting with customers. The background features brightly painted houses and palm trees under a sunny sky. Incorporate musical notes floating in the air to visually represent the Soca music.",
-  "educationalValue": "Teaches children about market day traditions in Antigua and Barbuda, the importance of community, and introduces them to common fruits and vegetables found in the Caribbean. Also introduces a Patois phrase."
+  "educationalValue": "Teaches children about market day traditions in Antigua and Barbuda, the importance of community, and introduces them to common fruits and vegetables found in the Caribbean. Also introduces a Patois phrase.",
+  "audio_url": "https://yvoyywnxaammsfwgjvkp.supabase.co/storage/v1/object/public/songs/generated/songs/1769255335223-market-day-jamboree-.wav"
 }

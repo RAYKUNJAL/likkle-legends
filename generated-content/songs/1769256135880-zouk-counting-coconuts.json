@@ -9,5 +9,6 @@
   "tierRequired": "starter_mailer",
   "durationSeconds": 90,
   "thumbnailPrompt": "A vibrant and colorful cartoon illustration for a children's song cover. The scene is a sunny beach in Saint Lucia with turquoise water and lush green palm trees. Four smiling children of different ethnicities are dancing in the sand, holding coconuts. One child is playing a steelpan, another a ukulele, and a third is shaking maracas. Coconuts are scattered around on the beach. The sky is bright blue with fluffy white clouds. The words \"Zouk Counting Coconuts\" are prominently displayed in a playful font. The style should be cheerful and inviting, capturing the energy of Caribbean music and culture.",
-  "educationalValue": "Teaches children to count from one to eight, introduces them to Caribbean culture and music (zouk), and familiarizes them with the concept of coconuts as a local fruit."
+  "educationalValue": "Teaches children to count from one to eight, introduces them to Caribbean culture and music (zouk), and familiarizes them with the concept of coconuts as a local fruit.",
+  "audio_url": "https://yvoyywnxaammsfwgjvkp.supabase.co/storage/v1/object/public/songs/generated/songs/1769256135880-zouk-counting-coconuts.wav"
 }

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { GeneratedContent } from '@/lib/types';
 import { useUser } from '@/components/UserContext';
+import { supabase } from '@/lib/supabase-client';
 import { fetchGeneratedContent, approveContentAction, rejectContentAction } from '@/app/actions/island-brain';
 
 export default function ContentReviewFeed() {

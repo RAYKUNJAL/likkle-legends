@@ -9,5 +9,6 @@
   "tierRequired": "starter_mailer",
   "durationSeconds": 120,
   "thumbnailPrompt": "A vibrant, cartoon-style illustration for a Caribbean children's song. The scene is a sunny beach in St. Vincent, with a tall, green coconut tree as the centerpiece. Around the tree, there are cartoon animals: one bright parrot, two little lizards, three crabs, and four hummingbirds. Children with smiling faces are dancing and playing musical instruments like steelpan drums and maracas. The background features clear blue water and lush green hills. The overall style should be colorful, cheerful, and inviting, reflecting the energy of Caribbean music.",
-  "educationalValue": "This song teaches children to count from one to four and introduces them to animals found in St. Vincent and the Grenadines. It also uses Patois, expanding their understanding of different dialects and cultures. Kids will also develop body awareness through the use of [CLAP],[SNAP],[STOMP] and understand that learning and diversity is fun!"
+  "educationalValue": "This song teaches children to count from one to four and introduces them to animals found in St. Vincent and the Grenadines. It also uses Patois, expanding their understanding of different dialects and cultures. Kids will also develop body awareness through the use of [CLAP],[SNAP],[STOMP] and understand that learning and diversity is fun!",
+  "audio_url": "https://yvoyywnxaammsfwgjvkp.supabase.co/storage/v1/object/public/songs/generated/songs/1769253107500-one-coconut-tree.wav"
 }

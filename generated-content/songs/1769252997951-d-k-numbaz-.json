@@ -9,5 +9,6 @@
   "tierRequired": "starter_mailer",
   "durationSeconds": 120,
   "thumbnailPrompt": "A vibrant and colorful illustration depicting a sunny Dominican landscape with lush green mountains and a sparkling blue sea. In the foreground, a group of diverse children are dancing and playing musical instruments like steelpan, drums, and shakers. The numbers 1 through 10 are playfully integrated into the scenery, appearing on mangoes, flowers, coconuts, and even as stars in the sky. The overall style should be cheerful and inviting, capturing the spirit of Caribbean music and culture. Style: Children's book illustration.",
-  "educationalValue": "Teaches children numbers 1-10, introduces Dominican culture, and reinforces counting skills through an engaging song."
+  "educationalValue": "Teaches children numbers 1-10, introduces Dominican culture, and reinforces counting skills through an engaging song.",
+  "audio_url": "https://yvoyywnxaammsfwgjvkp.supabase.co/storage/v1/object/public/songs/generated/songs/1769252997951-d-k-numbaz-.wav"
 }

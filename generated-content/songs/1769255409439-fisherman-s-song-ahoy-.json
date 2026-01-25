@@ -9,5 +9,6 @@
   "tierRequired": "starter_mailer",
   "durationSeconds": 120,
   "thumbnailPrompt": "Vibrant and colorful cartoon illustration depicting a Grenadian fisherman in a brightly painted wooden boat on turquoise Caribbean waters. He is smiling and pulling a net full of colorful cartoon fish (snapper, grouper). In the background, a Grenadian village with brightly colored houses nestled amongst lush green hills, palm trees swaying in the breeze, and children dancing on the beach with miniature steelpans. Include musical notes floating in the air. The sky is a bright blue with fluffy white clouds. 'Fisherman's Song Ahoy!' title is prominently displayed.",
-  "educationalValue": "Children learn about the importance of fishing in Grenadian culture, family meals, different types of fish, and Grenadian expressions."
+  "educationalValue": "Children learn about the importance of fishing in Grenadian culture, family meals, different types of fish, and Grenadian expressions.",
+  "audio_url": "https://yvoyywnxaammsfwgjvkp.supabase.co/storage/v1/object/public/songs/generated/songs/1769255409439-fisherman-s-song-ahoy-.wav"
 }
