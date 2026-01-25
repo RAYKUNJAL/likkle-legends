@@ -17,7 +17,11 @@ function SignupForm() {
     // Helpers
     const getParam = (key: string, fallback: string) => {
         try {
-            return searchParams?.get(key) || fallback;
+            let value = searchParams?.get(key);
+            if (!value) return fallback;
+            // Remove zero-width spaces and other invisible Unicode characters
+            value = value.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+            return value || fallback;
         } catch {
             return fallback;
         }

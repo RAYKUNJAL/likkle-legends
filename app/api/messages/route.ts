@@ -1,21 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
-let supabase: SupabaseClient | null = null;
-
-function getSupabase(): SupabaseClient {
-    if (!supabase) {
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-        if (!url || !key) {
-            throw new Error('Missing Supabase environment variables');
-        }
-
-        supabase = createClient(url, key);
-    }
-    return supabase;
-}
+const client = supabaseAdmin;
 
 // Get messages for a conversation
 export async function GET(request: NextRequest) {
@@ -30,7 +16,8 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Missing user_id' }, { status: 400 });
         }
 
-        const client = getSupabase();
+
+
 
         let query = client
             .from('messages')
@@ -73,7 +60,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const client = getSupabase();
+
+
 
         // Create the message
         const { data: message, error: insertError } = await client
@@ -120,7 +108,8 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
-        const client = getSupabase();
+
+
 
         // Mark all messages from contact as read
         const { error } = await client

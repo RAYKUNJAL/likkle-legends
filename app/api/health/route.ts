@@ -1,23 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
-let _supabase: SupabaseClient | null = null;
-
-// Lazy initialize Supabase to avoid build-time errors
-function getSupabase(): SupabaseClient | null {
-    if (!_supabase) {
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if (!url || !key) return null;
-        _supabase = createClient(url, key);
-    }
-    return _supabase;
-}
+const supabase = supabaseAdmin;
 
 export async function GET() {
     try {
         const start = Date.now();
-        const supabase = getSupabase();
+
 
         if (!supabase) {
             return NextResponse.json(
