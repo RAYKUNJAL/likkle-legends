@@ -1,21 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
-let supabaseAdmin: SupabaseClient | null = null;
-
-function getSupabaseAdmin(): SupabaseClient {
-    if (!supabaseAdmin) {
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-        if (!url || !key) {
-            throw new Error('Missing Supabase environment variables');
-        }
-
-        supabaseAdmin = createClient(url, key);
-    }
-    return supabaseAdmin;
-}
+const supabase = supabaseAdmin;
 
 const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID || '';
 
@@ -58,7 +44,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
         }
 
-        const supabase = getSupabaseAdmin();
         const event = JSON.parse(body);
         const eventType = event.event_type;
         const resource = event.resource;
