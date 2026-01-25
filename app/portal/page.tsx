@@ -181,30 +181,43 @@ export default function ChildPortalPage() {
                     </div>
 
                     {/* Tanty Spice Character */}
-                    <div className="relative w-full aspect-[3/4] mb-12 group">
+                    <div className="relative w-40 h-40 mb-6 group shrink-0">
                         <Image
                             src="/images/tanty_spice_avatar.jpg"
                             alt="Tanty Spice"
                             fill
-                            className="object-cover object-top scale-110 group-hover:scale-125 transition-transform duration-700"
+                            className="object-cover object-top scale-110 group-hover:scale-125 transition-transform duration-700 rounded-full border-4 border-white/20 shadow-2xl"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#3ABEF9] via-transparent to-transparent" />
                     </div>
 
                     <div className="bg-white/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/30 text-white font-black text-sm shadow-lg mb-8">
                         Bless up, Legend! 👋
                     </div>
 
-                    <button
-                        onClick={() => setActiveSection('home')}
-                        className="flex items-center gap-3 bg-white text-[#3ABEF9] px-8 py-4 rounded-2xl font-black shadow-xl hover:scale-105 active:scale-95 transition-all"
-                    >
-                        <MapIcon size={24} /> Village
-                    </button>
+                    {/* Navigation Items */}
+                    <div className="w-full px-6 space-y-2 mb-12">
+                        {navItems.map((item) => {
+                            const Icon = item.icon;
+                            const isActive = activeSection === item.id;
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setActiveSection(item.id as any)}
+                                    className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-sm transition-all group ${isActive
+                                        ? 'bg-white text-[#3ABEF9] shadow-xl scale-105'
+                                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                                        }`}
+                                >
+                                    <Icon size={20} className={isActive ? 'text-[#3ABEF9]' : 'text-white/50 group-hover:text-white'} />
+                                    {item.label}
+                                </button>
+                            );
+                        })}
+                    </div>
 
                     {/* Tropical elements deco */}
-                    <div className="absolute bottom-4 left-4 opacity-20 rotate-12">🌴</div>
-                    <div className="absolute top-1/2 right-4 opacity-20 -rotate-12">🌺</div>
+                    <div className="absolute bottom-4 left-4 opacity-10 rotate-12 pointer-events-none">🌴</div>
+                    <div className="absolute top-1/2 right-4 opacity-10 -rotate-12 pointer-events-none">🌺</div>
                 </aside>
 
                 {/* Main Viewport */}

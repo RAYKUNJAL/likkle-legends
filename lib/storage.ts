@@ -1,12 +1,16 @@
 // Supabase Storage Service for Media Assets
 // Handles character images, songs, videos, and other content
 
-import { supabase } from './supabase-client';
+import { supabase, supabaseAdmin } from './supabase-client';
 
 export { supabase };
 
 function getSupabase() {
     return supabase;
+}
+
+function getSupabaseAdmin() {
+    return supabaseAdmin;
 }
 
 // Storage bucket names
@@ -25,20 +29,14 @@ export type BucketName = typeof BUCKETS[keyof typeof BUCKETS];
 
 // Initialize storage buckets (run once during setup)
 export async function initializeStorageBuckets() {
-    const client = getSupabase();
+    const client = getSupabaseAdmin();
     const buckets = Object.values(BUCKETS);
 
     for (const bucket of buckets) {
+        console.log(`Creating bucket: ${bucket}...`);
         const { error } = await client.storage.createBucket(bucket, {
             public: true,
-            fileSizeLimit: 104857600, // 100MB for videos
-            allowedMimeTypes: [
-                'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml',
-                'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg',
-                'video/mp4', 'video/webm', 'video/quicktime',
-                'model/gltf-binary', 'model/gltf+json',
-                'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            ],
+            fileSizeLimit: 52428800, // 50MB
         });
 
         if (error && !error.message.includes('already exists')) {

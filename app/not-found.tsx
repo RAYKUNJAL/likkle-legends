@@ -1,52 +1,36 @@
 import Link from 'next/link';
-import Image from 'next/image';
-import { ArrowLeft, Home } from 'lucide-react';
+import { Home, Search, Compass } from 'lucide-react';
 
 export default function NotFound() {
     return (
-        <div className="min-h-screen bg-[#FFFDF7] flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
-            {/* Background blobs for depth */}
-            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-3xl animate-pulse" />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/5 rounded-full blur-3xl animate-pulse delay-700" />
-
-            <div className="relative z-10 flex flex-col items-center">
-                <div className="w-48 h-48 mb-6 relative animate-bounce">
-                    <Image
-                        src="/images/mango_moko.png"
-                        alt="Mango Moko"
-                        fill
-                        className="object-contain"
-                    />
+        <div className="min-h-screen bg-sky-50 flex flex-col items-center justify-center p-6 text-center">
+            <div className="relative mb-12">
+                <div className="text-9xl font-black text-white drop-shadow-[0_10px_10px_rgba(0,0,0,0.05)] select-none">404</div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-32 h-32 bg-primary/20 rounded-full animate-ping"></div>
                 </div>
-
-                <h1 className="text-5xl md:text-7xl font-black text-deep mb-4 tracking-tight">
-                    Off the Map! <span className="inline-block animate-wiggle">🗺️</span>
-                </h1>
-
-                <p className="text-xl md:text-2xl text-deep/60 max-w-lg mb-10 font-medium">
-                    Even Mango Moko can't find this page! Looks like you've wandered into uncharted territory.
-                </p>
-
-                <div className="flex flex-col sm:flex-row gap-4 items-center">
-                    <Link
-                        href="/"
-                        className="flex items-center justify-center gap-3 px-10 py-5 bg-primary text-white rounded-3xl font-black text-lg shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all hover:scale-105 active:scale-95"
-                    >
-                        <Home size={24} />
-                        Back to Mainland
-                    </Link>
-
-                    <Link
-                        href="/contact"
-                        className="flex items-center justify-center gap-3 px-10 py-5 bg-white border-4 border-deep/5 text-deep rounded-3xl font-black text-lg hover:bg-deep/5 transition-all"
-                    >
-                        <ArrowLeft size={24} />
-                        Get Help
-                    </Link>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <Compass size={64} className="text-primary animate-spin-slow" />
                 </div>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 h-3 bg-gradient-to-r from-primary via-secondary to-accent" />
+            <h1 className="text-4xl md:text-5xl font-black text-sky-900 mb-4 tracking-tighter">Lost at Sea?</h1>
+            <p className="text-xl text-sky-700/60 max-w-lg mb-12 font-medium">
+                The island you're looking for doesn't exist yet, or it's hidden behind a tropical storm.
+            </p>
+
+            <Link
+                href="/"
+                className="flex items-center gap-3 px-10 py-5 bg-white text-primary rounded-[2.5rem] font-black text-xl shadow-xl shadow-primary/10 hover:scale-105 active:scale-95 transition-all border-4 border-white"
+            >
+                <Home size={28} /> Take Me Home
+            </Link>
+
+            <div className="mt-20 flex gap-12 opacity-30 select-none">
+                <span className="text-4xl">🌴</span>
+                <span className="text-4xl">🐚</span>
+                <span className="text-4xl">🥥</span>
+            </div>
         </div>
     );
 }

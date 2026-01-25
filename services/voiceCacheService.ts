@@ -34,7 +34,7 @@ export const getVoiceCacheKey = async (text: string, voice: string = 'Kore'): Pr
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 };
 
-export const getCachedAudio = async (text: string, voice: string = 'Kore'): Promise<ArrayBuffer | null> => {
+export const getCachedAudio = async (text: string, voice: string = 'Kore'): Promise<ArrayBufferLike | null> => {
     try {
         const db = await openDB();
         const key = await getVoiceCacheKey(text, voice);
@@ -79,7 +79,7 @@ const evictOldest = async (db: IDBDatabase) => {
     });
 };
 
-export const setCachedAudio = async (text: string, buffer: ArrayBuffer, voice: string = 'Kore'): Promise<void> => {
+export const setCachedAudio = async (text: string, buffer: ArrayBufferLike, voice: string = 'Kore'): Promise<void> => {
     try {
         const db = await openDB();
         const key = await getVoiceCacheKey(text, voice);

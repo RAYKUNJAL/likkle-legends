@@ -337,7 +337,7 @@ export const siteContent = {
                 badges: ["Best for trying the magic", "Ships worldwide", "Low commitment"],
                 cta: {
                     label: "Start Mail Club",
-                    href: "/signup",
+                    href: "/signup?plan=mail_club",
                     variant: "primary"
                 }
             },
@@ -358,7 +358,7 @@ export const siteContent = {
                 badges: ["Most popular", "Complete learning experience"],
                 cta: {
                     label: "Upgrade to Plus",
-                    href: "/signup",
+                    href: "/signup?plan=legends_plus",
                     variant: "secondary"
                 }
             },
@@ -379,7 +379,7 @@ export const siteContent = {
                 badges: ["Best value", "VIP perks"],
                 cta: {
                     label: "Choose Annual",
-                    href: "/signup",
+                    href: "/signup?plan=annual_plus",
                     variant: "outline"
                 }
             }

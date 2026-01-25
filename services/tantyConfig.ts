@@ -236,9 +236,9 @@ export const TANTY_ISLAND_ENGINE = {
         platform: "Google GenAI"
     },
     technical_stack: {
-        brain_model: "gemini-3.0-pro",
-        vocal_model: "gemini-3.0-pro",
-        image_engine: "gemini-3.0-pro",
+        brain_model: "gemini-2.5-flash-preview-tts",
+        vocal_model: "gemini-2.5-flash-preview-tts",
+        image_engine: "gemini-2.5-flash-preview-tts",
         grounding_tools: ["googleMaps"],
         audio_sample_rate: 24000,
         input_sample_rate: 16000

@@ -46,7 +46,7 @@ function getCurrencyForCountry(countryCode: string): string {
     return currencyMap[countryCode] || 'USD';
 }
 
-function getFulfillmentHub(countryCode: string): FulfillmentHub {
+export function getFulfillmentHub(countryCode: string): FulfillmentHub {
     if (countryCode === 'GB') return 'stannp_uk';
     if (countryCode === 'CA') return 'stannp_canada';
     // US and Caribbean ship from Maryland
