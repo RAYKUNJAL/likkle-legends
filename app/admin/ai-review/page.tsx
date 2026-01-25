@@ -65,8 +65,7 @@ export default function AdminContentQueue() {
         if (!error) {
             setContent(prev => prev.filter(c => c.content_id !== id));
         }
-    };
-
+  }
     return (
         <div className="bg-slate-50 min-h-screen">
             <Navbar />
