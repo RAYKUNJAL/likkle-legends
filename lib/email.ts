@@ -12,7 +12,7 @@ function getResend(): Resend | null {
     return _resend;
 }
 
-const FROM_EMAIL = 'legends@likklelegends.com'; // Commercial Grade
+const FROM_EMAIL = 'noreply@likklelegends.com'; // Commercial Grade
 // const FROM_EMAIL = 'onboarding@resend.dev';
 
 export interface EmailPayload {
@@ -26,10 +26,11 @@ export async function sendEmail({ to, subject, html }: EmailPayload) {
 
     if (!resend) {
         console.warn('RESEND_API_KEY is not set. Email not sent.', { to, subject });
-        return { success: false, error: 'Missing API Key' };
+        return { success: false, error: 'Missing Resend API Key' };
     }
 
     try {
+        console.log(`[Email] Attempting to send via custom domain (${FROM_EMAIL}) to ${to}...`);
         const data = await resend.emails.send({
             from: FROM_EMAIL,
             to,
@@ -38,16 +39,28 @@ export async function sendEmail({ to, subject, html }: EmailPayload) {
         });
 
         if (data.error) {
+            console.error('[Email] Resend API error (custom domain):', data.error);
             throw data.error;
         }
 
-        return { success: true, data };
+        console.log(`[Email] Success! Sent via custom domain. ID: ${data.data?.id}`);
+        return { success: true, data: data.data, mode: 'custom' };
     } catch (error: any) {
-        console.error('Failed to send email with custom domain:', error);
+        const errorMsg = error.message || JSON.stringify(error);
+        console.error('[Email] Primary send failed:', errorMsg);
+
+        // Check if error is clearly a domain verification issue
+        const isUnverified = errorMsg.toLowerCase().includes('not verified') ||
+            errorMsg.toLowerCase().includes('unverified') ||
+            errorMsg.toLowerCase().includes('onboarding@resend.dev');
+
+        if (isUnverified) {
+            console.warn('[Email] Domain legends@likklelegends.com is NOT verified in Resend dashboard.');
+        }
 
         // Fallback to onboarding@resend.dev (only works if 'to' is the registered test email)
         try {
-            console.log('Attempting fallback to onboarding@resend.dev...');
+            console.log(`[Email] Attempting fallback to onboarding@resend.dev for ${to}...`);
             const fallbackData = await resend.emails.send({
                 from: 'onboarding@resend.dev',
                 to,
@@ -56,14 +69,30 @@ export async function sendEmail({ to, subject, html }: EmailPayload) {
             });
 
             if (fallbackData.error) {
-                console.error('Fallback returned error:', fallbackData.error);
-                return { success: false, error: fallbackData.error };
+                console.error('[Email] Fallback also failed:', fallbackData.error);
+                return {
+                    success: false,
+                    error: fallbackData.error,
+                    primaryError: error,
+                    isUnverified
+                };
             }
 
-            return { success: true, data: fallbackData };
+            console.log(`[Email] Fallback successful! ID: ${fallbackData.data?.id}`);
+            return {
+                success: true,
+                data: fallbackData.data,
+                mode: 'fallback',
+                isUnverified
+            };
         } catch (fallbackError) {
-            console.error('Fallback email also failed:', fallbackError);
-            return { success: false, error: fallbackError };
+            console.error('[Email] Fallback exception:', fallbackError);
+            return {
+                success: false,
+                error: fallbackError,
+                primaryError: error,
+                isUnverified
+            };
         }
     }
 }

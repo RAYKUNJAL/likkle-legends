@@ -1,11 +1,13 @@
 import '../lib/load-env';
 import { supabaseAdmin } from '../lib/supabase-client';
-import * as emailLib from '../lib/email';
+import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE } from '../lib/email';
+import * as emailModule from '../lib/email';
 
-const sendEmail = emailLib.sendEmail;
-const CONFIRMATION_EMAIL_TEMPLATE = emailLib.CONFIRMATION_EMAIL_TEMPLATE;
-
-console.log('sendEmail type:', typeof sendEmail);
+console.log('--- DIAGNOSTIC_IMPORTS ---');
+console.log('emailModule keys:', Object.keys(emailModule));
+console.log('sendEmail from destructuring:', typeof sendEmail);
+console.log('sendEmail from module:', typeof emailModule.sendEmail);
+console.log('--- END DIAGNOSTIC_IMPORTS ---\n');
 
 async function diagnoseAuth(email: string) {
     console.log(`🔍 Starting Auth Diagnosis for: ${email}`);
@@ -63,11 +65,14 @@ async function diagnoseAuth(email: string) {
 
             if (emailResult.success) {
                 console.log('✅ Resend reported SUCCESS!');
+                if ((emailResult as any).mode === 'fallback') {
+                    console.log('⚠️  WARNING: Sent via FALLBACK (onboarding@resend.dev).');
+                    console.log('👉 This only works if the recipient is the Resend account owner.');
+                }
                 console.log('👉 Verification: Check your inbox NOW. If not there, check Spam and Resend Dashboard Logs.');
             } else {
                 console.error('❌ Resend reported FAILURE:', emailResult.error);
-                const err = emailResult.error as any;
-                if (err.message?.includes('not verified')) {
+                if ((emailResult as any).isUnverified) {
                     console.log('👉 FIX: Your domain likklelegends.com is NOT verified in Resend. Check DNS settings.');
                 }
             }

@@ -12,6 +12,7 @@ config({ path: resolve(process.cwd(), '.env') });
 const critical = [
     'GEMINI_API_KEY',
     'NEXT_PUBLIC_SUPABASE_URL',
+    'RESEND_API_KEY',
 ];
 
 const recommended = [
