@@ -25,7 +25,11 @@ if (missingCritical.length > 0) {
     console.error('❌ Missing critical environment variables:');
     missingCritical.forEach(key => console.error(`   - ${key}`));
     console.error('\nPlease check your .env.local file');
-    process.exit(1);
+    if (process.env.NODE_ENV === 'production') {
+        console.warn('⚠️  Warning: Missing critical variables during build/production. Continuing but some features may fail.');
+    } else {
+        process.exit(1);
+    }
 }
 
 if (missingRecommended.length > 0) {
