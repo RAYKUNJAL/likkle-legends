@@ -103,11 +103,21 @@ export async function signupAction(formData: {
 
         if (!emailResult.success) {
             console.error("[AUTH] Resend API Error:", emailResult.error);
-            const errMsg = (emailResult.error as any)?.message || "Check your Resend API key and domain verification.";
+            const isUnverified = (emailResult as any).isUnverified;
+            let errMsg = (emailResult.error as any)?.message || "Check your Resend API key and domain verification.";
+
+            if (isUnverified) {
+                errMsg = "Domain likklelegends.com is not verified in Resend. Emails can only be sent to the registered owner in test mode.";
+            }
+
             return {
                 success: false,
                 error: `Email Delivery Failed: ${errMsg}`
             };
+        }
+
+        if ((emailResult as any).mode === 'fallback') {
+            console.warn("[AUTH] Email sent via FALLBACK (onboarding@resend.dev). This will NOT reach real users.");
         }
 
         console.log("[AUTH] Signup flow completed successfully for", formData.email);
@@ -142,11 +152,16 @@ export async function forgotPasswordAction(email: string): Promise<SignupResult>
 
         if (data?.properties?.action_link) {
             // 2. Send branded email
-            await sendEmail({
+            const emailResult = await sendEmail({
                 to: email,
                 subject: "Reset your Likkle Legends Password 🔑",
                 html: RESET_PASSWORD_EMAIL_TEMPLATE("Legend Parent", data.properties.action_link)
             });
+
+            if (!emailResult.success) {
+                return { success: false, error: `Email failed: ${(emailResult.error as any)?.message || 'Check Resend'}` };
+            }
+
             return { success: true, emailSent: true };
         }
 
@@ -179,11 +194,16 @@ export async function sendMagicLinkAction(email: string): Promise<SignupResult> 
         }
 
         if (data?.properties?.action_link) {
-            await sendEmail({
+            const emailResult = await sendEmail({
                 to: email,
                 subject: "Your Likkle Legends Login Link 🌴",
                 html: CONFIRMATION_EMAIL_TEMPLATE("Legend Parent", data.properties.action_link)
             });
+
+            if (!emailResult.success) {
+                return { success: false, error: `Email failed: ${(emailResult.error as any)?.message || 'Check Resend'}` };
+            }
+
             return { success: true, emailSent: true };
         }
 

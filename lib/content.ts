@@ -174,7 +174,7 @@ export const siteContent = {
                     "Makes learning routines feel fun and familiar",
                     "Guides children through lessons independently"
                 ],
-                image: "https://www.likklelegends.com/assets/characters/roti.png"
+                image: "/images/roti-avatar.jpg"
             },
             {
                 id: "tanty_spice",
@@ -188,7 +188,7 @@ export const siteContent = {
                     "Creates a sense of safety and calm",
                     "Balances learning with compassion"
                 ],
-                image: "https://www.likklelegends.com/assets/characters/tanty-spice.png"
+                image: "/images/tanty_spice.png"
             },
             {
                 id: "dilly_doubles",
@@ -202,21 +202,35 @@ export const siteContent = {
                     "Encourages kids to try new things",
                     "Builds social skills through playful stories"
                 ],
-                image: "https://www.likklelegends.com/assets/characters/dilly-doubles.png"
+                image: "/images/dilly_doubles.png"
             },
             {
-                id: "benny_of_shadows",
-                name: "Benny of Shadows",
+                id: "mango_moko",
+                name: "Mango Moko",
                 role: "Nature & Balance Guardian",
-                tagline: "“Listen... the earth is speaking.”",
-                description: "A calm guide who helps children slow down, listen, and learn from the world around them.",
-                brand_role: "Quiet guide that balances technology with nature",
+                tagline: "“Up high, watching over the rhythm.”",
+                description: "A calm, observant guide who helps children slow down, listen, and learn from the world around them.",
+                brand_role: "Perspective guide that balances energy with calm",
                 parent_value: [
                     "Encourages patience and self-regulation",
                     "Builds respect for nature and balance",
-                    "Adds depth without fear or overstimulation"
+                    "Adds depth without overstimulation"
                 ],
-                image: "https://www.likklelegends.com/assets/characters/benny-of-shadows.png"
+                image: "/images/mango_moko.png"
+            },
+            {
+                id: "steelpan_sam",
+                name: "Steelpan Sam",
+                role: "Rhythm & Music Master",
+                tagline: "“Feel the beat, learn the rhythm!”",
+                description: "A musical genius who turns every lesson into a song, helping children memorize and enjoy their learning.",
+                brand_role: "Musical engagement and memory coach",
+                parent_value: [
+                    "Makes memorization easy through rhythm",
+                    "Builds appreciation for Caribbean music",
+                    "keeps the energy high and fun"
+                ],
+                image: "/images/steelpan_sam.png"
             }
         ]
     },
@@ -238,7 +252,7 @@ export const siteContent = {
         title: "A new island friend every month",
         subtitle: "Each month, children meet a new visiting character with a special story or lesson — giving them something exciting to look forward to.",
         tagline: "Fresh Content",
-        image: "https://www.likklelegends.com/assets/characters/monthly-silhouette.png",
+        image: "/images/mystery-character.png",
         cta: {
             label: "Meet this month’s island friend",
             href: "/characters"

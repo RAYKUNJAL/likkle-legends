@@ -8,13 +8,14 @@ const colorMap: Record<string, { bg: string; border: string; text: string }> = {
     amber: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-600' },
     emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600' },
     blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600' },
-    cyan: { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-600' }
+    cyan: { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-600' },
+    rose: { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-600' }
 };
 
 export default function CharacterRoles({ content }: { content: any }) {
     const charactersData = content.characters?.characters || [];
-    // Colors aligned with: R.O.T.I (Cyan), Tanty (Amber), Dilly (Blue/Playful), Benny (Emerald/Nature)
-    const colors = ['cyan', 'amber', 'blue', 'emerald'];
+    // Colors aligned with: R.O.T.I (Cyan), Tanty (Amber), Dilly (Blue), Mango (Emerald), Sam (Rose)
+    const colors = ['cyan', 'amber', 'blue', 'emerald', 'rose'];
 
     return (
         <section className="py-20 bg-gradient-to-b from-white to-zinc-50">
@@ -31,14 +32,14 @@ export default function CharacterRoles({ content }: { content: any }) {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-5xl mx-auto">
+                <div className="flex flex-wrap justify-center gap-4 md:gap-6 max-w-6xl mx-auto">
                     {charactersData.map((char: any, idx: number) => {
                         const colorKey = colors[idx % colors.length];
                         const colorConfig = colorMap[colorKey];
                         return (
                             <div
                                 key={char.name}
-                                className={`${colorConfig.bg} rounded-2xl p-5 border ${colorConfig.border} hover:shadow-lg transition-all group`}
+                                className={`${colorConfig.bg} rounded-2xl p-5 border ${colorConfig.border} hover:shadow-lg transition-all group w-[calc(50%-1rem)] md:w-[calc(33.333%-1.5rem)] lg:w-[calc(20%-1.5rem)] min-w-[160px]`}
                             >
                                 <div className="aspect-square rounded-xl overflow-hidden mb-4 bg-white border border-zinc-100">
                                     <Image
