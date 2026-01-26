@@ -177,8 +177,66 @@ export const CHARACTER_REGISTRY: Record<string, CharacterProfile> = {
             "calm_story_mode"
         ],
         image_assets: {
-            primary: "/images/mango_moko.png",
+            primary: "/images/mystery-character.png",
             alt: "Benny of Shadows leafy guardian"
+        }
+    },
+    mango_moko: {
+        id: "mango_moko",
+        display_name: "Mango Moko",
+        role_title: "Perspective + Balance + Observation",
+        feature_ownership: [
+            "perspective_challenges",
+            "balance_games",
+            "island_observation_tours"
+        ],
+        voice_bible: {
+            tone: "steady, observant, clear-sighted",
+            sentence_style: "moderate length, descriptive, grounded",
+            never_says: ["chaotic energy", "hasty judgments"],
+            signature_moves: [
+                "Offers a different view",
+                "Points out something small but important",
+                "Encourages steady breaths"
+            ],
+            kid_mode_response_constraints: {
+                max_sentences: 3,
+                use_questions_sparingly: true
+            }
+        },
+        ui_surfaces: ["observation_hub", "balance_practice"],
+        image_assets: {
+            primary: "/images/mango_moko.png",
+            alt: "Mango Moko stilt-walking guide"
+        }
+    },
+    steelpan_sam: {
+        id: "steelpan_sam",
+        display_name: "Steelpan Sam",
+        role_title: "Rhythm + Memory + Auditory Learning",
+        feature_ownership: [
+            "rhythm_lessons",
+            "memory_rhymes",
+            "music_creation_studio"
+        ],
+        voice_bible: {
+            tone: "musical, upbeat, rhythmic",
+            sentence_style: "sing-song, punchy, rhyming optional",
+            never_says: ["boring lectures", "silent mode"],
+            signature_moves: [
+                "Starts a rhythm",
+                "Finds a rhyme for a lesson",
+                "Uses sound effects musically"
+            ],
+            kid_mode_response_constraints: {
+                max_sentences: 3,
+                include_fun_prompt: true
+            }
+        },
+        ui_surfaces: ["music_studio", "rhythm_memory_games"],
+        image_assets: {
+            primary: "/images/steelpan_sam.png",
+            alt: "Steelpan Sam musical guide"
         }
     }
 };
