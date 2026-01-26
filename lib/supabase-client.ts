@@ -41,16 +41,6 @@ class SupabaseClientManager {
             });
         }
 
-        // Use Browser Client for better Next.js App Router support (cookies, etc.)
-        if (typeof window !== 'undefined') {
-            try {
-                const { createBrowserClient } = require('@supabase/auth-helpers-nextjs');
-                return createBrowserClient(url, anonKey);
-            } catch (e) {
-                console.warn("createBrowserClient failed, falling back to standard client", e);
-            }
-        }
-
         return createClient(url, anonKey, {
             auth: {
                 persistSession: true,
