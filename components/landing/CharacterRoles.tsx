@@ -9,13 +9,14 @@ const colorMap: Record<string, { bg: string; border: string; text: string }> = {
     emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-600' },
     blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600' },
     cyan: { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-600' },
-    rose: { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-600' }
+    rose: { bg: 'bg-rose-50', border: 'border-rose-200', text: 'text-rose-600' },
+    purple: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-600' }
 };
 
 export default function CharacterRoles({ content }: { content: any }) {
     const charactersData = content.characters?.characters || [];
-    // Colors aligned with: R.O.T.I (Cyan), Tanty (Amber), Dilly (Blue), Mango (Emerald), Sam (Rose)
-    const colors = ['cyan', 'amber', 'blue', 'emerald', 'rose'];
+    // Colors aligned with: R.O.T.I (Cyan), Tanty (Amber), Dilly (Blue), Mango (Emerald), Benny (Purple), Sam (Rose)
+    const colors = ['cyan', 'amber', 'blue', 'emerald', 'purple', 'rose'];
 
     return (
         <section className="py-20 bg-gradient-to-b from-white to-zinc-50">

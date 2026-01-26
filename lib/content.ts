@@ -219,6 +219,20 @@ export const siteContent = {
                 image: "/images/mango_moko.png"
             },
             {
+                id: "benny_of_shadows",
+                name: "Benny of Shadows",
+                role: "Guardian of Secrets & Nature",
+                tagline: "“Listen... the earth is speaking.”",
+                description: "A mysterious and quiet guide who helps children connect with the hidden wonders of nature and the balance of the island.",
+                brand_role: "Quiet guide that balances technology with nature",
+                parent_value: [
+                    "Encourages curiosity about the natural world",
+                    "Builds respect for the environment",
+                    "Adds a touch of mystery and wonder to learning"
+                ],
+                image: "/images/mystery-character.png"
+            },
+            {
                 id: "steelpan_sam",
                 name: "Steelpan Sam",
                 role: "Rhythm & Music Master",
