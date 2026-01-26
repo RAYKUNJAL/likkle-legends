@@ -23,81 +23,99 @@ export async function signupAction(formData: {
     referral: string;
 }): Promise<SignupResult> {
     try {
-        console.log(`[AUTH] Initiating branded signup for: ${formData.email}`);
+        console.log(`[AUTH] Checking for existing user: ${formData.email}`);
 
-        // 1. Initial Signup (standard pkce flow)
-        // We call this to let Supabase handle the user record and password hashing
-        // Note: If Supabase SMTP is NOT configured, this won't send an email
-        // If it IS configured, it might send a default one (unless we disable it in dashboard)
-        const { data, error: authError } = await supabase.auth.signUp({
-            email: formData.email,
-            password: formData.password,
-            options: {
-                // This redirect is used if they click the Supabase default link
-                emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback?next=/checkout`,
-                data: {
-                    child_name: formData.childName,
-                    chosen_plan: formData.plan,
-                    referral_source: formData.referral
-                }
-            }
-        });
+        // 1. Check if user already exists via Admin API to handle re-sending links
+        const { data: userData } = await supabaseAdmin.auth.admin.getUserByEmail(formData.email);
 
-        if (authError) {
-            console.error("[AUTH] Supabase Auth Error:", authError.message);
-            return { success: false, error: authError.message };
-        }
+        let userId: string;
 
-        if (!data.user) {
-            return { success: false, error: "Failed to create user record." };
-        }
-
-        const userId = data.user.id;
-
-        // 2. Generate Branded Confirmation Link via Admin API
-        // This is the "Commercial Grade" part: we bypass Supabase's built-in email triggers
-        // and send our own via Resend with our own branding.
-        try {
-            const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-                type: 'signup',
+        if (!userData?.user) {
+            console.log(`[AUTH] Creating new user: ${formData.email}`);
+            const { data: signUpData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
-                    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback?next=/checkout`
+                    data: {
+                        child_name: formData.childName,
+                        chosen_plan: formData.plan,
+                        referral_source: formData.referral
+                    }
                 }
             });
 
-            if (linkError) {
-                console.warn("[AUTH] Admin link generation failed (maybe SMTP is already handled by Supabase):", linkError.message);
-                // We continue anyway, as the standard signUp might have triggered an email
-            } else if (linkData?.properties?.action_link) {
-                // 3. Send Branded Email via Resend
-                console.log("[AUTH] Sending branded confirmation email via Resend...");
-                const emailResult = await sendEmail({
-                    to: formData.email,
-                    subject: "Welcome to the Islands! Confirm your Likkle Legends account 🌴",
-                    html: CONFIRMATION_EMAIL_TEMPLATE(formData.childName || "Parent", linkData.properties.action_link)
-                });
-
-                if (!emailResult.success) {
-                    console.error("[AUTH] Email sending failed:", emailResult.error);
-                    // Return error to the client so they know email failed
-                    return { success: false, error: "Account created, but email failed to send. " + ((emailResult.error as any)?.message || "Check domain settings.") };
-                }
-
-                return { success: true, emailSent: true, userId };
+            if (authError) {
+                console.error("[AUTH] Supabase Auth Error:", authError.message);
+                return { success: false, error: authError.message };
             }
-        } catch (adminErr) {
-            console.error("[AUTH] Admin API or Resend failure:", adminErr);
-            // Fallback: the user might still get the default Supabase email
+
+            if (!signUpData.user) {
+                return { success: false, error: "Failed to create user record." };
+            }
+            userId = signUpData.user.id;
+        } else {
+            console.log(`[AUTH] User already exists: ${userData.user.id}`);
+            userId = userData.user.id;
+
+            // If user is already confirmed, we might want to redirect them to login
+            if (userData.user.email_confirmed_at) {
+                return { success: false, error: "This email is already registered and confirmed. Please log in." };
+            }
         }
 
-        // If we reach here, either the email was sent or we're relying on Supabase default
+        // 2. Generate Branded Confirmation Link via Admin API
+        console.log(`[AUTH] Generating confirmation link for ${formData.email}...`);
+        const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'signup',
+            email: formData.email,
+            password: formData.password, // This is needed if user was just created
+            options: {
+                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback?next=/checkout`
+            }
+        });
+
+        if (linkError) {
+            console.error("[AUTH] Admin link generation failed:", linkError.message);
+
+            // Check for specific common error
+            if (linkError.message.includes('Email confirmations are disabled')) {
+                return {
+                    success: false,
+                    error: "Email confirmations are currently disabled in the backend. Please contact support."
+                };
+            }
+
+            return { success: false, error: `Auth Link Error: ${linkError.message}` };
+        }
+
+        if (!linkData?.properties?.action_link) {
+            console.error("[AUTH] No action link returned by Supabase.");
+            return { success: false, error: "Auth system failed to generate a confirmation link." };
+        }
+
+        // 3. Send Branded Email via Resend
+        console.log("[AUTH] Sending branded confirmation email via Resend...");
+        const emailResult = await sendEmail({
+            to: formData.email,
+            subject: "Welcome to the Islands! Confirm your Likkle Legends account 🌴",
+            html: CONFIRMATION_EMAIL_TEMPLATE(formData.childName || "Parent", linkData.properties.action_link)
+        });
+
+        if (!emailResult.success) {
+            console.error("[AUTH] Resend API Error:", emailResult.error);
+            const errMsg = (emailResult.error as any)?.message || "Check your Resend API key and domain verification.";
+            return {
+                success: false,
+                error: `Email Delivery Failed: ${errMsg}`
+            };
+        }
+
+        console.log("[AUTH] Signup flow completed successfully for", formData.email);
         return { success: true, emailSent: true, userId };
 
     } catch (err: any) {
         console.error("[AUTH] Unexpected Signup Error:", err);
-        return { success: false, error: err.message || "An unexpected error occurred." };
+        return { success: false, error: err.message || "An unexpected error occurred during signup." };
     }
 }
 
