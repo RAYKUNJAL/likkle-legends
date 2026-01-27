@@ -1,0 +1,4 @@
+﻿[dotenv@17.2.3] injecting env (14) from .env.local -- tip: ≡ƒæÑ sync secrets across teammates & machines: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒùé∩╕Å backup and recover secrets: https://dotenvx.com/ops
+Γ£à Environment variables loaded successfully
+Profile Keys: [ 'id', 'is_admin', 'role', 'parent_name', 'onboarding_completed' ]

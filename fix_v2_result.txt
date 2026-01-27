@@ -1,0 +1,8 @@
+﻿[dotenv@17.2.3] injecting env (14) from .env.local -- tip: ΓÜÖ∩╕Å  suppress all logs with { quiet: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒùé∩╕Å backup and recover secrets: https://dotenvx.com/ops
+Γ£à Environment variables loaded successfully
+≡ƒ¢á∩╕Å Finalizing Profile for: raykunjal@gmail.com
+Γ£à Found Auth User: a250a8b1-58a0-439e-81a7-04bdd4027fa3
+Γ£à Commercial Profile created/updated successfully.
+Γ£à High-engagement child record created.
+≡ƒÄë System synced! You should now be able to log in and see the full dashboard.

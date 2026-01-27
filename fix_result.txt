@@ -1,0 +1,6 @@
+﻿[dotenv@17.2.3] injecting env (14) from .env.local -- tip: ≡ƒöæ add access controls to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒôí add observability to secrets: https://dotenvx.com/ops
+Γ£à Environment variables loaded successfully
+≡ƒ¢á∩╕Å Fixing User: raykunjal@gmail.com
+Γ£à Found Auth User: a250a8b1-58a0-439e-81a7-04bdd4027fa3
+≡ƒÄë Fix complete! Try logging in now.

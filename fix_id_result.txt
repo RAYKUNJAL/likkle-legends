@@ -1,0 +1,13 @@
+﻿[dotenv@17.2.3] injecting env (14) from .env.local -- tip: ≡ƒöæ add access controls to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒöæ add access controls to secrets: https://dotenvx.com/ops
+Γ£à Environment variables loaded successfully
+Testing insert only ID for: a250a8b1-58a0-439e-81a7-04bdd4027fa3
+Result: [
+  {
+    id: 'a250a8b1-58a0-439e-81a7-04bdd4027fa3',
+    is_admin: false,
+    role: 'parent',
+    parent_name: null,
+    onboarding_completed: false
+  }
+] Error: null
