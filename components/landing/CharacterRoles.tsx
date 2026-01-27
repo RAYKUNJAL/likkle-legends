@@ -52,6 +52,11 @@ export default function CharacterRoles({ content }: { content: any }) {
                                     />
                                 </div>
                                 <h3 className="font-black text-deep text-lg mb-0.5">{char.name}</h3>
+                                {char.id === 'roti' && (
+                                    <p className="text-[9px] text-deep/60 leading-tight mb-2 -mt-0.5 font-bold uppercase tracking-wide">
+                                        Robotic Operational Teaching Interface
+                                    </p>
+                                )}
                                 <p className={`text-sm font-bold ${colorConfig.text} mb-2`}>{char.role}</p>
                                 <p className="text-sm text-deep/60 leading-snug">{char.tagline || char.oneLiner}</p>
                                 <p className="text-xs text-deep/40 mt-2">

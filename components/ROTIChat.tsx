@@ -259,7 +259,7 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                     </div>
                     <div className="text-white">
                         <h3 className="font-black text-lg md:text-2xl">R.O.T.I.</h3>
-                        <p className="text-emerald-100 font-bold uppercase text-[10px] tracking-widest">Island Learning Buddy</p>
+                        <p className="text-emerald-100 font-bold uppercase text-[8px] md:text-[10px] tracking-widest leading-tight">Robotic Operational Teaching Interface</p>
                     </div>
                 </div>
 
