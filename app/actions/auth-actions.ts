@@ -6,6 +6,7 @@ import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE, RESET_PASSWORD_EMAIL_TEMPLATE, 
 
 // Force dynamic behavior to ensure env vars are read at runtime
 // Server actions are inherently dynamic, but we monitor env vars closely
+// Triggering redeploy for Vercel env var update
 
 export interface SignupResult {
     success: boolean;
