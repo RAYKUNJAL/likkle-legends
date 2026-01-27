@@ -24,7 +24,7 @@ export interface GenerationOptions {
 }
 
 export class ContentGenerator {
-    private defaultModel = 'gemini-2.0-flash-exp';
+    private defaultModel = 'gemini-1.5-flash';
 
     /**
      * Generate text content using Gemini
