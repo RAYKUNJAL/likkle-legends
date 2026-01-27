@@ -30,7 +30,9 @@ async function diagnoseAuth(email: string) {
     // 2. Supabase Connection & Service Role Permissions
     console.log('\n--- 2. Supabase Connectivity ---');
     try {
-        const { data: user, error: userError } = await supabaseAdmin.auth.admin.getUserByEmail(email);
+    const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    const user = listData?.users.find(u => u.email === email);
+    const userError = listError || (!user ? new Error('User not found') : null);
         if (userError) {
             console.log(`⚠️ User not found or error: ${userError.message}`);
         } else {
