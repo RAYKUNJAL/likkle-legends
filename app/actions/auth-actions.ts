@@ -3,6 +3,8 @@
 
 import { supabase, supabaseAdmin } from "@/lib/supabase-client";
 import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE, RESET_PASSWORD_EMAIL_TEMPLATE, WELCOME_EMAIL_TEMPLATE } from "@/lib/email";
+import { createServerClient, type CookieOptions } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 
 // Force dynamic behavior to ensure env vars are read at runtime
 // Server actions are inherently dynamic, but we monitor env vars closely
@@ -237,5 +239,51 @@ export async function sendMagicLinkAction(email: string): Promise<SignupResult> 
     } catch (err: any) {
         console.error("[AUTH] Magic Link Error:", err);
         return { success: false, error: err.message };
+    }
+}
+
+// Import CookieOptions and createServerClient correctly
+
+
+/**
+ * Server Action for Password Sign In
+ * Uses createServerClient manually to ensure compatibility and correct cookie handling
+ */
+export async function signInAction(email: string, password: string) {
+    try {
+        const cookieStore = cookies();
+
+        const supabase = createServerClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            {
+                cookies: {
+                    get(name: string) {
+                        return cookieStore.get(name)?.value;
+                    },
+                    set(name: string, value: string, options: CookieOptions) {
+                        cookieStore.set({ name, value, ...options });
+                    },
+                    remove(name: string, options: CookieOptions) {
+                        cookieStore.set({ name, value: '', ...options });
+                    },
+                },
+            }
+        );
+
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+
+        if (error) {
+            console.error("[AUTH] Sign In Failed:", error.message);
+            return { success: false, error: error.message };
+        }
+
+        return { success: true };
+    } catch (err: any) {
+        console.error("[AUTH] Sign In Exception:", err);
+        return { success: false, error: "An unexpected error occurred." };
     }
 }
