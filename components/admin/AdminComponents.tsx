@@ -40,6 +40,17 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
                 window.location.href = '/login?redirect=/admin';
+                return;
+            }
+
+            // Client-side role check (optimistic)
+            // Server actions will still perform a hard check
+            const userEmail = session.user.email;
+            const isAdmin = userEmail === 'raykunjal@gmail.com' || userEmail?.includes('admin@');
+
+            if (!isAdmin) {
+                // Optionally redirect to portal if not admin
+                // window.location.href = '/portal';
             }
         }
         checkAuth();
