@@ -41,7 +41,10 @@ class SupabaseClientManager {
                     auth: { persistSession: false, autoRefreshToken: false }
                 });
             } else {
-                console.warn('⚠️  Supabase Service Role Key missing. Falling back to Anon client (Admin ops will fail).');
+                // FAIL FAST: Do not fallback to anon client for admin operations.
+                // This prevents confusing "Invalid API key" or "Unauthorized" errors from Supabase.
+                console.error('❌ Supabase Service Role Key is MISSING. Admin operations will fail.');
+                throw new Error('Server Configuration Error: SUPABASE_SERVICE_ROLE_KEY is missing. Check Vercel Environment Variables.');
             }
         }
 
