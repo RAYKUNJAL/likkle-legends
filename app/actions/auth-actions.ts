@@ -5,7 +5,7 @@ import { supabase, supabaseAdmin } from "@/lib/supabase-client";
 import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE, RESET_PASSWORD_EMAIL_TEMPLATE, WELCOME_EMAIL_TEMPLATE } from "@/lib/email";
 
 // Force dynamic behavior to ensure env vars are read at runtime
-export const dynamic = 'force-dynamic';
+// Server actions are inherently dynamic, but we monitor env vars closely
 
 export interface SignupResult {
     success: boolean;
