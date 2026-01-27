@@ -35,10 +35,14 @@ class SupabaseClientManager {
             return createClient('https://placeholder.supabase.co', 'placeholder');
         }
 
-        if (useServiceRole && serviceKey) {
-            return createClient(url, serviceKey, {
-                auth: { persistSession: false, autoRefreshToken: false }
-            });
+        if (useServiceRole) {
+            if (serviceKey) {
+                return createClient(url, serviceKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+            } else {
+                console.warn('⚠️  Supabase Service Role Key missing. Falling back to Anon client (Admin ops will fail).');
+            }
         }
 
         return createClient(url, anonKey, {

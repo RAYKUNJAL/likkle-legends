@@ -37,6 +37,7 @@ export async function signupAction(formData: {
                 password: formData.password,
                 options: {
                     data: {
+                        full_name: `Parent of ${formData.childName}`, // Provide a default name derived from child
                         child_name: formData.childName,
                         chosen_plan: formData.plan,
                         referral_source: formData.referral
@@ -83,6 +84,12 @@ export async function signupAction(formData: {
                     success: false,
                     error: "Email confirmations are currently disabled in the backend. Please contact support."
                 };
+            }
+
+            // If we get here, it's likely a permission issue (e.g., using Anon Key instead of Service Role)
+            if (linkError.message.includes('401') || linkError.message.includes('Unauthorized')) {
+                console.error("[AUTH] CRITICAL: Admin operation failed with 401. Check SUPABASE_SERVICE_ROLE_KEY.");
+                return { success: false, error: "System configuration error (Admin Key). check server logs." };
             }
 
             return { success: false, error: `Auth Link Error: ${linkError.message}` };
