@@ -174,7 +174,7 @@ export const siteContent = {
                     "Makes learning routines feel fun and familiar",
                     "Guides children through lessons independently"
                 ],
-                image: "/images/roti-avatar.jpg"
+                image: "/images/roti-new.jpg"
             },
             {
                 id: "tanty_spice",
@@ -230,7 +230,7 @@ export const siteContent = {
                     "Builds respect for the environment",
                     "Adds a touch of mystery and wonder to learning"
                 ],
-                image: "/images/mystery-character.png"
+                image: "/images/benny-of-shadows.jpg"
             },
             {
                 id: "steelpan_sam",
