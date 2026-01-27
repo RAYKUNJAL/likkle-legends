@@ -1,0 +1,71 @@
+{
+  "type": "trivia",
+  "title": "Caribbean Culture Quiz",
+  "description": "Learn fun facts about the Caribbean islands!",
+  "difficulty": "medium",
+  "island": "Trinidad & Tobago",
+  "estimatedMinutes": 10,
+  "xpReward": 50,
+  "data": [
+    {
+      "question": "What color is a ripe mango?",
+      "options": [
+        "Yellow-orange",
+        "Blue",
+        "Purple",
+        "Green"
+      ],
+      "correctIndex": 0,
+      "funFact": "Mangoes are called the 'King of Fruits' in the Caribbean!",
+      "emoji": "🥭"
+    },
+    {
+      "question": "Which bird can talk and repeat words?",
+      "options": [
+        "Parrot",
+        "Eagle",
+        "Penguin",
+        "Owl"
+      ],
+      "correctIndex": 0,
+      "funFact": "Caribbean parrots are known for their colorful feathers!",
+      "emoji": "🦜"
+    },
+    {
+      "question": "What instrument was invented in Trinidad?",
+      "options": [
+        "Steel Pan",
+        "Guitar",
+        "Piano",
+        "Violin"
+      ],
+      "correctIndex": 0,
+      "funFact": "The steel pan is the only instrument invented in the 20th century!",
+      "emoji": "🥁"
+    },
+    {
+      "question": "What does 'Irie' mean?",
+      "options": [
+        "Feeling good",
+        "Feeling sad",
+        "Feeling hungry",
+        "Feeling sleepy"
+      ],
+      "correctIndex": 0,
+      "funFact": "When Jamaicans say 'Irie', it means everything is wonderful!",
+      "emoji": "😊"
+    },
+    {
+      "question": "Which sea surrounds the Caribbean islands?",
+      "options": [
+        "Caribbean Sea",
+        "Arctic Ocean",
+        "Pacific Ocean",
+        "Red Sea"
+      ],
+      "correctIndex": 0,
+      "funFact": "The Caribbean Sea is one of the warmest seas in the world!",
+      "emoji": "🌊"
+    }
+  ]
+}

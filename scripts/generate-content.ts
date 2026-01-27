@@ -235,8 +235,9 @@ async function main() {
 
         console.log('\n✨ All done!\n');
         process.exit(0);
-    } catch (error) {
-        console.error('\n❌ Error:', error);
+    } catch (error: any) {
+        console.error('\n❌ Fatal Error:', error);
+        if (error.stack) console.error(error.stack);
         process.exit(1);
     }
 }

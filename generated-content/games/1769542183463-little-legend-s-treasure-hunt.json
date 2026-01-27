@@ -1,0 +1,86 @@
+{
+  "type": "story_adventure",
+  "title": "Little Legend's Treasure Hunt",
+  "description": "Help Little Legend find the hidden treasure!",
+  "difficulty": "easy",
+  "island": "Barbados",
+  "estimatedMinutes": 8,
+  "xpReward": 100,
+  "data": [
+    {
+      "id": "start",
+      "narrative": "Little Legend wakes up to sunshine streaming through the window. Today is a special day – a treasure hunt on Barbados! A friendly parrot named Polly flies to the window with a golden map in her beak.",
+      "backgroundEmoji": "🌅",
+      "choices": [
+        {
+          "text": "Take the map!",
+          "emoji": "🗺️",
+          "nextSceneId": "beach"
+        },
+        {
+          "text": "Wave to Polly",
+          "emoji": "👋",
+          "nextSceneId": "jungle"
+        }
+      ],
+      "isEnding": false
+    },
+    {
+      "id": "beach",
+      "narrative": "Little Legend runs to the beautiful sandy beach. The ocean sparkles like diamonds! There's a friendly crab digging in the sand and a big palm tree with coconuts.",
+      "backgroundEmoji": "🏖️",
+      "choices": [
+        {
+          "text": "Help the crab",
+          "emoji": "🦀",
+          "nextSceneId": "crab"
+        },
+        {
+          "text": "Climb for coconuts",
+          "emoji": "🥥",
+          "nextSceneId": "treasure"
+        }
+      ],
+      "isEnding": false
+    },
+    {
+      "id": "jungle",
+      "narrative": "Polly leads Little Legend into a magical jungle full of colorful flowers and singing birds. A trail of shiny stones leads deeper into the forest!",
+      "backgroundEmoji": "🌴",
+      "choices": [
+        {
+          "text": "Follow the stones",
+          "emoji": "✨",
+          "nextSceneId": "treasure"
+        },
+        {
+          "text": "Listen to the birds",
+          "emoji": "🎵",
+          "nextSceneId": "treasure"
+        }
+      ],
+      "isEnding": false
+    },
+    {
+      "id": "crab",
+      "narrative": "The crab is so happy Little Legend helped! He does a little sideways dance and points a claw toward a shiny spot in the sand. Could it be the treasure?",
+      "backgroundEmoji": "🦀",
+      "choices": [
+        {
+          "text": "Dig for treasure!",
+          "emoji": "⛏️",
+          "nextSceneId": "treasure"
+        }
+      ],
+      "isEnding": false
+    },
+    {
+      "id": "treasure",
+      "narrative": "🎉 AMAZING! Little Legend found the treasure! But the real treasure wasn't gold – it was a beautiful shell that plays Caribbean music when you hold it to your ear! \"Wah gwan, little legend!\" says Polly. \"You're a true island explorer!\"",
+      "backgroundEmoji": "🐚",
+      "choices": [],
+      "isEnding": true,
+      "xpReward": 100
+    }
+  ]
+}

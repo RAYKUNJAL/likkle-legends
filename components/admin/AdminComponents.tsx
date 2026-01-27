@@ -63,6 +63,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
         { id: 'customers', label: 'Customers', icon: Users, href: '/admin/customers' },
         { id: 'orders', label: 'Orders & Fulfillment', icon: ShoppingCart, href: '/admin/orders' },
         { id: 'content', label: 'Content Library', icon: BookOpen, href: '/admin/content' },
+        { id: 'approval', label: 'Approval Queue', icon: CheckCircle2, href: '/admin/approval' },
         { id: 'studio', label: 'Legend AI Studio', icon: Sparkles, href: '/admin/studio' },
         { id: 'characters', label: 'Characters', icon: Palette, href: '/admin/characters' },
         { id: 'personality', label: 'AI Brain & Personality', icon: Zap, href: '/admin/personality' },

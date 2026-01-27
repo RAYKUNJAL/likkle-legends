@@ -1,0 +1,41 @@
+{
+  "type": "word_match",
+  "title": "Patois Word Match",
+  "description": "Connect Caribbean words to their English meanings!",
+  "difficulty": "medium",
+  "island": "Jamaica",
+  "estimatedMinutes": 5,
+  "xpReward": 60,
+  "data": [
+    {
+      "patois": "Likkle",
+      "english": "Little",
+      "hint": "Small size"
+    },
+    {
+      "patois": "Nyam",
+      "english": "Eat",
+      "hint": "Having food"
+    },
+    {
+      "patois": "Tallawah",
+      "english": "Strong/Brave",
+      "hint": "Mighty despite size"
+    },
+    {
+      "patois": "Bashment",
+      "english": "Party",
+      "hint": "A celebration"
+    },
+    {
+      "patois": "Nuff",
+      "english": "Plenty/Many",
+      "hint": "A lot of something"
+    },
+    {
+      "patois": "Wha Gwan",
+      "english": "What's going on?",
+      "hint": "A greeting"
+    }
+  ]
+}

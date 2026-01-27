@@ -1,7 +1,7 @@
 // Core AI Content Generator
 // Orchestrates content generation using Gemini API
 
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CONTENT_CONFIG, CHARACTER_PROFILES, IMAGE_STYLE } from './config';
 
 // Ensure environment variables are loaded
@@ -14,7 +14,7 @@ if (!API_KEY) {
     console.warn('   Please set GEMINI_API_KEY in your .env.local file');
 }
 
-const genAI = new GoogleGenAI({ apiKey: API_KEY });
+const genAI = new GoogleGenerativeAI(API_KEY);
 
 export interface GenerationOptions {
     model?: string;
@@ -24,7 +24,7 @@ export interface GenerationOptions {
 }
 
 export class ContentGenerator {
-    private defaultModel = 'gemini-1.5-flash';
+    private defaultModel = 'gemini-2.0-flash';
 
     /**
      * Generate text content using Gemini
@@ -37,22 +37,44 @@ export class ContentGenerator {
                 fullPrompt = `${options.systemInstruction}\n\n${prompt}`;
             }
 
-            const response = await genAI.models.generateContent({
-                model: options?.model || this.defaultModel,
-                contents: [{
-                    role: 'user',
-                    parts: [{ text: fullPrompt }]
-                }],
-                config: {
-                    temperature: options?.temperature || 0.9,
-                    maxOutputTokens: options?.maxTokens || 8192,
-                }
-            });
+            const modelsToTry = [
+                options?.model || this.defaultModel,
+                'gemini-1.5-flash',
+                'gemini-1.5-flash-latest',
+                'gemini-1.5-pro',
+                'gemini-pro',
+                'gemini-1.0-pro'
+            ];
 
-            return response.text || '';
-        } catch (error) {
-            console.error('Error generating text:', error);
-            throw new Error('Failed to generate text content');
+            let lastError = null;
+
+            for (const modelName of modelsToTry) {
+                try {
+                    console.log(`🤖 Attempting generation with model: ${modelName}...`);
+                    const model = genAI.getGenerativeModel({
+                        model: modelName,
+                        generationConfig: {
+                            temperature: options?.temperature || 0.9,
+                            maxOutputTokens: options?.maxTokens || 8192,
+                        }
+                    });
+
+                    const result = await model.generateContent(fullPrompt);
+                    const response = await result.response;
+                    const text = response.text();
+                    if (text) return text;
+                } catch (error: any) {
+                    console.warn(`⚠️  Model ${modelName} failed: ${error.message}`);
+                    lastError = error;
+                    // Continue to next model
+                }
+            }
+
+            console.error('❌ All Gemini models failed.');
+            throw new Error(`Failed to generate text content: ${lastError?.message}`);
+        } catch (error: any) {
+            console.error('❌ Unexpected Error in generateText:', error);
+            throw error;
         }
     }
 
@@ -64,25 +86,37 @@ export class ContentGenerator {
             const fullPrompt = `${prompt}\n\nIMPORTANT: Return ONLY valid JSON matching this schema. No markdown, no explanations, just raw JSON. Ensure all strings are properly escaped, especially newlines (use \\n). \n\nSchema: ${JSON.stringify(schema, null, 2)}`;
 
             const text = await this.generateText(fullPrompt, options);
+            console.log("--- RAW GEMINI RESPONSE START ---");
+            console.log(text);
+            console.log("--- RAW GEMINI RESPONSE END ---");
 
             // Clean response - remove markdown code blocks if present
             let cleanedText = text.trim();
             // Remove markdown code blocks (more robust regex)
             cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
 
+            // Extract just the JSON object part if extra text exists
+            const firstBrace = cleanedText.indexOf('{');
+            const lastBrace = cleanedText.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1) {
+                cleanedText = cleanedText.substring(firstBrace, lastBrace + 1);
+            }
+
             try {
                 const parsed = JSON.parse(cleanedText);
                 return parsed as T;
             } catch (parseError) {
-                // Attempt to fix common "control character" errors by escaping newlines in strings
+                console.warn('⚠️  Initial JSON parse failed. Attempting logic fix...');
+                // Attempt to fix common "control character" errors by escaping unescaped newlines in JSON strings
                 // This is a naive attempt but might save some cases
                 try {
+                    // Replace literal newlines inside strings but keep them outside
                     const fixedText = cleanedText.replace(/\n/g, '\\n');
                     const parsed = JSON.parse(fixedText);
                     return parsed as T;
                 } catch (retryError) {
-                    console.error('JSON Parse Error:', parseError);
-                    console.error('Cleaned content snippet:', cleanedText.substring(0, 200) + '...');
+                    console.error('❌ JSON Parse Error:', parseError);
+                    console.error('Raw content that failed:', cleanedText);
                     throw parseError;
                 }
             }
@@ -158,7 +192,8 @@ export class ContentGenerator {
      */
     getRandomIsland(): string {
         const islands = CONTENT_CONFIG.islands;
-        return islands[Math.floor(Math.random() * islands.length)];
+        const island = islands[Math.floor(Math.random() * islands.length)];
+        return typeof island === 'string' ? island : island.name;
     }
 
     /**
