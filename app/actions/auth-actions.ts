@@ -23,6 +23,18 @@ export async function signupAction(formData: {
     referral: string;
 }): Promise<SignupResult> {
     try {
+        console.log(`[AUTH] Starting signup process for: ${formData.email}`);
+
+        // Debug Env Vars (Masked)
+        const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+        console.log(`[AUTH] Environment Check - URL: ${hasUrl}, ServiceKey: ${hasServiceKey}`);
+
+        if (!hasServiceKey) {
+            console.error("[AUTH] CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing in server action environment.");
+            return { success: false, error: "Server Configuration Error: Missing API Permissions." };
+        }
+
         console.log(`[AUTH] Checking for existing user: ${formData.email}`);
 
         // 1. Check if user already exists via Admin API to handle re-sending links
