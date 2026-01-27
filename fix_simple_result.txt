@@ -1,0 +1,4 @@
+﻿[dotenv@17.2.3] injecting env (14) from .env.local -- tip: ΓÜÖ∩╕Å  enable debug logging with { debug: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒæÑ sync secrets across teammates & machines: https://dotenvx.com/ops
+Γ£à Environment variables loaded successfully
+Inserting profile for: a250a8b1-58a0-439e-81a7-04bdd4027fa3

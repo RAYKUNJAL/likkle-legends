@@ -1,0 +1,12 @@
+﻿[dotenv@17.2.3] injecting env (14) from .env.local -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.3] injecting env (0) from .env -- tip: Γ£à audit secrets and track compliance: https://dotenvx.com/ops
+Γ£à Environment variables loaded successfully
+≡ƒöì Diagnosing User: raykunjal@gmail.com
+Γ£à User found in Auth: {
+  id: 'a250a8b1-58a0-439e-81a7-04bdd4027fa3',
+  email: 'raykunjal@gmail.com',
+  confirmed_at: '2026-01-25T00:35:50.775594Z',
+  last_sign_in: '2026-01-25T02:25:28.301937Z'
+}
+Γ¥î Profile error: Cannot coerce the result to a single JSON object
+Γ£à Children found: 0
