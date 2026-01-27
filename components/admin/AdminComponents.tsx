@@ -35,8 +35,9 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
     // Auth Check
     useEffect(() => {
         async function checkAuth() {
-            // Dynamically import supabase to avoid build issues if env missing
-            const { supabase } = await import('@/lib/storage');
+            // Verify session with SSR client
+            const { createClient } = await import('@/lib/supabase/client');
+            const supabase = createClient();
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
                 window.location.href = '/login?redirect=/admin';

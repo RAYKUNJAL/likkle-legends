@@ -1,14 +1,9 @@
 
 "use server";
 
-import { supabase, supabaseAdmin } from "@/lib/supabase-client";
-import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE, RESET_PASSWORD_EMAIL_TEMPLATE, WELCOME_EMAIL_TEMPLATE } from "@/lib/email";
-import { createServerClient, type CookieOptions } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
-
-// Force dynamic behavior to ensure env vars are read at runtime
-// Server actions are inherently dynamic, but we monitor env vars closely
-// Triggering redeploy for Vercel env var update
+import { supabaseAdmin } from "@/lib/supabase-client";
+import { createClient } from "@/lib/supabase/server";
+import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE, RESET_PASSWORD_EMAIL_TEMPLATE } from "@/lib/email";
 
 export interface SignupResult {
     success: boolean;
@@ -31,34 +26,27 @@ export async function signupAction(formData: {
     try {
         console.log(`[AUTH] Starting signup process for: ${formData.email}`);
 
-        // Debug Env Vars (Masked)
-        const hasServiceKey = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
-        const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
-        console.log(`[AUTH] Environment Check - URL: ${hasUrl}, ServiceKey: ${hasServiceKey}`);
-
-        if (!hasServiceKey) {
-            console.error("[AUTH] CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing in server action environment.");
-            return { success: false, error: "Server Configuration Error: Missing API Permissions." };
-        }
+        // We use the standard client for auth signup (cookies are handled automatically on response)
+        const supabase = createClient();
 
         console.log(`[AUTH] Checking for existing user: ${formData.email}`);
 
-        // 1. Check if user already exists via Admin API to handle re-sending links
-        const { data, error: userError } = await supabaseAdmin.auth.admin.listUsers();
-
-        // Filter manually since listUsers doesn't support email filter directly in all versions
-        const existingUser = data?.users?.find(u => u.email === formData.email);
+        // 1. Check if user already exists
+        const { data: { users }, error: userError } = await supabaseAdmin.auth.admin.listUsers();
+        const existingUser = users.find(u => u.email === formData.email);
 
         let userId: string;
 
         if (!existingUser) {
             console.log(`[AUTH] Creating new user: ${formData.email}`);
+
+            // Use metadata to store extra fields
             const { data: signUpData, error: authError } = await supabase.auth.signUp({
                 email: formData.email,
                 password: formData.password,
                 options: {
                     data: {
-                        full_name: `Parent of ${formData.childName}`, // Provide a default name derived from child
+                        full_name: `Parent of ${formData.childName}`,
                         child_name: formData.childName,
                         chosen_plan: formData.plan,
                         referral_source: formData.referral
@@ -79,7 +67,6 @@ export async function signupAction(formData: {
             console.log(`[AUTH] User already exists: ${existingUser.id}`);
             userId = existingUser.id;
 
-            // If user is already confirmed, we might want to redirect them to login
             if (existingUser.email_confirmed_at) {
                 return { success: false, error: "This email is already registered and confirmed. Please log in." };
             }
@@ -90,7 +77,7 @@ export async function signupAction(formData: {
         const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
             type: 'signup',
             email: formData.email,
-            password: formData.password, // This is needed if user was just created
+            password: formData.password,
             options: {
                 redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback?next=/checkout`
             }
@@ -98,31 +85,15 @@ export async function signupAction(formData: {
 
         if (linkError) {
             console.error("[AUTH] Admin link generation failed:", linkError.message);
-
-            // Check for specific common error
-            if (linkError.message.includes('Email confirmations are disabled')) {
-                return {
-                    success: false,
-                    error: "Email confirmations are currently disabled in the backend. Please contact support."
-                };
-            }
-
-            // If we get here, it's likely a permission issue (e.g., using Anon Key instead of Service Role)
-            if (linkError.message.includes('401') || linkError.message.includes('Unauthorized')) {
-                console.error("[AUTH] CRITICAL: Admin operation failed with 401. Check SUPABASE_SERVICE_ROLE_KEY.");
-                return { success: false, error: "System configuration error (Admin Key). check server logs." };
-            }
-
             return { success: false, error: `Auth Link Error: ${linkError.message}` };
         }
 
         if (!linkData?.properties?.action_link) {
-            console.error("[AUTH] No action link returned by Supabase.");
             return { success: false, error: "Auth system failed to generate a confirmation link." };
         }
 
         // 3. Send Branded Email via Resend
-        console.log("[AUTH] Sending branded confirmation email via Resend...");
+        console.log("[AUTH] Sending branded confirmation email...");
         const emailResult = await sendEmail({
             to: formData.email,
             subject: "Welcome to the Islands! Confirm your Likkle Legends account 🌴",
@@ -130,25 +101,9 @@ export async function signupAction(formData: {
         });
 
         if (!emailResult.success) {
-            console.error("[AUTH] Resend API Error:", emailResult.error);
-            const isUnverified = (emailResult as any).isUnverified;
-            let errMsg = (emailResult.error as any)?.message || "Check your Resend API key and domain verification.";
-
-            if (isUnverified) {
-                errMsg = "Domain likklelegends.com is not verified in Resend. Emails can only be sent to the registered owner in test mode.";
-            }
-
-            return {
-                success: false,
-                error: `Email Delivery Failed: ${errMsg}`
-            };
+            return { success: false, error: `Email Delivery Failed: ${(emailResult.error as any)?.message}` };
         }
 
-        if ((emailResult as any).mode === 'fallback') {
-            console.warn("[AUTH] Email sent via FALLBACK (onboarding@resend.dev). This will NOT reach real users.");
-        }
-
-        console.log("[AUTH] Signup flow completed successfully for", formData.email);
         return { success: true, emailSent: true, userId };
 
     } catch (err: any) {
@@ -174,7 +129,6 @@ export async function forgotPasswordAction(email: string): Promise<SignupResult>
         });
 
         if (error) {
-            console.error("[AUTH] Reset link generation failed:", error.message);
             return { success: false, error: error.message };
         }
 
@@ -187,16 +141,14 @@ export async function forgotPasswordAction(email: string): Promise<SignupResult>
             });
 
             if (!emailResult.success) {
-                return { success: false, error: `Email failed: ${(emailResult.error as any)?.message || 'Check Resend'}` };
+                return { success: false, error: `Email failed: ${(emailResult.error as any)?.message}` };
             }
 
             return { success: true, emailSent: true };
         }
 
-
         return { success: false, error: "Failed to generate link." };
     } catch (err: any) {
-        console.error("[AUTH] Reset Password Error:", err);
         return { success: false, error: err.message };
     }
 }
@@ -217,7 +169,6 @@ export async function sendMagicLinkAction(email: string): Promise<SignupResult> 
         });
 
         if (error) {
-            console.error("[AUTH] Magic link generation failed:", error.message);
             return { success: false, error: error.message };
         }
 
@@ -229,7 +180,7 @@ export async function sendMagicLinkAction(email: string): Promise<SignupResult> 
             });
 
             if (!emailResult.success) {
-                return { success: false, error: `Email failed: ${(emailResult.error as any)?.message || 'Check Resend'}` };
+                return { success: false, error: `Email failed: ${(emailResult.error as any)?.message}` };
             }
 
             return { success: true, emailSent: true };
@@ -237,39 +188,17 @@ export async function sendMagicLinkAction(email: string): Promise<SignupResult> 
 
         return { success: false, error: "Failed to generate magic link." };
     } catch (err: any) {
-        console.error("[AUTH] Magic Link Error:", err);
         return { success: false, error: err.message };
     }
 }
 
-// Import CookieOptions and createServerClient correctly
-
-
 /**
  * Server Action for Password Sign In
- * Uses createServerClient manually to ensure compatibility and correct cookie handling
+ * Uses @supabase/ssr createServerClient to automatically set cookies on the response
  */
 export async function signInAction(email: string, password: string) {
     try {
-        const cookieStore = cookies();
-
-        const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            {
-                cookies: {
-                    get(name: string) {
-                        return cookieStore.get(name)?.value;
-                    },
-                    set(name: string, value: string, options: CookieOptions) {
-                        cookieStore.set({ name, value, ...options });
-                    },
-                    remove(name: string, options: CookieOptions) {
-                        cookieStore.set({ name, value: '', ...options });
-                    },
-                },
-            }
-        );
+        const supabase = createClient();
 
         const { error } = await supabase.auth.signInWithPassword({
             email,
@@ -285,5 +214,19 @@ export async function signInAction(email: string, password: string) {
     } catch (err: any) {
         console.error("[AUTH] Sign In Exception:", err);
         return { success: false, error: "An unexpected error occurred." };
+    }
+}
+
+/**
+ * Server Action for Sign Out
+ */
+export async function signOutAction() {
+    try {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        return { success: true };
+    } catch (err) {
+        console.error("Sign out failed", err);
+        return { success: false };
     }
 }
