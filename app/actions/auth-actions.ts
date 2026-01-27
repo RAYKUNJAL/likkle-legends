@@ -79,7 +79,7 @@ export async function signupAction(formData: {
             email: formData.email,
             password: formData.password,
             options: {
-                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback?next=/checkout`
+                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'}/api/auth/callback?next=/checkout`
             }
         });
 
@@ -124,7 +124,7 @@ export async function forgotPasswordAction(email: string): Promise<SignupResult>
             type: 'recovery',
             email: email,
             options: {
-                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback?next=/portal/settings`
+                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'}/api/auth/callback?next=/portal/settings`
             }
         });
 
@@ -164,7 +164,7 @@ export async function sendMagicLinkAction(email: string): Promise<SignupResult> 
             type: 'magiclink',
             email: email,
             options: {
-                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback?next=/portal`
+                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'}/api/auth/callback?next=/portal`
             }
         });
 
