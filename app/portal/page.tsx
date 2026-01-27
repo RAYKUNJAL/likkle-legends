@@ -13,6 +13,7 @@ import { useUser } from '@/components/UserContext';
 import { getSongs, getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
 import { calculateLevel, LEVELS } from '@/lib/gamification';
 import { CultureQuests } from '@/components/CultureQuests';
+import { IslandMissionMap } from '@/components/IslandMissionMap';
 import { EmptyState } from '@/components/EmptyState';
 import TantyRadio from '@/components/TantyRadio';
 import IslandVillageMap from '@/components/IslandVillageMap';
@@ -143,6 +144,28 @@ export default function ChildPortalPage() {
             loadPortalData();
         } catch (err) {
             console.error("Failed to log activity:", err);
+        }
+    };
+
+    const handleMissionComplete = async (xp: number, questId: string) => {
+        if (!user || !activeChild) return;
+
+        try {
+            await logActivity(
+                user.id,
+                activeChild.id,
+                'mission',
+                questId,
+                xp,
+                0,
+                { quest_id: questId }
+            );
+
+            // Update local child state to show completion immediately if possible
+            // but refreshing data is safer
+            loadPortalData();
+        } catch (err) {
+            console.error("Failed to log mission completion:", err);
         }
     };
 
@@ -476,7 +499,10 @@ export default function ChildPortalPage() {
                                             <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">Complete quests, earn badges</p>
                                         </div>
                                     </div>
-                                    <CultureQuests completedIds={activeChild?.cultural_milestones || []} />
+                                    <IslandMissionMap
+                                        completedIds={activeChild?.cultural_milestones || []}
+                                        onComplete={handleMissionComplete}
+                                    />
                                 </div>
                             )}
 
