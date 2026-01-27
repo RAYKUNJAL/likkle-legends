@@ -7,7 +7,7 @@ import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff, Sparkles, AlertCircle, Ch
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase-client';
-import { sendMagicLinkAction } from '@/app/actions/auth-actions';
+import { sendMagicLinkAction, signInAction } from '@/app/actions/auth-actions';
 
 function LoginForm() {
     const router = useRouter();
@@ -32,21 +32,16 @@ function LoginForm() {
         setIsLoading(true);
         setError(null);
 
-        try {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
+        // Server Action Login (robust cookie handling)
+        const result = await signInAction(email, password);
 
-            if (error) throw error;
-
+        if (result.success) {
             // Successful login
+            router.refresh(); // Refresh router to pick up cookies
             router.push('/portal');
-            router.refresh();
-        } catch (err: any) {
-            console.error('Login failed:', err);
-            setError(err.message || 'Invalid email or password');
-        } finally {
+        } else {
+            console.error('Login failed:', result.error);
+            setError(result.error || 'Invalid email or password');
             setIsLoading(false);
         }
     };
