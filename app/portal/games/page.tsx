@@ -134,6 +134,32 @@ const FEATURED_GAMES = [
         isNew: true,
         isPopular: true,
     },
+    {
+        id: 'mango-catch',
+        title: 'Mango Catch Adventure',
+        description: 'Catch the falling tropical fruits in your basket!',
+        emoji: '🧺',
+        gradient: 'from-orange-400 via-yellow-500 to-amber-600',
+        tier: 'free',
+        category: 'adventure',
+        xp: 150,
+        time: '3-10 min',
+        isNew: true,
+        isPopular: true,
+    },
+    {
+        id: 'color-match',
+        title: 'Island Color Match',
+        description: 'Help Tanty Spice match the beautiful colors of the island!',
+        emoji: '🎨',
+        gradient: 'from-pink-400 via-purple-500 to-indigo-600',
+        tier: 'free',
+        category: 'creative',
+        xp: 100,
+        time: '5 min',
+        isNew: true,
+        isPopular: false,
+    },
 ];
 
 import { EmptyState } from '@/components/EmptyState';
