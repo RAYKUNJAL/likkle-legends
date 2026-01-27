@@ -26,13 +26,10 @@ export async function signupAction(formData: {
         console.log(`[AUTH] Checking for existing user: ${formData.email}`);
 
         // 1. Check if user already exists via Admin API to handle re-sending links
-        const { data: { users }, error: userError } = await supabaseAdmin.auth.admin.listUsers();
+        const { data, error: userError } = await supabaseAdmin.auth.admin.listUsers();
 
         // Filter manually since listUsers doesn't support email filter directly in all versions
-        // Or if it does, it's safer to just fetch and find if the user base is small, 
-        // BUT for scalability validation, we should try to rely on unique constraint or just create and catch error.
-        // However, the cleanest way without 'getUserByEmail' is:
-        const existingUser = users.find(u => u.email === formData.email);
+        const existingUser = data?.users?.find(u => u.email === formData.email);
 
         let userId: string;
 
