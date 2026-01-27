@@ -26,7 +26,7 @@ async function testEmail() {
     // The previous logs mentioned "Domain likklelegends.com is not verified... emails can only be sent to registered owner".
     // So I should probably try to send to the owner's email if I knew it, or just see the error.
 
-    const targetEmail = 'onboarding@resend.dev'; // Try the test email provided by Resend if possible, or a real one.
+    const targetEmail = 'raykunjal@gmail.com';
     // Let's try a dummy first.
 
     console.log(`Sending to ${targetEmail}...`);
