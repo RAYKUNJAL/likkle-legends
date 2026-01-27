@@ -31,7 +31,7 @@ class SupabaseClientManager {
 
         // Validation
         if (!url || !anonKey) {
-            console.warn('⚠️  Supabase credentials missing. Using placeholder.');
+            console.warn(`⚠️  Supabase credentials missing. URL: ${!!url}, AnonKey: ${!!anonKey}. Using placeholder.`);
             return createClient('https://placeholder.supabase.co', 'placeholder');
         }
 
