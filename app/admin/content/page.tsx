@@ -56,7 +56,7 @@ export default function AdminContentPage() {
             type: "Interactive",
             icon: BookOpen,
             color: "text-primary bg-primary/5",
-            href: "/admin/content/stories"
+            href: "/admin/media?tab=storybooks"
         },
         {
             id: 'videos',

@@ -29,13 +29,7 @@ export default function PrintStudio({ mode, data, variant = 'home_print', label,
         let width = 210;
         let height = 297;
 
-        if (variant === 'pod_kdp') {
-            // 8.5 x 8.5 inches (Standard KDP Square with Bleed)
-            // 215.9 mm
-            format = 'custom';
-            width = 215.9;
-            height = 215.9;
-        } else if (mode === 'certificate') {
+        if (mode === 'certificate') {
             orientation = 'l';
         }
 
@@ -82,7 +76,7 @@ export default function PrintStudio({ mode, data, variant = 'home_print', label,
                 const paragraphs = cleanContent.split(/\n\n|\r\n\r\n/);
 
                 let y = 30;
-                const margin = variant === 'pod_kdp' ? 25 : 20; // Extra margin for KDP
+                const margin = 20;
                 const maxWidth = pageWidth - (margin * 2);
 
                 paragraphs.forEach((para) => {
@@ -214,11 +208,6 @@ export default function PrintStudio({ mode, data, variant = 'home_print', label,
         Icon = Sticker;
         btnText = label || "Get Stickers";
         btnClass = "bg-indigo-600 text-white hover:bg-indigo-700";
-    }
-
-    if (variant === 'pod_kdp') {
-        btnText = "Export for Amazon KDP";
-        btnClass = "bg-zinc-800 text-white hover:bg-zinc-900";
     }
 
     return (

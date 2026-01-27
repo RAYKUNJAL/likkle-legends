@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
     ArrowLeft, Gamepad2, Star, Lock, Play, Trophy, Clock,
     Users, Sparkles, Brain, Palette, Zap, Crown, Gift, Wand2,
-    Puzzle, Music, BookOpen, Map, Heart, Target
+    Puzzle, Music, BookOpen, Map, Heart, Target, CheckCircle
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { getGames } from '@/lib/database';
@@ -144,6 +144,7 @@ export default function GamesHubPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('all');
     const [hoveredGame, setHoveredGame] = useState<string | null>(null);
+    const [showOnlyAccessible, setShowOnlyAccessible] = useState(false);
 
     useEffect(() => {
         loadGames();
@@ -163,9 +164,10 @@ export default function GamesHubPage() {
 
     const displayGames = games.length > 0 ? games : FEATURED_GAMES;
 
-    const filteredGames = activeCategory === 'all'
+    const filteredGames = (activeCategory === 'all'
         ? displayGames
-        : displayGames.filter(g => (g as any).category === activeCategory);
+        : displayGames.filter(g => (g as any).category === activeCategory)
+    ).filter(g => !showOnlyAccessible || canAccess((g as any).tier_required || (g as any).tier));
 
     const totalXP = activeChild?.total_xp || 0;
     const unlockedGames = filteredGames.filter(g => canAccess((g as any).tier_required || (g as any).tier));
@@ -220,7 +222,20 @@ export default function GamesHubPage() {
 
             {/* Category Filter */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 py-6">
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center">
+                    {/* Accessibility Filter */}
+                    <button
+                        onClick={() => setShowOnlyAccessible(!showOnlyAccessible)}
+                        className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold whitespace-nowrap transition-all border ${showOnlyAccessible
+                            ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105'
+                            : 'bg-white/5 text-white/70 hover:bg-white/10 border-white/10'}`}
+                    >
+                        {showOnlyAccessible ? <CheckCircle size={20} /> : <Lock size={20} />}
+                        My Plan
+                    </button>
+
+                    <div className="w-px h-8 bg-white/10 mx-2 hidden sm:block" />
+
                     {GAME_CATEGORIES.map((cat) => (
                         <button
                             key={cat.id}

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
     ArrowLeft, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
-    Heart, Shuffle, Repeat, ListMusic, Music2, Clock, Star, Lock, Loader2, Radio
+    Heart, Shuffle, Repeat, ListMusic, Music2, Clock, Star, Lock, Loader2, Radio, Check
 } from 'lucide-react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/components/UserContext';
@@ -157,9 +157,12 @@ function SongsPageContent() {
         });
     };
 
-    const filteredSongs = activeTab === 'favorites'
+    const [showOnlyAccessible, setShowOnlyAccessible] = useState(false);
+
+    const filteredSongs = (activeTab === 'favorites'
         ? songs.filter(s => favorites.has(s.id))
-        : songs;
+        : songs
+    ).filter(song => !showOnlyAccessible || canAccess(song.tier_required));
 
     const groupedByIsland = songs.reduce((acc, song) => {
         if (!acc[song.island_origin]) acc[song.island_origin] = [];
@@ -183,6 +186,16 @@ function SongsPageContent() {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setShowOnlyAccessible(!showOnlyAccessible)}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-all ${showOnlyAccessible
+                                ? 'bg-purple-100 border-purple-200 text-purple-700'
+                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-100'}`}
+                        >
+                            {showOnlyAccessible ? <Check size={16} /> : <Lock size={16} />}
+                            <span className="hidden sm:inline">My Plan Only</span>
+                        </button>
+
                         {['all', 'favorites', 'islands'].map((tab) => (
                             <button
                                 key={tab}

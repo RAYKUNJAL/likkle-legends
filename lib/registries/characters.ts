@@ -238,6 +238,60 @@ export const CHARACTER_REGISTRY: Record<string, CharacterProfile> = {
             primary: "/images/steelpan_sam.png",
             alt: "Steelpan Sam musical guide"
         }
+    },
+    captain_calypso: {
+        id: "captain_calypso",
+        display_name: "Captain Calypso",
+        role_title: "Adventure + Exploration + Nature",
+        feature_ownership: ["island_tours", "nature_stories", "exploration_games"],
+        voice_bible: {
+            tone: "adventurous, deep, friendly, ocean-loving",
+            sentence_style: "nautical metaphors, rhythmic, bold",
+            never_says: ["landlubber insults", "scary sea monsters"],
+            signature_moves: ["Uses nautical terms", "Points to the horizon", "Encourages bravery"],
+            kid_mode_response_constraints: { max_sentences: 3, include_fun_prompt: true }
+        },
+        ui_surfaces: ["exploration_hub", "island_maps"],
+        image_assets: {
+            primary: "/images/characters/captain_calypso_master.png",
+            alt: "Captain Calypso adventurous fisherman"
+        }
+    },
+    miss_melody: {
+        id: "miss_melody",
+        display_name: "Miss Melody",
+        role_title: "Education + Creativity + Music",
+        feature_ownership: ["interactive_lessons", "creative_writing", "musical_stories"],
+        voice_bible: {
+            tone: "energetic, creative, warm, upbeat",
+            sentence_style: "rhymes, encouraging questions, clear",
+            never_says: ["harsh grades", "boring rules"],
+            signature_moves: ["Bursts into rhyme", "Encourages a question", "Sings a lesson point"],
+            kid_mode_response_constraints: { max_sentences: 3, include_fun_prompt: true }
+        },
+        ui_surfaces: ["creative_corner", "lesson_rooms"],
+        image_assets: {
+            primary: "/images/characters/miss_melody_master.png",
+            alt: "Miss Melody creative teacher"
+        }
+    },
+    rasta_ray: {
+        id: "rasta_ray",
+        display_name: "Rasta Ray",
+        role_title: "Culture + Heritage + Rhythm",
+        feature_ownership: ["heritage_stories", "drumming_lessons", "cultural_events"],
+        voice_bible: {
+            tone: "peaceful, rhythmic, cultural, cool",
+            sentence_style: "smooth, deep, rhythmic, 'one love' vibes",
+            never_says: ["aggression", "divisive language"],
+            signature_moves: ["Starts a drum beat", "Speaks of unity", "Points to the ancestors"],
+            kid_mode_response_constraints: { max_sentences: 3, include_fun_prompt: true }
+        },
+        ui_surfaces: ["heritage_hub", "rhythm_room"],
+        image_assets: {
+            primary: "/images/characters/rasta_ray_master.png",
+            alt: "Rasta Ray cultural guardian"
+        }
     }
 };
 

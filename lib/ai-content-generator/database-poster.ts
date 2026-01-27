@@ -55,7 +55,7 @@ export class EnhancedDatabasePoster {
                         reading_time_minutes: story.metadata.readingTimeMinutes,
                         word_count: this.calculateWordCount(story),
                         difficulty_level: story.metadata.difficultyLevel,
-                        is_active: true,
+                        is_active: false, // Pending approval
                         display_order: 0,
                     })
                     .select()
@@ -109,7 +109,7 @@ export class EnhancedDatabasePoster {
                         tier_required: song.tierRequired,
                         category: song.category,
                         island_origin: song.islandOrigin,
-                        is_active: true,
+                        is_active: false, // Pending approval
                         display_order: 0,
                         // audio_url would be generated separately
                     })
@@ -128,6 +128,78 @@ export class EnhancedDatabasePoster {
             // Fallback to local save
             console.warn('💾 Saving song locally as fallback...');
             return this.saveSongLocally(song);
+        }
+    }
+
+    /**
+     * Save generated game to database with retry logic
+     */
+    async postGame(game: any): Promise<{ success: boolean; id?: string; error?: string; offline?: boolean }> {
+        try {
+            console.log(`🎮 Posting game: "${game.title}"...`);
+
+            // Test connection first
+            const isOnline = await this.testConnection();
+
+            if (!isOnline) {
+                console.warn('⚠️  Database offline - saving locally');
+                return this.saveGameLocally(game);
+            }
+
+            // Insert into games table with retry (mapping to schema)
+            const result = await supabaseManager.executeWithRetry(async (client) => {
+                const { data, error } = await client
+                    .from('games')
+                    .insert({
+                        title: game.title,
+                        description: game.description,
+                        game_type: game.type,
+                        // Schema Adaptation:
+                        estimated_time: `${game.estimatedMinutes} min`,
+                        game_config: {
+                            data: game.data,
+                            difficulty: game.difficulty,
+                            island_theme: game.island,
+                            xp_reward: game.xpReward
+                        },
+                        is_active: false, // Pending approval
+                        display_order: 0,
+                    })
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                return data;
+            }, true); // Use service role
+
+            console.log(`✅ Game posted successfully! ID: ${result.id}`);
+            return { success: true, id: result.id };
+        } catch (error: any) {
+            console.error('❌ Failed to post game:', error.message);
+
+            // Fallback to local save
+            console.warn('💾 Saving game locally as fallback...');
+            return this.saveGameLocally(game);
+        }
+    }
+
+    /**
+     * Save game to local JSON file
+     */
+    private async saveGameLocally(game: any): Promise<{ success: boolean; offline: true; error?: string }> {
+        try {
+            const outputDir = join(process.cwd(), 'generated-content', 'games');
+            await mkdir(outputDir, { recursive: true });
+
+            const filename = `${Date.now()}-${game.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`;
+            const filepath = join(outputDir, filename);
+
+            await writeFile(filepath, JSON.stringify(game, null, 2), 'utf-8');
+
+            console.log(`💾 Game saved locally: ${filename}`);
+            return { success: true, offline: true };
+        } catch (error: any) {
+            return { success: false, offline: true, error: error.message };
         }
     }
 

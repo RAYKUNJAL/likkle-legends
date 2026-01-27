@@ -1,0 +1,47 @@
+{
+  "type": "memory",
+  "title": "Island Memory Match",
+  "description": "Find the matching Caribbean pairs!",
+  "difficulty": "medium",
+  "island": "Caribbean",
+  "estimatedMinutes": 5,
+  "xpReward": 90,
+  "data": [
+    {
+      "id": "card-0",
+      "symbol": "🥭",
+      "name": "Mango",
+      "category": "fruit"
+    },
+    {
+      "id": "card-1",
+      "symbol": "🥥",
+      "name": "Coconut",
+      "category": "fruit"
+    },
+    {
+      "id": "card-2",
+      "symbol": "🍍",
+      "name": "Pineapple",
+      "category": "fruit"
+    },
+    {
+      "id": "card-3",
+      "symbol": "🦜",
+      "name": "Parrot",
+      "category": "animal"
+    },
+    {
+      "id": "card-4",
+      "symbol": "🦀",
+      "name": "Crab",
+      "category": "animal"
+    },
+    {
+      "id": "card-5",
+      "symbol": "🐢",
+      "name": "Sea Turtle",
+      "category": "animal"
+    }
+  ]
+}

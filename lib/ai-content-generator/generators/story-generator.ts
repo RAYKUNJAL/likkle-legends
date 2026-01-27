@@ -4,7 +4,7 @@
 // Migration: V2 Architecture
 
 import { contentGenerator } from '../core';
-import { CONTENT_CONFIG } from '../config';
+import { CONTENT_CONFIG, IMAGE_STYLE } from '../config';
 import { CHARACTER_REGISTRY, getCharacterContext } from '../../registries/characters';
 import { ISLAND_REGISTRY, getIslandContext } from '../../registries/islands';
 import { QualityGatesService, QAReport } from '../../services/quality-gates';
@@ -60,18 +60,18 @@ export class StoryGenerator {
 
         // Resolve Island
         const islandId = params.island || this.getRandomIslandId();
-        const islandPack = ISLAND_REGISTRY[islandId] || ISLAND_REGISTRY['TT']; // Fallback to TT if missing
+        const islandPack = ISLAND_REGISTRY[islandId] || ISLAND_REGISTRY['JM'] || Object.values(ISLAND_REGISTRY)[0];
 
         // Resolve Character
         const characterId = params.characterId || 'roti'; // Default host
-        const characterPack = CHARACTER_REGISTRY[characterId];
+        const characterPack = CHARACTER_REGISTRY[characterId] || CHARACTER_REGISTRY['roti'] || Object.values(CHARACTER_REGISTRY)[0];
 
         const theme = params.theme || contentGenerator.getRandomTheme();
 
-        console.log(`📖 Generating story: ${islandPack.display_name} - ${theme} (${ageTrack}) hosted by ${characterPack.display_name}`);
+        console.log(`📖 Generating world-class story: ${islandPack.display_name} - ${theme} (${ageTrack}) hosted by ${characterPack.display_name}`);
 
         // Build the system instructions (Context Injection)
-        const systemInstruction = `You are the "Likkle Legends" AI Storyteller.
+        const systemInstruction = `You are the "Likkle Legends" World-Class AI Storyteller.
         
         **YOUR IDENTITY:**
         ${getCharacterContext(characterId)}
@@ -79,41 +79,85 @@ export class StoryGenerator {
         **CULTURAL CONTEXT:**
         ${getIslandContext(islandPack.id)}
         
-        **TASK:**
-        Write a kid-safe, culturally authentic story for ${ageTrack === 'mini' ? 'Preschoolers (3-5)' : 'Young Readers (6-8)'}.
+        **TARGET AGE GROUP: ${ageTrack}**
+        Pedagogy: ${ageConfig.pedagogy}
         
-        **REQUIREMENTS:**
-        1. MORAL: Start with a clear positive lesson.
-        2. TONE: Gentle, encouraging, no scary elements.
-        3. LANGUAGE: Use English with specific island dialect words from the context provided above.
-        4. STRUCTURE: ${ageTrack === 'mini' ? 'Simple repetition, 4 pages' : 'Simple plot, 6 pages'}.
+        **WORLD-CLASS STANDARDS:**
+        1. MORAL: Start with a clear positive Caribbean value.
+        2. TONE: Gentle, encouraging, and magical.
+        3. LITERACY BUILDING: **IMPORTANT** Use **BOLD** (Markdown **word**) for key educational words, new Patois words, or important objects. This helps young children focus on key vocabulary.
+        4. LANGUAGE: Culturally authentic English with specific island dialect words.
+        5. STRUCTURE: ${ageTrack === 'mini' ? 'Engaging repetition with a full island adventure, 6-8 pages' : 'Highly detailed and immersive exploration or adventure plot, 10-12 pages'}.
         `;
 
         // Build the Prompt
-        const prompt = `Write a story about "${theme}".
+        const prompt = `Write a world-class children's story about "${theme}" set in ${islandPack.display_name}.
         
-        Return the result as a JSON object matching this structure:
+        **JSON STRUCTURE:**
         {
             "title": "Story Title",
-            "summary": "Brief summary",
-            "moral": "The lesson learned",
+            "summary": "1-sentence summary",
+            "moral": "The lesson",
             "pages": [
                 {
-                    "text": "The story text for this page. Emphasize rhythm and sensory details.",
-                    "imagePrompt": "Description for the illustration. Include Caribbean elements: ${islandPack.symbols.landmarks[0] || 'Beach'}, ${islandPack.symbols.national_bird || 'Birds'}.",
-                    "patoisWords": [{"word": "example", "meaning": "definition"}]
+                    "text": "Page text. Use **bold** for at least 2-3 key words per page to help kids read.",
+                    "imagePrompt": "Masterpiece illustration prompt: ${IMAGE_STYLE.base}",
+                    "patoisWords": [{"word": "word", "meaning": "meaning"}]
                 }
             ],
             "parentNote": {
-                "whyItHelps": "Educational benefit",
-                "offlineFollowup": "Activity to do after reading",
-                "whatToSayAfter": "Conversation starter question"
+                "whyItHelps": "Benefits",
+                "offlineFollowup": "Activity",
+                "whatToSayAfter": "Question"
             },
-            "culturalElements": ["List specific foods/music/places mentioned"]
+            "culturalElements": ["List foods/places/traditions"]
         }`;
 
+        // Define Strict Schema for Gemini
+        const storySchema = {
+            type: "object",
+            properties: {
+                title: { type: "string" },
+                summary: { type: "string" },
+                moral: { type: "string" },
+                pages: {
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            text: { type: "string" },
+                            imagePrompt: { type: "string" },
+                            patoisWords: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        word: { type: "string" },
+                                        meaning: { type: "string" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                parentNote: {
+                    type: "object",
+                    properties: {
+                        whyItHelps: { type: "string" },
+                        offlineFollowup: { type: "string" },
+                        whatToSayAfter: { type: "string" }
+                    }
+                },
+                culturalElements: {
+                    type: "array",
+                    items: { type: "string" }
+                }
+            },
+            required: ["title", "summary", "moral", "pages", "parentNote", "culturalElements"]
+        };
+
         // Generate JSON
-        const rawContent = await contentGenerator.generateJSON<any>(prompt, {}, {
+        const rawContent = await contentGenerator.generateJSON<any>(prompt, storySchema, {
             systemInstruction,
             temperature: 0.7 // Slightly lower for more coherent stories
         });
@@ -170,17 +214,13 @@ export class StoryGenerator {
         const stories: GeneratedStory[] = [];
 
         for (let i = 0; i < count; i++) {
-            try {
-                console.log(`Generating story ${i + 1}/${count}...`);
-                const story = await this.generateStory(params);
-                stories.push(story);
+            console.log(`Generating story ${i + 1}/${count}...`);
+            const story = await this.generateStory(params);
+            stories.push(story);
 
-                // Rate limiting delay
-                if (i < count - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
-            } catch (error) {
-                console.error(`Failed to generate story ${i + 1}:`, error);
+            // Rate limiting delay
+            if (i < count - 1) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
             }
         }
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-    ArrowLeft, Book, Clock, Star, Lock, Play, Filter,
+    ArrowLeft, Book, Clock, Star, Lock, Play, Filter, Check,
     Search, ChevronDown, Heart, Sparkles, Wand2
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
@@ -38,6 +38,7 @@ export default function StoriesPage() {
     const [selectedAgeTrack, setSelectedAgeTrack] = useState<'all' | 'mini' | 'big'>('all');
     const [sortBy, setSortBy] = useState<'popular' | 'newest' | 'rating'>('popular');
     const [favorites, setFavorites] = useState<Set<string>>(new Set());
+    const [showOnlyAccessible, setShowOnlyAccessible] = useState(false);
 
     useEffect(() => {
         async function loadStories() {
@@ -78,7 +79,8 @@ export default function StoriesPage() {
             story.description.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesIsland = selectedIsland === 'All Islands' || story.island_origin === selectedIsland;
         const matchesAgeTrack = selectedAgeTrack === 'all' || story.age_track === selectedAgeTrack;
-        return matchesSearch && matchesIsland && matchesAgeTrack;
+        const matchesTier = !showOnlyAccessible || canAccess(story.tier_required);
+        return matchesSearch && matchesIsland && matchesAgeTrack && matchesTier;
     }).sort((a, b) => {
         if (sortBy === 'popular') return b.read_count - a.read_count;
         if (sortBy === 'rating') return b.rating - a.rating;
@@ -168,6 +170,17 @@ export default function StoriesPage() {
                             </button>
                         ))}
                     </div>
+
+                    {/* Accessibility Filter */}
+                    <button
+                        onClick={() => setShowOnlyAccessible(!showOnlyAccessible)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-all ${showOnlyAccessible
+                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                            : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                    >
+                        {showOnlyAccessible ? <Check size={16} /> : <Lock size={16} />}
+                        My Plan Only
+                    </button>
 
                     {/* Sort */}
                     <div className="ml-auto">

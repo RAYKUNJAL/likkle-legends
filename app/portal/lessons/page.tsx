@@ -26,6 +26,7 @@ export default function LessonsPage() {
     const [videos, setVideos] = useState<Video[]>([]);
     const [activeVideo, setActiveVideo] = useState<Video | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [showOnlyAccessible, setShowOnlyAccessible] = useState(false);
 
     useEffect(() => {
         async function loadVideos() {
@@ -80,6 +81,15 @@ export default function LessonsPage() {
                             <p className="text-xs text-gray-400">Learn with Likkle Legends</p>
                         </div>
                     </div>
+                    <button
+                        onClick={() => setShowOnlyAccessible(!showOnlyAccessible)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-all ${showOnlyAccessible
+                            ? 'bg-indigo-100 border-indigo-200 text-indigo-700'
+                            : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                    >
+                        {showOnlyAccessible ? <CheckCircle size={16} /> : <Lock size={16} />}
+                        My Plan Only
+                    </button>
                 </div>
             </header>
 
@@ -128,7 +138,7 @@ export default function LessonsPage() {
                     </div>
                 ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {videos.map((video) => {
+                        {videos.filter(v => !showOnlyAccessible || canAccess(v.tier_required)).map((video) => {
                             const isLocked = !canAccess(video.tier_required);
                             const isActive = activeVideo?.id === video.id;
 
