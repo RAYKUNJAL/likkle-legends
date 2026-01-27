@@ -64,9 +64,37 @@ const setLocal = (key: string, val: any) => localStorage.setItem(key, JSON.strin
 export const getGlobalPlaylist = async (): Promise<Track[] | null> => {
     if (isSupabaseConfigured()) {
         try {
+            // Priority: Fetch from 'songs' table (Admin Uploads)
+            const { data: songs } = await supabase
+                .from('songs')
+                .select('*')
+                .eq('is_active', true)
+                .order('display_order', { ascending: true });
+
+            if (songs && songs.length > 0) {
+                return songs.map((s: any) => {
+                    // Map DB category to Radio Channel
+                    let channel = 'music'; // Default
+                    if (s.category === 'educational' || s.category === 'lesson') channel = 'learning';
+                    if (s.category === 'cultural' || s.category === 'story') channel = 'story';
+
+                    return {
+                        id: s.id,
+                        title: s.title,
+                        artist: s.artist || 'Likkle Legends',
+                        url: s.audio_url,
+                        channel: channel,
+                        duration: s.duration_seconds
+                    };
+                });
+            }
+
+            // Fallback to global_config (legacy)
             const { data } = await supabase.from('global_config').select('value').eq('key', 'playlist').single();
             if (data) return data.value;
-        } catch (e) { }
+        } catch (e) {
+            console.warn("Playlist fetch error", e);
+        }
     }
     return getLocal<Track[]>(PLAYLIST_KEY);
 };
