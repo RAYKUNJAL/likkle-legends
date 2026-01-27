@@ -54,7 +54,14 @@ export async function middleware(request: NextRequest) {
         }
     );
 
-    await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
+
+    // If user is signed in and visits login page, redirect to portal
+    if (session && request.nextUrl.pathname === '/login') {
+        const url = request.nextUrl.clone();
+        url.pathname = '/portal';
+        return NextResponse.redirect(url);
+    }
 
     return response;
 }
