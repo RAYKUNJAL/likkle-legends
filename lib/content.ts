@@ -188,7 +188,7 @@ export const siteContent = {
                     "Creates a sense of safety and calm",
                     "Balances learning with compassion"
                 ],
-                image: "/images/tanty_spice.png"
+                image: "/images/tanty_spice_avatar.jpg"
             },
             {
                 id: "dilly_doubles",
@@ -202,7 +202,7 @@ export const siteContent = {
                     "Encourages kids to try new things",
                     "Builds social skills through playful stories"
                 ],
-                image: "/images/dilly_doubles.png"
+                image: "/images/dilly-doubles.jpg"
             },
             {
                 id: "mango_moko",
