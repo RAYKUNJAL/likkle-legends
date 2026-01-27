@@ -26,6 +26,16 @@ export async function logActivity(
     // Update streak
     await updateStreak(childId);
 
+    // If it's a mission, update cultural_milestones
+    if (activityType === 'mission' && contentId) {
+        const child = await getChild(childId);
+        const milestones = [...(child.cultural_milestones || [])];
+        if (!milestones.includes(contentId)) {
+            milestones.push(contentId);
+            await updateChild(childId, { cultural_milestones: milestones });
+        }
+    }
+
     // Add XP if earned
     if (xpEarned > 0) {
         await addXP(childId, xpEarned, activityType);

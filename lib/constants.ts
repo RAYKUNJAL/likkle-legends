@@ -132,19 +132,46 @@ export const QUESTS: Quest[] = [
     {
         id: 'q1',
         title: 'Island Fruit Hunter',
-        description: 'Find a fruit from the islands and draw it!',
+        description: 'Find a fruit from the islands and draw its beautiful skin!',
         rewardPoints: 100,
         icon: '🥭',
         category: 'Nature',
-        steps: ['Find a mango or pineapple', 'Draw its colorful skin', 'Upload your masterpiece']
+        steps: ['Find a mango, pineapple, or banana', 'Draw its colors and shape', 'Tell Tanty Spice its name!']
     },
     {
         id: 'q2',
-        title: 'Word Weaver',
-        description: 'Learn 5 Caribbean greetings.',
-        rewardPoints: 50,
+        title: 'Patois Greeter',
+        description: 'Learn and practice 3 Caribbean greetings.',
+        rewardPoints: 150,
         icon: '🗣️',
+        category: 'Language',
+        steps: ['Learn "Wha Gwan" and "Irie"', 'Learn "Big Up"', 'Say it to someone you love today!']
+    },
+    {
+        id: 'q3',
+        title: 'Steelpan Rhythm',
+        description: 'Find something that makes a metallic sound and play a beat!',
+        rewardPoints: 200,
+        icon: '🥁',
+        category: 'Music',
+        steps: ['Find a pot lid or a spoon', 'Listen to its "Ting!" sound', 'Play your favorite soca rhythm']
+    },
+    {
+        id: 'q4',
+        title: 'Spice Detective',
+        description: 'Find something in the kitchen that smells like the islands.',
+        rewardPoints: 250,
+        icon: '🧂',
+        category: 'Food',
+        steps: ['Smell some cinnamon or nutmeg', 'Imagine you are at a local market', 'Help cook a meal with that spice']
+    },
+    {
+        id: 'q5',
+        title: 'Flag Flyer',
+        description: 'Discover the colors of a Caribbean flag.',
+        rewardPoints: 300,
+        icon: '🚩',
         category: 'Culture',
-        steps: ['Learn "Wha Gwan"', 'Learn "Irie"', 'Practice with a friend']
+        steps: ['Look up the Jamaica or Trinidad flag', 'Name all the colors you see', 'Draw your own "Legend Flag"']
     }
 ];
