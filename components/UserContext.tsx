@@ -111,7 +111,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
         return;
       }
 
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
@@ -119,6 +119,36 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
 
       if (profile) {
         setUser(profile as Profile);
+      } else {
+        // Fallback: If profile row is missing (trigger delay/fail), construct from session
+        console.warn('Profile missing from DB, using session fallback');
+        const meta = session.user.user_metadata || {};
+        const fallbackProfile: Profile = {
+          id: session.user.id,
+          full_name: meta.full_name || 'Parent',
+          email: session.user.email || '',
+          subscription_tier: (meta.chosen_plan as any) || 'free',
+          subscription_status: 'inactive', // Default to inactive until DB confirms
+          country_code: 'US',
+          currency: 'USD',
+          has_grandparent_dashboard: false,
+          has_heritage_dna_story: false,
+          onboarding_completed: false,
+          parent_name: meta.full_name?.split(' ')[0] || 'Parent',
+          marketing_opt_in: false,
+          is_admin: false
+        };
+        setUser(fallbackProfile);
+
+        // Use a detached upsert to ensure it exists (self-healing)
+        supabase.from('profiles').upsert({
+          id: fallbackProfile.id,
+          email: fallbackProfile.email,
+          full_name: fallbackProfile.full_name,
+          role: 'parent'
+        }).then(({ error }) => {
+          if (error) console.error('Self-healing profile creation failed:', error);
+        });
       }
     } catch (error) {
       console.error('Error refreshing user:', error);
