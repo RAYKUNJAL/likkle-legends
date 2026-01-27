@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import confetti from 'canvas-confetti';
+import MangoCatch from '@/components/games/MangoCatch';
+import ColorMatch from '@/components/games/ColorMatch';
 
 // ==========================================
 // TYPES
@@ -226,8 +228,8 @@ const AITrivia = ({ onComplete }: { onComplete: (score: number, correct: number,
             {/* Result & Fun Fact */}
             {showResult && (
                 <div className={`rounded-2xl p-6 mb-6 border-2 ${isCorrect
-                        ? 'bg-green-500/20 border-green-500/40'
-                        : 'bg-orange-500/20 border-orange-500/40'
+                    ? 'bg-green-500/20 border-green-500/40'
+                    : 'bg-orange-500/20 border-orange-500/40'
                     }`}>
                     <div className="flex items-start gap-4">
                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${isCorrect ? 'bg-green-500/30' : 'bg-orange-500/30'
@@ -359,8 +361,8 @@ const MemoryGame = ({ onComplete }: { onComplete: (score: number, correct: numbe
                         key={card.id}
                         onClick={() => handleCardClick(index)}
                         className={`aspect-square rounded-2xl text-4xl flex items-center justify-center transition-all duration-300 transform ${card.isFlipped || card.isMatched
-                                ? 'bg-gradient-to-br from-primary to-accent rotate-0 scale-100'
-                                : 'bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40'
+                            ? 'bg-gradient-to-br from-primary to-accent rotate-0 scale-100'
+                            : 'bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40'
                             } ${card.isMatched ? 'opacity-60' : ''}`}
                     >
                         <span className={`transition-all duration-300 ${card.isFlipped || card.isMatched ? 'scale-100' : 'scale-0'
@@ -433,8 +435,8 @@ const PatoisWizard = ({ onComplete }: { onComplete: (score: number, correct: num
             {/* Feedback Toast */}
             {feedback && (
                 <div className={`fixed top-24 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 animate-bounce ${feedback.type === 'success'
-                        ? 'bg-green-500 text-white'
-                        : 'bg-orange-500 text-white'
+                    ? 'bg-green-500 text-white'
+                    : 'bg-orange-500 text-white'
                     }`}>
                     {feedback.type === 'success' ? <CheckCircle2 size={20} /> : <XCircle size={20} />}
                     {feedback.text}
@@ -466,10 +468,10 @@ const PatoisWizard = ({ onComplete }: { onComplete: (score: number, correct: num
                                 disabled={isMatched}
                                 onClick={() => handleSelect(pair.patois, 'patois')}
                                 className={`w-full p-5 rounded-2xl font-bold text-lg transition-all border-2 ${isMatched
-                                        ? 'bg-green-500/20 border-green-500/40 text-green-400 opacity-60'
-                                        : selectedPatois === pair.patois
-                                            ? 'bg-primary border-primary text-white scale-105 shadow-xl shadow-primary/30'
-                                            : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                                    ? 'bg-green-500/20 border-green-500/40 text-green-400 opacity-60'
+                                    : selectedPatois === pair.patois
+                                        ? 'bg-primary border-primary text-white scale-105 shadow-xl shadow-primary/30'
+                                        : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
                                     }`}
                             >
                                 {pair.patois}
@@ -490,10 +492,10 @@ const PatoisWizard = ({ onComplete }: { onComplete: (score: number, correct: num
                                 disabled={isMatched}
                                 onClick={() => handleSelect(pair.english, 'english')}
                                 className={`w-full p-5 rounded-2xl font-bold text-lg transition-all border-2 ${isMatched
-                                        ? 'bg-green-500/20 border-green-500/40 text-green-400 opacity-60'
-                                        : selectedEnglish === pair.english
-                                            ? 'bg-secondary border-secondary text-white scale-105 shadow-xl shadow-secondary/30'
-                                            : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                                    ? 'bg-green-500/20 border-green-500/40 text-green-400 opacity-60'
+                                    : selectedEnglish === pair.english
+                                        ? 'bg-secondary border-secondary text-white scale-105 shadow-xl shadow-secondary/30'
+                                        : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
                                     }`}
                             >
                                 {pair.english}
@@ -563,8 +565,8 @@ const CompletionScreen = ({
                             key={i}
                             size={48}
                             className={`transition-all duration-500 ${i <= stars
-                                    ? 'text-yellow-400 fill-yellow-400 scale-110'
-                                    : 'text-white/20'
+                                ? 'text-yellow-400 fill-yellow-400 scale-110'
+                                : 'text-white/20'
                                 }`}
                             style={{ transitionDelay: `${i * 200}ms` }}
                         />
@@ -645,6 +647,8 @@ export default function GamePlayerPage() {
             case 'patois-puzzle': return 'Patois Word Wizard';
             case 'ai-trivia': return 'AI Island Trivia';
             case 'trivia': return 'Caribbean Trivia';
+            case 'mango-catch': return 'Mango Catch Adventure';
+            case 'color-match': return 'Island Color Match';
             default: return 'Island Game';
         }
     };
@@ -658,6 +662,10 @@ export default function GamePlayerPage() {
             case 'ai-trivia':
             case 'trivia':
                 return <AITrivia key={gameKey} onComplete={handleComplete} />;
+            case 'mango-catch':
+                return <MangoCatch onComplete={handleComplete} />;
+            case 'color-match':
+                return <ColorMatch onComplete={handleComplete} />;
             default:
                 return (
                     <div className="text-center py-20 bg-white/10 backdrop-blur-lg rounded-[3rem] border border-white/20">
