@@ -1,6 +1,0 @@
-﻿[dotenv@17.2.3] injecting env (14) from .env.local -- tip: ≡ƒùé∩╕Å backup and recover secrets: https://dotenvx.com/ops
-[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒæÑ sync secrets across teammates & machines: https://dotenvx.com/ops
-Γ£à Environment variables loaded successfully
-Checking profile for ID: a250a8b1-58a0-439e-81a7-04bdd4027fa3
-Profiles for this ID: []
-Children for this ID: []

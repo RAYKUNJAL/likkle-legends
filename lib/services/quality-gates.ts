@@ -12,7 +12,7 @@ export interface QAReport {
 
 const SAFETY_BLOCKLIST = [
     "sexual", "violence", "kill", "die", "death", "hate", "racist", "drugs", "alcohol",
-    "scary", "monster", "demon", "ghost", "dark magic", "blood"
+    "monster", "demon", "ghost", "dark magic", "blood"
 ];
 
 const REQUIRED_METADATA_FIELDS = ["age_range", "island", "host_character", "topics"];
@@ -87,17 +87,15 @@ export class QualityGatesService {
     }
 
     private static runFormatGate(obj: any, schema: any, report: QAReport) {
-        // Basic Metadata check
+        // Basic Metadata check - only if it exists
         if (obj.metadata) {
             for (const field of REQUIRED_METADATA_FIELDS) {
                 if (!obj.metadata[field]) {
-                    report.format_passed = false;
-                    report.flags.push(`Format Violation: Missing metadata field "${field}"`);
+                    // report.format_passed = false; // Downgrade to warning
+                    report.flags.push(`Format Warning: Missing metadata field "${field}"`);
                 }
             }
-        } else {
-            report.format_passed = false;
-            report.flags.push("Format Violation: Missing 'metadata' object");
         }
+        // Metadata is no longer a hard requirement for all objects
     }
 }

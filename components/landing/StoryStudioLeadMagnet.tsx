@@ -12,26 +12,42 @@ export default function StoryStudioLeadMagnet({ content }: { content: any }) {
     const [result, setResult] = useState<null | { title: string, snippet: string }>(null);
     const [formData, setFormData] = useState({
         child_name: '',
+        email: '',
         island: 'Jamaica',
         guide: 'Tanty Spice',
         location: 'Rainforest',
         mission: 'Folklore Quest'
     });
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const handleGenerate = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.child_name) return;
+        if (!formData.child_name || !formData.email) return;
 
         setLoading(true);
-        // Simulate AI generation for now as a demo
-        // In a real scenario, this would call an API route
-        setTimeout(() => {
-            setResult({
-                title: `${formData.child_name}'s ${formData.island} Adventure`,
-                snippet: `Once upon a time in the heart of the ${formData.location}, ${formData.child_name} was walking with ${formData.guide}. Suddenly, they found a glowing ${formData.mission === 'Folklore Quest' ? 'ancient scroll' : 'golden fruit'} hidden behind some giant palm leaves...`
+
+        try {
+            const { createLead } = await import('@/app/actions/crm');
+            await createLead({
+                email: formData.email,
+                child_name: formData.child_name,
+                island_preference: formData.island,
+                source: 'story_studio_teaser'
             });
+
+            // Simulate AI generation delay
+            setTimeout(() => {
+                setResult({
+                    title: `${formData.child_name}'s ${formData.island} Adventure`,
+                    snippet: `Once upon a time in the heart of the ${formData.location}, ${formData.child_name} was walking with ${formData.guide}. Suddenly, they found a glowing ${formData.mission === 'Folklore Quest' ? 'ancient scroll' : 'golden fruit'} hidden behind some giant palm leaves...`
+                });
+                setLoading(false);
+                setIsSubmitted(true);
+            }, 1500);
+        } catch (err) {
+            console.error("Lead submission failed:", err);
             setLoading(false);
-        }, 2000);
+        }
     };
 
     return (
@@ -54,6 +70,18 @@ export default function StoryStudioLeadMagnet({ content }: { content: any }) {
 
                             <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border border-zinc-100">
                                 <form onSubmit={handleGenerate} className="space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-deep uppercase tracking-wider px-1">Your Email (to save your story)</label>
+                                        <input
+                                            type="email"
+                                            placeholder="parent@example.com"
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            className="w-full px-5 py-3 rounded-2xl bg-zinc-50 border border-zinc-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                                            required
+                                        />
+                                    </div>
+
                                     <div className="grid md:grid-cols-2 gap-6">
                                         {ai_story_studio.form.fields.map((field: any) => (
                                             <div key={field.id} className="space-y-2">
@@ -86,7 +114,7 @@ export default function StoryStudioLeadMagnet({ content }: { content: any }) {
 
                                     <button
                                         type="submit"
-                                        disabled={loading || !formData.child_name}
+                                        disabled={loading || !formData.child_name || !formData.email}
                                         className="w-full bg-deep text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-zinc-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-deep/10"
                                     >
                                         {loading ? (
@@ -116,6 +144,9 @@ export default function StoryStudioLeadMagnet({ content }: { content: any }) {
                                         <BookOpen className="w-32 h-32 text-deep" />
                                     </div>
                                     <div className="relative space-y-6">
+                                        <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm uppercase tracking-widest">
+                                            <Sparkles className="w-4 h-4" /> Story Saved!
+                                        </div>
                                         <h3 className="text-2xl font-black text-deep">{result.title}</h3>
                                         <div className="h-0.5 w-12 bg-emerald-500" />
                                         <p className="text-xl text-deep/80 leading-relaxed font-serif italic">

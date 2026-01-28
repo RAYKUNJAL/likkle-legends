@@ -5,6 +5,8 @@ import { AnansiGameState, startAnansiGame, submitAnansiAnswer } from '@/app/acti
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Send, Volume2, RefreshCw, Trophy } from 'lucide-react';
 import { narrateText } from '@/services/geminiService'; // Use our new robust voice service
+import { useUser } from '@/components/UserContext';
+import { logActivity } from '@/lib/database';
 
 export default function AnansiGame() {
     const [gameState, setGameState] = useState<AnansiGameState | null>(null);
@@ -12,6 +14,7 @@ export default function AnansiGame() {
     const [isLoading, setIsLoading] = useState(false);
     const [feedbacks, setFeedbacks] = useState<{ text: string; type: 'success' | 'error' | 'neutral' }[]>([]);
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const { user, activeChild } = useUser();
 
     // Audio context for sound effects or speech
     const startRef = useRef<HTMLDivElement>(null);
@@ -45,6 +48,23 @@ export default function AnansiGame() {
             playSpeech(result.feedback);
 
             if (result.isCorrect) {
+                // Log XP
+                if (user && activeChild) {
+                    try {
+                        await logActivity(
+                            user.id,
+                            activeChild.id,
+                            'game',
+                            'anansi-web',
+                            100,
+                            0,
+                            { title: "Anansi's Web of Words", riddle: gameState.currentRiddle?.question }
+                        );
+                    } catch (err) {
+                        console.error("XP Log fail", err);
+                    }
+                }
+
                 // Wait for feedback reading then update state
                 setTimeout(() => {
                     setGameState(result.newState);
@@ -192,8 +212,8 @@ export default function AnansiGame() {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0 }}
                                     className={`p-4 rounded-2xl max-w-[90%] ${fb.type === 'neutral' ? 'bg-orange-100 text-orange-900 self-start rounded-tl-none' :
-                                            fb.type === 'success' ? 'bg-green-100 text-green-800 self-start' :
-                                                'bg-red-50 text-red-800 self-start'
+                                        fb.type === 'success' ? 'bg-green-100 text-green-800 self-start' :
+                                            'bg-red-50 text-red-800 self-start'
                                         }`}
                                 >
                                     <p className="font-bold text-lg">{fb.text}</p>

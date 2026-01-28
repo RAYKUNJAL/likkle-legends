@@ -1,4 +1,0 @@
-﻿[dotenv@17.2.3] injecting env (14) from .env.local -- tip: ΓÜÖ∩╕Å  override existing env vars with { override: true }
-[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒôí add observability to secrets: https://dotenvx.com/ops
-Γ£à Environment variables loaded successfully
-Columns from info schema: null

@@ -1,10 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { Radio, Shield, Volume2, Car } from 'lucide-react';
+import { Radio, Shield, Volume2, Car, Play, Pause, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { RADIO_TRACKS } from '@/lib/constants';
 
 export default function IslandRadioPreview({ content }: { content: any }) {
     const { island_radio } = content;
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+
     if (!island_radio) return null;
 
     const iconMap: Record<string, any> = {
@@ -13,8 +19,38 @@ export default function IslandRadioPreview({ content }: { content: any }) {
         car: Car
     };
 
+    // Use a sample track (Coconut Bay or similar)
+    const sampleTrack = RADIO_TRACKS[0]?.url || 'https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-loop-1196.mp3';
+
+    const togglePlay = () => {
+        if (!audioRef.current) return;
+
+        if (isPlaying) {
+            audioRef.current.pause();
+            setIsPlaying(false);
+        } else {
+            setIsLoading(true);
+            audioRef.current.play()
+                .then(() => {
+                    setIsPlaying(true);
+                    setIsLoading(false);
+                })
+                .catch(err => {
+                    console.error("Playback failed", err);
+                    setIsLoading(false);
+                });
+        }
+    };
+
     return (
         <section className="py-20 bg-deep text-white relative overflow-hidden">
+            <audio
+                ref={audioRef}
+                src={sampleTrack}
+                loop
+                onEnded={() => setIsPlaying(false)}
+            />
+
             {/* Background pattern */}
             <div className="absolute inset-0 opacity-5">
                 <div className="absolute top-0 left-0 w-full h-full bg-[url('/images/pattern.png')]" />
@@ -73,24 +109,39 @@ export default function IslandRadioPreview({ content }: { content: any }) {
                         {/* Visual */}
                         <div className="relative">
                             <div className="aspect-square max-w-xs mx-auto">
-                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 to-amber-500/30 rounded-full blur-[60px]" />
-                                <div className="relative bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-[2.5rem] p-8 border border-white/10 shadow-2xl">
-                                    <div className="text-center">
-                                        <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <div className={`absolute inset-0 bg-gradient-to-br from-emerald-500/30 to-amber-500/30 rounded-full blur-[60px] transition-all duration-1000 ${isPlaying ? 'scale-110 opacity-100' : 'scale-100 opacity-50'}`} />
+                                <div className="relative bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-[2.5rem] p-8 border border-white/10 shadow-2xl overflow-hidden group cursor-pointer" onClick={togglePlay}>
+
+                                    {/* Play Overlay */}
+                                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-emerald-600 shadow-xl scale-90 group-hover:scale-100 transition-transform">
+                                            {isLoading ? <Loader2 className="animate-spin" /> : isPlaying ? <Pause fill="currentColor" /> : <Play fill="currentColor" className="ml-1" />}
+                                        </div>
+                                    </div>
+
+                                    <div className="text-center relative z-10">
+                                        <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4 relative">
                                             <Radio className="w-10 h-10 text-white" />
+                                            {isPlaying && (
+                                                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                                                </span>
+                                            )}
                                         </div>
                                         <h3 className="text-xl font-bold mb-2">{island_radio.title}</h3>
-                                        <p className="text-white/60 text-sm mb-6">Caribbean kids' music</p>
+                                        <p className="text-white/60 text-sm mb-6">{isPlaying ? 'Now Playing: Sample Track' : 'Click to Listen'}</p>
 
-                                        {/* Fake audio bars */}
+                                        {/* Audio bars - Only animate when playing */}
                                         <div className="flex items-end justify-center gap-1 h-16">
                                             {[3, 5, 8, 6, 9, 4, 7, 5, 8, 6, 4, 7].map((h, i) => (
                                                 <div
                                                     key={i}
-                                                    className="w-2 bg-white/40 rounded-full animate-pulse"
+                                                    className={`w-2 bg-white/40 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}
                                                     style={{
                                                         height: `${h * 6}px`,
-                                                        animationDelay: `${i * 0.1}s`
+                                                        animationDelay: `${i * 0.1}s`,
+                                                        opacity: isPlaying ? 0.8 : 0.3
                                                     }}
                                                 />
                                             ))}

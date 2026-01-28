@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { Mic, Send, Volume2, VolumeX, Sparkles } from "lucide-react";
 
@@ -52,7 +52,7 @@ export default function TantysPorchSection() {
         }
     }, []);
 
-    const speak = async (text: string) => {
+    const speak = useCallback(async (text: string) => {
         if (typeof window === 'undefined') return;
 
         // Cancel browser synthesis if any
@@ -86,9 +86,9 @@ export default function TantysPorchSection() {
         } catch (e) {
             console.error("Voice playback error:", e);
         }
-    };
+    }, []);
 
-    const processMessage = async (text: string) => {
+    const processMessage = useCallback(async (text: string) => {
         // Prevent double-submissions
         if (isLoading) return;
 
@@ -140,7 +140,7 @@ export default function TantysPorchSection() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [isLoading, storyCount, messages, speak]);
 
     const handleSendMessage = () => {
         if (!inputValue.trim()) return;
@@ -148,7 +148,7 @@ export default function TantysPorchSection() {
         setInputValue("");
     };
 
-    const startListening = () => {
+    const startListening = useCallback(() => {
         if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
             const SpeechRecognition = (window as any).webkitSpeechRecognition;
             const recognition = new SpeechRecognition();
@@ -176,7 +176,7 @@ export default function TantysPorchSection() {
             // Fallback for non-supported browsers
             alert("Voice input not supported in this browser.");
         }
-    };
+    }, [processMessage]);
 
     return (
         <section className="py-24 bg-gradient-to-b from-amber-50 to-orange-100 relative overflow-hidden" id="tantys-porch">

@@ -224,11 +224,18 @@ export default function ChildPortalPage() {
                     <div className="w-full px-6 space-y-2 mb-12">
                         {navItems.map((item) => {
                             const Icon = item.icon;
+                            // Check actitve state differently for games since it's a route
                             const isActive = activeSection === item.id;
                             return (
                                 <button
                                     key={item.id}
-                                    onClick={() => setActiveSection(item.id as any)}
+                                    onClick={() => {
+                                        if (item.id === 'games') {
+                                            router.push('/portal/games');
+                                        } else {
+                                            setActiveSection(item.id as any);
+                                        }
+                                    }}
                                     className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-sm transition-all group ${isActive
                                         ? 'bg-white text-[#3ABEF9] shadow-xl scale-105'
                                         : 'text-white/70 hover:text-white hover:bg-white/10'
