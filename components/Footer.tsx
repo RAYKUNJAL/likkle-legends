@@ -43,13 +43,11 @@ export default function Footer() {
                 <p className="text-base font-black text-white/40 tracking-normal">
                     {footer.copyright}
                 </p>
-                <Link
-                    href="/admin"
-                    className="text-xs text-white/10 hover:text-white/30 transition-colors uppercase tracking-widest font-bold"
+                className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
                 >
-                    Admin Access
-                </Link>
-            </div>
-        </footer>
+                Admin Access
+            </Link>
+        </div>
+        </footer >
     );
 }
