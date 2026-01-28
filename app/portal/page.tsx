@@ -7,13 +7,14 @@ import { useRouter } from 'next/navigation';
 import {
     Sparkles, BookOpen, Music, Palette, Target, Star, Play,
     Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video, Radio,
-    Map as MapIcon, Grid, Wand2
+    Map as MapIcon, Grid, Wand2, LogOut, Download
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { getSongs, getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
 import { calculateLevel, LEVELS } from '@/lib/gamification';
 import { CultureQuests } from '@/components/CultureQuests';
 import { IslandMissionMap } from '@/components/IslandMissionMap';
+import { PrintablesSection } from '@/components/PrintablesSection';
 import { EmptyState } from '@/components/EmptyState';
 import TantyRadio from '@/components/TantyRadio';
 import IslandVillageMap from '@/components/IslandVillageMap';
@@ -178,12 +179,14 @@ export default function ChildPortalPage() {
         { id: 'songs', label: 'Songs', icon: Music, color: 'from-purple-500 to-pink-500' },
         { id: 'missions', label: 'Missions', icon: Target, color: 'from-orange-500 to-red-500' },
         { id: 'games', label: 'Games', icon: Palette, color: 'from-green-500 to-emerald-500' },
+        { id: 'printables', label: 'Printables', icon: Download, color: 'from-amber-400 to-orange-500' },
         { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
     ];
 
     const portals = [
         { id: 'story-studio', label: 'Story Studio', sub: 'Create Magic', icon: Wand2, color: 'bg-[#FF9D42]', iconColor: 'text-orange-600', shadow: 'shadow-orange-200', href: '/portal/story-studio' },
         { id: 'songs', label: 'Songs', sub: 'Island Rhythms', icon: Music, color: 'bg-[#A855F7]', iconColor: 'text-purple-600', shadow: 'shadow-purple-200' },
+        { id: 'printables', label: 'Printables', sub: 'Fun Activities', icon: Download, color: 'bg-[#F59E0B]', iconColor: 'text-amber-600', shadow: 'shadow-amber-200' },
         { id: 'missions', label: 'Adventures', sub: 'Island Quests', icon: MapIcon, color: 'bg-[#14B8A6]', iconColor: 'text-teal-600', shadow: 'shadow-teal-200' },
     ];
 
@@ -236,6 +239,15 @@ export default function ChildPortalPage() {
                                 </button>
                             );
                         })}
+
+                        {/* Exit/Logout Button */}
+                        <button
+                            onClick={() => router.push('/')}
+                            className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-sm text-white/70 hover:text-white hover:bg-red-500/20 transition-all group mt-8 border border-white/10 hover:border-white/30"
+                        >
+                            <LogOut size={20} className="text-white/50 group-hover:text-white" />
+                            Exit Portal
+                        </button>
                     </div>
 
                     {/* Tropical elements deco */}
@@ -503,6 +515,19 @@ export default function ChildPortalPage() {
                                         completedIds={activeChild?.cultural_milestones || []}
                                         onComplete={handleMissionComplete}
                                     />
+                                </div>
+                            )}
+
+                            {(activeSection === 'printables') && (
+                                <div className="max-w-6xl mx-auto space-y-10 pb-12">
+                                    <div className="flex items-center gap-5 mb-6">
+                                        <div className="w-16 h-16 bg-amber-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner border-2 border-amber-200">🖨️</div>
+                                        <div>
+                                            <h2 className="text-4xl font-black text-slate-800 tracking-tight">Print & Play</h2>
+                                            <p className="text-amber-600/60 font-bold uppercase text-xs tracking-widest">Caribbean Activity Sheets</p>
+                                        </div>
+                                    </div>
+                                    <PrintablesSection />
                                 </div>
                             )}
 

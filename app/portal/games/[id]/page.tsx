@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -617,7 +617,7 @@ const CompletionScreen = ({
 export default function GamePlayerPage() {
     const params = useParams();
     const router = useRouter();
-    const gameId = params.id as string;
+    const gameId = (params?.id as string) || '';
     const { activeChild } = useUser();
 
     const [isComplete, setIsComplete] = useState(false);
@@ -663,9 +663,9 @@ export default function GamePlayerPage() {
             case 'trivia':
                 return <AITrivia key={gameKey} onComplete={handleComplete} />;
             case 'mango-catch':
-                return <MangoCatch onComplete={handleComplete} />;
+                return <MangoCatch key={gameKey} onComplete={handleComplete} />;
             case 'color-match':
-                return <ColorMatch onComplete={handleComplete} />;
+                return <ColorMatch key={gameKey} onComplete={handleComplete} />;
             default:
                 return (
                     <div className="text-center py-20 bg-white/10 backdrop-blur-lg rounded-[3rem] border border-white/20">

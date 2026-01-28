@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Heart, Play, RefreshCw, ArrowLeft, Star, Volume2, Gamepad2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -139,6 +139,7 @@ export default function MangoCatch({ onComplete }: { onComplete?: (score: number
         setLives(stateRef.current.lives);
 
         if (!stateRef.current.isGameOver) {
+            if (requestRef.current) cancelAnimationFrame(requestRef.current);
             requestRef.current = requestAnimationFrame(updateGame);
         }
     }, [spawnItem]);
@@ -165,10 +166,12 @@ export default function MangoCatch({ onComplete }: { onComplete?: (score: number
         if (gameState !== 'playing' || !containerRef.current) return;
 
         let clientX: number;
-        if ('touches' in e) {
+        if (e && 'touches' in e && e.touches && e.touches.length > 0) {
             clientX = e.touches[0].clientX;
+        } else if (e && 'clientX' in e) {
+            clientX = (e as any).clientX;
         } else {
-            clientX = e.clientX;
+            return;
         }
 
         const rect = containerRef.current.getBoundingClientRect();
