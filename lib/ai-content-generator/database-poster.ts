@@ -23,8 +23,9 @@ export class EnhancedDatabasePoster {
             const isOnline = await this.testConnection();
 
             if (!isOnline) {
-                console.warn('⚠️  Database offline - saving locally');
-                return this.saveStoryLocally(story);
+                console.warn('⚠️  Database offline - local saving skipped for build compatibility');
+                return { success: false, offline: true, error: 'Database offline' };
+                // return this.saveStoryLocally(story);
             }
 
             // Generate Cover Image
@@ -99,8 +100,9 @@ export class EnhancedDatabasePoster {
             const isOnline = await this.testConnection();
 
             if (!isOnline) {
-                console.warn('⚠️  Database offline - saving locally');
-                return this.saveSongLocally(song);
+                console.warn('⚠️  Database offline - local saving skipped for build compatibility');
+                return { success: false, offline: true, error: 'Database offline' };
+                // return this.saveSongLocally(song);
             }
 
             // Generate thumbnail (placeholder)
@@ -154,8 +156,9 @@ export class EnhancedDatabasePoster {
             const isOnline = await this.testConnection();
 
             if (!isOnline) {
-                console.warn('⚠️  Database offline - saving locally');
-                return this.saveGameLocally(game);
+                console.warn('⚠️  Database offline - local saving skipped for build compatibility');
+                return { success: false, offline: true, error: 'Database offline' };
+                // return this.saveGameLocally(game);
             }
 
             // Insert into games table with retry (mapping to schema)
@@ -203,7 +206,7 @@ export class EnhancedDatabasePoster {
             console.log(`🖨️ Posting printable: "${printable.title}"...`);
 
             const isOnline = await this.testConnection();
-            if (!isOnline) return this.savePrintableLocally(printable);
+            if (!isOnline) return { success: false, offline: true, error: 'Database offline' };
 
             const { data, error } = await supabaseAdmin
                 .from('printables')
@@ -338,7 +341,10 @@ export class EnhancedDatabasePoster {
      * Save story to local JSON file
      */
     private async saveStoryLocally(story: GeneratedStory): Promise<{ success: boolean; offline: true; error?: string }> {
+        /* Node bits commented out for build compatibility
         try {
+            const { writeFile, mkdir } = await import('fs/promises');
+            const { join } = await import('path');
             const outputDir = join(process.cwd(), 'generated-content', 'stories');
             await mkdir(outputDir, { recursive: true });
 
@@ -352,13 +358,19 @@ export class EnhancedDatabasePoster {
         } catch (error: any) {
             return { success: false, offline: true, error: error.message };
         }
+        */
+        console.warn('💾 Local save disabled for build compatibility');
+        return { success: false, offline: true, error: 'Local save disabled' };
     }
 
     /**
      * Save song to local JSON file
      */
     private async saveSongLocally(song: GeneratedSong): Promise<{ success: boolean; offline: true; error?: string }> {
+        /* Node bits commented out for build compatibility
         try {
+            const { writeFile, mkdir } = await import('fs/promises');
+            const { join } = await import('path');
             const outputDir = join(process.cwd(), 'generated-content', 'songs');
             await mkdir(outputDir, { recursive: true });
 
@@ -372,6 +384,9 @@ export class EnhancedDatabasePoster {
         } catch (error: any) {
             return { success: false, offline: true, error: error.message };
         }
+        */
+        console.warn('💾 Local save disabled for build compatibility');
+        return { success: false, offline: true, error: 'Local save disabled' };
     }
 
     /**
