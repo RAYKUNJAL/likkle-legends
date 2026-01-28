@@ -5,7 +5,30 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
+import { useUser } from '@/components/UserContext';
+import { logActivity } from '@/lib/database';
+
 export default function MangoCatchPage() {
+    const { user, activeChild } = useUser();
+
+    const handleComplete = async (score: number) => {
+        if (!user || !activeChild) return;
+        try {
+            // Log the game activity with the score as XP (or a calculated amount)
+            await logActivity(
+                user.id,
+                activeChild.id,
+                'game',
+                'mango-catch',
+                score, // XP earned
+                0,
+                { title: 'Mango Catch Adventure' }
+            );
+        } catch (error) {
+            console.error('Failed to log game activity:', error);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#0a0a1a] p-4 md:p-8 flex flex-col">
             <header className="max-w-7xl mx-auto w-full mb-8">
@@ -19,7 +42,7 @@ export default function MangoCatchPage() {
             </header>
 
             <div className="flex-1 max-w-4xl mx-auto w-full">
-                <MangoCatch />
+                <MangoCatch onComplete={handleComplete} />
             </div>
         </div>
     );

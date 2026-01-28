@@ -3,7 +3,7 @@
 
 import { supabase, supabaseAdmin } from './supabase-client';
 
-export { supabase };
+export { supabase, supabaseAdmin };
 
 function getSupabase() {
     return supabase;

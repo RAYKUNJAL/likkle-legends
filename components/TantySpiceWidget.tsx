@@ -116,7 +116,7 @@ export default function TantySpiceWidget() {
         }
     }, []);
 
-    const processMessage = async (text: string) => {
+    const processMessage = useCallback(async (text: string) => {
         if (!text.trim()) return;
 
         const userMsg: Message = { role: "user", content: text };
@@ -144,7 +144,7 @@ export default function TantySpiceWidget() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [messages, speak]);
 
     const handleSendMessage = () => {
         if (!inputValue.trim() || isLoading) return;
@@ -174,7 +174,7 @@ export default function TantySpiceWidget() {
         recognition.onerror = () => setIsListening(false);
         recognition.onend = () => setIsListening(false);
         recognition.start();
-    }, []);
+    }, [processMessage]);
 
     return (
         <div className="font-quicksand">

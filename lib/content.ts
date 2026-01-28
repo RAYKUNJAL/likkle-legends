@@ -548,6 +548,6 @@ export const siteContent = {
                 ]
             }
         ],
-        copyright: "© 2025 Island Flavors Universe – Likkle Legends Mail Club. All rights reserved."
+        copyright: "© 2026 Island Flavors Universe – Likkle Legends Mail Club. All rights reserved."
     }
 };

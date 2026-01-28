@@ -319,7 +319,7 @@ export default function GamesHubPage() {
                             </div>
                         </div>
                         <Link
-                            href="/portal/games/story-adventure"
+                            href="/portal/story-studio"
                             className="px-8 py-4 bg-white text-primary rounded-2xl font-black text-lg shadow-xl hover:scale-105 transition-transform flex items-center gap-2"
                         >
                             <Play size={22} /> Play Now
@@ -425,7 +425,7 @@ export default function GamesHubPage() {
                                         {/* Play Button */}
                                         {!isLocked && (
                                             <Link
-                                                href={`/portal/games/${game.id}`}
+                                                href={game.id === 'story-adventure' ? '/portal/story-studio' : `/portal/games/${game.id}`}
                                                 className="w-full py-3.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-2xl font-bold text-center transition-all flex items-center justify-center gap-2 border border-white/20"
                                             >
                                                 <Play size={18} /> Play Now

@@ -39,16 +39,37 @@ export default function Footer() {
                     </div>
                 ))}
             </div>
-            <div className="container mt-24 pt-10 border-t border-white/5 text-center flex flex-col items-center gap-4">
-                <p className="text-base font-black text-white/40 tracking-normal">
-                    {footer.copyright}
-                </p>
-                <Link
-                    href="/admin"
-                    className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
-                >
-                    Admin Access
-                </Link>
+            <div className="container mt-24 pt-10 border-t border-white/5 flex flex-col items-center gap-8">
+                {/* Square Logo Placeholder Fix */}
+                <div className="relative w-16 h-16 bg-white/5 rounded-2xl p-3 group hover:bg-white/10 transition-all border border-white/5">
+                    <Image
+                        src="/images/logo.png"
+                        alt="Likkle Legends"
+                        fill
+                        className="object-contain p-2 brightness-0 invert opacity-40 group-hover:opacity-100 transition-opacity"
+                    />
+                </div>
+
+                <div className="text-center space-y-4">
+                    <p className="text-base font-black text-white/40 tracking-normal">
+                        {footer.copyright}
+                    </p>
+                    <div className="flex items-center justify-center gap-6">
+                        <Link
+                            href="/admin"
+                            className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
+                        >
+                            Admin Access
+                        </Link>
+                        <span className="w-1 h-1 bg-white/10 rounded-full"></span>
+                        <Link
+                            href="/contact"
+                            className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
+                        >
+                            Support
+                        </Link>
+                    </div>
+                </div>
             </div>
         </footer >
     );

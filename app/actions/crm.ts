@@ -59,6 +59,28 @@ export async function updateLeadStatus(token: string, id: string, status: string
     return { success: true };
 }
 
+export async function createLead(leadData: { email: string; child_name?: string; island_preference?: string; source?: string }) {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+        .from('leads')
+        .insert([{
+            email: leadData.email,
+            child_name: leadData.child_name,
+            island_preference: leadData.island_preference,
+            source: leadData.source || 'story_studio',
+            status: 'new'
+        }])
+        .select()
+        .single();
+
+    if (error) {
+        console.error("Failed to create lead:", error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true, lead: data };
+}
+
 export async function replyToSupportMessage(token: string, messageId: string, replyText: string) {
     const admin = await verifyAdmin(token);
 

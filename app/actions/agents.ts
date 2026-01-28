@@ -35,96 +35,31 @@ export async function runModuleManagerAgent(token: string, objective: string, ag
 
 export async function publishModuleToLive(token: string, module: any) {
     await verifyAdmin(token);
-    const { createAdminClient } = await import('@/lib/admin');
-    const admin = createAdminClient();
+    const { databasePoster } = await import('@/lib/ai-content-generator/database-poster');
 
-    const results = {
-        story: null as any,
-        song: null as any,
-        printable: null as any,
-        video: null as any
-    };
+    console.log(`🚀 Publishing complete module: "${module.title}"...`);
 
     try {
-        // 1. Publish Storybook
-        const { data: story, error: storyErr } = await admin
-            .from('storybooks')
-            .insert({
-                title: module.content.story.title,
-                summary: module.content.story.summary,
-                content_json: module.content.story,
-                age_track: module.ageGroup,
-                island_theme: module.island,
-                reading_time_minutes: module.content.story.readingTimeMinutes,
-                word_count: module.content.story.wordCount || 500,
-                difficulty_level: module.content.story.difficultyLevel,
-                tier_required: 'legends_plus',
-                cover_image_url: `https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800` // Placeholder
+        const results = {
+            story: await databasePoster.postStory(module.content.story),
+            song: await databasePoster.postSong(module.content.song),
+            printable: await databasePoster.postPrintable(module.content.printable),
+            video: await databasePoster.postVideo(module.content.videoScript, {
+                island: module.island,
+                ageGroup: module.ageGroup
             })
-            .select()
-            .single();
-        if (storyErr) throw storyErr;
-        results.story = story;
+        };
 
-        // 2. Publish Song
-        const { data: song, error: songErr } = await admin
-            .from('songs')
-            .insert({
-                title: module.content.song.title,
-                artist: module.content.song.artist,
-                description: module.content.song.description,
-                lyrics: module.content.song.lyrics,
-                category: module.content.song.category,
-                island_origin: module.island,
-                age_track: module.ageGroup,
-                duration_seconds: module.content.song.durationSeconds,
-                tier_required: 'starter_mailer',
-                audio_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', // Placeholder
-                thumbnail_url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800' // Placeholder
-            })
-            .select()
-            .single();
-        if (songErr) throw songErr;
-        results.song = song;
+        const hasError = Object.values(results).some((r: any) => !r.success);
 
-        // 3. Publish Printable
-        const { data: printable, error: printErr } = await admin
-            .from('printables')
-            .insert({
-                title: module.content.printable.title,
-                description: module.content.printable.description,
-                category: module.content.printable.type,
-                tier_required: 'starter_mailer',
-                pdf_url: '#', // Placeholder
-                preview_url: 'https://images.unsplash.com/photo-1586075010633-24701fb7fe89?auto=format&fit=crop&q=80&w=800' // Placeholder
-            })
-            .select()
-            .single();
-        if (printErr) throw printErr;
-        results.printable = printable;
-
-        // 4. Publish Video
-        const { data: video, error: videoErr } = await admin
-            .from('videos')
-            .insert({
-                title: module.content.videoScript.title,
-                description: module.content.videoScript.description,
-                category: 'lesson',
-                island_theme: module.island,
-                age_track: module.ageGroup,
-                duration_seconds: module.content.videoScript.totalDurationSeconds,
-                tier_required: 'legends_plus',
-                video_url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4', // Placeholder
-                thumbnail_url: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=800' // Placeholder
-            })
-            .select()
-            .single();
-        if (videoErr) throw videoErr;
-        results.video = video;
-
-        return { success: true, results };
-    } catch (error) {
+        return {
+            success: !hasError,
+            results,
+            error: hasError ? "Some assets failed to publish. Check results for details." : null
+        };
+    } catch (error: any) {
         console.error("Publishing failed:", error);
-        return { success: false, error: (error as any).message };
+        return { success: false, error: error.message };
     }
 }
+
