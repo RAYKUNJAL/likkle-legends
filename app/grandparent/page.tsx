@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
     Heart, MessageSquare, Video, Camera, Bell, Star, BookOpen, Music, TrendingUp, ChevronRight, Loader2, Sparkles
 } from 'lucide-react';
-import { getChild, getChildActivities, getConversation, sendMessage } from '@/lib/database';
+
 
 interface GrandparentViewData {
     id: string;
@@ -45,18 +45,19 @@ export default function GrandparentDashboardPage() {
     const loadRealData = async (childId: string) => {
         setIsLoading(true);
         try {
-            const [childData, activityData] = await Promise.all([
-                getChild(childId),
-                getChildActivities(childId)
-            ]);
+            // Dynamically import to ensure server-side action is used
+            const { getGrandparentDashData } = await import('@/app/actions/grandparent');
 
-            setChild(childData);
-            setActivities(activityData);
+            const result = await getGrandparentDashData(childId);
 
-            // Load messages if parent_id exists
-            if (childData.parent_id) {
-                const convo = await getConversation(childId, childData.parent_id);
-                setMessages(convo);
+            if (result.success && result.child) {
+                setChild(result.child);
+                setActivities(result.activities);
+                setMessages(result.messages);
+            } else {
+                console.error('Failed to load dashboard:', result.error);
+                // Redirect to access page if child invalid
+                // window.location.href = '/grandparent/access';
             }
         } catch (error) {
             console.error('Failed to load grandparent view:', error);
@@ -69,10 +70,15 @@ export default function GrandparentDashboardPage() {
         if (!messageInput.trim() || !child) return;
 
         try {
-            const newMsg = await sendMessage(child.id, child.parent_id, messageInput, 'text');
-            if (newMsg) {
-                setMessages(prev => [...prev, newMsg]);
+            const { sendMessageAsGrandparent } = await import('@/app/actions/grandparent');
+
+            const result = await sendMessageAsGrandparent(child.id, child.parent_id, messageInput);
+
+            if (result.success && result.message) {
+                setMessages(prev => [...prev, result.message]);
                 setMessageInput('');
+            } else {
+                alert(result.error || 'Failed to send message');
             }
         } catch (error) {
             alert('Failed to send message');

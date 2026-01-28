@@ -74,9 +74,13 @@ export const getGlobalPlaylist = async (): Promise<Track[] | null> => {
             if (songs && songs.length > 0) {
                 return songs.map((s: any) => {
                     // Map DB category to Radio Channel
-                    let channel = 'music'; // Default
-                    if (s.category === 'educational' || s.category === 'lesson') channel = 'learning';
-                    if (s.category === 'cultural' || s.category === 'story') channel = 'story';
+                    // Channel IDs: story, lullaby, culture, calm, learning, vip
+                    let channel = s.category || 'story';
+
+                    if (channel === 'educational' || channel === 'lesson') channel = 'learning';
+                    if (channel === 'cultural') channel = 'culture';
+                    if (channel === 'general' || channel === 'music') channel = 'story'; // Fallback
+                    if (channel === 'sleep') channel = 'lullaby';
 
                     return {
                         id: s.id,

@@ -38,7 +38,8 @@ function LoginForm() {
         if (result.success) {
             // Successful login
             router.refresh(); // Refresh router to pick up cookies
-            router.push('/portal');
+            const redirectUrl = searchParams.get('redirect') || '/portal';
+            router.push(redirectUrl);
         } else {
             console.error('Login failed:', result.error);
             setError(result.error || 'Invalid email or password');

@@ -341,6 +341,22 @@ function MediaManagerContent() {
                                         <option value="big">Big (6-8)</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                                    <select
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl"
+                                    >
+                                        <option value="story">Story</option>
+                                        <option value="learning">Learning</option>
+                                        <option value="culture">Culture</option>
+                                        <option value="lullaby">Lullaby</option>
+                                        <option value="calm">Calm/Nature</option>
+                                        <option value="vip">VIP/Exclusive</option>
+                                        <option value="general">General</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
