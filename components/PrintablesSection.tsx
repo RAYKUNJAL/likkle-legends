@@ -68,8 +68,8 @@ export function PrintablesSection() {
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
                             className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black whitespace-nowrap transition-all border-b-4 ${activeCategory === cat.id
-                                    ? 'bg-amber-400 border-amber-600 text-white translate-y-1'
-                                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                                ? 'bg-amber-400 border-amber-600 text-white translate-y-1'
+                                : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
                                 }`}
                         >
                             <span>{cat.emoji}</span>
@@ -130,7 +130,7 @@ function PrintableCard({ item, isLocked }: { item: Printable, isLocked: boolean 
             className="group bg-white rounded-[2.5rem] overflow-hidden border-4 border-slate-50 hover:border-amber-400 transition-all shadow-sm hover:shadow-2xl hover:-translate-y-2 relative"
         >
             {/* Preview Image */}
-            <div className="aspect-[4/3] bg-slate-50 relative overflow-hidden">
+            <div className="relative w-full h-full">
                 {item.preview_url ? (
                     <img
                         src={item.preview_url}
@@ -142,62 +142,63 @@ function PrintableCard({ item, isLocked }: { item: Printable, isLocked: boolean 
                         <FileText size={48} />
                     </div>
                 )}
-
-                {/* Lock Overlay */}
-                {isLocked && (
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-white p-4 text-center">
-                        <p className="font-black text-sm">Legendary Content</p>
-                        <p className="text-white/80 text-[10px] uppercase tracking-widest mt-1">Found in higher tiers</p>
-                    </div>
-                )}
-
-                {/* Action Button Overlay */}
-                {!isLocked && (
-                    <div className="absolute inset-0 bg-amber-400/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <a
-                            href={item.pdf_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-white text-amber-600 p-4 rounded-full shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-300"
-                        >
-                            <Printer size={24} />
-                        </a>
-                    </div>
-                )}
             </div>
 
-            {/* Info */}
-            <div className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
-                        {item.category}
-                    </span>
-                    {item.is_new && (
-                        <span className="bg-green-100 text-green-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase">NEW</span>
-                    )}
+            {/* Lock Overlay */}
+            {isLocked && (
+                <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm flex flex-col items-center justify-center text-white p-4 text-center">
+                    <p className="font-black text-sm">Legendary Content</p>
+                    <p className="text-white/80 text-[10px] uppercase tracking-widest mt-1">Found in higher tiers</p>
                 </div>
-                <h3 className="text-lg font-black text-slate-800 mb-1 leading-tight group-hover:text-amber-600 transition-colors">
-                    {item.title}
-                </h3>
-                <p className="text-slate-500 text-xs font-medium line-clamp-1 mb-4">
-                    {item.description}
-                </p>
+            )}
 
-                {!isLocked ? (
+            {/* Action Button Overlay */}
+            {!isLocked && (
+                <div className="absolute inset-0 bg-amber-400/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <a
                         href={item.pdf_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full py-3 bg-amber-50 text-amber-600 rounded-xl font-black text-xs flex items-center justify-center gap-2 hover:bg-amber-400 hover:text-white transition-all"
+                        className="bg-white text-amber-600 p-4 rounded-full shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-300"
                     >
-                        <Download size={14} /> Download PDF
+                        <Printer size={24} />
                     </a>
-                ) : (
-                    <div className="w-full py-3 bg-slate-50 text-slate-400 rounded-xl font-black text-xs flex items-center justify-center gap-2 cursor-not-allowed">
-                        🔒 Locked
-                    </div>
-                )}
+                </div>
+            )}
+        </div>
+
+            {/* Info */ }
+    <div className="p-6">
+        <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest">
+                {item.category}
+            </span>
+            {item.is_new && (
+                <span className="bg-green-100 text-green-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase">NEW</span>
+            )}
+        </div>
+        <h3 className="text-lg font-black text-slate-800 mb-1 leading-tight group-hover:text-amber-600 transition-colors">
+            {item.title}
+        </h3>
+        <p className="text-slate-500 text-xs font-medium line-clamp-1 mb-4">
+            {item.description}
+        </p>
+
+        {!isLocked ? (
+            <a
+                href={item.pdf_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3 bg-amber-50 text-amber-600 rounded-xl font-black text-xs flex items-center justify-center gap-2 hover:bg-amber-400 hover:text-white transition-all"
+            >
+                <Download size={14} /> Download PDF
+            </a>
+        ) : (
+            <div className="w-full py-3 bg-slate-50 text-slate-400 rounded-xl font-black text-xs flex items-center justify-center gap-2 cursor-not-allowed">
+                🔒 Locked
             </div>
-        </motion.div>
+        )}
+    </div>
+        </motion.div >
     );
 }
