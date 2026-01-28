@@ -2,13 +2,15 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User as UserIcon, LayoutDashboard } from 'lucide-react';
 import { useState } from 'react';
 import { siteContent } from '@/lib/content';
+import { useUser } from '@/components/UserContext';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const { navigation } = siteContent;
+    const { user } = useUser();
 
     return (
         <nav className="sticky top-0 z-50 glass-nav shadow-sm">
@@ -24,9 +26,22 @@ export default function Navbar() {
                             {link.label}
                         </Link>
                     ))}
-                    <Link href={navigation.auth.login_href} className="font-semibold hover:text-primary transition-colors">
-                        {navigation.auth.login_label}
-                    </Link>
+
+                    {user ? (
+                        <Link
+                            href="/parent"
+                            className="flex items-center gap-2 font-bold text-primary hover:text-primary/80 transition-colors bg-primary/5 px-4 py-2 rounded-full"
+                        >
+                            <LayoutDashboard size={18} />
+                            <span>Parent Dashboard</span>
+                        </Link>
+                    ) : (
+                        <Link href={navigation.auth.login_href} className="flex items-center gap-2 font-semibold hover:text-primary transition-colors">
+                            <UserIcon size={18} />
+                            <span>Parent Login</span>
+                        </Link>
+                    )}
+
                     <Link href={navigation.auth.primary_cta.href} className="btn btn-primary animate-pulse-slow">
                         {navigation.auth.primary_cta.label}
                     </Link>
@@ -44,9 +59,19 @@ export default function Navbar() {
                             {link.label}
                         </Link>
                     ))}
-                    <Link href={navigation.auth.login_href} className="font-semibold" onClick={() => setIsOpen(false)}>
-                        {navigation.auth.login_label}
-                    </Link>
+
+                    {user ? (
+                        <Link href="/parent" className="font-bold text-primary flex items-center gap-2" onClick={() => setIsOpen(false)}>
+                            <LayoutDashboard size={18} />
+                            Parent Dashboard
+                        </Link>
+                    ) : (
+                        <Link href={navigation.auth.login_href} className="font-semibold flex items-center gap-2" onClick={() => setIsOpen(false)}>
+                            <UserIcon size={18} />
+                            Parent Login
+                        </Link>
+                    )}
+
                     <Link href={navigation.auth.primary_cta.href} className="btn btn-primary w-full text-center" onClick={() => setIsOpen(false)}>
                         {navigation.auth.primary_cta.label}
                     </Link>

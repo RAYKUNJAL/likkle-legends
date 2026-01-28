@@ -39,8 +39,16 @@ export default function Footer() {
                     </div>
                 ))}
             </div>
-            <div className="container mt-24 pt-10 border-t border-white/5 text-center text-base font-black text-white/40 tracking-normal">
-                {footer.copyright}
+            <div className="container mt-24 pt-10 border-t border-white/5 text-center flex flex-col items-center gap-4">
+                <p className="text-base font-black text-white/40 tracking-normal">
+                    {footer.copyright}
+                </p>
+                <Link
+                    href="/admin"
+                    className="text-xs text-white/10 hover:text-white/30 transition-colors uppercase tracking-widest font-bold"
+                >
+                    Admin Access
+                </Link>
             </div>
         </footer>
     );
