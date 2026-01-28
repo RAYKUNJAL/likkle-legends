@@ -68,6 +68,33 @@ export default function ParentDashboard() {
         );
     }
 
+    // 2. Logged In but No Children -> Show Onboarding Prompt
+    if (!isLoading && user && children.length === 0) {
+        return (
+            <div className="bg-slate-50 min-h-screen">
+                <Navbar />
+                <main className="container pt-32 pb-24 text-center">
+                    <div className="max-w-2xl mx-auto bg-white p-12 rounded-[3.5rem] shadow-2xl border-8 border-white">
+                        <div className="w-24 h-24 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Plus size={48} />
+                        </div>
+                        <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tighter">Welcome to the Village!</h1>
+                        <p className="text-slate-500 font-bold mb-10 text-lg">
+                            To create your personalized parent dashboard, let's set up your first Likkle Legend.
+                        </p>
+                        <Link
+                            href="/onboarding/child"
+                            className="inline-flex items-center gap-2 px-8 py-5 bg-primary text-white rounded-2xl font-black text-xl hover:scale-105 transition-all shadow-xl shadow-primary/20"
+                        >
+                            Add Your Child <ArrowRight />
+                        </Link>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
+
     const currentLevel = activeChild ? calculateLevel(activeChild.total_xp) : LEVELS[0];
 
     return (

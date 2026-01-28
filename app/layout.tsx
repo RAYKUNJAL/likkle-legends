@@ -47,6 +47,12 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: siteContent.meta.title,
     description: siteContent.meta.description,
+    description: siteContent.meta.description,
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
   },
 };
 
