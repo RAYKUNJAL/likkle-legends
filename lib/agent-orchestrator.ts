@@ -31,9 +31,9 @@ export class IslandBrainOrchestrator {
 
     constructor(apiKey: string) {
         this.genAI = new GoogleGenerativeAI(apiKey);
-        // Using Gemini 1.5 Flash as per blueprint recommendation (fast, capable)
+        // COMMERCIAL UPGRADE: Switched to Gemini 2.0 Flash for production
         this.model = this.genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-2.0-flash", // UPGRADED from 1.5
             safetySettings: SAFETY_SETTINGS,
             generationConfig: {
                 responseMimeType: "application/json"
