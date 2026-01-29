@@ -96,7 +96,7 @@ IMPORTANT:
 
     // List of models to try in order of preference
     const models = [
-        'gemini-2.0-flash-exp',
+        'gemini-2.0-flash',
         'gemini-1.5-flash',
         'gemini-1.5-pro',
         'gemini-pro'
@@ -185,7 +185,7 @@ export async function generateAndSavePost(
         author_name: options.authorName || 'Likkle Legends Team',
         ai_generated: true,
         ai_prompt: request.topic,
-        ai_model: 'gemini-1.5-flash-001',
+        ai_model: 'gemini-2.0-flash',
         status: options.autoPublish ? 'published' : 'draft',
         published_at: options.autoPublish ? new Date().toISOString() : null
     });

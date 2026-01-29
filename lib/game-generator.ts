@@ -132,7 +132,7 @@ export async function generateTriviaGame(
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", safetySettings });
 
         const prompt = `Generate ${questionCount} fun trivia questions about ${island} and Caribbean culture for a ${difficulty === 'easy' ? '4-5' : difficulty === 'medium' ? '6-7' : '7-8'} year old child.
     
@@ -286,7 +286,7 @@ export async function generateStoryAdventure(
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", safetySettings });
 
         const prompt = `Create a short interactive story adventure for a 5-year-old named ${childName} set in ${island}.
 

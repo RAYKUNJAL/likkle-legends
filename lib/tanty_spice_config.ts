@@ -58,7 +58,7 @@ Tanty: "Mmm-hmmm! Well, one day, Bredda Anansi decide he want all de wisdom in d
  * Voice: Kore (Warm, maternal timbre)
  */
 export const TANTY_VOICE_CONFIG = {
-    model: 'gemini-1.5-pro',
+    model: 'gemini-2.0-flash',
     config: {
         responseModalities: [Modality.AUDIO],
         speechConfig: {
