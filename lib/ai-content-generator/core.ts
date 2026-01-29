@@ -24,10 +24,11 @@ export interface GenerationOptions {
 }
 
 export class ContentGenerator {
+    // COMMERCIAL UPGRADE: Using Gemini 2.0 Flash as primary for best balance of speed and quality
     private defaultModel = 'gemini-2.0-flash';
 
     /**
-     * Generate text content using Gemini
+     * Generate text content using Gemini with Timeout Protection
      */
     async generateText(prompt: string, options?: GenerationOptions): Promise<string> {
         try {
@@ -39,11 +40,8 @@ export class ContentGenerator {
 
             const modelsToTry = [
                 options?.model || this.defaultModel,
-                'gemini-1.5-flash',
-                'gemini-1.5-flash-latest',
-                'gemini-1.5-pro',
-                'gemini-pro',
-                'gemini-1.0-pro'
+                'gemini-1.5-flash', // Fallback 1
+                'gemini-2.0-flash-exp', // Fallback 2 (Experimental if available)
             ];
 
             let lastError = null;
@@ -55,18 +53,31 @@ export class ContentGenerator {
                         model: modelName,
                         generationConfig: {
                             temperature: options?.temperature || 0.9,
+                            // Increased token limit for complex content 
                             maxOutputTokens: options?.maxTokens || 8192,
                         }
                     });
 
-                    const result = await model.generateContent(fullPrompt);
-                    const response = await result.response;
-                    const text = response.text();
+                    // WRAP IN TIMEOUT for Vercel Function Limit Protection
+                    // 25 seconds max per call, leaving room for retries
+                    const timeoutPromise = new Promise<never>((_, reject) =>
+                        setTimeout(() => reject(new Error(`Timeout - Model ${modelName} took too long (>25s)`)), 25000)
+                    );
+
+                    const generationPromise = async () => {
+                        const result = await model.generateContent(fullPrompt);
+                        const response = await result.response;
+                        return response.text();
+                    };
+
+                    const text = await Promise.race([generationPromise(), timeoutPromise]);
+
                     if (text) return text;
+
                 } catch (error: any) {
-                    console.warn(`⚠️  Model ${modelName} failed: ${error.message}`);
+                    console.warn(`⚠️  Model ${modelName} failed or timed out: ${error.message}`);
                     lastError = error;
-                    // Continue to next model
+                    // Continue to next model in the list
                 }
             }
 

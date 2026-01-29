@@ -36,47 +36,48 @@ export class ModuleManagerAgent {
         const plan = await this.planModule(objective, ageGroup);
         console.log(`📋 Plan approved: ${plan.island} - ${plan.theme}`);
 
-        // 2. Execute Generators in Parallel
-        console.log(`🚀 Dispatching sub-agents...`);
+        // 2. Execute Generators in Parallel for Speed
+        console.log(`🚀 Dispatching sub-agents in parallel...`);
 
-        // 2. Execute Generators Sequentially (for stability)
-        console.log(`🚀 Dispatching sub-agents...`);
+        // We wrap each generator in a robust promise to handle individual failures gracefully if needed, 
+        // but for now we want to "Fail Fast" if any critical component breaks, so Promise.all is okay.
+        // We add a 'catch' to each to log specifically WHICH one failed before re-throwing.
 
-        // Story
-        console.log("...Generating Story");
-        const story = await storyGenerator.generateStory({
+        const storyPromise = storyGenerator.generateStory({
             island: plan.island,
             theme: plan.theme,
             ageTrack: ageGroup,
             customPrompt: `Focus on: ${plan.storyFocus}`
-        });
+        }).catch(err => { console.error("❌ Story Agent Failed"); throw err; });
 
-        // Song
-        console.log("...Generating Song");
-        const song = await songGenerator.generateSong({
+        const songPromise = songGenerator.generateSong({
             island: plan.island,
             topic: plan.theme,
             ageTrack: ageGroup,
             category: "educational"
-        });
+        }).catch(err => { console.error("❌ Song Agent Failed"); throw err; });
 
-        // Video
-        console.log("...Generating Video Script");
-        const video = await videoGenerator.generateScript({
+        const videoPromise = videoGenerator.generateScript({
             island: plan.island,
             topic: plan.theme,
             ageTrack: ageGroup,
             durationMinutes: ageGroup === 'mini' ? 3 : 5
-        });
+        }).catch(err => { console.error("❌ Video Agent Failed"); throw err; });
 
-        // Printable
-        console.log("...Generating Printable");
-        const printable = await printableGenerator.generatePrintable({
+        const printablePromise = printableGenerator.generatePrintable({
             island: plan.island,
             theme: plan.theme,
             ageTrack: ageGroup,
             type: "worksheet"
-        });
+        }).catch(err => { console.error("❌ Printable Agent Failed"); throw err; });
+
+        // Await all parallel requests
+        const [story, song, video, printable] = await Promise.all([
+            storyPromise,
+            songPromise,
+            videoPromise,
+            printablePromise
+        ]);
 
         console.log(`✅ All assets generated successfully!`);
 

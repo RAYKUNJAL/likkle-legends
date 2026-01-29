@@ -1,62 +1,33 @@
-
--- ISLAND BRAIN AGENT STORE SCHEMA
--- Stores raw AI generated outputs, requests, and approvals.
-
--- 1. Generated Content Store
--- Acts as the "Content Store" service from the blueprint.
-CREATE TABLE IF NOT EXISTS generated_content (
+-- 1. Create table if it doesn't exist (Idempotent)
+CREATE TABLE IF NOT EXISTS public.ai_personality (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    family_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    island_id TEXT NOT NULL,
-    content_type TEXT NOT NULL, -- 'song_video_script', 'story_bedtime', etc.
-    title TEXT,
-    payload JSONB NOT NULL, -- The full JSON output from the AI
-    parent_note JSONB, -- Extracted parent guidance notes
-    metadata JSONB DEFAULT '{}', -- Usage tags, qa_report, etc.
-    
-    -- Approval Status
-    is_approved_for_kid BOOLEAN DEFAULT false,
-    approved_at TIMESTAMPTZ,
-    
-    -- Cache / Reuse
-    version INTEGER DEFAULT 1,
-    is_public_template BOOLEAN DEFAULT false, -- If true, can be reused by other families
-    
-    created_at TIMESTAMPTZ DEFAULT NOW(),
+    character_id UUID REFERENCES characters(id) ON DELETE CASCADE UNIQUE,
+    system_prompt TEXT,
+    knowledge_base TEXT,
+    voice_settings JSONB DEFAULT '{"stability": 0.5, "similarity_boost": 0.75}',
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
--- 2. Monthly Drop Bundles
--- Stores the high-level bundles generated for families.
-CREATE TABLE IF NOT EXISTS monthly_drops (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    family_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    month_key TEXT NOT NULL, -- '2026-02'
-    theme_title TEXT,
-    visitor_character_id TEXT,
-    bundle_payload JSONB NOT NULL, -- The full structure
-    
-    is_viewed BOOLEAN DEFAULT false,
-    viewed_at TIMESTAMPTZ,
-    
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_generated_content_family ON generated_content(family_id);
-CREATE INDEX IF NOT EXISTS idx_generated_content_type ON generated_content(content_type);
-CREATE INDEX IF NOT EXISTS idx_monthly_drops_family ON monthly_drops(family_id, month_key);
-
--- RLS Policies
-ALTER TABLE generated_content ENABLE ROW LEVEL SECURITY;
-ALTER TABLE monthly_drops ENABLE ROW LEVEL SECURITY;
-
--- Families can view their own content
-CREATE POLICY "Users view own generated content" ON generated_content
-    FOR SELECT USING (auth.uid() = family_id);
-
-CREATE POLICY "Users view own monthly drops" ON monthly_drops
-    FOR SELECT USING (auth.uid() = family_id);
-
--- Service Role (Agent) needs full access (handled by bypassing RLS in server code usually, 
--- but we can add specific policies if using client SDK)
+-- 2. Enable RLS (Safe to run multiple times)
+ALTER TABLE public.ai_personality ENABLE ROW LEVEL SECURITY;
+-- 3. Create Policy SAFELY using DO block to check existence first
+DO $$ BEGIN IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+        AND tablename = 'ai_personality'
+        AND policyname = 'Admins manage personality'
+) THEN EXECUTE 'CREATE POLICY "Admins manage personality" ON public.ai_personality
+      FOR ALL
+      USING (
+        EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true)
+        OR EXISTS (SELECT 1 FROM public.admin_users WHERE id = auth.uid())
+      )';
+END IF;
+END $$;
+-- 4. Grant Access (Safe to run multiple times)
+GRANT ALL ON public.ai_personality TO service_role;
+GRANT ALL ON public.ai_personality TO authenticated;
+-- 5. Create Performance Indexes (Safe to run multiple times)
+CREATE INDEX IF NOT EXISTS idx_personality_character_id ON public.ai_personality(character_id);
+CREATE INDEX IF NOT EXISTS idx_profiles_id ON public.profiles(id);
+CREATE INDEX IF NOT EXISTS idx_admin_users_id ON public.admin_users(id);
