@@ -39,39 +39,44 @@ export class ModuleManagerAgent {
         // 2. Execute Generators in Parallel
         console.log(`🚀 Dispatching sub-agents...`);
 
-        const [story, song, video, printable] = await Promise.all([
-            // Story Agent
-            storyGenerator.generateStory({
-                island: plan.island,
-                theme: plan.theme,
-                ageTrack: ageGroup,
-                customPrompt: `Focus on: ${plan.storyFocus}`
-            }),
+        // 2. Execute Generators Sequentially (for stability)
+        console.log(`🚀 Dispatching sub-agents...`);
 
-            // Song Agent
-            songGenerator.generateSong({
-                island: plan.island,
-                topic: plan.theme,
-                ageTrack: ageGroup,
-                category: "educational"
-            }),
+        // Story
+        console.log("...Generating Story");
+        const story = await storyGenerator.generateStory({
+            island: plan.island,
+            theme: plan.theme,
+            ageTrack: ageGroup,
+            customPrompt: `Focus on: ${plan.storyFocus}`
+        });
 
-            // Video Agent
-            videoGenerator.generateScript({
-                island: plan.island,
-                topic: plan.theme,
-                ageTrack: ageGroup,
-                durationMinutes: ageGroup === 'mini' ? 3 : 5
-            }),
+        // Song
+        console.log("...Generating Song");
+        const song = await songGenerator.generateSong({
+            island: plan.island,
+            topic: plan.theme,
+            ageTrack: ageGroup,
+            category: "educational"
+        });
 
-            // Printable Agent
-            printableGenerator.generatePrintable({
-                island: plan.island,
-                theme: plan.theme,
-                ageTrack: ageGroup,
-                type: "worksheet"
-            })
-        ]);
+        // Video
+        console.log("...Generating Video Script");
+        const video = await videoGenerator.generateScript({
+            island: plan.island,
+            topic: plan.theme,
+            ageTrack: ageGroup,
+            durationMinutes: ageGroup === 'mini' ? 3 : 5
+        });
+
+        // Printable
+        console.log("...Generating Printable");
+        const printable = await printableGenerator.generatePrintable({
+            island: plan.island,
+            theme: plan.theme,
+            ageTrack: ageGroup,
+            type: "worksheet"
+        });
 
         console.log(`✅ All assets generated successfully!`);
 

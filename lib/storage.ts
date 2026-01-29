@@ -46,34 +46,43 @@ export async function initializeStorageBuckets() {
 }
 
 // Upload file to storage
+// Upload file to storage (Client & Server compatible)
 export async function uploadFile(
     bucket: BucketName,
-    file: File,
-    path?: string
+    file: File | Blob | Buffer,
+    path?: string,
+    useAdmin: boolean = false
 ): Promise<{ url: string; path: string } | null> {
-    const client = getSupabase();
-    const fileName = path || `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
+    const client = useAdmin ? getSupabaseAdmin() : getSupabase();
+    // Generate filename if local file or string
+    const fileName = path || `${Date.now()}-${(file as any).name ? (file as any).name.replace(/\s+/g, '-') : 'file'}`;
 
-    const { data, error } = await client.storage
-        .from(bucket)
-        .upload(fileName, file, {
-            cacheControl: '3600',
-            upsert: true,
-        });
+    try {
+        const { data, error } = await client.storage
+            .from(bucket)
+            .upload(fileName, file, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: (file as any).type
+            });
 
-    if (error) {
-        console.error('Upload error:', error);
+        if (error) {
+            console.error(`Upload error (${bucket}/${fileName}):`, error);
+            return null;
+        }
+
+        const { data: urlData } = client.storage
+            .from(bucket)
+            .getPublicUrl(data.path);
+
+        return {
+            url: urlData.publicUrl,
+            path: data.path,
+        };
+    } catch (e) {
+        console.error("Upload exception:", e);
         return null;
     }
-
-    const { data: urlData } = client.storage
-        .from(bucket)
-        .getPublicUrl(data.path);
-
-    return {
-        url: urlData.publicUrl,
-        path: data.path,
-    };
 }
 
 // Delete file from storage

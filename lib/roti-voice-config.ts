@@ -29,15 +29,15 @@ export interface ROTIVoiceConfig {
 
 export const ROTI_VOICE_MODES: Record<ROTIVoiceMode, ROTIVoiceConfig> = {
     default: {
-        voiceName: "Leda",
-        description: "Warm, articulate guide - perfect for teaching",
-        prosodyProfile: "Friendly, clear, patient educator speaking to young children. Warm but slightly technological undertones like a kind AI friend.",
+        voiceName: "Kore", // Extremely warm, maternal, natural female voice
+        description: "Warm, maternal guide - perfect for comforting and teaching",
+        prosodyProfile: "Friendly, very clear, patient educator speaking to young children. Warm human tone.",
         speakingRate: 0.95,
         emotionalTone: "Encouraging and patient"
     },
     kid: {
         voiceName: "Fenrir",
-        description: "Bright, youthful, high-energy - sounds like a kid!",
+        description: "Bright, youthful, high-energy - sounds like a peer!",
         prosodyProfile: "Excited young voice, enthusiastic and eager, like a smart kid friend who loves learning. Slightly faster, full of wonder.",
         speakingRate: 1.05,
         emotionalTone: "Excited and curious"
@@ -45,12 +45,12 @@ export const ROTI_VOICE_MODES: Record<ROTIVoiceMode, ROTIVoiceConfig> = {
     playful: {
         voiceName: "Puck",
         description: "Upbeat and mischievous - fun robot personality",
-        prosodyProfile: "Playful and upbeat, with slight robotic charm. Think friendly helper who loves making learning fun.",
+        prosodyProfile: "Playful and upbeat, with a light sense of humor. Think friendly helper who loves making learning fun.",
         speakingRate: 1.0,
         emotionalTone: "Cheerful and fun"
     },
     calm: {
-        voiceName: "Aoede",
+        voiceName: "Leda", // Switched Leda to calm as it's very balanced
         description: "Breezy and bright - soothing for anxious learners",
         prosodyProfile: "Calm, warm, and reassuring. Gentle voice for children who need extra patience and comfort.",
         speakingRate: 0.9,

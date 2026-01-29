@@ -229,9 +229,14 @@ export default function MangoCatch({ onComplete }: { onComplete?: (score: number
             <div
                 ref={containerRef}
                 className="relative flex-1 cursor-none touch-none bg-gradient-to-b from-sky-400 via-sky-200 to-emerald-500/20"
-                onMouseMove={handleMouseMove}
-                onTouchMove={handleMouseMove}
+                style={{ touchAction: 'none' }}
             >
+                {/* Global Event Listener for smoother Input */}
+                <div
+                    className="absolute inset-0 z-50"
+                    onMouseMove={handleMouseMove}
+                    onTouchMove={handleMouseMove}
+                />
                 {/* Visual Background Elements */}
                 <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-emerald-600 to-transparent opacity-30" />
                 <motion.div

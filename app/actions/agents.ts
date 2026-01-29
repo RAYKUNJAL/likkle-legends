@@ -29,8 +29,22 @@ export async function runVideoAgent(token: string, params: any) {
 }
 
 export async function runModuleManagerAgent(token: string, objective: string, ageGroup: 'mini' | 'big') {
-    await verifyAdmin(token);
-    return await moduleManagerAgent.buildCompleteModule(objective, ageGroup);
+    try {
+        await verifyAdmin(token);
+
+        // Quick check for API key
+        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+        if (!apiKey) {
+            console.error("Missing Gemini API Key in environment");
+            return { success: false, error: "Configuration Error: GEMINI_API_KEY is missing on server." };
+        }
+
+        const data = await moduleManagerAgent.buildCompleteModule(objective, ageGroup);
+        return { success: true, data };
+    } catch (error: any) {
+        console.error("Agent Execution Failed:", error);
+        return { success: false, error: error.message || "Unknown error occurred during generation." };
+    }
 }
 
 export async function publishModuleToLive(token: string, module: any) {
