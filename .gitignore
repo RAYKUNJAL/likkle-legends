@@ -56,3 +56,6 @@ next-env.d.ts
 # Ignored Clones
 likkle-legend-ai-studio_clone/
 likkle-legends-second/
+temp_plex/
+temp_plex_2/
+voice-server/
