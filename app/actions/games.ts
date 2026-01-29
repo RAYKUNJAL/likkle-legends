@@ -16,6 +16,16 @@ export interface AnansiGameState {
     isComplete: boolean;
 }
 
+/**
+ * Wrapper to prevent AI from hanging
+ */
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 15000): Promise<T> {
+    const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`Anansi is thinking too hard... (Timeout ${timeoutMs / 1000}s)`)), timeoutMs)
+    );
+    return Promise.race([promise, timeout]);
+}
+
 export async function startAnansiGame(difficulty: "easy" | "medium" | "hard" = "easy"): Promise<AnansiGameState> {
     console.log("[AnansiGame] Starting game...");
 
@@ -51,7 +61,7 @@ export async function startAnansiGame(difficulty: "easy" | "medium" | "hard" = "
         "targetCategory": "The category/constraint for validation (e.g. 'red fruit')"
     }`;
 
-        const result = await model.generateContent(prompt);
+        const result = await withTimeout(model.generateContent(prompt));
         const text = result.response.text();
         const jsonMatch = text.match(/\{[\s\S]*\}/);
 
@@ -115,7 +125,7 @@ export async function submitAnansiAnswer(currentState: AnansiGameState, answer: 
         "nextRiddle": { "question": "...", "targetCategory": "..." } // Only if correct and level < 3
     }`;
 
-        const result = await model.generateContent(prompt);
+        const result = await withTimeout(model.generateContent(prompt));
         const text = result.response.text();
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error("No JSON found");
@@ -135,7 +145,7 @@ export async function submitAnansiAnswer(currentState: AnansiGameState, answer: 
                     };
                 } else {
                     const newRiddlePrompt = `You are Anansi. Generate another DIFFERENT riddle (Level ${nextLevel}/3). JSON: { "question": "...", "targetCategory": "..." }`;
-                    const newRes = await model.generateContent(newRiddlePrompt);
+                    const newRes = await withTimeout(model.generateContent(newRiddlePrompt));
                     const newJson = JSON.parse(newRes.response.text().match(/\{[\s\S]*\}/)?.[0] || "{}");
                     nextRiddle = { ...newJson, difficulty: currentState.currentRiddle.difficulty };
                 }
