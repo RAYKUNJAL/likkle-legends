@@ -83,9 +83,13 @@ export async function runAgentGeneration(
     const user = await verifyUser(token);
 
     try {
-        const orchestrator = new IslandBrainOrchestrator(
-            process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || ""
-        );
+        const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+
+        if (!apiKey) {
+            console.warn("[IslandBrain] No API Key found in environment. Agent will fail gracefully.");
+        }
+
+        const orchestrator = new IslandBrainOrchestrator(apiKey);
 
         const request: ContentRequest = {
             family_id: user.id,
