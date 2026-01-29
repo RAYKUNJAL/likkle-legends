@@ -57,20 +57,42 @@ export default function DebugAIPage() {
     return (
         <AdminLayout activeSection="debug">
             <div className="p-8 max-w-4xl mx-auto">
-                <header className="mb-8">
-                    <h1 className="text-3xl font-black text-gray-900">AI Diagnostics v2.2</h1>
-                    <p className="text-gray-500">Last updated: Jan 29, 10:40 AM EST. Hardened with 20s safety stop.</p>
+                <header className="mb-8 p-8 bg-blue-50 rounded-[3rem] border-4 border-blue-100 flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-black text-blue-900">AI Diagnostics v2.3</h1>
+                        <p className="text-blue-800/60 font-bold">Layered Defense Deployed: Jan 29, 10:55 AM</p>
+                    </div>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="p-4 bg-white rounded-2xl shadow-sm text-blue-600 font-bold hover:bg-blue-50 transition-colors"
+                    >
+                        Hard Reset UI
+                    </button>
                 </header>
 
                 <div className="space-y-6">
-                    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-                        <button
-                            onClick={handleRunDiagnostics}
-                            disabled={isLoading}
-                            className="w-full py-4 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2"
-                        >
-                            {isLoading ? <RefreshCw className="animate-spin" /> : "Run Full System Check"}
-                        </button>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                            <button
+                                onClick={handleRunDiagnostics}
+                                disabled={isLoading}
+                                className="w-full py-4 bg-primary text-white rounded-xl font-bold flex items-center justify-center gap-2"
+                            >
+                                {isLoading ? <RefreshCw className="animate-spin" /> : "Run Full System Check"}
+                            </button>
+                        </div>
+                        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+                            <button
+                                onClick={async () => {
+                                    const { runPing } = await import('@/app/actions/debug-ai');
+                                    const res = await runPing();
+                                    alert("Server Ping: " + res.status + " at " + res.timestamp);
+                                }}
+                                className="flex-1 py-4 bg-blue-100 text-blue-700 rounded-xl font-bold"
+                            >
+                                Test Action Tunnel (Ping)
+                            </button>
+                        </div>
                     </div>
 
                     {results && (

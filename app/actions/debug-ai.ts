@@ -3,26 +3,18 @@
 import { verifyAdmin } from "@/app/actions/admin";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+export async function runPing() {
+    return { status: "pong", timestamp: new Date().toISOString() };
+}
+
 export async function runDiagnostics(token: string) {
     const results: any = {
-        auth: { status: "pending", message: "" },
+        auth: { status: "pending", message: "Waiting for Env check..." },
         env: { status: "pending", key_present: false },
-        db: { status: "pending", message: "" },
-        ai: { status: "pending", message: "" }
+        ai: { status: "pending", message: "Waiting for Env check..." }
     };
 
-    // 1. Test Auth
-    try {
-        console.log("Run Diagnostics: Verifying Admin...");
-        await verifyAdmin(token);
-        results.auth = { status: "success", message: "Admin verified successfully." };
-    } catch (error: any) {
-        console.error("Run Diagnostics: Auth Error", error);
-        results.auth = { status: "error", message: `Auth Failed: ${error.message}` };
-        // We CONTINUE to check Env even if Auth fails, for debugging purposes
-    }
-
-    // 2. Test Env Key
+    // 1. Test Env Key (FASTEST)
     const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     results.env.key_present = !!key;
     if (!key) {
@@ -32,6 +24,21 @@ export async function runDiagnostics(token: string) {
     } else {
         results.env.status = "success";
         results.env.message = "API Key found (starts with " + key.substring(0, 4) + "...)";
+    }
+
+    // 2. Test Auth (Potentially slow/hanging)
+    try {
+        console.log("Run Diagnostics: Verifying Admin (with 5s limit)...");
+        // Wrap verifyAdmin in a timeout to prevent it from hanging the whole diagnostic
+        const authTimeout = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("Auth Check Hanged (>5s)")), 5000)
+        );
+
+        await Promise.race([verifyAdmin(token), authTimeout]);
+        results.auth = { status: "success", message: "Admin verified successfully." };
+    } catch (error: any) {
+        console.error("Run Diagnostics: Auth Error", error);
+        results.auth = { status: "error", message: `Auth Failed: ${error.message}` };
     }
 
     // 3. Test AI Connection (Raw Fetch to avoid SDK hangs)
