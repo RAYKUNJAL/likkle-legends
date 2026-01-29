@@ -47,11 +47,13 @@ class SupabaseClientManager {
             }
         }
 
+        const isServer = typeof window === 'undefined';
+
         return createClient(url, anonKey, {
             auth: {
-                persistSession: true,
-                autoRefreshToken: true,
-                detectSessionInUrl: true,
+                persistSession: !isServer,
+                autoRefreshToken: !isServer,
+                detectSessionInUrl: !isServer,
                 flowType: 'pkce'
             }
         });
