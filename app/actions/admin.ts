@@ -279,3 +279,32 @@ export async function getContentCounts(token: string) {
         games: games.count || 0,
     };
 }
+
+export async function getReviewQueue(token: string, filter: 'pending' | 'approved' | 'rejected' = 'pending') {
+    const admin = await verifyAdmin(token);
+
+    console.log(`getReviewQueue: Fetching ${filter} content...`);
+    const { data, error } = await admin
+        .from('generated_content')
+        .select('*')
+        .eq('admin_status', filter)
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function updateReviewStatus(token: string, id: string, status: 'approved' | 'rejected') {
+    const admin = await verifyAdmin(token);
+
+    console.log(`updateReviewStatus: Setting ${id} to ${status}...`);
+    const { data, error } = await admin
+        .from('generated_content')
+        .update({ admin_status: status })
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
