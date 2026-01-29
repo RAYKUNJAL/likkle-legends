@@ -39,8 +39,19 @@ export async function runDiagnostics(token: string) {
         const genAI = new GoogleGenerativeAI(key);
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-        const result = await model.generateContent("Say 'System Operational'");
-        const text = result.response.text();
+        console.log("Run Diagnostics: Testing Gemini connection (Timeout: 20s)...");
+
+        // TIMEOUT PROTECTION
+        const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("Timeout - Gemini took too long (>20s)")), 20000)
+        );
+
+        const generationPromise = async () => {
+            const result = await model.generateContent("Say 'System Operational'");
+            return result.response.text();
+        };
+
+        const text = await Promise.race([generationPromise(), timeoutPromise]);
 
         if (text) {
             results.ai = { status: "success", message: `Response received: "${text}"` };
@@ -48,6 +59,7 @@ export async function runDiagnostics(token: string) {
             results.ai = { status: "error", message: "Empty response from Gemini." };
         }
     } catch (error: any) {
+        console.error("Run Diagnostics: AI Error", error);
         results.ai = { status: "error", message: `Gemini Call Failed: ${error.message}` };
     }
 

@@ -10,16 +10,30 @@ export default function DebugAIPage() {
 
     const handleRunDiagnostics = async () => {
         setIsLoading(true);
+        setResults(null);
+        
+        // Frontend safety timeout
+        const timeoutPromise = new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error("The server is not responding. This usually means Vercel's connection to the AI is blocked.")), 25000)
+        );
+
         try {
             const { supabase } = await import('@/lib/storage');
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("No session");
 
-            const res = await runDiagnostics(session.access_token);
+            const diagnosticPromise = runDiagnostics(session.access_token);
+            const res = await Promise.race([diagnosticPromise, timeoutPromise]);
+            
             setResults(res);
         } catch (error: any) {
             console.error("Test failed:", error);
-            setResults({ error: error.message });
+            setResults({ 
+                auth: { status: 'error', message: error.message },
+                env: { status: 'error', message: 'Hanged' },
+                ai: { status: 'error', message: 'Hanged' }
+            });
+            alert("Diagnostic Failure: " + error.message);
         } finally {
             setIsLoading(false);
         }
@@ -29,8 +43,8 @@ export default function DebugAIPage() {
         <AdminLayout activeSection="debug">
             <div className="p-8 max-w-4xl mx-auto">
                 <header className="mb-8">
-                    <h1 className="text-3xl font-black text-gray-900">AI System Diagnostics</h1>
-                    <p className="text-gray-500">Test the core AI brain connections.</p>
+                    <h1 className="text-3xl font-black text-gray-900">AI Diagnostics v2.1</h1>
+                    <p className="text-gray-500">Last updated: Jan 29, 03:30 AM EST. Hardened with 25s timeouts.</p>
                 </header>
 
                 <div className="space-y-6">

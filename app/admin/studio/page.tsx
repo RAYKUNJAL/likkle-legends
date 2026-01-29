@@ -49,7 +49,14 @@ export default function LegendAIStudio() {
                 case 'video': contentType = 'song_video_script'; break; // Reusing script for now or add video_script type
             }
 
-            const res = await runAgentGeneration(
+            console.log(`[Studio] Deploying ${activeAgent} agent...`);
+
+            // Client-side safety timeout
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error("The AI Agent is taking longer than usual. Please check your connection and try again.")), 25000)
+            );
+
+            const generationPromise = runAgentGeneration(
                 session.access_token,
                 contentType,
                 prompt,
@@ -57,18 +64,18 @@ export default function LegendAIStudio() {
                 { age_group: ageGroup }
             );
 
+            const res = await Promise.race([generationPromise, timeoutPromise]);
+
             if (res.success) {
                 setResult(res.content);
-                // Automatically refresh admin queue if needed? 
-                // The result is 'pending' admin review.
                 alert("Content Generated and sent to Admin Queue!");
             } else {
                 throw new Error(res.error);
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Generation failed", error);
-            alert("Generation failed. Check console.");
+            alert("Mission Failed: " + (error.message || "Unknown error"));
         } finally {
             setIsGenerating(false);
             setPublishedId(null);
