@@ -59,17 +59,22 @@ export class ContentGenerator {
                     });
 
                     // WRAP IN TIMEOUT for Vercel Function Limit Protection
-                    // 25 seconds max per call, leaving room for retries
+                    // Reduced to 20 seconds to fail fast before Vercel 10s default limit (if on hobby) or 60s pro
                     const timeoutPromise = new Promise<never>((_, reject) =>
-                        setTimeout(() => reject(new Error(`Timeout - Model ${modelName} took too long (>25s)`)), 25000)
+                        setTimeout(() => reject(new Error(`Timeout - Model ${modelName} took too long (>20s)`)), 20000)
                     );
 
                     const generationPromise = async () => {
-                        const result = await model.generateContent(fullPrompt);
-                        const response = await result.response;
-                        return response.text();
+                        try {
+                            const result = await model.generateContent(fullPrompt);
+                            const response = await result.response;
+                            return response.text();
+                        } catch (genErr: any) {
+                            throw new Error(`Generation failed: ${genErr.message}`);
+                        }
                     };
 
+                    // Race against the clock
                     const text = await Promise.race([generationPromise(), timeoutPromise]);
 
                     if (text) return text;
@@ -85,7 +90,8 @@ export class ContentGenerator {
             throw new Error(`Failed to generate text content: ${lastError?.message}`);
         } catch (error: any) {
             console.error('❌ Unexpected Error in generateText:', error);
-            throw error;
+            // Panic fallback to prevent infinite hanging
+            throw new Error(`Critical AI Failure: ${error.message}`);
         }
     }
 
