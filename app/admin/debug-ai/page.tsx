@@ -10,61 +10,58 @@ export default function DebugAIPage() {
 
     const handleRunDiagnostics = async () => {
         setIsLoading(true);
-        setResults(null);
-        const { toast } = await import('react-hot-toast');
-        const toastId = toast.loading("Checking AI Brain (20s safety limit)...");
+        setResults({
+            env: { status: 'pending', message: 'Checking...' },
+            auth: { status: 'pending', message: 'Waiting...' },
+            ai: { status: 'pending', message: 'Waiting...' }
+        });
 
-        let hasTimedOut = false;
-        const timer = setTimeout(() => {
-            hasTimedOut = true;
-            setIsLoading(false);
-            toast.error("Vercel did not respond in time (20s). This usually means the connection is blocked.", { id: toastId });
-            setResults({
-                auth: { status: 'error', message: "TIMEOUT" },
-                env: { status: 'error', message: "STUCK" },
-                ai: { status: 'error', message: "STUCK" }
-            });
-        }, 20000);
+        const { toast } = await import('react-hot-toast');
+        const toastId = toast.loading("Starting Stage-by-Stage Check...");
 
         try {
+            const { testEnv, testAuth, testAI } = await import('@/app/actions/debug-ai');
             const { supabase } = await import('@/lib/storage');
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error("No session");
 
-            const res = await runDiagnostics(session.access_token);
-            clearTimeout(timer);
-
-            if (hasTimedOut) return;
-
-            setResults(res);
-            toast.success("Diagnostics Complete!", { id: toastId });
-        } catch (error: any) {
-            clearTimeout(timer);
-            console.error("Test failed:", error);
-            if (!hasTimedOut) {
-                toast.error("Diagnostic Failed: " + error.message, { id: toastId });
-                setResults({
-                    auth: { status: 'error', message: error.message },
-                    env: { status: 'error', message: 'ERROR' },
-                    ai: { status: 'error', message: 'ERROR' }
-                });
+            // 1. Env Check
+            const env = await testEnv();
+            setResults(prev => ({ ...prev, env }));
+            if (env.status === 'error') {
+                toast.error("Step 1 Failed.", { id: toastId });
+                return;
             }
+
+            // 2. Auth Check
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error("Please log in again.");
+
+            const auth = await testAuth(session.access_token);
+            setResults(prev => ({ ...prev, auth }));
+
+            // 3. AI Check
+            const ai = await testAI();
+            setResults(prev => ({ ...prev, ai }));
+
+            toast.success("All checks completed!", { id: toastId });
+        } catch (error: any) {
+            console.error("Diagnostic failure:", error);
+            toast.error("Critical failure: " + error.message, { id: toastId });
         } finally {
-            if (!hasTimedOut) setIsLoading(false);
+            setIsLoading(false);
         }
     };
 
     return (
         <AdminLayout activeSection="debug">
             <div className="p-8 max-w-4xl mx-auto">
-                <header className="mb-8 p-8 bg-blue-50 rounded-[3rem] border-4 border-blue-100 flex items-center justify-between">
+                <header className="mb-8 p-8 bg-purple-50 rounded-[3rem] border-4 border-purple-100 flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black text-blue-900">AI Diagnostics v2.3</h1>
-                        <p className="text-blue-800/60 font-bold">Layered Defense Deployed: Jan 29, 10:55 AM</p>
+                        <h1 className="text-3xl font-black text-purple-900">AI Diagnostics v2.4</h1>
+                        <p className="text-purple-800/60 font-bold">Atomic Testing Mode: Jan 29, 11:05 AM</p>
                     </div>
                     <button
                         onClick={() => window.location.reload()}
-                        className="p-4 bg-white rounded-2xl shadow-sm text-blue-600 font-bold hover:bg-blue-50 transition-colors"
+                        className="p-4 bg-white rounded-2xl shadow-sm text-purple-600 font-bold hover:bg-purple-50 transition-colors"
                     >
                         Hard Reset UI
                     </button>
@@ -81,16 +78,29 @@ export default function DebugAIPage() {
                                 {isLoading ? <RefreshCw className="animate-spin" /> : "Run Full System Check"}
                             </button>
                         </div>
-                        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-4">
+                        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col gap-3">
                             <button
                                 onClick={async () => {
                                     const { runPing } = await import('@/app/actions/debug-ai');
                                     const res = await runPing();
                                     alert("Server Ping: " + res.status + " at " + res.timestamp);
                                 }}
-                                className="flex-1 py-4 bg-blue-100 text-blue-700 rounded-xl font-bold"
+                                className="w-full py-3 bg-blue-100 text-blue-700 rounded-xl font-bold"
                             >
                                 Test Action Tunnel (Ping)
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    const { testAI } = await import('@/app/actions/debug-ai');
+                                    const { toast } = await import('react-hot-toast');
+                                    const tid = toast.loading("Testing Gemini Bypass...");
+                                    const res = await testAI();
+                                    if (res.status === 'success') toast.success(res.message, { id: tid });
+                                    else toast.error(res.message, { id: tid });
+                                }}
+                                className="w-full py-3 bg-orange-100 text-orange-700 rounded-xl font-bold"
+                            >
+                                Test Gemini Raw (Bypass Auth)
                             </button>
                         </div>
                     </div>
