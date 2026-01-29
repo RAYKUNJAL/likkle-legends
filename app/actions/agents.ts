@@ -33,10 +33,17 @@ export async function runModuleManagerAgent(token: string, objective: string, ag
         await verifyAdmin(token);
 
         // Quick check for API key
-        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
         if (!apiKey) {
             console.error("Missing Gemini API Key in environment");
             return { success: false, error: "Configuration Error: GEMINI_API_KEY is missing on server." };
+        }
+
+        console.log(`[Agent] Starting Module Agent with Key: ${apiKey.substring(0, 5)}...`);
+
+        // Explicitly set the key in the process env if missing, just in case the singletons reads it late
+        if (!process.env.GEMINI_API_KEY) {
+            process.env.GEMINI_API_KEY = apiKey;
         }
 
         const data = await moduleManagerAgent.buildCompleteModule(objective, ageGroup);
