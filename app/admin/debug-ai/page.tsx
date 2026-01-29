@@ -11,31 +11,46 @@ export default function DebugAIPage() {
     const handleRunDiagnostics = async () => {
         setIsLoading(true);
         setResults(null);
-        
-        // Frontend safety timeout
-        const timeoutPromise = new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error("The server is not responding. This usually means Vercel's connection to the AI is blocked.")), 25000)
-        );
+        const { toast } = await import('react-hot-toast');
+        const toastId = toast.loading("Checking AI Brain (20s safety limit)...");
+
+        let hasTimedOut = false;
+        const timer = setTimeout(() => {
+            hasTimedOut = true;
+            setIsLoading(false);
+            toast.error("Vercel did not respond in time (20s). This usually means the connection is blocked.", { id: toastId });
+            setResults({
+                auth: { status: 'error', message: "TIMEOUT" },
+                env: { status: 'error', message: "STUCK" },
+                ai: { status: 'error', message: "STUCK" }
+            });
+        }, 20000);
 
         try {
             const { supabase } = await import('@/lib/storage');
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("No session");
 
-            const diagnosticPromise = runDiagnostics(session.access_token);
-            const res = await Promise.race([diagnosticPromise, timeoutPromise]);
-            
+            const res = await runDiagnostics(session.access_token);
+            clearTimeout(timer);
+
+            if (hasTimedOut) return;
+
             setResults(res);
+            toast.success("Diagnostics Complete!", { id: toastId });
         } catch (error: any) {
+            clearTimeout(timer);
             console.error("Test failed:", error);
-            setResults({ 
-                auth: { status: 'error', message: error.message },
-                env: { status: 'error', message: 'Hanged' },
-                ai: { status: 'error', message: 'Hanged' }
-            });
-            alert("Diagnostic Failure: " + error.message);
+            if (!hasTimedOut) {
+                toast.error("Diagnostic Failed: " + error.message, { id: toastId });
+                setResults({
+                    auth: { status: 'error', message: error.message },
+                    env: { status: 'error', message: 'ERROR' },
+                    ai: { status: 'error', message: 'ERROR' }
+                });
+            }
         } finally {
-            setIsLoading(false);
+            if (!hasTimedOut) setIsLoading(false);
         }
     };
 

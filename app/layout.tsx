@@ -62,6 +62,8 @@ import { UserProvider } from '@/components/UserContext';
 import StructuredData from '@/components/StructuredData';
 // TantySpiceWidget removed - R.O.T.I. is the primary chat interface
 
+import { Toaster } from 'react-hot-toast';
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -86,6 +88,7 @@ export default async function RootLayout({
         <NotificationBar content={content} />
         <AnalyticsLoader />
         <CookieConsentBanner />
+        <Toaster position="top-right" />
         <UserProvider>
           {children}
           {/* Tanty chatbot removed per user request */}

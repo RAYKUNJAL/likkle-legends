@@ -34,33 +34,35 @@ export async function runDiagnostics(token: string) {
         results.env.message = "API Key found (starts with " + key.substring(0, 4) + "...)";
     }
 
-    // 3. Test AI Connection
+    // 3. Test AI Connection (Raw Fetch to avoid SDK hangs)
     try {
-        const genAI = new GoogleGenerativeAI(key);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        console.log("Run Diagnostics: Testing Gemini via Raw Fetch (10s limit)...");
 
-        console.log("Run Diagnostics: Testing Gemini connection (Timeout: 20s)...");
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        // TIMEOUT PROTECTION
-        const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout - Gemini took too long (>20s)")), 20000)
-        );
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: "Say 'Raw System Operational'" }] }]
+            }),
+            signal: controller.signal
+        });
 
-        const generationPromise = async () => {
-            const result = await model.generateContent("Say 'System Operational'");
-            return result.response.text();
-        };
+        clearTimeout(timeoutId);
 
-        const text = await Promise.race([generationPromise(), timeoutPromise]);
-
-        if (text) {
-            results.ai = { status: "success", message: `Response received: "${text}"` };
+        if (!response.ok) {
+            const errorText = await response.text();
+            results.ai = { status: "error", message: `API Error ${response.status}: ${errorText.substring(0, 50)}...` };
         } else {
-            results.ai = { status: "error", message: "Empty response from Gemini." };
+            const data = await response.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            results.ai = { status: "success", message: `Raw Response: "${text}"` };
         }
     } catch (error: any) {
-        console.error("Run Diagnostics: AI Error", error);
-        results.ai = { status: "error", message: `Gemini Call Failed: ${error.message}` };
+        console.error("Run Diagnostics: Raw AI Error", error);
+        results.ai = { status: "error", message: `Raw Call Failed: ${error.name === 'AbortError' ? 'TIMEOUT (10s)' : error.message}` };
     }
 
     return results;
