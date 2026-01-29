@@ -111,20 +111,26 @@ export const PROMPT_TEMPLATES = {
         id: "monthly_drop_bundle_v1",
         output_schema: {
             month: "string",
+            year: "string",
             theme: "string",
             visitor_character: {
                 id: "string",
                 name: "string",
                 lesson_focus: "string",
-                short_intro: "string",
-                image_url: "string"
+                short_intro: "string"
             },
             weekly_kits: [
                 {
                     week: 1,
-                    content_type: "song_video_script|story_short|lesson_micro|printable_cards_text",
                     title: "string",
-                    content: "string (nested JSON or text)"
+                    activities: [
+                        {
+                            type: "song|story|lesson|printable",
+                            title: "string",
+                            summary: "string",
+                            details: "object (schema matching the specific type)"
+                        }
+                    ]
                 }
             ],
             parent_note: {
@@ -135,6 +141,7 @@ export const PROMPT_TEMPLATES = {
         generation_rules: [
             "Visitor must be hosted by a core character.",
             "Theme must be kid-safe and culturally inclusive.",
+            "NEVER stringify JSON inside a string. Use nested objects.",
             "Bundle must include at least 1 printable and 1 song."
         ]
     }
