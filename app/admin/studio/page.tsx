@@ -118,7 +118,7 @@ export default function LegendAIStudio() {
                     <div>
                         <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
                             <Sparkles className="text-orange-500" />
-                            Legend AI Studio
+                            Legend AI Studio v2.2
                         </h1>
                         <p className="text-gray-500">Autonomous agents building the Likkle Legends universe</p>
                     </div>
