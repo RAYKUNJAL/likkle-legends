@@ -58,8 +58,8 @@ export default function DebugAIPage() {
         <AdminLayout activeSection="debug">
             <div className="p-8 max-w-4xl mx-auto">
                 <header className="mb-8">
-                    <h1 className="text-3xl font-black text-gray-900">AI Diagnostics v2.1</h1>
-                    <p className="text-gray-500">Last updated: Jan 29, 03:30 AM EST. Hardened with 25s timeouts.</p>
+                    <h1 className="text-3xl font-black text-gray-900">AI Diagnostics v2.2</h1>
+                    <p className="text-gray-500">Last updated: Jan 29, 10:40 AM EST. Hardened with 20s safety stop.</p>
                 </header>
 
                 <div className="space-y-6">
