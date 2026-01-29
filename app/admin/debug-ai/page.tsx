@@ -26,7 +26,7 @@ export default function DebugAIPage() {
     };
 
     return (
-        <AdminLayout activeSection="settings">
+        <AdminLayout activeSection="debug">
             <div className="p-8 max-w-4xl mx-auto">
                 <header className="mb-8">
                     <h1 className="text-3xl font-black text-gray-900">AI System Diagnostics</h1>

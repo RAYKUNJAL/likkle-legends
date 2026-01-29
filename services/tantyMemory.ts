@@ -30,7 +30,7 @@ export const summarizeSession = async (messages: { role: string, text: string }[
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-2.0-flash',
             contents: `Summarize the following interaction between Tanty Spice and a child. Identify 3 key emotional facts or interests to remember for next time. Keep it under 20 words.\n\n${chatLog}`,
             config: { temperature: 0.3 }
         });

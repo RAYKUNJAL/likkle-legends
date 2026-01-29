@@ -69,7 +69,7 @@ function getFallbackStory(inputs: StoryInputs) {
 export async function generateCulturalStory(inputs: StoryInputs) {
     if (apiKey) {
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash", safetySettings });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", safetySettings });
 
             const userPrompt = `
                 Generate a story for a child named ${inputs.childName} (Age 6).
