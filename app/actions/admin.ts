@@ -5,18 +5,31 @@ import { supabase } from "@/lib/storage";
 
 // Helper to verify admin access
 export async function verifyAdmin(token: string) {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!url || !anonKey) throw new Error("Supabase config missing");
+
+    // Create a fresh SERVER-SAFE client to avoid hangs
+    const { createClient } = await import('@supabase/supabase-js');
+    const authClient = createClient(url, anonKey, {
+        auth: { persistSession: false, autoRefreshToken: false }
+    });
+
+    console.log("verifyAdmin: Checking token...");
+    const { data: { user }, error } = await authClient.auth.getUser(token);
 
     if (error || !user) {
-        throw new Error("Unauthorized");
+        console.error("verifyAdmin: Auth failed", error);
+        throw new Error("Unauthorized: " + (error?.message || "Invalid user"));
     }
 
-    // Optional: Check if user has admin role in metadata or admin_users table
-    // For now, we'll assume if they have a valid token and are calling this, 
-    // we might check email or metadata. 
-    // But since the Schema has an `admin_users` table, we should check it.
+    const adminClient = createClient(url, serviceKey || anonKey, {
+        auth: { persistSession: false }
+    });
 
-    const adminClient = createAdminClient();
+    console.log("verifyAdmin: Checking admin_users table...");
     const { data: adminUser } = await adminClient
         .from('admin_users')
         .select('role')
@@ -24,7 +37,7 @@ export async function verifyAdmin(token: string) {
         .single();
 
     // fallback for development: check specific email
-    const isDevAdmin = user.email === 'admin@likklelegends.com' || user.email?.includes('raykunjal'); // Customize as needed
+    const isDevAdmin = user.email === 'admin@likklelegends.com' || user.email?.includes('raykunjal');
 
     if (!adminUser && !isDevAdmin) {
         throw new Error("Forbidden: Not an admin");
