@@ -38,11 +38,18 @@ export default function AutonomousContentPage() {
             if (!session) throw new Error("No session");
 
             const result = await runModuleManagerAgent(session.access_token, obj, ageGroup);
-            setLastModule(result);
-            alert("Digital Module Built! Ready for review.");
+
+            if (result.success) {
+                setLastModule(result.data);
+            } else {
+                setLastModule('error');
+                console.error("Agent failed:", result.error);
+                // We'll show the error in the UI by setting a special state or handling it in the render
+                // For now, I'm setting lastModule to 'error' to trigger the error banner I added
+            }
         } catch (error) {
             console.error("Agent failed:", error);
-            alert("Agent encountered an error. Check console.");
+            setLastModule('error');
         } finally {
             setIsGenerating(false);
         }
@@ -123,13 +130,33 @@ export default function AutonomousContentPage() {
                         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-[100px] -mr-48 -mt-48" />
 
                         <div className="relative z-10">
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl">🤖</div>
-                                <div>
-                                    <h2 className="text-2xl font-black">Agent Readiness: Optimal</h2>
-                                    <p className="text-white/60">Ready to synthesize new island adventures.</p>
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl shadow-inner">🤖</div>
+                                    <div>
+                                        <h2 className="text-2xl font-black">Agent Command Center</h2>
+                                        <p className="text-white/60">Autonomous content generation core</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full border border-white/10">
+                                    <div className={`w-3 h-3 rounded-full ${isGenerating ? 'bg-amber-400 animate-pulse' : 'bg-green-400'}`} />
+                                    <span className="text-xs font-bold uppercase tracking-widest">{isGenerating ? 'PROCESSING' : 'ONLINE'}</span>
                                 </div>
                             </div>
+
+                            {/* Error Banner */}
+                            {lastModule === 'error' && (
+                                <div className="mb-8 bg-red-500/10 border border-red-500/50 rounded-2xl p-4 flex items-center gap-4 animate-in fade-in slide-in-from-top-2">
+                                    <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center shrink-0">
+                                        <AlertCircle className="text-red-200" size={20} />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-red-100">Generation Failed</p>
+                                        <p className="text-xs text-red-200/70">{typeof lastModule === 'string' ? lastModule : "Agent encountered an unexpected error. Please check system logs."}</p>
+                                    </div>
+                                    <button onClick={() => setLastModule(null)} className="ml-auto p-2 hover:bg-white/10 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                                </div>
+                            )}
 
                             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
                                 {suggestedObjectives.map((obj, i) => (
@@ -137,44 +164,79 @@ export default function AutonomousContentPage() {
                                         key={i}
                                         onClick={() => { setObjective(obj); handleGenerate(obj); }}
                                         disabled={isGenerating}
-                                        className="p-6 bg-white/5 border border-white/10 rounded-[2rem] text-left hover:bg-white/10 transition-all group disabled:opacity-50"
+                                        className="p-6 bg-white/5 border border-white/10 rounded-[2rem] text-left hover:bg-white/10 hover:border-primary/50 hover:scale-[1.02] transition-all group disabled:opacity-50 disabled:hover:scale-100"
                                     >
-                                        <p className="text-xs font-black text-white/40 uppercase tracking-widest mb-2">Suggestion {i + 1}</p>
-                                        <p className="font-bold text-white group-hover:text-primary transition-colors">{obj}</p>
+                                        <div className="flex justify-between items-start mb-2">
+                                            <p className="text-[10px] font-black text-white/40 uppercase tracking-widest">Mission {i + 1}</p>
+                                            <Sparkles size={14} className="text-white/20 group-hover:text-amber-400 transition-colors" />
+                                        </div>
+                                        <p className="font-bold text-white group-hover:text-primary transition-colors leading-tight">{obj}</p>
                                     </button>
                                 ))}
                             </div>
 
                             <div className="flex flex-col lg:flex-row gap-6 items-end">
                                 <div className="flex-1 w-full">
-                                    <label className="block text-xs font-black uppercase tracking-widest text-white/40 mb-3">Custom Mission Brief</label>
-                                    <input
-                                        type="text"
-                                        value={objective}
-                                        onChange={(e) => setObjective(e.target.value)}
-                                        placeholder="e.g. Learn how Caribbean salt fish is made..."
-                                        className="w-full bg-white/10 border-2 border-white/20 rounded-2xl px-6 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-primary transition-all"
-                                    />
+                                    <label className="block text-xs font-black uppercase tracking-widest text-white/40 mb-3 ml-2">Custom Mission Brief</label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            value={objective}
+                                            onChange={(e) => setObjective(e.target.value)}
+                                            placeholder="e.g. Design a lesson about sea turtles in Barbados..."
+                                            className="w-full bg-white/10 border-2 border-white/20 rounded-2xl pl-6 pr-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-primary focus:bg-white/20 transition-all shadow-inner"
+                                            disabled={isGenerating}
+                                        />
+                                        {objective && !isGenerating && (
+                                            <button
+                                                onClick={() => setObjective('')}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                                            >
+                                                <div className="bg-white/10 rounded-full p-1"><Trash2 size={12} /></div>
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className="flex bg-white/10 p-1 rounded-2xl border-2 border-white/20">
+                                <div className="flex bg-white/10 p-1 rounded-2xl border-2 border-white/20 shrink-0">
                                     <button
                                         onClick={() => setAgeGroup('mini')}
-                                        className={`px-6 py-3 rounded-xl font-black text-xs transition-all ${ageGroup === 'mini' ? 'bg-primary text-white' : 'text-white/40'}`}
-                                    >MINI (3-5)</button>
+                                        className={`px-6 py-3 rounded-xl font-black text-xs transition-all flex items-center gap-2 ${ageGroup === 'mini' ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                                    >
+                                        <span>👶</span> MINI (3-5)
+                                    </button>
                                     <button
                                         onClick={() => setAgeGroup('big')}
-                                        className={`px-6 py-3 rounded-xl font-black text-xs transition-all ${ageGroup === 'big' ? 'bg-primary text-white' : 'text-white/40'}`}
-                                    >BIG (6-8)</button>
+                                        className={`px-6 py-3 rounded-xl font-black text-xs transition-all flex items-center gap-2 ${ageGroup === 'big' ? 'bg-primary text-white shadow-lg' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                                    >
+                                        <span>🧑</span> BIG (6-8)
+                                    </button>
                                 </div>
                                 <button
                                     onClick={() => handleGenerate()}
                                     disabled={isGenerating || !objective}
-                                    className="px-10 py-4 bg-primary text-white rounded-2xl font-black shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-3 whitespace-nowrap"
+                                    className="px-8 py-4 bg-gradient-to-r from-primary to-emerald-500 text-white rounded-2xl font-black shadow-xl shadow-primary/30 hover:shadow-primary/50 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-3 whitespace-nowrap border-2 border-white/10"
                                 >
-                                    {isGenerating ? <RefreshCw className="animate-spin" /> : <Wand2 />}
-                                    Deploy Agent
+                                    {isGenerating ? (
+                                        <>
+                                            <RefreshCw className="animate-spin" />
+                                            <span>Building Module...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Wand2 className="animate-pulse" />
+                                            <span>Deploy Agent</span>
+                                        </>
+                                    )}
                                 </button>
                             </div>
+
+                            {isGenerating && (
+                                <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center gap-3 animate-pulse">
+                                    <p className="text-xs font-bold text-emerald-300">
+                                        <span className="opacity-70">Creating Story...</span> → <span className="opacity-70">Composing Music...</span> → <span className="opacity-70">Writing Scripts...</span> → <span className="opacity-70">Designing Printables...</span>
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

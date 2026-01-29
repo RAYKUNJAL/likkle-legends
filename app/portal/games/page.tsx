@@ -121,19 +121,7 @@ const FEATURED_GAMES = [
         isNew: false,
         isPopular: false,
     },
-    {
-        id: 'anansi-web',
-        title: "Anansi's Web of Words",
-        description: "Help Anansi climb the mango tree by solving clever word riddles!",
-        emoji: '🕷️',
-        gradient: 'from-orange-400 via-amber-500 to-red-500',
-        tier: 'free',
-        category: 'word',
-        xp: 150,
-        time: '5-10 min',
-        isNew: true,
-        isPopular: true,
-    },
+
     {
         id: 'mango-catch',
         title: 'Mango Catch Adventure',

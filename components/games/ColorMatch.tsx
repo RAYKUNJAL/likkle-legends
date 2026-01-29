@@ -29,12 +29,21 @@ export default function ColorMatch({ onComplete }: { onComplete?: (score: number
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     const generateRound = useCallback(() => {
-        const shuffled = [...COLOR_TILES].sort(() => Math.random() - 0.5);
-        const target = shuffled[0];
-        const roundOptions = shuffled.slice(0, 4).sort(() => Math.random() - 0.5);
+        setTargetColor((prev) => {
+            let shuffled = [...COLOR_TILES].sort(() => Math.random() - 0.5);
+            // Ensure we don't pick the same color twice in a row if possible
+            while (shuffled[0].name === prev?.name && COLOR_TILES.length > 1) {
+                shuffled = [...COLOR_TILES].sort(() => Math.random() - 0.5);
+            }
 
-        setTargetColor(target);
-        setOptions(roundOptions);
+            const target = shuffled[0];
+            // Get 3 other unique complications
+            const others = shuffled.slice(1, 4);
+            const roundOptions = [target, ...others].sort(() => Math.random() - 0.5);
+
+            setOptions(roundOptions);
+            return target;
+        });
         setFeedback(null);
     }, []);
 
