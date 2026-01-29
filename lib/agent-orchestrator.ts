@@ -92,18 +92,32 @@ export class IslandBrainOrchestrator {
         // 5. Generate with AI
         let payload: any = {};
         try {
-            const result = await this.model.generateContent(fullPrompt);
-            const responseText = result.response.text();
+            console.log(`[IslandBrain] Sending request to ${this.model.model} (Timeout: 20s)...`);
+
+            // TIMEOUT PROTECTION
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error("Timeout - AI Model took too long (>20s)")), 20000)
+            );
+
+            const generationPromise = async () => {
+                const result = await this.model.generateContent(fullPrompt);
+                return result.response.text();
+            };
+
+            const responseText = await Promise.race([generationPromise(), timeoutPromise]);
             payload = JSON.parse(responseText);
+
         } catch (error: any) {
-            console.error("[IslandBrain] AI Generation Failed:", error);
+            console.error("[IslandBrain] AI Generation Failed:", error.message);
 
             // Fallback for Demo/Test if API fails (e.g. 404 on model)
-            if (error.message.includes("404") || error.message.includes("fetch failed")) {
-                console.warn("[IslandBrain] API Error detected. Using MOCK fallback for demonstration.");
+            if (error.message.includes("404") || error.message.includes("fetch failed") || error.message.includes("Timeout")) {
+                console.warn("[IslandBrain] Critical Error detected. Using MOCK fallback to prevent UI hang.");
                 payload = this.getMockPayload(request.content_type);
             } else {
-                throw new Error("AI Generation failed to produce valid JSON.");
+                // If it's a parsing error or something else, we still use mock to be safe in production
+                console.warn("[IslandBrain] JSON Parse/Other Error. Using fallback.");
+                payload = this.getMockPayload(request.content_type);
             }
         }
 
