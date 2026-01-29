@@ -79,6 +79,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
         { id: 'announcements', label: 'Announcements', icon: Megaphone, href: '/admin/announcements' },
         { id: 'analytics', label: 'Analytics', icon: TrendingUp, href: '/admin/analytics' },
         { id: 'verify', label: 'Launch Verification', icon: ShieldCheck, href: '/admin/verify' },
+        { id: 'debug', label: 'AI Diagnostics', icon: Activity, href: '/admin/debug-ai' }, // Added for debugging
         { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
     ];
 
