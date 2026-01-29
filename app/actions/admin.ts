@@ -13,37 +13,47 @@ export async function verifyAdmin(token: string) {
 
     // Create a fresh SERVER-SAFE client to avoid hangs
     const { createClient } = await import('@supabase/supabase-js');
-    const authClient = createClient(url, anonKey, {
+    const admin = createClient(url, serviceKey || anonKey, {
         auth: { persistSession: false, autoRefreshToken: false }
     });
 
-    console.log("verifyAdmin: Checking token...");
-    const { data: { user }, error } = await authClient.auth.getUser(token);
+    try {
+        const timeout = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("Auth Check Hanged (5s limit)")), 5000)
+        );
 
-    if (error || !user) {
-        console.error("verifyAdmin: Auth failed", error);
-        throw new Error("Unauthorized: " + (error?.message || "Invalid user"));
+        console.log("verifyAdmin: Checking token...");
+        const { data: { user }, error } = await Promise.race([
+            admin.auth.getUser(token),
+            timeout
+        ]);
+
+        if (error || !user) {
+            console.error("verifyAdmin: Auth failed", error);
+            throw new Error("Unauthorized");
+        }
+
+        // Check admin status
+        console.log("verifyAdmin: Checking admin_users table...");
+        const adminCheckPromise = admin
+            .from('admin_users')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        const { data: adminUser } = await Promise.race([adminCheckPromise, timeout]);
+
+        const isDevAdmin = user.email === 'admin@likklelegends.com' || user.email?.includes('raykunjal');
+
+        if (!adminUser && !isDevAdmin) {
+            throw new Error("Forbidden: Not an admin");
+        }
+
+        return admin;
+    } catch (e: any) {
+        console.error("verifyAdmin: ERROR", e.message);
+        throw e;
     }
-
-    const adminClient = createClient(url, serviceKey || anonKey, {
-        auth: { persistSession: false }
-    });
-
-    console.log("verifyAdmin: Checking admin_users table...");
-    const { data: adminUser } = await adminClient
-        .from('admin_users')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-    // fallback for development: check specific email
-    const isDevAdmin = user.email === 'admin@likklelegends.com' || user.email?.includes('raykunjal');
-
-    if (!adminUser && !isDevAdmin) {
-        throw new Error("Forbidden: Not an admin");
-    }
-
-    return adminClient;
 }
 
 export async function getAdminAnalytics(token: string) {
