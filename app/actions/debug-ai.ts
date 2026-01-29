@@ -23,7 +23,7 @@ export async function runDiagnostics(token: string) {
     }
 
     // 2. Test Env Key
-    const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     results.env.key_present = !!key;
     if (!key) {
         results.env.status = "error";
