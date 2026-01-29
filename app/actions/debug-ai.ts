@@ -13,11 +13,13 @@ export async function runDiagnostics(token: string) {
 
     // 1. Test Auth
     try {
+        console.log("Run Diagnostics: Verifying Admin...");
         await verifyAdmin(token);
         results.auth = { status: "success", message: "Admin verified successfully." };
     } catch (error: any) {
-        results.auth = { status: "error", message: error.message };
-        return results; // Stop if auth fails
+        console.error("Run Diagnostics: Auth Error", error);
+        results.auth = { status: "error", message: `Auth Failed: ${error.message}` };
+        // We CONTINUE to check Env even if Auth fails, for debugging purposes
     }
 
     // 2. Test Env Key
