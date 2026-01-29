@@ -133,7 +133,7 @@ export default function AnansiGame() {
                 </div>
                 <div>
                     <h1 className="text-4xl md:text-6xl font-black font-heading tracking-tight mb-4 text-orange-400">
-                        Anansi's Web of Words
+                        Anansi's Web v2.2
                     </h1>
                     <p className="text-xl md:text-2xl text-purple-200 max-w-2xl mx-auto">
                         Help Anansi the Spider climb to the top of the mango tree! Solve the riddles to spin the web higher.
