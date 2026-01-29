@@ -25,14 +25,17 @@ export default function DebugAIPage() {
             const { supabase } = await import('@/lib/storage');
 
             // 1. Env Check
+            toast.loading("Step 1: Checking Environment Keys...", { id: toastId });
             const env = await testEnv();
             setResults(prev => ({ ...prev, env }));
 
             // 2. Supabase Reachability
+            toast.loading("Step 2: Testing Network Connectivity...", { id: toastId });
             const sbReach = await testSupabase();
             setResults(prev => ({ ...prev, supabase: sbReach }));
 
             // 3. Auth Check
+            toast.loading("Step 3: Verifying Admin Status...", { id: toastId });
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("Please log in again.");
 
@@ -40,10 +43,11 @@ export default function DebugAIPage() {
             setResults(prev => ({ ...prev, auth }));
 
             // 4. AI Check
+            toast.loading("Step 4: Testing Gemini Handshake...", { id: toastId });
             const ai = await testAI();
             setResults(prev => ({ ...prev, ai }));
 
-            toast.success("All checks completed!", { id: toastId });
+            toast.success("All System Checks PASSED!", { id: toastId });
         } catch (error: any) {
             console.error("Diagnostic failure:", error);
             toast.error("Critical failure: " + error.message, { id: toastId });
@@ -55,16 +59,16 @@ export default function DebugAIPage() {
     return (
         <AdminLayout activeSection="debug">
             <div className="p-8 max-w-4xl mx-auto">
-                <header className="mb-8 p-8 bg-green-50 rounded-[3rem] border-4 border-green-100 flex items-center justify-between">
+                <header className="mb-8 p-8 bg-blue-50 rounded-[3rem] border-4 border-blue-100 flex items-center justify-between shadow-xl">
                     <div>
-                        <h1 className="text-3xl font-black text-green-900">AI Diagnostics v2.5</h1>
-                        <p className="text-green-800/60 font-bold">Network Isolation Mode: Jan 29, 11:15 AM</p>
+                        <h1 className="text-3xl font-black text-blue-900">AI Diagnostics v2.6</h1>
+                        <p className="text-blue-800/60 font-bold uppercase tracking-widest text-xs">Deep Trace Mode: Jan 29, 11:25 AM</p>
                     </div>
                     <button
                         onClick={() => window.location.reload()}
-                        className="p-4 bg-white rounded-2xl shadow-sm text-green-600 font-bold hover:bg-green-50 transition-colors"
+                        className="p-4 bg-white rounded-2xl shadow-sm text-blue-600 font-bold hover:shadow-lg transition-all active:scale-95"
                     >
-                        Hard Reset UI
+                        Force Reset UI
                     </button>
                 </header>
 
