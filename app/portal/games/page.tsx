@@ -148,6 +148,19 @@ const FEATURED_GAMES = [
         isNew: true,
         isPopular: false,
     },
+    {
+        id: 'anansi-web',
+        title: "Anansi's Web of Words",
+        description: 'Solve Caribbean riddles with the clever trickster spider!',
+        emoji: '🕸️',
+        gradient: 'from-purple-600 via-indigo-700 to-slate-900',
+        tier: 'starter_mailer',
+        category: 'adventure',
+        xp: 250,
+        time: '5-15 min',
+        isNew: true,
+        isPopular: true,
+    },
 ];
 
 import { EmptyState } from '@/components/EmptyState';
