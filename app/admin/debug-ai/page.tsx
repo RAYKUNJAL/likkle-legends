@@ -12,6 +12,7 @@ export default function DebugAIPage() {
         setIsLoading(true);
         setResults({
             env: { status: 'pending', message: 'Checking...' },
+            supabase: { status: 'pending', message: 'Checking...' },
             auth: { status: 'pending', message: 'Waiting...' },
             ai: { status: 'pending', message: 'Waiting...' }
         });
@@ -20,25 +21,25 @@ export default function DebugAIPage() {
         const toastId = toast.loading("Starting Stage-by-Stage Check...");
 
         try {
-            const { testEnv, testAuth, testAI } = await import('@/app/actions/debug-ai');
+            const { testEnv, testSupabase, testAuth, testAI } = await import('@/app/actions/debug-ai');
             const { supabase } = await import('@/lib/storage');
 
             // 1. Env Check
             const env = await testEnv();
             setResults(prev => ({ ...prev, env }));
-            if (env.status === 'error') {
-                toast.error("Step 1 Failed.", { id: toastId });
-                return;
-            }
 
-            // 2. Auth Check
+            // 2. Supabase Reachability
+            const sbReach = await testSupabase();
+            setResults(prev => ({ ...prev, supabase: sbReach }));
+
+            // 3. Auth Check
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("Please log in again.");
 
             const auth = await testAuth(session.access_token);
             setResults(prev => ({ ...prev, auth }));
 
-            // 3. AI Check
+            // 4. AI Check
             const ai = await testAI();
             setResults(prev => ({ ...prev, ai }));
 
@@ -54,14 +55,14 @@ export default function DebugAIPage() {
     return (
         <AdminLayout activeSection="debug">
             <div className="p-8 max-w-4xl mx-auto">
-                <header className="mb-8 p-8 bg-purple-50 rounded-[3rem] border-4 border-purple-100 flex items-center justify-between">
+                <header className="mb-8 p-8 bg-green-50 rounded-[3rem] border-4 border-green-100 flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black text-purple-900">AI Diagnostics v2.4</h1>
-                        <p className="text-purple-800/60 font-bold">Atomic Testing Mode: Jan 29, 11:05 AM</p>
+                        <h1 className="text-3xl font-black text-green-900">AI Diagnostics v2.5</h1>
+                        <p className="text-green-800/60 font-bold">Network Isolation Mode: Jan 29, 11:15 AM</p>
                     </div>
                     <button
                         onClick={() => window.location.reload()}
-                        className="p-4 bg-white rounded-2xl shadow-sm text-purple-600 font-bold hover:bg-purple-50 transition-colors"
+                        className="p-4 bg-white rounded-2xl shadow-sm text-green-600 font-bold hover:bg-green-50 transition-colors"
                     >
                         Hard Reset UI
                     </button>
@@ -107,18 +108,25 @@ export default function DebugAIPage() {
 
                     {results && (
                         <div className="grid gap-4">
-                            {/* Auth Status */}
-                            <DiagnosticCard
-                                title="Admin Authentication"
-                                status={results.auth?.status}
-                                message={results.auth?.message}
-                            />
-
                             {/* Key Status */}
                             <DiagnosticCard
                                 title="Environment Key (Gemini)"
                                 status={results.env?.status}
                                 message={results.env?.message}
+                            />
+
+                            {/* Network Status */}
+                            <DiagnosticCard
+                                title="Supabase Connectivity"
+                                status={results.supabase?.status}
+                                message={results.supabase?.message}
+                            />
+
+                            {/* Auth Status */}
+                            <DiagnosticCard
+                                title="Admin Authentication"
+                                status={results.auth?.status}
+                                message={results.auth?.message}
                             />
 
                             {/* AI Status */}

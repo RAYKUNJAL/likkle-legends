@@ -11,7 +11,30 @@ export async function testEnv() {
     if (!key) {
         return { status: "error", message: "GEMINI_API_KEY is missing." };
     }
-    return { status: "success", message: "API Key found (starts with " + key.substring(0, 4) + "...)" };
+    return { status: "success", message: "API Key found (" + key.substring(0, 4) + "...)" };
+}
+
+export async function testSupabase() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!url) return { status: "error", message: "Supabase URL missing" };
+
+    try {
+        console.log("Testing Supabase reachability...");
+        const start = Date.now();
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
+
+        const res = await fetch(url, { signal: controller.signal }).catch(e => ({ ok: false, statusText: e.message }));
+        clearTimeout(timeout);
+
+        const duration = Date.now() - start;
+        if (res.ok || (res as any).status === 405 || (res as any).status === 404) {
+            return { status: "success", message: `Connected to Supabase in ${duration}ms` };
+        }
+        return { status: "error", message: `Supabase unreachable: ${(res as any).statusText || 'Status ' + (res as any).status}` };
+    } catch (e: any) {
+        return { status: "error", message: "Net Error: " + e.message };
+    }
 }
 
 export async function testAuth(token: string) {
@@ -21,7 +44,7 @@ export async function testAuth(token: string) {
             setTimeout(() => reject(new Error("Auth Check Hanged (>5s)")), 5000)
         );
 
-        await Promise.race([verifyAdmin(token), authTimeout]);
+        const result = await Promise.race([verifyAdmin(token), authTimeout]);
         return { status: "success", message: "Admin verified successfully." };
     } catch (error: any) {
         console.error("Run Diagnostics: Auth Error", error);
@@ -62,10 +85,10 @@ export async function testAI() {
     }
 }
 
-// Legacy support to prevent build errors while updating UI
+// Legacy support
 export async function runDiagnostics(token: string) {
     const env = await testEnv();
-    if (env.status === 'error') return { env, auth: { status: 'pending' }, ai: { status: 'pending' } };
+    const supabase = await testSupabase();
 
     // We run auth and ai in parallel but with their own catchers
     const [auth, ai] = await Promise.all([
@@ -73,5 +96,5 @@ export async function runDiagnostics(token: string) {
         testAI().catch(e => ({ status: 'error', message: e.message }))
     ]);
 
-    return { env, auth, ai };
+    return { env, supabase, auth, ai };
 }
