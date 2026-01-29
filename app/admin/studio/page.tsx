@@ -38,6 +38,9 @@ export default function LegendAIStudio() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) throw new Error("No session");
 
+            const { toast } = await import('react-hot-toast');
+            const toastId = toast.loading(`Deploying ${activeAgent}... (25s limit)`);
+
             let contentType: ContentType = 'story_bedtime';
 
             // Map Studio Agent to IslandBrain ContentType
@@ -49,14 +52,14 @@ export default function LegendAIStudio() {
                 case 'video': contentType = 'song_video_script'; break; // Reusing script for now or add video_script type
             }
 
-            console.log(`[Studio] Deploying ${activeAgent} agent...`);
+            let hasTimedOut = false;
+            const timer = setTimeout(() => {
+                hasTimedOut = true;
+                setIsGenerating(false);
+                toast.error("Agent timed out. Vercel is not responding.", { id: toastId });
+            }, 25000);
 
-            // Client-side safety timeout
-            const timeoutPromise = new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error("The AI Agent is taking longer than usual. Please check your connection and try again.")), 25000)
-            );
-
-            const generationPromise = runAgentGeneration(
+            const res = await runAgentGeneration(
                 session.access_token,
                 contentType,
                 prompt,
@@ -64,18 +67,20 @@ export default function LegendAIStudio() {
                 { age_group: ageGroup }
             );
 
-            const res = await Promise.race([generationPromise, timeoutPromise]);
+            clearTimeout(timer);
+            if (hasTimedOut) return;
 
             if (res.success) {
                 setResult(res.content);
-                alert("Content Generated and sent to Admin Queue!");
+                toast.success("Generation Complete!", { id: toastId });
             } else {
                 throw new Error(res.error);
             }
 
         } catch (error: any) {
             console.error("Generation failed", error);
-            alert("Mission Failed: " + (error.message || "Unknown error"));
+            const { toast } = await import('react-hot-toast');
+            toast.error("Mission Failed: " + (error.message || "Communication Error"));
         } finally {
             setIsGenerating(false);
             setPublishedId(null);

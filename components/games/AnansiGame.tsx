@@ -18,30 +18,31 @@ export default function AnansiGame() {
 
     const handleStart = async () => {
         setIsLoading(true);
-        // Safety timeout to prevent infinite loops if server hangs
-        const timeoutPromise = new Promise<{ isTimeout: true }>((resolve) =>
-            setTimeout(() => resolve({ isTimeout: true }), 25000)
-        );
+        console.log("[Anansi] Starting game with 15s safety lock...");
+
+        let hasTimedOut = false;
+        const timer = setTimeout(() => {
+            hasTimedOut = true;
+            setIsLoading(false);
+            addFeedback("Anansi is slow today... please refresh or try later.", 'error');
+            console.error("[Anansi] UI Forced Stop: 15s timeout reached.");
+        }, 15000);
 
         try {
-            const gamePromise = startAnansiGame("easy");
-            const result = await Promise.race([gamePromise, timeoutPromise]);
+            const state = await startAnansiGame("easy");
+            clearTimeout(timer);
 
-            if ('isTimeout' in result) {
-                addFeedback("Connection slow... check internet or try again!", 'error');
-                setIsLoading(false);
-                return;
-            }
+            if (hasTimedOut) return; // ignore late response
 
-            const state = result as AnansiGameState;
             setGameState(state);
             addFeedback(state.currentRiddle?.question || "Ready?", 'neutral');
             playSpeech(state.currentRiddle?.question || "");
         } catch (e) {
+            clearTimeout(timer);
             console.error(e);
             addFeedback("Something went wrong spinning the web.", 'error');
         } finally {
-            setIsLoading(false);
+            if (!hasTimedOut) setIsLoading(false);
         }
     };
 
@@ -52,47 +53,45 @@ export default function AnansiGame() {
         const currentAnswer = input;
         setInput(""); // clear early
 
+        let hasTimedOut = false;
+        const timer = setTimeout(() => {
+            hasTimedOut = true;
+            setIsLoading(false);
+            addFeedback("Anansi got tangled in the web. Try again!", 'error');
+            console.error("[Anansi] Submit Forced Stop: 15s timeout.");
+        }, 15000);
+
         try {
-            // Safety timeout
-            const timeoutPromise = new Promise<{ isTimeout: true }>((resolve) =>
-                setTimeout(() => resolve({ isTimeout: true }), 25000)
-            );
+            const result = await submitAnansiAnswer(gameState, currentAnswer);
+            clearTimeout(timer);
 
-            const submitPromise = submitAnansiAnswer(gameState, currentAnswer);
-            const result = await Promise.race([submitPromise, timeoutPromise]);
-
-            if ('isTimeout' in result) {
-                addFeedback("Anansi is thinking too slow... try again!", 'error');
-                setIsLoading(false);
-                return;
-            }
-
-            const safeResult = result as { newState: AnansiGameState; feedback: string; isCorrect: boolean; };
+            if (hasTimedOut) return;
 
             // Add feedback
-            addFeedback(safeResult.feedback, safeResult.isCorrect ? 'success' : 'error');
-            playSpeech(safeResult.feedback);
+            addFeedback(result.feedback, result.isCorrect ? 'success' : 'error');
+            playSpeech(result.feedback);
 
-            if (safeResult.isCorrect) {
+            if (result.isCorrect) {
                 // Wait for feedback reading then update state
                 setTimeout(() => {
-                    setGameState(safeResult.newState);
-                    if (safeResult.newState.isComplete) {
+                    setGameState(result.newState);
+                    if (result.newState.isComplete) {
                         playSpeech("We reach the top! You are a Legend for true!");
-                    } else if (safeResult.newState.currentRiddle) {
+                    } else if (result.newState.currentRiddle) {
                         // Queue next riddle
                         setTimeout(() => {
-                            addFeedback(safeResult.newState.currentRiddle!.question, 'neutral');
-                            playSpeech(safeResult.newState.currentRiddle!.question);
+                            addFeedback(result.newState.currentRiddle!.question, 'neutral');
+                            playSpeech(result.newState.currentRiddle!.question);
                         }, 2000);
                     }
                 }, 2000);
             }
         } catch (e) {
+            clearTimeout(timer);
             console.error(e);
             addFeedback("The web got tangled. Try again.", 'error');
         } finally {
-            setIsLoading(false);
+            if (!hasTimedOut) setIsLoading(false);
         }
     };
 
