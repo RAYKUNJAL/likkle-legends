@@ -26,6 +26,7 @@ export default function LegendAIStudio() {
     const [isGenerating, setIsGenerating] = useState(false);
     const [isPublishing, setIsPublishing] = useState(false);
     const [result, setResult] = useState<any>(null);
+    const [publishedId, setPublishedId] = useState<string | null>(null);
     const [useBypass, setUseBypass] = useState(false);
 
     const handleGenerate = async () => {
@@ -61,7 +62,7 @@ export default function LegendAIStudio() {
             const timer = setTimeout(() => {
                 hasTimedOut = true;
                 setIsGenerating(false);
-                toast.error("Vercel timed out. Enable 'Safe Mode' if this persists.", { id: toastId });
+                toast.error("Vercel timed out. Flip the RED SWITCH above to fix this!", { id: toastId });
             }, 25000);
 
             const res = await runAgentGeneration(
@@ -84,10 +85,16 @@ export default function LegendAIStudio() {
 
         } catch (error: any) {
             console.error("Generation failed", error);
-            toast.error("Mission Failed: " + (error.message || "Communication Error"), { id: toastId });
+            const isLoginErr = error.message.includes("log in");
+            toast.error(
+                isLoginErr
+                    ? "Session Expired. Enable 'Emergency Safe Mode' to bypass."
+                    : "Mission Failed: " + (error.message || "Communication Error"),
+                { id: toastId }
+            );
+            if (isLoginErr) setUseBypass(true); // Auto-enable bypass on login failure for convenience
         } finally {
             setIsGenerating(false);
-            setPublishedId(null);
         }
     };
 
