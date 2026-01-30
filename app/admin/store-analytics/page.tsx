@@ -31,7 +31,7 @@ export default function StoreAnalyticsPage() {
 
     if (loading) {
         return (
-            <AdminLayout title="Store Analytics">
+            <AdminLayout activeSection="store-analytics">
                 <div className="flex justify-center items-center h-96">
                     <Loader2 className="animate-spin text-purple-600" size={48} />
                 </div>
@@ -40,7 +40,7 @@ export default function StoreAnalyticsPage() {
     }
 
     return (
-        <AdminLayout title="Store Analytics">
+        <AdminLayout activeSection="store-analytics">
             <div className="space-y-8">
                 {/* HEADLINE STATS */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
