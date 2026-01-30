@@ -308,3 +308,49 @@ export async function updateReviewStatus(token: string, id: string, status: 'app
     if (error) throw error;
     return data;
 }
+
+export async function getAdminGames(token: string) {
+    const admin = await verifyAdmin(token);
+    const { data, error } = await admin
+        .from('games')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function saveAdminGame(token: string, gameData: any) {
+    const admin = await verifyAdmin(token);
+    const { id, ...data } = gameData;
+
+    if (id) {
+        const { data: updated, error } = await admin
+            .from('games')
+            .update(data)
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) throw error;
+        return updated;
+    } else {
+        const { data: created, error } = await admin
+            .from('games')
+            .insert(data)
+            .select()
+            .single();
+        if (error) throw error;
+        return created;
+    }
+}
+
+export async function deleteAdminGame(token: string, id: string) {
+    const admin = await verifyAdmin(token);
+    const { error } = await admin
+        .from('games')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
+    return true;
+}
