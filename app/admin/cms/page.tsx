@@ -145,10 +145,22 @@ export default function CmsPage() {
     }
 
     async function handleSave(newContent: any) {
-        await saveContentAction(activeSection, newContent);
-        // We don't necessarily need to reload everything if we trust the local state, 
-        // but let's re-fetch to be safe and clear any stale metadata.
-        await loadContent(activeSection);
+        try {
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                alert("You must be logged in.");
+                return;
+            }
+
+            await saveContentAction(session.access_token, activeSection, newContent);
+            // We don't necessarily need to reload everything if we trust the local state, 
+            // but let's re-fetch to be safe and clear any stale metadata.
+            await loadContent(activeSection);
+        } catch (e) {
+            console.error(e);
+            alert("Failed to save.");
+        }
     }
 
     return (
