@@ -189,13 +189,32 @@ function MediaManagerContent() {
                         <h1 className="text-3xl font-black text-gray-900">Media & Content</h1>
                         <p className="text-gray-500">Manage all digital learning assets</p>
                     </div>
-                    <button
-                        onClick={() => { resetForm(); setEditingItem(null); setShowModal(true); }}
-                        className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
-                    >
-                        <Plus size={20} />
-                        Add {activeTab.slice(0, -1)}
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={async () => {
+                                if (!confirm("Initialize Storage Buckets in Supabase?")) return;
+                                try {
+                                    const { supabase } = await import('@/lib/storage');
+                                    const { data: { session } } = await supabase.auth.getSession();
+                                    if (session) {
+                                        const { initializeBucketsAction } = await import('@/app/actions/admin');
+                                        await initializeBucketsAction(session.access_token);
+                                        alert("Buckets initialized successfully!");
+                                    }
+                                } catch (e) { alert("Initialization failed"); }
+                            }}
+                            className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors"
+                        >
+                            Setup Storage
+                        </button>
+                        <button
+                            onClick={() => { resetForm(); setEditingItem(null); setShowModal(true); }}
+                            className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
+                        >
+                            <Plus size={20} />
+                            Add {activeTab.slice(0, -1)}
+                        </button>
+                    </div>
                 </div>
             </header>
 
