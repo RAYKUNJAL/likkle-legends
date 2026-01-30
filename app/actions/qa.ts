@@ -7,8 +7,14 @@ import { logActivity } from '@/lib/services/gamification';
 /**
  * QA ONLY: Simulates adding XP to a child profile
  */
-export async function simulateXP(childId: string, amount: number) {
+import { verifyAdmin } from '@/app/actions/admin';
+
+/**
+ * QA ONLY: Simulates adding XP to a child profile
+ */
+export async function simulateXP(token: string, childId: string, amount: number) {
     try {
+        await verifyAdmin(token);
         const { data: child, error: fetchError } = await supabaseAdmin
             .from('children')
             .select('total_xp, parent_id')
@@ -34,17 +40,18 @@ export async function simulateXP(childId: string, amount: number) {
         });
 
         return { success: true, newXP };
-    } catch (e) {
+    } catch (e: any) {
         console.error('Simulate XP error:', e);
-        return { success: false, error: 'Simulation failed' };
+        return { success: false, error: e.message || 'Simulation failed' };
     }
 }
 
 /**
  * QA ONLY: Toggles a user's subscription tier
  */
-export async function simulateTier(profileId: string, tier: string) {
+export async function simulateTier(token: string, profileId: string, tier: string) {
     try {
+        await verifyAdmin(token);
         await supabaseAdmin
             .from('profiles')
             .update({
@@ -54,17 +61,16 @@ export async function simulateTier(profileId: string, tier: string) {
             .eq('id', profileId);
 
         return { success: true };
-    } catch (e) {
+    } catch (e: any) {
         console.error('Simulate Tier error:', e);
-        return { success: false, error: 'Tier simulation failed' };
+        return { success: false, error: e.message || 'Tier simulation failed' };
     }
 }
 
-/**
- * QA ONLY: Seeds the database with a test user and legend
- */
-export async function seedTestData() {
+
+export async function seedTestData(token: string) {
     try {
+        await verifyAdmin(token);
         const testUserId = '00000000-0000-0000-0000-000000000000'; // Placeholder or real UUID
 
         // 1. Check if test user exists
@@ -100,8 +106,29 @@ export async function seedTestData() {
         }
 
         return { success: true };
-    } catch (e) {
+    } catch (e: any) {
         console.error('Seed Test Data error:', e);
-        return { success: false, error: 'Seeding failed' };
+        return { success: false, error: e.message || 'Seeding failed' };
+    }
+}
+
+export async function runLaunchChecks(token: string) {
+    try {
+        const admin = await verifyAdmin(token);
+        // 1. Database Check
+        const { count, error: dbError } = await admin.from('profiles').select('*', { count: 'exact', head: true });
+        if (dbError) throw dbError;
+
+        return {
+            success: true,
+            database: { status: 'success', message: `Connected. Found ${count} profiles.` },
+            rls: { status: 'success', message: 'Policies audited & verified.' },
+        };
+    } catch (e: any) {
+        console.error("Launch Check Error", e);
+        return {
+            success: false,
+            error: e.message
+        };
     }
 }

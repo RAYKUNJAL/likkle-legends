@@ -37,25 +37,29 @@ export default function LaunchVerificationPage() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return;
 
-            const { createAdminClient } = await import('@/lib/admin');
-            const admin = createAdminClient();
+            // Run Checks via Server Action
+            const { runLaunchChecks } = await import('@/app/actions/qa');
+            const checkResults = await runLaunchChecks(session.access_token);
 
-            // 1. Database Check
-            const { count, error: dbError } = await admin.from('profiles').select('*', { count: 'exact', head: true });
-            if (dbError) throw dbError;
-            setChecks(prev => ({ ...prev, database: { status: 'success', message: `Connected. Found ${count} profiles.` } }));
+            if (checkResults.success && checkResults.database) {
+                setChecks(prev => ({
+                    ...prev,
+                    database: checkResults.database,
+                    rls: checkResults.rls,
+                }));
+            } else {
+                setChecks(prev => ({ ...prev, database: { status: 'error', message: checkResults.error || 'Check failed' } }));
+            }
 
-            // 2. RLS Check (Simulated)
-            setChecks(prev => ({ ...prev, rls: { status: 'success', message: 'Policies audited & verified.' } }));
-
-            // 3. Env Check
-            const requiredVars = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'NEXT_PUBLIC_PAYPAL_CLIENT_ID'];
-            const missing = requiredVars.filter(v => !process.env[v] && !process.env[`NEXT_PUBLIC_${v}`]); // Basic check
+            // 3. Env Check (Client Side is fine mostly for PUBLIC vars, but server vars should be checked on server if needed. 
+            // For now keeping simple client check for PUBLIC vars)
+            const requiredVars = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_PAYPAL_CLIENT_ID'];
+            const missing = requiredVars.filter(v => !process.env[v]);
             setChecks(prev => ({
                 ...prev,
                 env: {
                     status: missing.length === 0 ? 'success' : 'error',
-                    message: missing.length === 0 ? 'All critical keys present.' : `Missing: ${missing.join(', ')}`
+                    message: missing.length === 0 ? 'Public keys present.' : `Missing: ${missing.join(', ')}`
                 }
             }));
 
@@ -70,7 +74,7 @@ export default function LaunchVerificationPage() {
             setProfiles(recentProfiles || []);
             if (recentProfiles?.[0]) setSelectedProfileId(recentProfiles[0].id);
 
-            setChecks(prev => ({ ...prev, payments: { status: 'success', message: 'PayPal Webhook listener active.' } }));
+            setChecks(prev => ({ ...prev, payments: { status: 'success', message: 'PayPal configured.' } }));
         } catch (e: any) {
             console.error(e);
             setChecks(prev => ({ ...prev, database: { status: 'error', message: e.message || 'System check failed.' } }));
@@ -80,6 +84,7 @@ export default function LaunchVerificationPage() {
     };
 
     const loadProfileChildren = async (profileId: string) => {
+        const { supabase } = await import('@/lib/storage'); // Ensure import
         const { data } = await supabase.from('children').select('id, first_name, total_xp').eq('parent_id', profileId);
         setChildren(data || []);
         if (data?.[0]) setSelectedChildId(data[0].id);
@@ -92,10 +97,16 @@ export default function LaunchVerificationPage() {
     const handleSimulateXP = async () => {
         if (!selectedChildId) return;
         setIsSimulating(true);
-        const res = await simulateXP(selectedChildId, 500);
-        if (res.success) {
-            alert(`Simulation Success! New XP: ${res.newXP}`);
-            loadProfileChildren(selectedProfileId);
+        const { supabase } = await import('@/lib/storage');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            const res = await simulateXP(session.access_token, selectedChildId, 500);
+            if (res.success) {
+                alert(`Simulation Success! New XP: ${res.newXP}`);
+                loadProfileChildren(selectedProfileId);
+            } else {
+                alert("Simulation failed: " + res.error);
+            }
         }
         setIsSimulating(false);
     };
@@ -103,20 +114,31 @@ export default function LaunchVerificationPage() {
     const handleSimulateTier = async (tier: string) => {
         if (!selectedProfileId) return;
         setIsSimulating(true);
-        const res = await simulateTier(selectedProfileId, tier);
-        if (res.success) {
-            alert(`Profile upgraded to ${tier}`);
-            const { data } = await supabase.from('profiles').select('full_name').eq('id', selectedProfileId).single();
+        const { supabase } = await import('@/lib/storage');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            const res = await simulateTier(session.access_token, selectedProfileId, tier);
+            if (res.success) {
+                alert(`Profile upgraded to ${tier}`);
+            } else {
+                alert("Simulation failed: " + res.error);
+            }
         }
         setIsSimulating(false);
     };
 
     const handleSeedData = async () => {
         setIsSimulating(true);
-        const res = await seedTestData();
-        if (res.success) {
-            alert('Test data seeded successfully!');
-            runSystemChecks();
+        const { supabase } = await import('@/lib/storage');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            const res = await seedTestData(session.access_token);
+            if (res.success) {
+                alert('Test data seeded successfully!');
+                runSystemChecks();
+            } else {
+                alert("Seeding failed: " + res.error);
+            }
         }
         setIsSimulating(false);
     };
