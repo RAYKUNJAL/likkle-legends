@@ -8,7 +8,7 @@ export default function DebugAIPage() {
     const [results, setResults] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleRunDiagnostics = async (bypassAuth = false) => {
+    const handleRunDiagnostics = async () => {
         setIsLoading(true);
         setResults({
             env: { status: 'pending', message: 'Checking...' },
@@ -18,40 +18,37 @@ export default function DebugAIPage() {
         });
 
         const { toast } = await import('react-hot-toast');
-        const toastId = toast.loading(bypassAuth ? "Running in EMERGENCY BYPASS MODE..." : "Starting Stage-by-Stage Check...");
+        const toastId = toast.loading("Starting Stage-by-Stage Check...");
 
         try {
             const { testEnv, testSupabase, testAuth, testAI } = await import('@/app/actions/debug-ai');
             const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (!session) throw new Error("Please log in again.");
+            const token = session.access_token;
 
             // 1. Env Check
             toast.loading("Step 1: Checking Environment Keys...", { id: toastId });
-            const env = await testEnv();
+            const env = await testEnv(token);
             setResults(prev => ({ ...prev, env }));
 
             // 2. Supabase Reachability
             toast.loading("Step 2: Testing Network Connectivity...", { id: toastId });
-            const sbReach = await testSupabase();
+            const sbReach = await testSupabase(token);
             setResults(prev => ({ ...prev, supabase: sbReach }));
 
             // 3. Auth Check
             toast.loading("Step 3: Verifying Admin Status...", { id: toastId });
-            let authResult;
-            if (bypassAuth) {
-                authResult = await testAuth("BYPASS_FOR_TESTING");
-            } else {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) throw new Error("Please log in again.");
-                authResult = await testAuth(session.access_token);
-            }
+            const authResult = await testAuth(token);
             setResults(prev => ({ ...prev, auth: authResult }));
 
             // 4. AI Check
             toast.loading("Step 4: Testing Gemini Handshake...", { id: toastId });
-            const ai = await testAI();
+            const ai = await testAI(token);
             setResults(prev => ({ ...prev, ai }));
 
-            toast.success(bypassAuth ? "Bypass Check Successful!" : "All System Checks PASSED!", { id: toastId });
+            toast.success("All System Checks PASSED!", { id: toastId });
         } catch (error: any) {
             console.error("Diagnostic failure:", error);
             toast.error("Critical failure: " + error.message, { id: toastId });
@@ -90,28 +87,38 @@ export default function DebugAIPage() {
                         <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col gap-3">
                             <button
                                 onClick={async () => {
-                                    const { runPing } = await import('@/app/actions/debug-ai');
-                                    const res = await runPing();
-                                    alert("Server Ping: " + res.status + " at " + res.timestamp);
+                                    try {
+                                        const { supabase } = await import('@/lib/storage');
+                                        const { data: { session } } = await supabase.auth.getSession();
+                                        if (session) {
+                                            const { runPing } = await import('@/app/actions/debug-ai');
+                                            const res = await runPing(session.access_token);
+                                            alert("Server Ping: " + res.status + " at " + res.timestamp);
+                                        } else {
+                                            alert("Please log in.");
+                                        }
+                                    } catch (e) { alert("Ping Error"); }
                                 }}
                                 className="w-full py-3 bg-blue-100 text-blue-700 rounded-xl font-bold"
                             >
                                 Test Action Tunnel (Ping)
                             </button>
                             <button
-                                onClick={() => handleRunDiagnostics(true)}
-                                className="w-full py-3 bg-red-100 text-red-700 rounded-xl font-bold"
-                            >
-                                Run with Auth Bypass (Safe Mode)
-                            </button>
-                            <button
                                 onClick={async () => {
-                                    const { testAI } = await import('@/app/actions/debug-ai');
-                                    const { toast } = await import('react-hot-toast');
-                                    const tid = toast.loading("Testing Gemini Bypass...");
-                                    const res = await testAI();
-                                    if (res.status === 'success') toast.success(res.message, { id: tid });
-                                    else toast.error(res.message, { id: tid });
+                                    try {
+                                        const { supabase } = await import('@/lib/storage');
+                                        const { data: { session } } = await supabase.auth.getSession();
+                                        if (session) {
+                                            const { testAI } = await import('@/app/actions/debug-ai');
+                                            const { toast } = await import('react-hot-toast');
+                                            const tid = toast.loading("Testing Gemini...");
+                                            const res = await testAI(session.access_token);
+                                            if (res.status === 'success') toast.success(res.message, { id: tid });
+                                            else toast.error(res.message, { id: tid });
+                                        } else {
+                                             alert("Please log in.");
+                                        }
+                                    } catch (e) { alert("Test Error"); }
                                 }}
                                 className="w-full py-3 bg-orange-100 text-orange-700 rounded-xl font-bold"
                             >

@@ -2,11 +2,13 @@
 
 import { verifyAdmin } from "@/app/actions/admin";
 
-export async function runPing() {
+export async function runPing(token: string) {
+    await verifyAdmin(token);
     return { status: "pong", timestamp: new Date().toISOString() };
 }
 
-export async function testEnv() {
+export async function testEnv(token: string) {
+    await verifyAdmin(token);
     const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!key) {
         return { status: "error", message: "GEMINI_API_KEY is missing." };
@@ -14,7 +16,8 @@ export async function testEnv() {
     return { status: "success", message: "API Key found (" + key.substring(0, 4) + "...)" };
 }
 
-export async function testSupabase() {
+export async function testSupabase(token: string) {
+    await verifyAdmin(token);
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (!url) return { status: "error", message: "Supabase URL missing" };
 
@@ -34,11 +37,6 @@ export async function testSupabase() {
 }
 
 export async function testAuth(token: string) {
-    // EMERGENCY BYPASS FOR TESTING
-    if (token === "BYPASS_FOR_TESTING") {
-        return { status: "success", message: "EMERGENCY BYPASS ACTIVE" };
-    }
-
     try {
         console.log("Run Diagnostics: Verifying Admin (with 5s limit)...");
         const authTimeout = new Promise<never>((_, reject) =>
@@ -53,7 +51,8 @@ export async function testAuth(token: string) {
     }
 }
 
-export async function testAI() {
+export async function testAI(token: string) {
+    await verifyAdmin(token);
     const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
     if (!key) return { status: "error", message: "No key for AI test." };
 

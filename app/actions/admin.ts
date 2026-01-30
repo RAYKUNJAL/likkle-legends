@@ -355,9 +355,56 @@ export async function deleteAdminGame(token: string, id: string) {
     return true;
 }
 
+
 export async function initializeBucketsAction(token: string) {
     await verifyAdmin(token);
     const { initializeStorageBuckets } = await import('@/lib/storage');
     await initializeStorageBuckets();
     return { success: true };
+}
+
+export async function getAdminAnnouncements(token: string) {
+    const admin = await verifyAdmin(token);
+    const { data, error } = await admin
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function saveAdminAnnouncement(token: string, data: any) {
+    const admin = await verifyAdmin(token);
+    const { id, ...payload } = data;
+
+    if (id) {
+        const { data: updated, error } = await admin
+            .from('announcements')
+            .update(payload)
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) throw error;
+        return updated;
+    } else {
+        const { data: created, error } = await admin
+            .from('announcements')
+            .insert(payload)
+            .select()
+            .single();
+        if (error) throw error;
+        return created;
+    }
+}
+
+export async function deleteAdminAnnouncement(token: string, id: string) {
+    const admin = await verifyAdmin(token);
+    const { error } = await admin
+        .from('announcements')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
+    return true;
 }

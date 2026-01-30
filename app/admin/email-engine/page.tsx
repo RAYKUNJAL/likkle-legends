@@ -103,13 +103,14 @@ export default function AdminEmailEnginePage() {
 
         try {
             const { supabase } = await import('@/lib/storage');
-            await supabase.from('site_settings').upsert({
-                key: 'email_campaigns',
-                value: newCampaigns,
-                updated_at: new Date().toISOString()
-            });
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                const { saveContentAction } = await import('@/app/actions/cms');
+                await saveContentAction(session.access_token, 'email_campaigns', newCampaigns);
+            }
         } catch (error) {
             console.error('Failed to save campaign settings:', error);
+            // Revert on error if needed
         }
     };
 

@@ -6,7 +6,7 @@ import {
     ActionButton, EmptyState,
     Megaphone, Plus, Edit, Trash2, Eye
 } from '@/components/admin/AdminComponents';
-import { supabase } from '@/lib/storage';
+import { getAdminAnnouncements, saveAdminAnnouncement, deleteAdminAnnouncement } from '@/app/actions/admin';
 
 interface Announcement {
     id: string;
@@ -45,12 +45,11 @@ export default function AdminAnnouncementsPage() {
     const loadAnnouncements = async () => {
         setIsLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('announcements')
-                .select('*')
-                .order('created_at', { ascending: false });
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
 
-            if (error) throw error;
+            const data = await getAdminAnnouncements(session.access_token);
             setAnnouncements(data as Announcement[]);
         } catch (error) {
             console.error('Failed to load announcements:', error);
@@ -61,6 +60,10 @@ export default function AdminAnnouncementsPage() {
 
     const handleSubmit = async () => {
         try {
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
             const payload = {
                 ...formData,
                 end_date: formData.end_date || null,
@@ -68,15 +71,10 @@ export default function AdminAnnouncementsPage() {
             };
 
             if (editingAnnouncement) {
-                await supabase
-                    .from('announcements')
-                    .update(payload)
-                    .eq('id', editingAnnouncement.id);
-            } else {
-                await supabase
-                    .from('announcements')
-                    .insert(payload);
+                (payload as any).id = editingAnnouncement.id;
             }
+
+            await saveAdminAnnouncement(session.access_token, payload);
 
             setShowModal(false);
             setEditingAnnouncement(null);
@@ -84,6 +82,7 @@ export default function AdminAnnouncementsPage() {
             loadAnnouncements();
         } catch (error) {
             console.error('Failed to save announcement:', error);
+            alert("Failed to save announcement");
         }
     };
 
@@ -91,10 +90,15 @@ export default function AdminAnnouncementsPage() {
         if (!confirm('Are you sure you want to delete this announcement?')) return;
 
         try {
-            await supabase.from('announcements').delete().eq('id', id);
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            await deleteAdminAnnouncement(session.access_token, id);
             loadAnnouncements();
         } catch (error) {
             console.error('Failed to delete:', error);
+            alert("Failed to delete announcement");
         }
     };
 
