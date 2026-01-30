@@ -34,10 +34,13 @@ export default function RadioPortalPage() {
                     <h2 className="text-4xl md:text-5xl font-heading font-black text-blue-950 mb-4">
                         Turn Up de Bass!
                     </h2>
-                    <p className="text-lg text-blue-900/60 max-w-2xl mx-auto">
+                    <p className="text-lg text-blue-900/60 max-w-2xl mx-auto mb-6">
                         Tune in to Tanty's curated channels. From island stories to de latest Soca beats,
                         dere's a rhythm for every moment.
                     </p>
+                    <Link href="/portal/store" className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-purple-200 hover:scale-105 transition-transform">
+                        <Sparkles size={18} /> Visit Music Store
+                    </Link>
                 </div>
 
                 {/* The Radio Component */}

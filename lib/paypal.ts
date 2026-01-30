@@ -97,8 +97,30 @@ export const UPSELLS = {
     },
 };
 
+export const MUSIC_STORE_PRODUCTS = {
+    single_track: {
+        id: 'single_track',
+        name: 'Single Track Download',
+        price: 0.99,
+        type: 'one-time',
+    },
+    track_bundle_5: {
+        id: 'track_bundle_5',
+        name: '5-Track Bundle',
+        price: 3.99,
+        type: 'one-time',
+    },
+    custom_song_request: {
+        id: 'custom_song_request',
+        name: 'Custom Song Request',
+        price: 49.99,
+        type: 'one-time',
+    },
+};
+
 export type SubscriptionTier = keyof typeof SUBSCRIPTION_PLANS;
 export type UpsellProduct = keyof typeof UPSELLS;
+export type MusicStoreProduct = keyof typeof MUSIC_STORE_PRODUCTS;
 
 // Currency localization based on country
 export const CURRENCY_MAP: Record<string, { code: string; symbol: string; multiplier: number }> = {

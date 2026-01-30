@@ -408,3 +408,27 @@ export async function deleteAdminAnnouncement(token: string, id: string) {
     if (error) throw error;
     return true;
 }
+
+export async function getCustomSongRequests(token: string) {
+    const admin = await verifyAdmin(token);
+    const { data, error } = await admin
+        .from('custom_song_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+}
+
+export async function updateCustomSongRequest(token: string, id: string, payload: any) {
+    const admin = await verifyAdmin(token);
+    const { data, error } = await admin
+        .from('custom_song_requests')
+        .update(payload)
+        .eq('id', id)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data;
+}
