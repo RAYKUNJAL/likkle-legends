@@ -24,13 +24,14 @@ export default function PurchaseModal({
     const [error, setError] = useState<string | null>(null);
     const product = MUSIC_STORE_PRODUCTS[productKey];
 
+    const [view, setView] = useState<'checkout' | 'success'>('checkout');
+
     if (!isOpen) return null;
 
     const handleApprove = async (data: any) => {
         setIsProcessing(true);
         setError(null);
         try {
-            // Get session token
             const { data: { session } } = await import('@/lib/storage').then(m => m.supabase.auth.getSession());
 
             const response = await fetch('/api/payments/paypal/capture-order', {
@@ -47,8 +48,8 @@ export default function PurchaseModal({
                 throw new Error(err.error || 'Payment validation failed');
             }
 
+            setView('success');
             onSuccess();
-            onClose();
         } catch (err: any) {
             console.error(err);
             setError(err.message || 'Payment Failed');
@@ -56,6 +57,40 @@ export default function PurchaseModal({
             setIsProcessing(false);
         }
     };
+
+    if (view === 'success') {
+        return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="bg-white rounded-3xl max-w-sm w-full relative overflow-hidden shadow-2xl animate-scale-in p-8 text-center">
+                    <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200"><X size={20} /></button>
+
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
+                        <CheckCircle2 size={48} />
+                    </div>
+
+                    <h2 className="text-2xl font-black text-gray-900 mb-2">Payment Successful!</h2>
+                    <p className="text-gray-500 mb-6 font-medium">Your receipt has been emailed.</p>
+
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 rounded-xl p-4 mb-6">
+                        <div className="flex items-center justify-center gap-2 text-purple-700 font-bold mb-2">
+                            <Sparkles size={18} />
+                            <span>Want Unlimited Access?</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4">
+                            Join the Legends Club and get every song, story, and game for free!
+                        </p>
+                        <a href="/parent" className="block w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold hover:shadow-lg transition-all transform hover:scale-[1.02]">
+                            Upgrade & Save
+                        </a>
+                    </div>
+
+                    <button onClick={onClose} className="text-gray-400 font-bold text-sm hover:text-gray-600">
+                        No thanks, just my download
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">

@@ -1,12 +1,42 @@
 "use client";
 
+import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Sparkles, BookOpen, Users, Globe, CheckCircle2, Mail, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { createLead } from '@/app/actions/crm';
 
 export default function EducatorsPage() {
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [formData, setFormData] = useState({
+        schoolName: '',
+        email: '',
+        studentCount: '10-50'
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setStatus('loading');
+        try {
+            const result = await createLead({
+                email: formData.email,
+                child_name: formData.schoolName,
+                island_preference: formData.studentCount,
+                source: 'educator_inquiry'
+            });
+
+            if (result.success) {
+                setStatus('success');
+                setFormData({ schoolName: '', email: '', studentCount: '10-50' });
+            } else {
+                setStatus('error');
+            }
+        } catch (err) {
+            setStatus('error');
+        }
+    };
     return (
         <div className="flex flex-col min-h-screen">
             <Navbar />
@@ -125,27 +155,77 @@ export default function EducatorsPage() {
                                 </div>
                             </div>
                             <div className="p-12 lg:p-16 space-y-8">
-                                <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase text-deep/40 pl-2">School/Organization Name</label>
-                                        <input type="text" className="w-full p-5 bg-zinc-50 rounded-2xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold" placeholder="School name..." />
+                                {status === 'success' ? (
+                                    <div className="bg-green-50 text-green-800 p-8 rounded-3xl text-center space-y-4 border border-green-100">
+                                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto text-3xl">
+                                            🎉
+                                        </div>
+                                        <h4 className="text-2xl font-black">Request Received!</h4>
+                                        <p className="font-bold opacity-80">
+                                            Thank you for bringing Likkle Legends to your classroom. Our education team will reach out to <strong>{formData.email}</strong> shortly with your custom package.
+                                        </p>
+                                        <button
+                                            onClick={() => setStatus('idle')}
+                                            className="text-sm font-bold text-green-600 hover:text-green-700 underline mt-4"
+                                        >
+                                            Send another inquiry
+                                        </button>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-black uppercase text-deep/40 pl-2">Work Email</label>
-                                        <input type="email" className="w-full p-5 bg-zinc-50 rounded-2xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold" placeholder="you@school.edu" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label htmlFor="student-count" className="text-sm font-black uppercase text-deep/70 pl-2">Number of Students</label>
-                                        <select id="student-count" title="Estimated number of students" className="w-full p-5 bg-zinc-50 rounded-2xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold appearance-none text-deep">
-                                            <option>10-50</option>
-                                            <option>50-200</option>
-                                            <option>200+</option>
-                                        </select>
-                                    </div>
-                                    <button className="btn btn-secondary btn-lg w-full py-5 text-lg shadow-xl shadow-secondary/20">
-                                        Get Package Details <ArrowRight className="ml-2" />
-                                    </button>
-                                </form>
+                                ) : (
+                                    <form className="space-y-6" onSubmit={handleSubmit}>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black uppercase text-deep/40 pl-2">School/Organization Name</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.schoolName}
+                                                onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
+                                                className="w-full p-5 bg-zinc-50 rounded-2xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold"
+                                                placeholder="School name..."
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-black uppercase text-deep/40 pl-2">Work Email</label>
+                                            <input
+                                                type="email"
+                                                required
+                                                value={formData.email}
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                className="w-full p-5 bg-zinc-50 rounded-2xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold"
+                                                placeholder="you@school.edu"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label htmlFor="student-count" className="text-sm font-black uppercase text-deep/70 pl-2">Number of Students</label>
+                                            <select
+                                                id="student-count"
+                                                value={formData.studentCount}
+                                                onChange={(e) => setFormData({ ...formData, studentCount: e.target.value })}
+                                                title="Estimated number of students"
+                                                className="w-full p-5 bg-zinc-50 rounded-2xl border-none focus:ring-4 focus:ring-primary/10 transition-all font-bold appearance-none text-deep"
+                                            >
+                                                <option>10-50</option>
+                                                <option>50-200</option>
+                                                <option>200+</option>
+                                            </select>
+                                        </div>
+
+                                        {status === 'error' && (
+                                            <div className="text-red-500 font-bold text-center text-sm bg-red-50 p-3 rounded-xl">
+                                                Something went wrong. Please try again.
+                                            </div>
+                                        )}
+
+                                        <button
+                                            type="submit"
+                                            disabled={status === 'loading'}
+                                            className="btn btn-secondary btn-lg w-full py-5 text-lg shadow-xl shadow-secondary/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                                        >
+                                            {status === 'loading' ? 'Sending...' : 'Get Package Details'}
+                                            {!status.startsWith('load') && <ArrowRight className="ml-2 inline-block" />}
+                                        </button>
+                                    </form>
+                                )}
                             </div>
                         </div>
                     </div>

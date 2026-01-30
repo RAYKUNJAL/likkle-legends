@@ -495,3 +495,61 @@ export const ADMIN_NEW_ORDER_TEMPLATE = (parentName: string, tier: string, email
 </body>
 </html>
 `;
+
+export const MUSIC_PURCHASE_RECEIPT = (name: string, items: { title: string, price: string }[], total: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; color: #333; line-height: 1.6; margin: 0; padding: 0; background: #fdfbf7; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 1px solid #f3e8ff; }
+        .header { background: linear-gradient(135deg, #7C3AED, #EC4899); padding: 40px; text-align: center; color: white; }
+        .content { padding: 40px; }
+        .item-list { background: #faf5ff; border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid #e9d5ff; }
+        .item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #d8b4fe; }
+        .item:last-child { border-bottom: none; }
+        .total { display: flex; justify-content: space-between; font-weight: 900; font-size: 18px; margin-top: 10px; padding-top: 20px; border-top: 2px solid #ddd; }
+        .button { display: inline-block; padding: 16px 32px; background: #7C3AED; color: white !important; text-decoration: none; border-radius: 30px; font-weight: bold; margin-top: 20px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3); }
+        .footer { text-align: center; font-size: 12px; color: #999; padding: 20px; background: #f9f9f9; }
+        .upsell { background: #fff1f2; border: 2px solid #fbcfe8; border-radius: 12px; padding: 20px; margin-top: 30px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin:0; font-size:24px;">Thanks for jamming with us! 🎵</h1>
+        </div>
+        <div class="content">
+            <p>Hi ${name},</p>
+            <p>Get ready to turn up the bass! Your music is ready. 🇹🇹🇯🇲🇧🇧</p>
+            
+            <div class="item-list">
+                ${items.map(item => `
+                    <div class="item">
+                        <span>${item.title}</span>
+                        <span>$${item.price}</span>
+                    </div>
+                `).join('')}
+                <div class="total">
+                    <span>TOTAL</span>
+                    <span>$${total}</span>
+                </div>
+            </div>
+
+            <center>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://likklelegends.com'}/portal/store" class="button">Download My Music</a>
+            </center>
+
+            <div class="upsell">
+                <h3 style="color: #db2777; margin-top:0;">Want Unlimited Music?</h3>
+                <p>Join the <strong>Legends Club</strong> and get every song, story, and game for free!</p>
+                <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://likklelegends.com'}/parent" style="color: #db2777; font-weight: bold;">Upgrade Membership &rarr;</a>
+            </div>
+        </div>
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Likkle Legends. Keep the culture alive!</p>
+        </div>
+    </div>
+</body>
+</html>
+`;

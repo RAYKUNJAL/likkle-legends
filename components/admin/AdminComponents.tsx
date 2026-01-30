@@ -63,6 +63,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
         { id: 'customers', label: 'Customers', icon: Users, href: '/admin/customers' },
         { id: 'orders', label: 'Orders & Fulfillment', icon: ShoppingCart, href: '/admin/orders' },
         { id: 'custom-requests', label: 'Custom Requests', icon: Music, href: '/admin/custom-requests' },
+        { id: 'store-analytics', label: 'Store Analytics', icon: TrendingUp, href: '/admin/store-analytics' },
         { id: 'content', label: 'Content Library', icon: BookOpen, href: '/admin/content' },
         { id: 'approval', label: 'Standard Approval', icon: CheckCircle2, href: '/admin/approval' },
         { id: 'ai-review', label: 'AI Verification Queue', icon: Sparkles, href: '/admin/ai-review' },
