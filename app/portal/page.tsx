@@ -343,45 +343,55 @@ export default function ChildPortalPage() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                                        {stories.map((story) => {
-                                            const isLocked = !canAccess(story.tier_required);
-                                            return (
-                                                <Link
-                                                    key={story.id}
-                                                    href={isLocked ? '#' : `/portal/stories/${story.id}`}
-                                                    className={`bg-white rounded-[3rem] p-5 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-blue-100 relative ${isLocked ? 'grayscale opacity-80' : ''}`}
-                                                >
-                                                    <div className="relative aspect-[3/4] bg-blue-50 rounded-[2.5rem] mb-6 overflow-hidden">
-                                                        {story.cover_image_url ? (
-                                                            <Image
-                                                                src={story.cover_image_url}
-                                                                alt={story.title}
-                                                                fill
-                                                                className="object-cover group-hover:scale-110 transition-transform duration-500"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">📚</div>
-                                                        )}
-                                                        {isLocked && (
-                                                            <div className="absolute inset-0 bg-blue-900/40 backdrop-blur-[2px] flex items-center justify-center">
-                                                                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-blue-900 shadow-2xl">
-                                                                    <Lock size={40} />
+                                    {stories.length === 0 ? (
+                                        <div className="col-span-full">
+                                            <EmptyState
+                                                icon="📖"
+                                                title="The Library is Growing"
+                                                message="Tanty is still writing our first legends. Check back soon for stories from across the islands!"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                                            {stories.map((story) => {
+                                                const isLocked = !canAccess(story.tier_required);
+                                                return (
+                                                    <Link
+                                                        key={story.id}
+                                                        href={isLocked ? '#' : `/portal/stories/${story.id}`}
+                                                        className={`bg-white rounded-[3rem] p-5 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-blue-100 relative ${isLocked ? 'grayscale opacity-80' : ''}`}
+                                                    >
+                                                        <div className="relative aspect-[3/4] bg-blue-50 rounded-[2.5rem] mb-6 overflow-hidden">
+                                                            {story.cover_image_url ? (
+                                                                <Image
+                                                                    src={story.cover_image_url}
+                                                                    alt={story.title}
+                                                                    fill
+                                                                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center text-6xl opacity-20">📚</div>
+                                                            )}
+                                                            {isLocked && (
+                                                                <div className="absolute inset-0 bg-blue-900/40 backdrop-blur-[2px] flex items-center justify-center">
+                                                                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-blue-900 shadow-2xl">
+                                                                        <Lock size={40} />
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <h3 className="text-xl font-black text-blue-900 mb-2 truncate px-2">{story.title}</h3>
-                                                    <div className="flex items-center justify-between px-2">
-                                                        <span className="text-xs font-black text-blue-400 uppercase tracking-widest px-3 py-1 bg-blue-50 rounded-full">{story.reading_time_minutes} MINS</span>
-                                                        <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg group-hover:bg-accent transition-colors">
-                                                            <Play size={16} fill="white" />
+                                                            )}
                                                         </div>
-                                                    </div>
-                                                </Link>
-                                            );
-                                        })}
-                                    </div>
+                                                        <h3 className="text-xl font-black text-blue-900 mb-2 truncate px-2">{story.title}</h3>
+                                                        <div className="flex items-center justify-between px-2">
+                                                            <span className="text-xs font-black text-blue-400 uppercase tracking-widest px-3 py-1 bg-blue-50 rounded-full">{story.reading_time_minutes} MINS</span>
+                                                            <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg group-hover:bg-accent transition-colors">
+                                                                <Play size={16} fill="white" />
+                                                            </div>
+                                                        </div>
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </section>
                             )}
 
@@ -396,56 +406,66 @@ export default function ChildPortalPage() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                                        {videos.map((video) => {
-                                            const isLocked = !canAccess(video.tier_required);
-                                            return (
-                                                <button
-                                                    key={video.id}
-                                                    onClick={() => !isLocked && setActiveVideo(video)}
-                                                    className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-indigo-100 text-left ${isLocked ? 'grayscale opacity-80 cursor-not-allowed' : ''}`}
-                                                >
-                                                    <div className="relative aspect-video bg-indigo-50 rounded-[2.5rem] mb-6 overflow-hidden shadow-inner">
-                                                        {video.thumbnail_url ? (
-                                                            <Image
-                                                                src={video.thumbnail_url}
-                                                                alt={video.title}
-                                                                fill
-                                                                className="object-cover group-hover:scale-105 transition-transform duration-700"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-7xl opacity-10">🎥</div>
-                                                        )}
+                                    {videos.length === 0 ? (
+                                        <div className="col-span-full">
+                                            <EmptyState
+                                                icon="🎥"
+                                                title="Cinema is Coming Soon"
+                                                message="Our village videographers are out capturing the most beautiful island lessons. Check back later!"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                                            {videos.map((video) => {
+                                                const isLocked = !canAccess(video.tier_required);
+                                                return (
+                                                    <button
+                                                        key={video.id}
+                                                        onClick={() => !isLocked && setActiveVideo(video)}
+                                                        className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-indigo-100 text-left ${isLocked ? 'grayscale opacity-80 cursor-not-allowed' : ''}`}
+                                                    >
+                                                        <div className="relative aspect-video bg-indigo-50 rounded-[2.5rem] mb-6 overflow-hidden shadow-inner">
+                                                            {video.thumbnail_url ? (
+                                                                <Image
+                                                                    src={video.thumbnail_url}
+                                                                    alt={video.title}
+                                                                    fill
+                                                                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center text-7xl opacity-10">🎥</div>
+                                                            )}
 
-                                                        {!isLocked && (
-                                                            <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-all">
-                                                                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl scale-0 group-hover:scale-100 transition-transform">
-                                                                    <Play className="text-indigo-600 ml-1" size={40} fill="currentColor" />
+                                                            {!isLocked && (
+                                                                <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-all">
+                                                                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl scale-0 group-hover:scale-100 transition-transform">
+                                                                        <Play className="text-indigo-600 ml-1" size={40} fill="currentColor" />
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        )}
+                                                            )}
 
-                                                        {isLocked && (
-                                                            <div className="absolute inset-0 bg-indigo-950/40 backdrop-blur-[2px] flex items-center justify-center">
-                                                                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-indigo-900 shadow-2xl">
-                                                                    <Lock size={32} />
+                                                            {isLocked && (
+                                                                <div className="absolute inset-0 bg-indigo-950/40 backdrop-blur-[2px] flex items-center justify-center">
+                                                                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-indigo-900 shadow-2xl">
+                                                                        <Lock size={32} />
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        )}
+                                                            )}
 
-                                                        <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl text-white font-black text-xs uppercase tracking-widest">
-                                                            {Math.round(video.duration_seconds / 60)}:00
+                                                            <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl text-white font-black text-xs uppercase tracking-widest">
+                                                                {Math.round(video.duration_seconds / 60)}:00
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <h3 className="text-2xl font-black text-blue-900 mb-2 truncate px-2">{video.title}</h3>
-                                                    <div className="flex items-center gap-3 px-2">
-                                                        <Sparkles className="text-yellow-500" size={18} />
-                                                        <span className="text-indigo-600 font-black uppercase text-xs">Earn +{video.reward_xp || 50} XP</span>
-                                                    </div>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                                                        <h3 className="text-2xl font-black text-blue-900 mb-2 truncate px-2">{video.title}</h3>
+                                                        <div className="flex items-center gap-3 px-2">
+                                                            <Sparkles className="text-yellow-500" size={18} />
+                                                            <span className="text-indigo-600 font-black uppercase text-xs">Earn +{video.reward_xp || 50} XP</span>
+                                                        </div>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </section>
                             )}
 
@@ -460,51 +480,61 @@ export default function ChildPortalPage() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-                                        {songs.map((song) => {
-                                            const isLocked = !canAccess(song.tier_required);
-                                            return (
-                                                <button
-                                                    key={song.id}
-                                                    onClick={() => !isLocked && setActiveSong(song)}
-                                                    className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-pink-100 text-left ${isLocked ? 'grayscale opacity-80 cursor-not-allowed' : ''}`}
-                                                >
-                                                    <div className="relative aspect-square bg-pink-50 rounded-full mb-6 overflow-hidden shadow-2xl ring-4 ring-white group-hover:ring-pink-100 transition-all">
-                                                        {song.thumbnail_url ? (
-                                                            <Image
-                                                                src={song.thumbnail_url}
-                                                                alt={song.title}
-                                                                fill
-                                                                className="object-cover group-hover:scale-110 transition-transform duration-700"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-6xl opacity-10">🎵</div>
-                                                        )}
+                                    {songs.length === 0 ? (
+                                        <div className="col-span-full">
+                                            <EmptyState
+                                                icon="🎵"
+                                                title="Tuning the Drums"
+                                                message="The steel pans are being tuned! We'll have island beats ready for you very soon."
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                                            {songs.map((song) => {
+                                                const isLocked = !canAccess(song.tier_required);
+                                                return (
+                                                    <button
+                                                        key={song.id}
+                                                        onClick={() => !isLocked && setActiveSong(song)}
+                                                        className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-pink-100 text-left ${isLocked ? 'grayscale opacity-80 cursor-not-allowed' : ''}`}
+                                                    >
+                                                        <div className="relative aspect-square bg-pink-50 rounded-full mb-6 overflow-hidden shadow-2xl ring-4 ring-white group-hover:ring-pink-100 transition-all">
+                                                            {song.thumbnail_url ? (
+                                                                <Image
+                                                                    src={song.thumbnail_url}
+                                                                    alt={song.title}
+                                                                    fill
+                                                                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-full h-full flex items-center justify-center text-6xl opacity-10">🎵</div>
+                                                            )}
 
-                                                        {!isLocked && (
-                                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                                <div className="w-16 h-16 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all">
-                                                                    <Play className="text-pink-600 ml-1" size={32} fill="currentColor" />
+                                                            {!isLocked && (
+                                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                                    <div className="w-16 h-16 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all">
+                                                                        <Play className="text-pink-600 ml-1" size={32} fill="currentColor" />
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        )}
+                                                            )}
 
-                                                        {isLocked && (
-                                                            <div className="absolute inset-0 bg-pink-900/40 backdrop-blur-[2px] flex items-center justify-center">
-                                                                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-pink-900 shadow-2xl">
-                                                                    <Lock size={24} />
+                                                            {isLocked && (
+                                                                <div className="absolute inset-0 bg-pink-900/40 backdrop-blur-[2px] flex items-center justify-center">
+                                                                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-pink-900 shadow-2xl">
+                                                                        <Lock size={24} />
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-center px-2">
-                                                        <h3 className="text-xl font-black text-blue-900 mb-1 truncate">{song.title}</h3>
-                                                        <p className="text-sm text-pink-500 font-bold uppercase tracking-widest">{song.artist}</p>
-                                                    </div>
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-center px-2">
+                                                            <h3 className="text-xl font-black text-blue-900 mb-1 truncate">{song.title}</h3>
+                                                            <p className="text-sm text-pink-500 font-bold uppercase tracking-widest">{song.artist}</p>
+                                                        </div>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </section>
                             )}
 

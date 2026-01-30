@@ -169,9 +169,16 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       if (data) {
         setChildren(data as Child[]);
 
-        // Set first child as active if none selected
+        // Restore active child from localStorage or set first child as active
         if (!activeChild && data.length > 0) {
-          setActiveChildState(data[0] as Child);
+          const savedChildId = localStorage.getItem('activeChildId');
+          const savedChild = data.find(c => c.id === savedChildId);
+
+          if (savedChild) {
+            setActiveChildState(savedChild as Child);
+          } else {
+            setActiveChildState(data[0] as Child);
+          }
         }
       }
     } catch (error) {
@@ -281,13 +288,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       refreshChildren();
       refreshNotifications();
 
-      // Restore active child from localStorage
-      const savedChildId = localStorage.getItem('activeChildId');
-      if (savedChildId) {
-        // We handle setting active child inside refreshChildren usually,
-        // or we can do it here if children are already loaded.
-        // But since refreshChildren is async, we should probably do it after it's done or within it.
-      }
+      // Child state is handled inside refreshChildren
     }
   }, [user?.id, refreshChildren, refreshNotifications]);
 
