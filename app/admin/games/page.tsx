@@ -6,7 +6,6 @@ import {
     FileUpload, ActionButton, EmptyState,
     Gamepad2, Plus, Edit, Trash2, Eye, Sparkles, Wand2, Settings
 } from '@/components/admin/AdminComponents';
-import { getGames, createGame, updateGame, deleteGame, getCharacters } from '@/lib/database';
 import { uploadFile, BUCKETS } from '@/lib/storage';
 import Image from 'next/image';
 
@@ -153,9 +152,15 @@ export default function AdminGameBuilderPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { getAdminGames, getAdminCharacters } = await import('@/app/actions/admin');
+
             const [gamesData, charsData] = await Promise.all([
-                getGames(),
-                getCharacters()
+                getAdminGames(session.access_token),
+                getAdminCharacters(session.access_token)
             ]);
             setGames(gamesData as Game[]);
             setCharacters(charsData as Character[]);
@@ -175,16 +180,22 @@ export default function AdminGameBuilderPage() {
 
     const handleSubmit = async () => {
         try {
-            const gameData = {
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { saveAdminGame } = await import('@/app/actions/admin');
+
+            const gameData: any = {
                 ...formData,
                 game_config: gameConfig,
             };
 
             if (editingGame) {
-                await updateGame(editingGame.id, gameData);
-            } else {
-                await createGame(gameData);
+                gameData.id = editingGame.id;
             }
+
+            await saveAdminGame(session.access_token, gameData);
 
             setShowModal(false);
             setEditingGame(null);
@@ -198,7 +209,13 @@ export default function AdminGameBuilderPage() {
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to delete this game? This action cannot be undone.')) return;
         try {
-            await deleteGame(id);
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const { deleteAdminGame } = await import('@/app/actions/admin');
+            await deleteAdminGame(session.access_token, id);
+
             setGames(prev => prev.filter(g => g.id !== id));
         } catch (error) {
             console.error('Failed to delete game:', error);
