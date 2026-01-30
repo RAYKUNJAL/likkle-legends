@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
                         paypal_order_id: orderID,
                         amount_paid: transaction.amount.value
                     })
-                    .eq('id', contentId); // contentId here is request UUID
+                    .eq('id', contentId);
             } else {
                 // Insert Purchase Record
                 await supabaseAdmin
@@ -78,6 +78,23 @@ export async function POST(request: NextRequest) {
                             product_id: productId
                         }
                     });
+
+                // Send Receipt Email
+                try {
+                    const { MUSIC_PURCHASE_RECEIPT, sendEmail } = await import('@/lib/email');
+                    await sendEmail({
+                        to: user.email!,
+                        subject: "Your Music is Ready! 🎵 | Likkle Legends",
+                        html: MUSIC_PURCHASE_RECEIPT(
+                            user.email?.split('@')[0] || 'Friend',
+                            [{ title: productId.includes('bundle') ? 'Island Jams Bundle' : 'Single Track', price: transaction.amount.value }],
+                            transaction.amount.value
+                        )
+                    });
+                } catch (emailError) {
+                    console.error("Failed to send receipt:", emailError);
+                    // Don't fail the transaction, just log the error
+                }
             }
         }
 

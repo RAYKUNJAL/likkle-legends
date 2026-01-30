@@ -432,3 +432,36 @@ export async function updateCustomSongRequest(token: string, id: string, payload
     if (error) throw error;
     return data;
 }
+
+export async function getStoreAnalytics(token: string) {
+    const admin = await verifyAdmin(token);
+
+    // 1. Transactional Revenue (Purchased Content)
+    // Note: 'purchased_at' is used in schema, but standardizing on created_at query if alias needed?
+    // Looking at schema: purchased_at for purchased_content. created_at for requests.
+    const { data: purchases } = await admin
+        .from('purchased_content')
+        .select('amount_paid, content_type, purchased_at');
+
+    // 2. Custom Request Revenue (Paid Requests)
+    const { data: requests } = await admin
+        .from('custom_song_requests')
+        .select('amount_paid, status, created_at')
+        .eq('payment_status', 'paid');
+
+    const totalRevenue = (purchases?.reduce((acc, p) => acc + (Number(p.amount_paid) || 0), 0) || 0) +
+        (requests?.reduce((acc, r) => acc + (Number(r.amount_paid) || 0), 0) || 0);
+
+    const bundleSales = purchases?.filter(p => p.content_type?.includes('bundle')).length || 0;
+    const trackSales = purchases?.filter(p => p.content_type === 'song').length || 0;
+    const requestSales = requests?.length || 0;
+
+    return {
+        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+        bundleSales,
+        trackSales,
+        requestSales,
+        recentPurchases: (purchases || []).slice(0, 10),
+        recentRequests: (requests || []).slice(0, 5)
+    };
+}
