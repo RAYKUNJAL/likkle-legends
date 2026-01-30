@@ -83,7 +83,7 @@ export default function AutonomousContentPage() {
         setUploadStatus('uploading');
         try {
             // Determine bucket based on file type
-            let bucket = BUCKETS.PRINTABLES;
+            let bucket: any = BUCKETS.PRINTABLES;
             if (file.type.startsWith('audio/')) bucket = BUCKETS.SONGS;
             else if (file.type.startsWith('video/')) bucket = BUCKETS.VIDEOS;
             else if (file.type === 'application/pdf') bucket = BUCKETS.PRINTABLES;

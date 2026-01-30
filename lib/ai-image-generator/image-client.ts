@@ -22,7 +22,7 @@ export async function generateImage(prompt: string, fileName: string): Promise<s
             response_format: "b64_json"
         });
 
-        const b64 = response.data[0].b64_json;
+        const b64 = response.data[0].b64_json as string;
         if (!b64) throw new Error("No image data returned from OpenAI");
 
         const buffer = Buffer.from(b64, "base64");
