@@ -354,3 +354,10 @@ export async function deleteAdminGame(token: string, id: string) {
     if (error) throw error;
     return true;
 }
+
+export async function initializeBucketsAction(token: string) {
+    await verifyAdmin(token);
+    const { initializeStorageBuckets } = await import('@/lib/storage');
+    await initializeStorageBuckets();
+    return { success: true };
+}
