@@ -138,6 +138,21 @@ export default function StoryReaderPage() {
         );
     }
 
+    if (!story || !story.content_json) {
+        return (
+            <div className="min-h-screen bg-sky-950 flex items-center justify-center p-8">
+                <div className="text-center bg-white rounded-[3rem] p-12 shadow-2xl max-w-md">
+                    <BookOpen size={64} className="text-amber-400 mx-auto mb-6" />
+                    <h2 className="text-3xl font-black text-blue-900 mb-2">Book is Empty</h2>
+                    <p className="text-blue-700/60 mb-8 font-bold">This storybook has no pages yet. Tanty is still writing it!</p>
+                    <Link href="/portal" className="px-8 py-4 bg-primary text-white rounded-2xl font-black inline-block">
+                        Return to Portal
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <PremiumStoryReader
             story={story}

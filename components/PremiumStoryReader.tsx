@@ -49,8 +49,8 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
     // Audio refs
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const pages = story.content_json.pages;
-    const currentPageData = pages[currentPage];
+    const pages = story.content_json?.pages || [];
+    const currentPageData = pages[currentPage] || { text: '', pageNumber: 1 };
 
     // Handle Page Change
     const nextPage = () => {
@@ -101,7 +101,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
         setIsLoadingAudio(true);
         try {
-            const res = await getTantyVoice(currentPageData.text);
+            const res = await getTantyVoice(currentPageData?.text || "");
             if (res.success && res.audio) {
                 // If it's a base64 string, we need to handle it properly
                 const audioSrc = res.audio.startsWith('data:') ? res.audio : `data:audio/mp3;base64,${res.audio}`;
@@ -403,7 +403,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                 </button>
                             </div>
                             <div className="flex-1 overflow-y-auto p-10 space-y-8">
-                                {story.content_json.glossary.map((item, i) => (
+                                {(story.content_json?.glossary || []).map((item, i) => (
                                     <div key={i} className="group">
                                         <div className="flex items-center gap-2 mb-2">
                                             <span className="text-2xl">🌴</span>

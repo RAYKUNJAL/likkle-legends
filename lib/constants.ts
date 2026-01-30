@@ -22,12 +22,21 @@ export const TANTY_CHARACTER: Character = {
 
 export const CHARACTERS: AdminCharacter[] = [
     {
+        name: "R.O.T.I.",
+        role: "Learning Buddy",
+        tagline: "“Beep boop! Ready to learn?”",
+        description: "A friendly guide who helps children learn step by step through stories, games, and gentle encouragement.",
+        color: "bg-blue-50",
+        image: "/images/roti-avatar.jpg",
+        traits: ["Guided", "Friendly", "Curriculum"]
+    },
+    {
         name: "Dilly Doubles",
         role: "Food & Traditions Expert",
         tagline: "“Ready for a Caribbean journey?”",
         description: "Dilly knows every street food spot in Trinidad and loves sharing the magic of doubles, bakes, and buss-up-shot with curious kids.",
         color: "bg-yellow-400",
-        image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&q=80&w=400",
+        image: "/images/dilly-doubles.jpg",
         traits: ["Entrepreneur", "Chef", "Cultural"]
     },
     {
@@ -36,7 +45,7 @@ export const CHARACTERS: AdminCharacter[] = [
         tagline: "“Stand tall, little legend.”",
         description: "Perched high on her moko jumbie stilts, Mango teaches kids to see themselves with pride and view challenges from a higher perspective.",
         color: "bg-orange-500",
-        image: "https://images.unsplash.com/photo-1545641203-7d072a14e3b2?auto=format&fit=crop&q=80&w=400",
+        image: "/images/mango_moko.png",
         traits: ["Stilt-Walker", "Brave", "Uplifting"]
     },
     {
@@ -45,7 +54,7 @@ export const CHARACTERS: AdminCharacter[] = [
         tagline: "“Everything in the world has a beat.”",
         description: "From steelpan to soca, Sam helps your child find the rhythm in everyday life and express big emotions through music.",
         color: "bg-blue-400",
-        image: "https://images.unsplash.com/photo-1541444196041-fb43a55229fc?auto=format&fit=crop&q=80&w=400",
+        image: "/images/steelpan_sam.png",
         traits: ["Musician", "Rhythmic", "Creative"]
     },
     {
@@ -54,12 +63,13 @@ export const CHARACTERS: AdminCharacter[] = [
         tagline: "“Coming soon to de village...”",
         description: "A new legendary hero is about to emerge from de island mists. Keep reading to unlock deir story!",
         color: "bg-indigo-950",
-        image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
+        image: "/images/mystery-character.png",
         traits: ["Secret", "Legendary", "Island"],
         isMystery: true
     }
 ];
 
+// Radio channels remain as they define the UI structure
 export const RADIO_CHANNELS = [
     { id: 'story', label: "Story Time", icon: "📚" },
     { id: 'lullaby', label: "Island Lullabies", icon: "🌙" },
@@ -69,64 +79,8 @@ export const RADIO_CHANNELS = [
     { id: 'vip', label: "Heritage VIP", icon: "👑" }
 ];
 
-export const RADIO_TRACKS = [
-    {
-        id: 'wav1',
-        title: 'Coconut Bay Breeze',
-        artist: 'Nature Sounds',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-loop-1196.mp3',
-        channel: 'calm'
-    },
-    {
-        id: 'wav2',
-        title: 'Parrot Jungle Jam',
-        artist: 'Village Band',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-forest-birds-ambience-1210.mp3',
-        channel: 'culture'
-    },
-    {
-        id: 'wav3',
-        title: 'Anansi and de Pot of Beans',
-        artist: 'Tanty Spice',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-cartoon-monkey-laugh-100.mp3',
-        channel: 'story'
-    },
-    {
-        id: 'wav4',
-        title: 'Night Crickets in Maracas',
-        artist: 'Rainforest Sounds',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-crickets-and-insects-in-the-wild-ambience-2-2480.mp3',
-        channel: 'lullaby'
-    },
-    {
-        id: 'vid1',
-        title: 'Carnival Parade 2025',
-        artist: 'Island TV',
-        url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        channel: 'culture'
-    },
-    {
-        id: 'vid2',
-        title: 'Counting Mangoes',
-        artist: 'Tanty Spice',
-        url: 'https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-        channel: 'learning'
-    },
-    {
-        id: 'wav5',
-        title: 'Steelpan Serenade',
-        artist: 'Trinidad All Stars',
-        url: 'https://assets.mixkit.co/music/preview/mixkit-games-worldbeat-466.mp3',
-        channel: 'vip'
-    },
-    {
-        id: 'wav6',
-        title: 'Learn de Alphabet',
-        artist: 'Tanty Spice',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-positive-notification-951.mp3',
-        channel: 'learning'
-    }
-];
+// RADIO_TRACKS removed - now served from Database or empty by default
+export const RADIO_TRACKS = [];
 
 export const QUESTS: Quest[] = [
     {
