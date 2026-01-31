@@ -32,8 +32,28 @@ export async function GET(request: NextRequest) {
 // Also support POST for manual triggering from admin panel
 export async function POST(request: NextRequest) {
     // For POST, we require proper admin authentication
-    // This could be called from the admin dashboard
     try {
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const token = authHeader.replace('Bearer ', '');
+
+        // Use verifyAdmin as a service-level verification or just check profile
+        const { supabaseAdmin } = await import('@/lib/supabase-client');
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        if (profile?.role !== 'admin') {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
         const result = await processEmailQueue();
 
         return NextResponse.json({

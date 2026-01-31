@@ -9,12 +9,60 @@ import {
     Mail, CreditCard
 } from 'lucide-react';
 
+import { getSiteSettings, saveSiteSettings } from '@/app/actions/admin';
+import toast from 'react-hot-toast';
+import { useEffect } from 'react';
+
 export default function AdminSettingsPage() {
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [config, setConfig] = useState({
+        platform_mode: 'production',
+        currency: 'USD',
+        auto_publish: true,
+        creativity: 0.85,
+        notifications: {
+            welcome: true,
+            subscriptions: true,
+            fulfillment: false
+        }
+    });
 
-    const handleSave = () => {
+    useEffect(() => {
+        loadSettings();
+    }, []);
+
+    const loadSettings = async () => {
+        try {
+            const { createClient } = await import('@/lib/supabase/client');
+            const supabase = createClient();
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const data = await getSiteSettings(session.access_token, 'system_config');
+            if (data) setConfig(data);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleSave = async () => {
         setIsSaving(true);
-        setTimeout(() => setIsSaving(false), 2000);
+        try {
+            const { createClient } = await import('@/lib/supabase/client');
+            const supabase = createClient();
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            await saveSiteSettings(session.access_token, 'system_config', config);
+            toast.success("Settings updated!");
+        } catch (e) {
+            toast.error("Failed to save settings");
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -46,10 +94,15 @@ export default function AdminSettingsPage() {
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Platform Mode</label>
-                                <select title="Platform Mode" className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold text-gray-900 outline-none focus:ring-2 focus:ring-primary/20">
-                                    <option>Production (Live)</option>
-                                    <option>Maintenance Mode</option>
-                                    <option>Staging/Test</option>
+                                <select
+                                    value={config.platform_mode}
+                                    onChange={(e) => setConfig({ ...config, platform_mode: e.target.value })}
+                                    title="Platform Mode"
+                                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold text-gray-900 outline-none focus:ring-2 focus:ring-primary/20"
+                                >
+                                    <option value="production">Production (Live)</option>
+                                    <option value="maintenance">Maintenance Mode</option>
+                                    <option value="test">Staging/Test</option>
                                 </select>
                             </div>
 
@@ -85,9 +138,16 @@ export default function AdminSettingsPage() {
                             <div>
                                 <div className="flex justify-between mb-2">
                                     <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Creativity (Temp)</label>
-                                    <span className="text-xs font-bold text-accent">0.85</span>
+                                    <span className="text-xs font-bold text-accent">{config.creativity}</span>
                                 </div>
-                                <input title="Creativity Temperature" type="range" className="w-full accent-accent" min="0" max="1" step="0.05" defaultValue="0.85" />
+                                <input
+                                    title="Creativity Temperature"
+                                    type="range"
+                                    className="w-full accent-accent"
+                                    min="0" max="1" step="0.05"
+                                    value={config.creativity}
+                                    onChange={(e) => setConfig({ ...config, creativity: parseFloat(e.target.value) })}
+                                />
                             </div>
 
                             <div className="p-4 bg-accent/5 rounded-2xl border border-accent/10">

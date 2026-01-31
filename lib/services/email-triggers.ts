@@ -62,14 +62,21 @@ export async function queueWelcomeSequence(profileId: string, email: string, nam
 /**
  * Queue abandoned checkout reminder (1 hour after starting checkout)
  */
-export async function queueAbandonedCheckout(email: string, name: string, childName?: string) {
+export async function queueAbandonedCheckout(email: string, name: string, planName: string = 'Legends Plus') {
     const admin = createAdminClient();
     const now = new Date();
+
+    // First delete any existing pending abandonment emails for this user to avoid duplicates
+    await admin.from('email_queue')
+        .delete()
+        .eq('recipient_email', email)
+        .eq('template_id', 'ABANDONED_CHECKOUT')
+        .eq('status', 'pending');
 
     const { error } = await admin.from('email_queue').insert({
         recipient_email: email,
         template_id: 'ABANDONED_CHECKOUT',
-        template_data: { name, childName },
+        template_data: { name, planName },
         status: 'pending',
         send_at: addHours(now, 1) // Send 1 hour after abandonment
     });
@@ -77,6 +84,22 @@ export async function queueAbandonedCheckout(email: string, name: string, childN
     if (error) {
         console.error('Failed to queue abandoned checkout:', error);
     }
+
+    return { success: !error };
+}
+
+/**
+ * Cancel any pending abandoned checkout reminders for a user
+ * Call this after successful payment
+ */
+export async function cancelAbandonedCheckout(email: string) {
+    const admin = createAdminClient();
+
+    const { error } = await admin.from('email_queue')
+        .delete()
+        .eq('recipient_email', email)
+        .eq('template_id', 'ABANDONED_CHECKOUT')
+        .eq('status', 'pending');
 
     return { success: !error };
 }

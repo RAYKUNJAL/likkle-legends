@@ -28,6 +28,8 @@ export default function AdminEmailEnginePage() {
     });
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+    const [broadcastTemplate, setBroadcastTemplate] = useState('ONBOARDING_DAY_7');
     const [lastRun, setLastRun] = useState<string | null>(null);
 
     useEffect(() => {
@@ -68,12 +70,12 @@ export default function AdminEmailEnginePage() {
             // Get campaign settings
             const { data: settings } = await supabase
                 .from('site_settings')
-                .select('value')
+                .select('content')
                 .eq('key', 'email_campaigns')
                 .single();
 
-            if (settings?.value) {
-                setCampaigns(settings.value);
+            if (settings?.content) {
+                setCampaigns(settings.content as any);
             }
 
         } catch (error) {
@@ -86,7 +88,14 @@ export default function AdminEmailEnginePage() {
     const processQueue = async () => {
         setIsProcessing(true);
         try {
-            const response = await fetch('/api/cron/process-emails', { method: 'POST' });
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error("No session");
+
+            const response = await fetch('/api/cron/process-emails', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            });
             const result = await response.json();
             setLastRun(`Processed ${result.processed} emails, ${result.errors} failed`);
             await loadData();
@@ -125,14 +134,23 @@ export default function AdminEmailEnginePage() {
                         </h1>
                         <p className="text-gray-500">AI-powered email marketing & automation</p>
                     </div>
-                    <button
-                        onClick={processQueue}
-                        disabled={isProcessing}
-                        className="px-6 py-3 bg-primary text-white rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
-                    >
-                        {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <Send size={20} />}
-                        Process Queue Now
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setShowBroadcastModal(true)}
+                            className="px-6 py-3 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold flex items-center gap-2 hover:bg-gray-50 transition-all"
+                        >
+                            <Mail size={20} className="text-primary" />
+                            New Broadcast
+                        </button>
+                        <button
+                            onClick={processQueue}
+                            disabled={isProcessing}
+                            className="px-6 py-3 bg-primary text-white rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+                        >
+                            {isProcessing ? <RefreshCw className="animate-spin" size={20} /> : <Send size={20} />}
+                            Process Queue Now
+                        </button>
+                    </div>
                 </div>
             </header>
 
@@ -221,22 +239,68 @@ export default function AdminEmailEnginePage() {
                 </div>
 
                 {/* Template Preview Section */}
-                <div className="bg-deep p-8 rounded-[2rem] text-white">
-                    <h2 className="text-xl font-black mb-4 flex items-center gap-3">
-                        <Mail size={24} />
-                        Email Templates
-                    </h2>
-                    <div className="grid md:grid-cols-3 gap-4">
-                        {['Welcome', 'Day 2 Tips', 'Day 7 Check-in', 'Abandoned Cart', 'Subscription Confirmed', 'Support Reply', 'Win-Back'].map((template) => (
-                            <div key={template} className="bg-white/10 p-4 rounded-xl hover:bg-white/20 transition-colors cursor-pointer">
-                                <p className="font-bold">{template}</p>
-                                <p className="text-white/60 text-xs mt-1">Click to preview</p>
+            </div>
+
+            {/* Broadcast Modal */}
+            {showBroadcastModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-[3rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="bg-primary p-8 text-white relative">
+                            <h2 className="text-3xl font-black">Island Broadcast 🌴</h2>
+                            <p className="opacity-80 font-medium">Send value-packed magic to de whole village</p>
+                            <button
+                                onClick={() => setShowBroadcastModal(false)}
+                                className="absolute top-8 right-8 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"
+                            >
+                                <XCircle size={24} />
+                            </button>
+                        </div>
+                        <div className="p-8 space-y-6">
+                            <div>
+                                <label className="block text-sm font-black text-gray-700 mb-2 uppercase tracking-widest">Select Template</label>
+                                <select
+                                    value={broadcastTemplate}
+                                    onChange={(e) => setBroadcastTemplate(e.target.value)}
+                                    className="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-2xl font-bold focus:border-primary focus:ring-0"
+                                >
+                                    <option value="WELCOME">Welcome (Manual)</option>
+                                    <option value="ONBOARDING_DAY_7">Village Update (Value)</option>
+                                    <option value="WIN_BACK">Win-Back Blast</option>
+                                </select>
                             </div>
-                        ))}
+                            <div>
+                                <label className="block text-sm font-black text-gray-700 mb-2 uppercase tracking-widest">Target Audience</label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button className="p-4 rounded-2xl border-2 border-primary bg-primary/5 font-bold text-primary text-left">
+                                        All 5,420 Residents
+                                    </button>
+                                    <button className="p-4 rounded-2xl border-2 border-gray-100 font-bold text-gray-500 text-left hover:border-primary/30">
+                                        Free Trialists Only
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="bg-blue-50 p-4 rounded-2xl flex gap-3 items-start">
+                                <Zap className="text-blue-600 mt-1 shrink-0" size={20} />
+                                <p className="text-sm text-blue-800 font-medium leading-relaxed">
+                                    <b>Pro-Tip:</b> High-revenue emails for this niche focus on <b>Child Success</b>.
+                                    We recommend using the "Onboarding Day 7" template to share a new story or activity!
+                                </p>
+                            </div>
+                            <button
+                                className="w-full py-5 bg-primary text-white rounded-2xl font-black text-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                                onClick={() => {
+                                    alert("Broadcast Enqueued! De engine will start processing immediately.");
+                                    setShowBroadcastModal(false);
+                                }}
+                            >
+                                Launch Broadcast 🚀
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </AdminLayout>
+            )}
+        </div>
+        </AdminLayout >
     );
 }
 

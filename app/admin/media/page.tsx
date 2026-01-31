@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import {
     AdminLayout, SearchBar, DataTable, StatusBadge, Modal, Tabs,
     FileUpload, ActionButton, EmptyState,
-    Music, Video, Plus, Edit, Trash2, Eye, Upload, BookOpen, FileText, Sparkles, RefreshCw
+    Music, Video, Plus, Edit, Trash2, Eye, Upload, BookOpen, FileText, Sparkles, RefreshCw, Download
 } from '@/components/admin/AdminComponents';
 import { uploadFile, BUCKETS } from '@/lib/storage';
 import Image from 'next/image';
@@ -22,6 +22,9 @@ function MediaManagerContent() {
     const [showModal, setShowModal] = useState(false);
     const [isAILoading, setIsAILoading] = useState(false);
     const [editingItem, setEditingItem] = useState<any | null>(null);
+    const [filterTier, setFilterTier] = useState<string>('all');
+    const [filterStatus, setFilterStatus] = useState<string>('all');
+
     const [formData, setFormData] = useState<any>({
         title: '',
         artist: 'Likkle Legends',
@@ -34,6 +37,7 @@ function MediaManagerContent() {
         video_url: '',
         thumbnail_url: '',
         file_url: '',
+        pdf_url: '',
         url: '', // for storybooks
         cover_image_url: '',
         preview_url: '',
@@ -47,7 +51,8 @@ function MediaManagerContent() {
     const loadMedia = async () => {
         setIsLoading(true);
         try {
-            const { supabase } = await import('@/lib/storage');
+            const { createClient } = await import('@/lib/supabase/client');
+            const supabase = createClient();
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return;
 
@@ -62,13 +67,23 @@ function MediaManagerContent() {
     };
 
     const handleFileUpload = async (file: File, type: 'main' | 'thumbnail') => {
+        const { createClient } = await import('@/lib/supabase/client');
+        const supabase = createClient();
+
         let bucket: any = BUCKETS.SONGS;
         if (activeTab === 'songs') bucket = BUCKETS.SONGS;
         else if (activeTab === 'videos') bucket = BUCKETS.VIDEOS;
         else if (activeTab === 'printables') bucket = BUCKETS.PRINTABLES;
         else if (activeTab === 'storybooks') bucket = BUCKETS.STORYBOOKS;
 
-        const result = await uploadFile(bucket, file);
+        // Smart bucket selection for images if they are being uploaded in specific contexts
+        if (file.type.startsWith('image/')) {
+            if (activeTab as string === 'characters') bucket = BUCKETS.CHARACTERS;
+            else if (type === 'thumbnail') bucket = BUCKETS.AVATARS;
+        }
+
+        // Use the authenticated client to ensure RLS passes
+        const result = await uploadFile(bucket, file, undefined, { customClient: supabase });
 
         if (result) {
             setFormData((prev: any) => {
@@ -168,10 +183,19 @@ function MediaManagerContent() {
         setShowModal(true);
     };
 
-    const filteredAssets = assets.filter(a =>
-        a.title?.toLowerCase().includes(search.toLowerCase()) ||
-        a.artist?.toLowerCase().includes(search.toLowerCase())
-    );
+    const filteredAssets = assets.filter(a => {
+        const searchLower = search.toLowerCase();
+        const matchesSearch =
+            (a.title || '').toLowerCase().includes(searchLower) ||
+            (a.artist || '').toLowerCase().includes(searchLower) ||
+            (a.description || '').toLowerCase().includes(searchLower);
+
+        const matchesTier = filterTier === 'all' || a.tier_required === filterTier;
+        const matchesStatus = filterStatus === 'all' ||
+            (filterStatus === 'active' ? (a.is_active !== false) : (a.is_active === false));
+
+        return matchesSearch && matchesTier && matchesStatus;
+    });
 
     const getThumbnail = (item: any) => {
         return item.thumbnail_url || item.cover_image_url || item.preview_url;
@@ -186,15 +210,19 @@ function MediaManagerContent() {
             <header className="bg-white border-b border-gray-100 px-8 py-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black text-gray-900">Media & Content</h1>
-                        <p className="text-gray-500">Manage all digital learning assets</p>
+                        <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
+                            <Video className="text-primary" />
+                            Media & Content
+                        </h1>
+                        <p className="text-gray-500">Commercial-grade asset management & distribution</p>
                     </div>
                     <div className="flex gap-2">
                         <button
                             onClick={async () => {
                                 if (!confirm("Initialize Storage Buckets in Supabase?")) return;
                                 try {
-                                    const { supabase } = await import('@/lib/storage');
+                                    const { createClient } = await import('@/lib/supabase/client');
+                                    const supabase = createClient();
                                     const { data: { session } } = await supabase.auth.getSession();
                                     if (session) {
                                         const { initializeBucketsAction } = await import('@/app/actions/admin');
@@ -203,8 +231,9 @@ function MediaManagerContent() {
                                     }
                                 } catch (e) { alert("Initialization failed"); }
                             }}
-                            className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors"
+                            className="px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors flex items-center gap-2"
                         >
+                            <RefreshCw size={18} />
                             Setup Storage
                         </button>
                         <button
@@ -219,16 +248,41 @@ function MediaManagerContent() {
             </header>
 
             <div className="p-8">
-                <Tabs
-                    tabs={[
-                        { id: 'songs', label: 'Songs', count: activeTab === 'songs' ? assets.length : undefined },
-                        { id: 'videos', label: 'Videos', count: activeTab === 'videos' ? assets.length : undefined },
-                        { id: 'printables', label: 'Printables', count: activeTab === 'printables' ? assets.length : undefined },
-                        { id: 'storybooks', label: 'Storybooks', count: activeTab === 'storybooks' ? assets.length : undefined },
-                    ]}
-                    activeTab={activeTab}
-                    onChange={(id) => setActiveTab(id as AssetCategory)}
-                />
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+                    <Tabs
+                        tabs={[
+                            { id: 'songs', label: 'Songs', count: activeTab === 'songs' ? assets.length : undefined },
+                            { id: 'videos', label: 'Videos', count: activeTab === 'videos' ? assets.length : undefined },
+                            { id: 'printables', label: 'Printables', count: activeTab === 'printables' ? assets.length : undefined },
+                            { id: 'storybooks', label: 'Storybooks', count: activeTab === 'storybooks' ? assets.length : undefined },
+                        ]}
+                        activeTab={activeTab}
+                        onChange={(id) => setActiveTab(id as AssetCategory)}
+                    />
+
+                    <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
+                        <select
+                            value={filterTier}
+                            onChange={(e) => setFilterTier(e.target.value)}
+                            className="bg-transparent border-none text-xs font-bold focus:ring-0"
+                        >
+                            <option value="all">All Tiers</option>
+                            <option value="free">Free</option>
+                            <option value="starter_mailer">Starter</option>
+                            <option value="legends_plus">Plus</option>
+                        </select>
+                        <div className="w-px h-4 bg-gray-200" />
+                        <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="bg-transparent border-none text-xs font-bold focus:ring-0"
+                        >
+                            <option value="all">All Status</option>
+                            <option value="active">Active Only</option>
+                            <option value="private">Private Only</option>
+                        </select>
+                    </div>
+                </div>
 
                 <SearchBar
                     value={search}
@@ -240,14 +294,14 @@ function MediaManagerContent() {
                 <DataTable
                     data={filteredAssets}
                     isLoading={isLoading}
-                    emptyMessage={`No ${activeTab} found.`}
+                    emptyMessage={`No ${activeTab} found matching your filters.`}
                     columns={[
                         {
                             key: 'title',
                             label: 'Asset',
                             render: (item) => (
                                 <div className="flex items-center gap-3">
-                                    <div className="relative w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+                                    <div className="relative w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border border-gray-100">
                                         {getThumbnail(item) ? (
                                             <Image src={getThumbnail(item)} alt="" fill className="object-cover" />
                                         ) : (
@@ -286,7 +340,23 @@ function MediaManagerContent() {
                     ]}
                     actions={(item) => (
                         <div className="flex items-center gap-1">
-                            {getMainUrl(item) && <ActionButton icon={Eye} onClick={() => window.open(getMainUrl(item))} title="Preview" />}
+                            {getMainUrl(item) && (
+                                <>
+                                    <ActionButton icon={Eye} onClick={() => window.open(getMainUrl(item))} title="Preview" />
+                                    <ActionButton
+                                        icon={Download}
+                                        onClick={() => {
+                                            const link = document.createElement('a');
+                                            link.href = getMainUrl(item);
+                                            link.download = item.title;
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        }}
+                                        title="Download"
+                                    />
+                                </>
+                            )}
                             <ActionButton icon={Edit} onClick={() => openEditModal(item)} title="Edit" />
                             <ActionButton icon={Trash2} onClick={() => handleDelete(item.id)} variant="danger" title="Delete" />
                         </div>

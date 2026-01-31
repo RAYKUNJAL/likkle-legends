@@ -97,7 +97,7 @@ function renderTemplate(templateId: string, data: any): string {
         case 'ONBOARDING_DAY_7':
             return ONBOARDING_DAY_7_TEMPLATE(data.name || 'Legend');
         case 'ABANDONED_CHECKOUT':
-            return ABANDONED_CHECKOUT_TEMPLATE(data.name || 'Friend', data.childName || '');
+            return ABANDONED_CHECKOUT_TEMPLATE(data.name || 'Friend', data.planName || 'Legends Plus');
         case 'SUBSCRIPTION_CONFIRMATION':
             return SUBSCRIPTION_CONFIRMATION_TEMPLATE(data.name || 'Legend', data.tier || 'Legends Plus', data.childName || '');
         case 'SUPPORT_REPLY':
@@ -112,15 +112,15 @@ function renderTemplate(templateId: string, data: any): string {
 function getSubjectForTemplate(templateId: string, data: any): string {
     switch (templateId) {
         case 'WELCOME':
-            return 'Welcome to the Adventure! 🌴';
+            return '🌴 Wah Gwan! You\'re officially one of de Legends now...';
         case 'ONBOARDING_DAY_2':
-            return 'Day 2: Tips to Get Started 🚀';
+            return `💡 Pro-Tip: How to make ${data.childName || 'your kid'} de hero (Day 2)`;
         case 'ONBOARDING_DAY_7':
-            return 'One Week In – How\'s It Going? 🎉';
+            return '🎉 7 Days In: Is de island magic working?';
         case 'ABANDONED_CHECKOUT':
-            return 'You Left Something Behind! 🛒';
+            return '🏝️ Don\'t leave de village! Your special gift is waiting...';
         case 'SUBSCRIPTION_CONFIRMATION':
-            return 'You\'re All Set! ✅';
+            return `✅ Celebration: ${data.name || 'Legend'}, you just unlocked de full magic!`;
         case 'SUPPORT_REPLY':
             return `Re: ${data.subject || 'Your Support Request'}`;
         case 'WIN_BACK':

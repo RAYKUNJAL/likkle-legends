@@ -102,13 +102,22 @@ export async function getAdminAnalytics(token: string) {
         .select('*', { count: 'exact', head: true })
         .gte('created_at', thirtyDaysAgo);
 
+    // Monthly Revenue (Current Month)
+    const firstOfOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+    const { data: revenueData } = await admin
+        .from('purchased_content')
+        .select('amount_paid')
+        .gte('purchased_at', firstOfOfMonth);
+
+    const monthlyRevenue = revenueData?.reduce((acc, p) => acc + (Number(p.amount_paid) || 0), 0) || 0;
+
     return {
         totalSubscribers: totalSubscribers || 0,
         activeSubscribers: activeSubscribers || 0,
         pendingOrders: pendingOrders || 0,
         activeChildren: activeChildren || 0,
         newSignups: newSignups || 0,
-        monthlyRevenue: (activeSubscribers || 0) * 15 // Estimate
+        monthlyRevenue: parseFloat(monthlyRevenue.toFixed(2))
     };
 }
 
@@ -188,14 +197,24 @@ export async function updateOrderStatusAdmin(token: string, orderId: string, sta
 }
 
 export async function getAdminContent(token: string, category: 'songs' | 'videos' | 'printables' | 'storybooks') {
-    const admin = await verifyAdmin(token);
-    const { data, error } = await admin
-        .from(category)
-        .select('*')
-        .order('created_at', { ascending: false });
+    console.log(`📡 getAdminContent: Fetching ${category}...`);
+    try {
+        const admin = await verifyAdmin(token);
+        const { data, error } = await admin
+            .from(category)
+            .select('*')
+            .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data || [];
+        if (error) {
+            console.error(`❌ getAdminContent error for ${category}:`, error.message);
+            throw error;
+        }
+        console.log(`✅ getAdminContent: Found ${data?.length || 0} items for ${category}`);
+        return data || [];
+    } catch (e: any) {
+        console.error(`💥 getAdminContent critical failure:`, e.message);
+        throw e;
+    }
 }
 
 export async function saveAdminContent(token: string, category: string, assetData: any) {
@@ -230,7 +249,50 @@ export async function deleteAdminContent(token: string, category: string, id: st
         .eq('id', id);
 
     if (error) throw error;
-    return true;
+    return { success: true };
+}
+
+export async function getSiteSettings(token: string, key: string) {
+    try {
+        const admin = await verifyAdmin(token);
+        const { data, error } = await admin
+            .from('site_settings')
+            .select('content')
+            .eq('key', key)
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 is 'no rows'
+            throw error;
+        }
+
+        return data?.content || null;
+    } catch (e: any) {
+        console.error(`getSiteSettings failed:`, e.message);
+        throw e;
+    }
+}
+
+export async function saveSiteSettings(token: string, key: string, content: any) {
+    try {
+        const admin = await verifyAdmin(token);
+        const { error } = await admin
+            .from('site_settings')
+            .upsert({
+                key,
+                content,
+                updated_at: new Date().toISOString()
+            });
+
+        if (error) throw error;
+        return { success: true };
+    } catch (e: any) {
+        console.error(`saveSiteSettings failed:`, e.message);
+        throw e;
+    }
+}
+
+if (error) throw error;
+return true;
 }
 
 export async function getAdminCharacters(token: string) {
@@ -448,34 +510,48 @@ export async function updateCustomSongRequest(token: string, id: string, payload
 }
 
 export async function getStoreAnalytics(token: string) {
-    const admin = await verifyAdmin(token);
+    console.log("📊 getStoreAnalytics: Fetching revenue data...");
+    try {
+        const admin = await verifyAdmin(token);
 
-    // 1. Transactional Revenue (Purchased Content)
-    // Note: 'purchased_at' is used in schema, but standardizing on created_at query if alias needed?
-    // Looking at schema: purchased_at for purchased_content. created_at for requests.
-    const { data: purchases } = await admin
-        .from('purchased_content')
-        .select('amount_paid, content_type, purchased_at');
+        // 1. Transactional Revenue (Purchased Content)
+        const { data: purchases, error: pError } = await admin
+            .from('purchased_content')
+            .select('*')
+            .order('purchased_at', { ascending: false });
 
-    // 2. Custom Request Revenue (Paid Requests)
-    const { data: requests } = await admin
-        .from('custom_song_requests')
-        .select('amount_paid, status, created_at')
-        .eq('payment_status', 'paid');
+        if (pError) {
+            console.warn("⚠️ Error fetching purchased_content:", pError.message);
+        }
 
-    const totalRevenue = (purchases?.reduce((acc, p) => acc + (Number(p.amount_paid) || 0), 0) || 0) +
-        (requests?.reduce((acc, r) => acc + (Number(r.amount_paid) || 0), 0) || 0);
+        // 2. Custom Request Revenue (Paid Requests)
+        const { data: requests, error: rError } = await admin
+            .from('custom_song_requests')
+            .select('*')
+            .eq('payment_status', 'paid')
+            .order('created_at', { ascending: false });
 
-    const bundleSales = purchases?.filter(p => p.content_type?.includes('bundle')).length || 0;
-    const trackSales = purchases?.filter(p => p.content_type === 'song').length || 0;
-    const requestSales = requests?.length || 0;
+        if (rError) {
+            console.warn("⚠️ Error fetching custom_song_requests:", rError.message);
+        }
 
-    return {
-        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
-        bundleSales,
-        trackSales,
-        requestSales,
-        recentPurchases: (purchases || []).slice(0, 10),
-        recentRequests: (requests || []).slice(0, 5)
-    };
+        const totalRevenue = (purchases?.reduce((acc, p) => acc + (Number(p.amount_paid) || 0), 0) || 0) +
+            (requests?.reduce((acc, r) => acc + (Number(r.amount_paid) || 0), 0) || 0);
+
+        const bundleSales = purchases?.filter(p => p.content_type?.includes('bundle')).length || 0;
+        const trackSales = purchases?.filter(p => p.content_type === 'song').length || 0;
+        const requestSales = requests?.length || 0;
+
+        return {
+            totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+            bundleSales,
+            trackSales,
+            requestSales,
+            recentPurchases: (purchases || []).slice(0, 10),
+            recentRequests: (requests || []).slice(0, 5)
+        };
+    } catch (e: any) {
+        console.error("💥 getStoreAnalytics failure:", e.message);
+        throw e;
+    }
 }
