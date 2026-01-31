@@ -22,37 +22,47 @@ export async function verifyAdmin(token: string) {
             setTimeout(() => reject(new Error("Auth Check Hanged (5s limit)")), 5000)
         );
 
-        console.log("verifyAdmin: Checking token...");
+        console.log("verifyAdmin: Checking token validity...");
         const { data: { user }, error } = await Promise.race([
             admin.auth.getUser(token),
             timeout
         ]);
 
         if (error || !user) {
-            console.error("verifyAdmin: Auth failed", error);
-            throw new Error("Unauthorized");
+            console.error("verifyAdmin: Token verification failed", error?.message);
+            throw new Error(`Unauthorized: ${error?.message || 'Invalid session'}`);
         }
 
-        // Check admin status
-        console.log("verifyAdmin: Checking admin_users table...");
-        const adminCheckPromise = admin
-            .from('admin_users')
-            .select('role')
-            .eq('id', user.id)
-            .single();
+        // Check admin status in database
+        console.log(`verifyAdmin: Checking permissions for ${user.email}...`);
 
-        const { data: adminUser } = await Promise.race([adminCheckPromise, timeout]);
+        // Parallel check for admin_users table and profiles table
+        const [adminCheck, profileCheck] = await Promise.all([
+            admin.from('admin_users').select('role').eq('id', user.id).single(),
+            admin.from('profiles').select('is_admin, role').eq('id', user.id).single()
+        ]);
 
-        const isDevAdmin = user.email === 'admin@likklelegends.com' || user.email?.includes('raykunjal');
+        const isDevAdmin =
+            user.email === 'admin@likklelegends.com' ||
+            user.email === 'raykunjal@gmail.com' ||
+            user.email?.includes('raykunjal');
 
-        if (!adminUser && !isDevAdmin) {
-            throw new Error("Forbidden: Not an admin");
+        const hasAdminRole =
+            adminCheck.data?.role === 'admin' ||
+            adminCheck.data?.role === 'super_admin' ||
+            profileCheck.data?.is_admin === true ||
+            profileCheck.data?.role === 'admin';
+
+        if (!hasAdminRole && !isDevAdmin) {
+            console.warn(`verifyAdmin: Access denied for ${user.email}`);
+            throw new Error("Forbidden: Admin access required");
         }
 
+        console.log(`verifyAdmin: Access granted for ${user.email}`);
         return admin;
     } catch (e: any) {
-        console.error("verifyAdmin: ERROR", e.message);
-        throw e;
+        console.error("verifyAdmin: CRITICAL ERROR", e.message);
+        throw new Error(e.message || "Admin verification failed");
     }
 }
 
@@ -261,13 +271,15 @@ export async function saveAdminCharacter(token: string, characterData: any) {
 export async function getContentCounts(token: string) {
     const admin = await verifyAdmin(token);
 
-    const [songs, storybooks, videos, printables, characters, games] = await Promise.all([
+    const [songs, storybooks, videos, printables, characters, games, announcements, customSongs] = await Promise.all([
         admin.from('songs').select('*', { count: 'exact', head: true }),
         admin.from('storybooks').select('*', { count: 'exact', head: true }),
         admin.from('videos').select('*', { count: 'exact', head: true }),
         admin.from('printables').select('*', { count: 'exact', head: true }),
         admin.from('characters').select('*', { count: 'exact', head: true }),
         admin.from('games').select('*', { count: 'exact', head: true }),
+        admin.from('announcements').select('*', { count: 'exact', head: true }),
+        admin.from('custom_song_requests').select('*', { count: 'exact', head: true }),
     ]);
 
     return {
@@ -277,6 +289,8 @@ export async function getContentCounts(token: string) {
         printables: printables.count || 0,
         characters: characters.count || 0,
         games: games.count || 0,
+        announcements: announcements.count || 0,
+        customRequests: customSongs.count || 0,
     };
 }
 
