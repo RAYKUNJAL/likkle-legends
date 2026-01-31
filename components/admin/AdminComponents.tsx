@@ -313,6 +313,8 @@ interface FileUploadProps {
 export function FileUpload({ accept, maxSize = 100, onUpload, label, description }: FileUploadProps) {
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const handleDrop = async (e: React.DragEvent) => {
@@ -325,6 +327,8 @@ export function FileUpload({ accept, maxSize = 100, onUpload, label, description
 
     const handleFile = async (file: File) => {
         setError(null);
+        setIsSuccess(false);
+        setProgress(0);
 
         // Validate size
         if (file.size > maxSize * 1024 * 1024) {
@@ -333,11 +337,24 @@ export function FileUpload({ accept, maxSize = 100, onUpload, label, description
         }
 
         setIsUploading(true);
+
+        // Simulated progress for better UX
+        const interval = setInterval(() => {
+            setProgress(prev => (prev < 90 ? prev + 10 : prev));
+        }, 100);
+
         try {
             await onUpload(file);
-        } catch (err) {
-            setError('Upload failed. Please try again.');
+            setProgress(100);
+            setIsSuccess(true);
+            setTimeout(() => {
+                setIsSuccess(false);
+                setProgress(0);
+            }, 3000);
+        } catch (err: any) {
+            setError(err.message || 'Upload failed. Please try again.');
         } finally {
+            clearInterval(interval);
             setIsUploading(false);
         }
     };
@@ -347,9 +364,18 @@ export function FileUpload({ accept, maxSize = 100, onUpload, label, description
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
-            className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all ${isDragging ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+            className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all relative overflow-hidden ${isDragging ? 'border-primary bg-primary/5' :
+                    isSuccess ? 'border-green-400 bg-green-50' :
+                        'border-gray-200 hover:border-gray-300'
                 }`}
         >
+            {isUploading && (
+                <div
+                    className="absolute bottom-0 left-0 h-1 bg-primary transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                />
+            )}
+
             <input
                 type="file"
                 accept={accept}
@@ -359,16 +385,21 @@ export function FileUpload({ accept, maxSize = 100, onUpload, label, description
             />
 
             <label htmlFor="file-upload" className="cursor-pointer">
-                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-colors ${isSuccess ? 'bg-green-100 text-green-600' : 'bg-gray-100'
+                    }`}>
                     {isUploading ? (
                         <RefreshCw className="animate-spin text-primary" size={28} />
+                    ) : isSuccess ? (
+                        <CheckCircle2 size={28} />
                     ) : (
                         <Upload className="text-gray-400" size={28} />
                     )}
                 </div>
-                <p className="font-bold text-gray-900 mb-1">{label}</p>
+                <p className="font-bold text-gray-900 mb-1">
+                    {isUploading ? 'Uploading...' : isSuccess ? 'Success!' : label}
+                </p>
                 {description && <p className="text-sm text-gray-500">{description}</p>}
-                <p className="text-xs text-gray-400 mt-2">Max file size: {maxSize}MB</p>
+                {!isUploading && !isSuccess && <p className="text-xs text-gray-400 mt-2">Max file size: {maxSize}MB</p>}
             </label>
 
             {error && (

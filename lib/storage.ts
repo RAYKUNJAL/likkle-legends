@@ -51,24 +51,40 @@ export async function uploadFile(
     bucket: BucketName,
     file: File | Blob | Buffer,
     path?: string,
-    useAdmin: boolean = false
-): Promise<{ url: string; path: string } | null> {
-    const client = useAdmin ? getSupabaseAdmin() : getSupabase();
-    // Generate filename if local file or string
-    const fileName = path || `${Date.now()}-${(file as any).name ? (file as any).name.replace(/\s+/g, '-') : 'file'}`;
+    options: {
+        useAdmin?: boolean,
+        customClient?: any,
+        upsert?: boolean,
+        onProgress?: (percent: number) => void
+    } = {}
+): Promise<{ url: string; path: string; name: string } | null> {
+    const { useAdmin = false, customClient, upsert = true } = options;
+    const client = customClient || (useAdmin ? getSupabaseAdmin() : getSupabase());
+
+    // Extract name safely
+    const originalName = (file as any).name || 'file';
+    const extension = originalName.split('.').pop();
+    const baseName = originalName.replace(/\.[^/.]+$/, "").replace(/[^a-z0-9]/gi, '-').toLowerCase();
+
+    // Generate clean filename
+    const fileName = path || `${baseName}-${Date.now()}.${extension}`;
 
     try {
         const { data, error } = await client.storage
             .from(bucket)
             .upload(fileName, file, {
                 cacheControl: '3600',
-                upsert: true,
+                upsert: upsert,
                 contentType: (file as any).type
             });
 
         if (error) {
-            console.error(`Upload error (${bucket}/${fileName}):`, error);
-            return null;
+            console.error(`❌ Upload failed (${bucket}/${fileName}):`, error.message);
+            // Check for specific error types if needed (e.g. RLS)
+            if (error.message.includes('row-level security')) {
+                throw new Error("Access Denied: You don't have permission to upload to this bucket.");
+            }
+            throw error;
         }
 
         const { data: urlData } = client.storage
@@ -78,10 +94,11 @@ export async function uploadFile(
         return {
             url: urlData.publicUrl,
             path: data.path,
+            name: fileName
         };
-    } catch (e) {
-        console.error("Upload exception:", e);
-        return null;
+    } catch (e: any) {
+        console.error("Critical Upload Exception:", e);
+        throw e; // Rethrow to allow UI to handle
     }
 }
 

@@ -87,17 +87,17 @@ export default function StoryGenerator() {
     const missionField = getField('mission');
 
     return (
-        <section id="sample-letter" className="py-24 bg-zinc-50">
-            <div className="container">
-                <div className="max-w-6xl mx-auto bg-white rounded-[4rem] border-8 border-primary/5 shadow-2xl overflow-hidden flex flex-col lg:flex-row">
-                    <div className="lg:w-2/5 p-10 lg:p-14 flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-zinc-100">
+        <section id="sample-letter" className="py-12 sm:py-24 bg-zinc-50">
+            <div className="container px-4">
+                <div className="max-w-6xl mx-auto bg-white rounded-[2rem] sm:rounded-[4rem] border-4 sm:border-8 border-primary/5 shadow-2xl overflow-hidden flex flex-col lg:flex-row">
+                    <div className="lg:w-2/5 p-6 sm:p-10 lg:p-14 flex flex-col justify-center border-b lg:border-b-0 lg:border-r border-zinc-100">
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-bold uppercase tracking-widest mb-6">
                             <Sparkles size={14} /> AI Story Studio
                         </div>
-                        <h2 className="text-4xl font-black text-deep mb-4 leading-tight">
+                        <h2 className="text-3xl sm:text-4xl font-black text-deep mb-4 leading-tight">
                             {ai_story_studio.title}
                         </h2>
-                        <p className="text-deep/60 text-sm mb-8">
+                        <p className="text-deep/60 text-sm mb-6 sm:mb-8 font-medium">
                             {ai_story_studio.subtitle}
                         </p>
 
@@ -193,18 +193,18 @@ export default function StoryGenerator() {
                         </div>
                     </div>
 
-                    <div className="lg:w-3/5 bg-deep p-10 lg:p-16 relative flex flex-col justify-center min-h-[500px]">
-                        <div className="absolute top-0 right-0 w-80 h-80 bg-primary rounded-full -mr-40 -mt-40 blur-[120px] opacity-20"></div>
-                        <div className="absolute bottom-0 left-0 w-80 h-80 bg-accent rounded-full -ml-40 -mb-40 blur-[120px] opacity-10"></div>
+                    <div className="lg:w-3/5 bg-deep p-8 sm:p-10 lg:p-16 relative flex flex-col justify-center min-h-[400px] sm:min-h-[500px]">
+                        <div className="absolute top-0 right-0 w-60 sm:w-80 h-60 sm:h-80 bg-primary rounded-full -mr-20 sm:-mr-40 -mt-20 sm:-mt-40 blur-[80px] sm:blur-[120px] opacity-20"></div>
+                        <div className="absolute bottom-0 left-0 w-60 sm:w-80 h-60 sm:h-80 bg-accent rounded-full -ml-20 sm:-ml-40 -mb-20 sm:-mb-40 blur-[80px] sm:blur-[120px] opacity-10"></div>
 
                         <div className="relative z-10 w-full">
                             {result ? (
-                                <div className="space-y-6 animate-in fade-in zoom-in duration-500 max-h-[600px] overflow-y-auto pr-4 custom-scrollbar">
-                                    <div className="w-14 h-14 bg-primary/20 text-primary rounded-2xl flex items-center justify-center mb-4">
+                                <div className="space-y-6 animate-in fade-in zoom-in duration-500 max-h-[500px] sm:max-h-[600px] overflow-y-auto pr-2 sm:pr-4 custom-scrollbar">
+                                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-primary/20 text-primary rounded-xl sm:rounded-2xl flex items-center justify-center mb-4">
                                         <BookOpen size={28} />
                                     </div>
                                     <div className="flex items-start justify-between">
-                                        <h3 className="text-3xl font-black text-white mb-4 leading-tight">{result.title}</h3>
+                                        <h3 className="text-2xl sm:text-3xl font-black text-white mb-4 leading-tight pr-4">{result.title}</h3>
                                         <button
                                             onClick={() => handleReadSegment(result.title, 'title')}
                                             className={`p-3 rounded-full transition-all ${audioState.id === 'title' && audioState.playing ? 'bg-primary text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
@@ -218,10 +218,10 @@ export default function StoryGenerator() {
                                         </button>
                                     </div>
 
-                                    <div className="space-y-6">
+                                    <div className="space-y-5 sm:space-y-6">
                                         {result.content.split('\n\n').map((para, i) => (
                                             <div key={i} className="group relative">
-                                                <p className="text-xl font-medium text-white/80 leading-relaxed italic pr-12">
+                                                <p className="text-lg sm:text-xl font-medium text-white/80 leading-relaxed italic pr-10 sm:pr-12">
                                                     {para.replace(/\[READING ASSISTANT TRIGGER\]/g, '✨')}
                                                 </p>
                                                 <button

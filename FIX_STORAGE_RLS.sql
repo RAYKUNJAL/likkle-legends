@@ -1,59 +1,90 @@
--- Enable RLS on storage.objects if not already enabled
-alter table storage.objects enable row level security;
--- Policy to allow authenticated users to upload files to any bucket
--- (For a stricter production app, you might limit this to 'admin' role, 
---  but for now assuming authenticated app users/admins)
-create policy "Allow authenticated uploads" on storage.objects for
-insert to authenticated with check (
-        bucket_id in (
-            'characters',
+-- =============================================
+-- FIX STORAGE RLS & ADMIN ROLE (v1.1 Robust)
+-- =============================================
+-- 1. ENSURE PRIMARY USER IS ADMIN
+-- Replace 'raykunjal@gmail.com' with the correct email if different
+UPDATE public.profiles
+SET role = 'admin'
+WHERE email = 'raykunjal@gmail.com';
+-- Ensure entry in admin_users for maximum fallback compatibility
+INSERT INTO public.admin_users (id, role)
+SELECT id,
+    'admin'
+FROM public.profiles
+WHERE email = 'raykunjal@gmail.com' ON CONFLICT (id) DO NOTHING;
+-- 2. RESET STORAGE POLICIES FOR CONTENT BUCKETS
+-- We drop existing policies first to avoid "already exists" errors
+DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+DROP POLICY IF EXISTS "Admin Uploads" ON storage.objects;
+DROP POLICY IF EXISTS "Admin Management" ON storage.objects;
+DROP POLICY IF EXISTS "Public Read Access" ON storage.objects;
+DROP POLICY IF EXISTS "Admin Full Control" ON storage.objects;
+-- Policy for Public Read (Everyone)
+CREATE POLICY "Public Read Access" ON storage.objects FOR
+SELECT USING (
+        bucket_id IN (
             'songs',
             'videos',
-            'storybooks',
             'printables',
-            'avatars',
-            'vr-assets',
-            'ar-models'
-        )
-    );
--- Policy to allow authenticated users to update their own files or all files if admin
-create policy "Allow authenticated updates" on storage.objects for
-update to authenticated using (
-        bucket_id in (
+            'storybooks',
             'characters',
-            'songs',
-            'videos',
-            'storybooks',
-            'printables',
-            'avatars',
-            'vr-assets',
-            'ar-models'
+            'avatars'
         )
     );
--- Policy to allow authenticated users to delete files
-create policy "Allow authenticated deletes" on storage.objects for delete to authenticated using (
-    bucket_id in (
-        'characters',
+-- Policy for Admin Full Control (Insert, Update, Delete, Select)
+-- Allows authenticated admins to manage all content assets
+CREATE POLICY "Admin Full Control" ON storage.objects FOR ALL USING (
+    bucket_id IN (
         'songs',
         'videos',
-        'storybooks',
         'printables',
-        'avatars',
-        'vr-assets',
-        'ar-models'
+        'storybooks',
+        'characters',
+        'avatars'
+    )
+    AND (
+        (
+            SELECT role
+            FROM public.profiles
+            WHERE profiles.id = auth.uid()
+        ) = 'admin'
+        OR EXISTS (
+            SELECT 1
+            FROM public.admin_users
+            WHERE admin_users.id = auth.uid()
+        )
+    )
+) WITH CHECK (
+    bucket_id IN (
+        'songs',
+        'videos',
+        'printables',
+        'storybooks',
+        'characters',
+        'avatars'
+    )
+    AND (
+        (
+            SELECT role
+            FROM public.profiles
+            WHERE profiles.id = auth.uid()
+        ) = 'admin'
+        OR EXISTS (
+            SELECT 1
+            FROM public.admin_users
+            WHERE admin_users.id = auth.uid()
+        )
     )
 );
--- Policy to allow public to view files (already likely exists but ensuring it)
-create policy "Allow public viewing" on storage.objects for
-select to public using (
-        bucket_id in (
-            'characters',
-            'songs',
-            'videos',
-            'storybooks',
-            'printables',
-            'avatars',
-            'vr-assets',
-            'ar-models'
-        )
+-- 3. ENSURE BUCKETS ARE PUBLIC
+-- This ensures the getPublicUrl() works as expected
+UPDATE storage.buckets
+SET public = true
+WHERE id IN (
+        'songs',
+        'videos',
+        'printables',
+        'storybooks',
+        'characters',
+        'avatars'
     );

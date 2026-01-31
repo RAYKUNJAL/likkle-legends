@@ -103,26 +103,26 @@ export default function StoriesPage() {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
             {/* Header */}
             <header className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                <div className="max-w-6xl mx-auto px-4 py-6">
-                    <div className="flex items-center gap-4 mb-6">
-                        <Link href="/portal" className="p-2 hover:bg-white/10 rounded-xl transition-colors">
+                <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-8 sm:mb-10">
+                        <Link href="/portal" className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center hover:bg-white/20 transition-all shrink-0">
                             <ArrowLeft size={24} />
                         </Link>
                         <div>
-                            <h1 className="text-2xl font-black">Story Library</h1>
-                            <p className="text-white/70 text-sm">{stories.length} stories • Caribbean adventures</p>
+                            <h1 className="text-3xl sm:text-5xl font-black tracking-tight mb-2">Story Library</h1>
+                            <p className="text-white/70 text-sm sm:text-lg font-medium">{stories.length} interactive adventures from across the islands</p>
                         </div>
                     </div>
 
                     {/* Search */}
-                    <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <div className="relative group max-w-2xl">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-white transition-colors" size={20} />
                         <input
                             type="text"
-                            placeholder="Search stories..."
+                            placeholder="Find your favorite legend..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:bg-white/20 focus:outline-none"
+                            className="w-full pl-12 pr-4 py-4 bg-white/10 border-2 border-white/10 rounded-2xl text-white placeholder-white/40 focus:bg-white/20 focus:border-white/30 focus:outline-none transition-all text-lg"
                         />
                     </div>
                 </div>
@@ -134,15 +134,15 @@ export default function StoriesPage() {
             </div>
 
             {/* Filters */}
-            <div className="max-w-6xl mx-auto px-4 -mt-4">
-                <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-100 flex flex-wrap gap-4 items-center">
+            <div className="max-w-6xl mx-auto px-4 -mt-6">
+                <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-2xl border border-gray-100 flex flex-wrap gap-3 sm:gap-4 items-center">
                     {/* Island Filter */}
-                    <div className="flex items-center gap-2">
-                        <Filter size={18} className="text-gray-400" />
+                    <div className="flex items-center gap-2 flex-1 min-w-[140px]">
+                        <Filter size={18} className="text-primary" />
                         <select
                             value={selectedIsland}
                             onChange={(e) => setSelectedIsland(e.target.value)}
-                            className="px-3 py-2 border border-gray-200 rounded-xl font-medium text-sm"
+                            className="w-full px-3 py-2 bg-gray-50 border-none rounded-xl font-bold text-sm text-gray-700 outline-none ring-2 ring-transparent focus:ring-primary/20"
                             aria-label="Filter by island"
                         >
                             {ISLANDS.map(island => (
@@ -152,18 +152,18 @@ export default function StoriesPage() {
                     </div>
 
                     {/* Age Track Filter */}
-                    <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+                    <div className="flex gap-1 bg-gray-50 rounded-xl p-1 overflow-x-auto no-scrollbar">
                         {[
                             { id: 'all', label: 'All Ages' },
-                            { id: 'mini', label: 'Mini (4-5)' },
-                            { id: 'big', label: 'Big (6-8)' },
+                            { id: 'mini', label: 'Mini' },
+                            { id: 'big', label: 'BigKids' },
                         ].map(track => (
                             <button
                                 key={track.id}
                                 onClick={() => setSelectedAgeTrack(track.id as typeof selectedAgeTrack)}
-                                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${selectedAgeTrack === track.id
-                                    ? 'bg-white text-gray-900 shadow-sm'
-                                    : 'text-gray-500'
+                                className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-black transition-all whitespace-nowrap ${selectedAgeTrack === track.id
+                                    ? 'bg-white text-primary shadow-md'
+                                    : 'text-gray-400 hover:text-gray-600'
                                     }`}
                             >
                                 {track.label}
@@ -174,24 +174,24 @@ export default function StoriesPage() {
                     {/* Accessibility Filter */}
                     <button
                         onClick={() => setShowOnlyAccessible(!showOnlyAccessible)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-all ${showOnlyAccessible
-                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                            : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black border-2 transition-all ${showOnlyAccessible
+                            ? 'bg-primary/5 border-primary/20 text-primary'
+                            : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'}`}
                     >
                         {showOnlyAccessible ? <Check size={16} /> : <Lock size={16} />}
-                        My Plan Only
+                        Accessible
                     </button>
 
                     {/* Sort */}
-                    <div className="ml-auto">
+                    <div className="flex-1 sm:flex-none sm:ml-auto min-w-[140px]">
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                            className="px-3 py-2 border border-gray-200 rounded-xl font-medium text-sm"
+                            className="w-full px-3 py-2 bg-gray-50 border-none rounded-xl font-bold text-sm text-gray-700 outline-none ring-2 ring-transparent focus:ring-primary/20"
                             aria-label="Sort by"
                         >
-                            <option value="popular">Most Popular</option>
-                            <option value="rating">Highest Rated</option>
+                            <option value="popular">Popular</option>
+                            <option value="rating">Top Rated</option>
                             <option value="newest">Newest</option>
                         </select>
                     </div>

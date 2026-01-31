@@ -8,6 +8,7 @@ import { detectCountry, GeoInfo } from '@/lib/geo-routing';
 import { supabase } from '@/lib/storage';
 import { useUser } from '@/components/UserContext';
 import { trackEvent } from '@/lib/analytics';
+import { queueAbandonedCheckout, cancelAbandonedCheckout } from '@/lib/services/email-triggers';
 
 // Simple Error Boundary Component
 class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean }> {
@@ -171,6 +172,11 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
 
             setStep('success');
 
+            // --- REVENUE RECOVERY: CANCEL ABANDONMENT ---
+            if (user?.email) {
+                await cancelAbandonedCheckout(user.email);
+            }
+
             // Track Conversion
             trackEvent('purchase', {
                 value: totalPrice,
@@ -319,7 +325,13 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
 
                     <div className="flex justify-center">
                         <button
-                            onClick={() => setStep('upsells')}
+                            onClick={async () => {
+                                setStep('upsells');
+                                // TRIGGER ABANDONMENT RECOVERY
+                                if (user?.email) {
+                                    await queueAbandonedCheckout(user.email, user.user_metadata?.full_name || 'Legend', plan.name);
+                                }
+                            }}
                             className="px-8 py-4 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary/90 transition-colors"
                         >
                             Continue with {plan.name} →

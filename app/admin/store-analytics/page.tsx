@@ -17,9 +17,13 @@ export default function StoreAnalyticsPage() {
     }, [user]);
 
     const loadStats = async () => {
-        if (!user) return;
         try {
-            const data = await getStoreAnalytics(user.id); // Passing ID as token for now consistent with other files
+            const { createClient } = await import('@/lib/supabase/client');
+            const supabase = createClient();
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const data = await getStoreAnalytics(session.access_token);
             setStats(data);
         } catch (e) {
             console.error(e);

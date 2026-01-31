@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
     Sparkles, BookOpen, Music, Palette, Target, Star, Play,
     Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video, Radio,
-    Map as MapIcon, Grid, Wand2, LogOut, Download
+    Map as MapIcon, Grid, Wand2, LogOut, Download, Menu, X
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { getSongs, getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
@@ -58,6 +58,8 @@ interface Video {
     reward_xp?: number;
 }
 
+type PortalSection = 'home' | 'stories' | 'songs' | 'missions' | 'games' | 'lessons' | 'radio' | 'printables';
+
 export default function ChildPortalPage() {
     const router = useRouter();
     const { user, activeChild, canAccess, isSubscribed, isLoading: userLoading } = useUser();
@@ -66,8 +68,9 @@ export default function ChildPortalPage() {
     const [missions, setMissions] = useState<Mission[]>([]);
     const [videos, setVideos] = useState<Video[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [activeSection, setActiveSection] = useState<'home' | 'stories' | 'songs' | 'missions' | 'games' | 'lessons' | 'radio'>('home');
+    const [activeSection, setActiveSection] = useState<PortalSection>('home');
     const [viewMode, setViewMode] = useState<'map' | 'grid'>('map');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Media States
     const [activeVideo, setActiveVideo] = useState<Video | null>(null);
@@ -196,10 +199,43 @@ export default function ChildPortalPage() {
             <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-200/20 rounded-full blur-[120px] -mr-48 -mt-48 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-amber-200/20 rounded-full blur-[120px] -ml-48 -mb-48 pointer-events-none" />
 
-            <div className="flex h-screen">
-                {/* Character Sidebar */}
-                <aside className="w-[300px] bg-[#3ABEF9] relative flex flex-col items-center justify-end pb-12 overflow-hidden shadow-[10px_0_30px_rgba(0,0,0,0.05)] z-20">
-                    <div className="absolute top-12 left-8">
+            {/* Mobile Header */}
+            <header className="lg:hidden absolute top-0 left-0 right-0 h-20 px-6 flex items-center justify-between z-30 bg-white/80 backdrop-blur-md border-b border-primary/10">
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center"
+                    >
+                        <Menu size={24} />
+                    </button>
+                    <h1 className="text-xl font-black text-primary leading-none">Likkle Legends</h1>
+                </div>
+
+                {activeChild && (
+                    <div className="flex items-center gap-2">
+                        <span className="text-xl">{currentLevel.icon}</span>
+                        <div className="bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
+                            <p className="text-[10px] font-black text-primary leading-none uppercase pt-0.5">{activeChild.total_xp.toLocaleString()} XP</p>
+                        </div>
+                    </div>
+                )}
+            </header>
+
+            <div className="flex h-screen overflow-hidden">
+                {/* Character Sidebar (Desktop & Mobile Drawer) */}
+                <aside className={`
+                    fixed inset-y-0 left-0 z-50 w-[280px] bg-[#3ABEF9] translate-x-[-100%] transition-transform duration-500 ease-spring lg:relative lg:translate-x-0
+                    ${isSidebarOpen ? 'translate-x-0 shadow-[20px_0_60px_rgba(0,0,0,0.1)]' : ''}
+                    flex flex-col items-center justify-start py-12 overflow-y-auto overflow-x-hidden
+                `}>
+                    <button
+                        onClick={() => setIsSidebarOpen(false)}
+                        className="lg:hidden absolute top-8 right-6 w-10 h-10 bg-white/20 text-white rounded-full flex items-center justify-center hover:bg-white/40 transition-colors"
+                    >
+                        <X size={24} />
+                    </button>
+
+                    <div className="w-full px-8 mb-12">
                         <h1 className="text-white text-3xl font-black leading-tight drop-shadow-md">
                             Likkle<br />Legends
                         </h1>
@@ -207,7 +243,7 @@ export default function ChildPortalPage() {
                     </div>
 
                     {/* Tanty Spice Character */}
-                    <div className="relative w-40 h-40 mb-6 group shrink-0">
+                    <div className="relative w-32 h-32 mb-6 group shrink-0">
                         <Image
                             src="/images/tanty_spice_avatar.jpg"
                             alt="Tanty Spice"
@@ -216,15 +252,14 @@ export default function ChildPortalPage() {
                         />
                     </div>
 
-                    <div className="bg-white/20 backdrop-blur-md px-6 py-3 rounded-full border border-white/30 text-white font-black text-sm shadow-lg mb-8">
+                    <div className="bg-white/20 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/30 text-white font-black text-xs shadow-lg mb-8">
                         Bless up, Legend! 👋
                     </div>
 
                     {/* Navigation Items */}
-                    <div className="w-full px-6 space-y-2 mb-12">
+                    <div className="w-full px-6 space-y-2 mb-8">
                         {navItems.map((item) => {
                             const Icon = item.icon;
-                            // Check actitve state differently for games since it's a route
                             const isActive = activeSection === item.id;
                             return (
                                 <button
@@ -233,7 +268,8 @@ export default function ChildPortalPage() {
                                         if (item.id === 'games') {
                                             router.push('/portal/games');
                                         } else {
-                                            setActiveSection(item.id as any);
+                                            setActiveSection(item.id as PortalSection);
+                                            setIsSidebarOpen(false); // Close on mobile
                                         }
                                     }}
                                     className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-sm transition-all group ${isActive
@@ -258,14 +294,22 @@ export default function ChildPortalPage() {
                     </div>
 
                     {/* Tropical elements deco */}
-                    <div className="absolute bottom-4 left-4 opacity-10 rotate-12 pointer-events-none">🌴</div>
-                    <div className="absolute top-1/2 right-4 opacity-10 -rotate-12 pointer-events-none">🌺</div>
+                    <div className="absolute top-[40%] right-[-20px] opacity-10 rotate-12 text-6xl pointer-events-none">🌴</div>
+                    <div className="absolute bottom-[10%] left-[-20px] opacity-10 -rotate-12 text-6xl pointer-events-none">🌺</div>
                 </aside>
 
+                {/* Mobile Overlay */}
+                {isSidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-blue-900/40 backdrop-blur-sm z-40 lg:hidden"
+                        onClick={() => setIsSidebarOpen(false)}
+                    />
+                )}
+
                 {/* Main Viewport */}
-                <main className="flex-1 relative overflow-y-auto pt-16 px-12 pb-24">
-                    {/* Top Bar for XP and Settings */}
-                    <div className="absolute top-8 right-12 flex items-center gap-6 z-10">
+                <main className="flex-1 relative overflow-y-auto pt-24 lg:pt-16 px-6 lg:px-12 pb-32 lg:pb-24">
+                    {/* Top Bar for XP and Settings (Desktop only) */}
+                    <div className="hidden lg:flex absolute top-8 right-12 items-center gap-6 z-10">
                         {activeChild && (
                             <div className="bg-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-4 border-2 border-primary/10">
                                 <span className="text-2xl animate-float">{currentLevel.icon}</span>
@@ -294,7 +338,7 @@ export default function ChildPortalPage() {
                                 </p>
                             </div>
 
-                            <div className="grid md:grid-cols-3 gap-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
                                 {portals.map((portal) => (
                                     <button
                                         key={portal.id}
@@ -302,18 +346,18 @@ export default function ChildPortalPage() {
                                             if (portal.href) {
                                                 router.push(portal.href);
                                             } else {
-                                                setActiveSection(portal.id as any);
+                                                setActiveSection(portal.id as PortalSection);
                                             }
                                         }}
-                                        className={`group relative h-[400px] rounded-[4rem] ${portal.color} p-1 shadow-2xl ${portal.shadow} hover:-translate-y-4 transition-all duration-500 overflow-hidden`}
+                                        className={`group relative h-[320px] sm:h-[400px] rounded-[3rem] sm:rounded-[4rem] ${portal.color} p-1 shadow-xl sm:shadow-2xl ${portal.shadow} hover:-translate-y-4 transition-all duration-500 overflow-hidden`}
                                     >
-                                        <div className="h-full bg-white/10 group-hover:bg-transparent rounded-[3.8rem] transition-colors p-8 flex flex-col items-center justify-center gap-6 text-white text-center">
-                                            <div className="w-32 h-32 bg-white rounded-[2.5rem] flex items-center justify-center shadow-2xl rotate-3 group-hover:rotate-0 group-hover:scale-110 transition-transform">
-                                                <portal.icon size={64} className={portal.iconColor} />
+                                        <div className="h-full bg-white/10 group-hover:bg-transparent rounded-[2.8rem] sm:rounded-[3.8rem] transition-colors p-6 sm:p-8 flex flex-col items-center justify-center gap-4 sm:gap-6 text-white text-center">
+                                            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-[2rem] sm:rounded-[2.5rem] flex items-center justify-center shadow-2xl rotate-3 group-hover:rotate-0 group-hover:scale-110 transition-transform">
+                                                <portal.icon size={48} className={portal.iconColor} />
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-sm font-black uppercase tracking-[0.2em] opacity-80">{portal.sub}</p>
-                                                <h3 className="text-5xl font-black drop-shadow-sm">{portal.label}</h3>
+                                                <p className="text-[10px] sm:text-sm font-black uppercase tracking-[0.2em] opacity-80">{portal.sub}</p>
+                                                <h3 className="text-3xl sm:text-5xl font-black drop-shadow-sm">{portal.label}</h3>
                                             </div>
                                             <div className="mt-4 w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <ChevronRight size={32} />
@@ -333,12 +377,12 @@ export default function ChildPortalPage() {
                             {/* Stories Section */}
                             {(activeSection === 'stories') && (
                                 <section className="space-y-8 animate-in fade-in slide-in-from-bottom-5">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                        <div className="flex items-center gap-5">
-                                            <div className="w-16 h-16 bg-blue-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner">📖</div>
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                                        <div className="flex items-center gap-4 sm:gap-5">
+                                            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center text-2xl sm:text-4xl shadow-inner italic">📖</div>
                                             <div>
-                                                <h2 className="text-4xl font-black text-blue-900 tracking-tight">Island Stories</h2>
-                                                <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">Tales from across the Caribbean</p>
+                                                <h2 className="text-2xl sm:text-4xl font-black text-blue-900 tracking-tight">Island Stories</h2>
+                                                <p className="text-blue-700/60 font-bold uppercase text-[10px] sm:text-xs tracking-widest">Tales from across the Caribbean</p>
                                             </div>
                                         </div>
                                     </div>
@@ -352,16 +396,16 @@ export default function ChildPortalPage() {
                                             />
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
                                             {stories.map((story) => {
                                                 const isLocked = !canAccess(story.tier_required);
                                                 return (
                                                     <Link
                                                         key={story.id}
                                                         href={isLocked ? '#' : `/portal/stories/${story.id}`}
-                                                        className={`bg-white rounded-[3rem] p-5 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-blue-100 relative ${isLocked ? 'grayscale opacity-80' : ''}`}
+                                                        className={`bg-white rounded-[2rem] sm:rounded-[3rem] p-3 sm:p-5 shadow-lg sm:shadow-xl hover:shadow-2xl transition-all group border-2 sm:border-4 border-transparent hover:border-blue-100 relative ${isLocked ? 'grayscale opacity-80' : ''}`}
                                                     >
-                                                        <div className="relative aspect-[3/4] bg-blue-50 rounded-[2.5rem] mb-6 overflow-hidden">
+                                                        <div className="relative aspect-[3/4] bg-blue-50 rounded-[1.5rem] sm:rounded-[2.5rem] mb-4 sm:mx-0 overflow-hidden">
                                                             {story.cover_image_url ? (
                                                                 <Image
                                                                     src={story.cover_image_url}
@@ -489,16 +533,16 @@ export default function ChildPortalPage() {
                                             />
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
                                             {songs.map((song) => {
                                                 const isLocked = !canAccess(song.tier_required);
                                                 return (
                                                     <button
                                                         key={song.id}
                                                         onClick={() => !isLocked && setActiveSong(song)}
-                                                        className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-pink-100 text-left ${isLocked ? 'grayscale opacity-80 cursor-not-allowed' : ''}`}
+                                                        className={`bg-white rounded-[2rem] sm:rounded-[3.5rem] p-4 sm:p-6 shadow-lg sm:shadow-xl hover:shadow-2xl transition-all group border-2 sm:border-4 border-transparent hover:border-pink-100 text-left ${isLocked ? 'grayscale opacity-80 cursor-not-allowed' : ''}`}
                                                     >
-                                                        <div className="relative aspect-square bg-pink-50 rounded-full mb-6 overflow-hidden shadow-2xl ring-4 ring-white group-hover:ring-pink-100 transition-all">
+                                                        <div className="relative aspect-square bg-pink-50 rounded-full mb-4 sm:mb-6 overflow-hidden shadow-xl ring-2 sm:ring-4 ring-white group-hover:ring-pink-100 transition-all">
                                                             {song.thumbnail_url ? (
                                                                 <Image
                                                                     src={song.thumbnail_url}

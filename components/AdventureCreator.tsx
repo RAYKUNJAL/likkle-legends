@@ -51,13 +51,13 @@ export default function AdventureCreator() {
             <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent/5 rounded-full -ml-16 -mb-16 blur-2xl"></div>
 
             <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
-                        <Sparkles size={24} />
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 text-primary rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0">
+                        <Sparkles size={24} className="sm:size-8" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-black text-blue-950">Magic Adventure Studio</h2>
-                        <p className="text-blue-900/40 text-sm font-bold uppercase tracking-widest">Create Your Own Legend</p>
+                        <h2 className="text-xl sm:text-3xl font-black text-blue-950">Magic Adventure Studio</h2>
+                        <p className="text-blue-900/40 text-[10px] sm:text-xs font-black uppercase tracking-widest">Create Your Own Legend</p>
                     </div>
                 </div>
 
@@ -125,16 +125,16 @@ export default function AdventureCreator() {
                 <button
                     onClick={handleCreate}
                     disabled={isGenerating}
-                    className="w-full py-6 bg-gradient-to-r from-primary to-accent text-white rounded-[2rem] font-black text-xl flex items-center justify-center gap-4 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20"
+                    className="w-full py-5 sm:py-6 bg-gradient-to-r from-primary to-accent text-white rounded-2xl sm:rounded-[2rem] font-black text-lg sm:text-xl flex items-center justify-center gap-3 sm:gap-4 hover:scale-[1.02] active:scale-95 transition-all shadow-xl shadow-primary/20"
                 >
                     {isGenerating ? (
                         <>
-                            <Loader2 className="animate-spin" size={28} />
-                            <span>Baking Your Magic Story...</span>
+                            <Loader2 className="animate-spin" size={24} className="sm:size-7" />
+                            <span className="text-sm sm:text-lg">Baking Your Magic Story...</span>
                         </>
                     ) : (
                         <>
-                            <Wand2 size={28} />
+                            <Wand2 size={24} className="sm:size-7" />
                             <span>Launch Magic Adventure</span>
                         </>
                     )}
