@@ -299,8 +299,7 @@ export default function AdminEmailEnginePage() {
                     </div>
                 </div>
             )}
-        </div>
-        </AdminLayout >
+        </AdminLayout>
     );
 }
 
