@@ -82,9 +82,9 @@ class SupabaseClientManager {
     /**
      * Test connection to Supabase
      */
-    async testConnection(): Promise<{ success: boolean; error?: string }> {
+    async testConnection(useServiceRole = false): Promise<{ success: boolean; error?: string }> {
         try {
-            const client = this.getClient();
+            const client = useServiceRole ? this.getServiceClient() : this.getClient();
 
             // Simple query to test connection
             const { error } = await client
