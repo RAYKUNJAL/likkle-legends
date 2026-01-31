@@ -291,10 +291,6 @@ export async function saveSiteSettings(token: string, key: string, content: any)
     }
 }
 
-if (error) throw error;
-return true;
-}
-
 export async function getAdminCharacters(token: string) {
     const admin = await verifyAdmin(token);
     const { data, error } = await admin
