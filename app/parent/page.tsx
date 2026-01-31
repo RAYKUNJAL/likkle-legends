@@ -16,6 +16,7 @@ import { getRecentActivities, getMissions, logActivity } from '@/lib/database';
 import TantyRadio from '@/components/TantyRadio';
 import Image from 'next/image';
 import ContentReviewFeed from '@/components/island-brain/ContentReviewFeed';
+import ReferralWidget from '@/components/dashboard/ReferralWidget';
 
 export default function ParentDashboard() {
     const { user, children, activeChild, isLoading, isSubscribed } = useUser();
@@ -313,6 +314,9 @@ export default function ParentDashboard() {
                                 </div>
                             </div>
                         )}
+
+                        {/* Referral / Rewards Widget */}
+                        <ReferralWidget />
 
                         {/* Subscription & Rewards */}
                         <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-12 rounded-[4rem] shadow-2xl text-white relative overflow-hidden">
