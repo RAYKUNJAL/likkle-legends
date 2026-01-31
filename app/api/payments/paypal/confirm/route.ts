@@ -3,8 +3,61 @@ import { supabaseAdmin } from '@/lib/supabase-client';
 import { SUBSCRIPTION_PLANS, SubscriptionTier } from '@/lib/paypal';
 import { getFulfillmentHub } from '@/lib/geo-routing';
 import { sendEmail, ADMIN_NEW_ORDER_TEMPLATE } from '@/lib/email';
+import { cookies } from 'next/headers';
 
 const supabase = supabaseAdmin;
+
+async function recordReferralConversion(userId: string, refCode: string, amount: number, orderId: string) {
+    // 1. Check if it's a PROMOTER code
+    const { data: promoter } = await supabase
+        .from('promoters')
+        .select('*')
+        .eq('referral_code', refCode)
+        .eq('status', 'approved')
+        .single();
+
+    if (promoter) {
+        // Calculate Commission (e.g. 20%)
+        const commission = amount * (Number(promoter.commission_rate) || 0.2);
+
+        // Record Referral
+        await supabase.from('referrals').insert({
+            promoter_id: promoter.id,
+            order_id: orderId,
+            amount: amount,
+            commission_amount: commission,
+            status: 'pending_payout'
+        });
+
+        // Update Promoter Earnings
+        await supabase.rpc('increment_promoter_earnings', {
+            row_id: promoter.id,
+            amount: commission
+        });
+
+        return { type: 'promoter', id: promoter.id, commission };
+    }
+
+    // 2. Check if it's a PARENT code (via user_metadata)
+    // We search profiles to find who owns this code
+    // Note: This requires a new index or query on profiles if we stored it in metadata.
+    // Ideally we'd have a 'referral_codes' table mapping code -> user_id, 
+    // but for MVP we might search auth.users or profiles if we promoted it to a column.
+    // For now, let's assume we can lookup by a column 'my_referral_code' on profiles if added, 
+    // OR we scan a lookup table. 
+    // Let's rely on the `referral_credits` logic which uses `referrer_id`.
+
+    // **FIX**: Since `my_referral_code` isn't an indexed column yet, we skip this for now 
+    // unless we added it to `profiles`. 
+    // Actually, let's query `promoters` table for "parents" too if we treat them as lightweight promoters?
+    // No, parents get credits.
+
+    // To make this robust without schema changes on `profiles`, we'll assume 
+    // Parent Codes are just User IDs or we use a separate lookup table.
+    // For "Give $10/Get Month", let's pause parent attribution here until we migrate usage 
+    // to a proper lookup table or robust query.
+    // We will stick to PROMOTER attribution first as that's the "Million Dollar" revenue driver.
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -109,8 +162,23 @@ export async function POST(request: NextRequest) {
                     )
                 });
             }
+
+            // 5. PROCESS GROWTH ENGINE / REFERRALS
+            const cookieStore = cookies();
+            const refCode = cookieStore.get('likkle_ref')?.value;
+
+            if (refCode) {
+                // Determine amount (trial is 0, others have price)
+                const plan = SUBSCRIPTION_PLANS[tier as SubscriptionTier];
+                const price = billingCycle === 'year' ? (plan?.priceYearly || 0) : (plan?.price || 0);
+
+                if (price > 0) {
+                    await recordReferralConversion(userIdToUpdate, refCode, price, subscriptionId || orderId || 'unknown');
+                }
+            }
+
         } catch (alertErr) {
-            console.error('[ADMIN] Failed to send sale alert:', alertErr);
+            console.error('[ADMIN/GROWTH] Failed post-processing:', alertErr);
         }
 
         return NextResponse.json({

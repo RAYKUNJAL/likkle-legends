@@ -3,7 +3,21 @@ import { type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
-    return await updateSession(request)
+    const response = await updateSession(request);
+
+    // GROWTH ENGINE: Capture Referral Code
+    const refCode = request.nextUrl.searchParams.get('ref');
+    if (refCode) {
+        // Set a 30-day cookie for the referral
+        response.cookies.set('likkle_ref', refCode, {
+            path: '/',
+            maxAge: 60 * 60 * 24 * 30, // 30 days
+            sameSite: 'lax',
+            httpOnly: false // Allow client-side access if needed
+        });
+    }
+
+    return response;
 }
 
 export const config = {
