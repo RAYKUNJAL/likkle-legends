@@ -92,6 +92,7 @@ ALTER TABLE promoters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referral_credits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contest_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE referral_clicks ENABLE ROW LEVEL SECURITY;
 -- Promoters can view their own data
 CREATE POLICY "Promoters view own data" ON promoters FOR
 SELECT USING (auth.uid() = user_id);
@@ -110,6 +111,24 @@ SELECT USING (is_active = true);
 -- Anyone can insert contest entry (Viral nature)
 CREATE POLICY "Public insert contest entries" ON contest_entries FOR
 INSERT WITH CHECK (true);
+-- Users (Participants) view their own entries
+CREATE POLICY "Participants view own entries" ON contest_entries FOR
+SELECT USING (
+        email = current_setting('request.jwt.claim.email', true)
+    );
+-- Public Insert for Referral Clicks (Anonymous tracking)
+CREATE POLICY "Public insert referral clicks" ON referral_clicks FOR
+INSERT WITH CHECK (true);
+-- Admins view clicks
+CREATE POLICY "Admins view referal clicks" ON referral_clicks FOR
+SELECT USING (
+        EXISTS (
+            SELECT 1
+            FROM profiles
+            WHERE id = auth.uid()
+                AND role = 'admin'
+        )
+    );
 -- Users view their own entries (via email matching, handled by app logic usually, but here we assume logged in for safety or token based)
 -- For now, we'll allow public insert, but select needs security.
 -- Leaving select restricted to admins for now, app will use service role to check status.

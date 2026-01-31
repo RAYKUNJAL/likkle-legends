@@ -30,10 +30,16 @@ async function recordReferralConversion(userId: string, refCode: string, amount:
         });
 
         // Update Promoter Earnings
-        await supabase.rpc('increment_promoter_earnings', {
-            row_id: promoter.id,
-            amount: commission
-        });
+        // FRAUD CHECK: Prevent self-referral
+        if (promoter.user_id !== userId) {
+            await supabase.rpc('increment_promoter_earnings', {
+                row_id: promoter.id,
+                amount: commission
+            });
+            console.log(`[GROWTH] Commission recorded for promoter ${promoter.id} ($${commission})`);
+        } else {
+            console.warn(`[GROWTH] Self-referral detected. Commission blocked for ${userId}`);
+        }
 
         return { type: 'promoter', id: promoter.id, commission };
     }
