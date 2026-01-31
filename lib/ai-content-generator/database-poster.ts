@@ -29,20 +29,20 @@ export class EnhancedDatabasePoster {
             }
 
             // Generate Cover Image
-            let coverImageUrl = `https://via.placeholder.com/600x800/4ECDC4/FFFFFF?text=${encodeURIComponent(story.title)}`;
+            let coverImageUrl = `https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=800`; // Storytime default
             try {
                 const { generateImage } = await import('@/lib/ai-image-generator/image-client');
-                const genUrl = await generateImage(story.summary + " Cover Art", `cover-${story.title.replace(/\s+/g, '-')}`);
+                const genUrl = await generateImage(story.summary + " children's book cover illustration, bright caribbean colors", `cover-${story.title.replace(/\s+/g, '-')}`);
                 if (genUrl) coverImageUrl = genUrl;
             } catch (ignored) { }
 
             // Process Pages (Generate images for first 3 pages only to save costs/time for now, or all if needed)
             const pagesWithImages = await Promise.all(story.pages.map(async (page, index) => {
-                let pageImg = `https://via.placeholder.com/600x800/FF6B6B/FFFFFF?text=Page+${index + 1}`;
-                if (index < 3) { // Limit for testing/speed
+                let pageImg = `https://images.unsplash.com/photo-1512820660846-51897326bb2d?auto=format&fit=crop&q=80&w=800`; // Better default: Book/Lib
+                if (index < 5) { // More pages for real launch
                     try {
                         const { generateImage } = await import('@/lib/ai-image-generator/image-client');
-                        const genUrl = await generateImage(page.imagePrompt, `page-${index}-${story.title.replace(/\s+/g, '-')}`);
+                        const genUrl = await generateImage(page.imagePrompt + " children's book illustration style", `page-${index}-${story.title.replace(/\s+/g, '-')}`);
                         if (genUrl) pageImg = genUrl;
                     } catch (ignored) { }
                 }
@@ -105,8 +105,13 @@ export class EnhancedDatabasePoster {
                 // return this.saveSongLocally(song);
             }
 
-            // Generate thumbnail (placeholder)
-            const thumbnailUrl = `https://via.placeholder.com/400x400/9B59B6/FFFFFF?text=${encodeURIComponent(song.title)}`;
+            // Generate thumbnail (DALL-E priority)
+            let thumbnailUrl = `https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=800`; // Music default
+            try {
+                const { generateImage } = await import('@/lib/ai-image-generator/image-client');
+                const genUrl = await generateImage(`${song.title} album art, caribbean style children's music`, `song-${song.title.replace(/\s+/g, '-')}`);
+                if (genUrl) thumbnailUrl = genUrl;
+            } catch (ignored) { }
 
             // Insert into songs table with retry
             const result = await supabaseManager.executeWithRetry(async (client) => {
@@ -216,7 +221,7 @@ export class EnhancedDatabasePoster {
                     category: printable.type || 'worksheet',
                     tier_required: 'starter_mailer',
                     pdf_url: '#', // Requires PDF generation service
-                    preview_url: `https://images.unsplash.com/photo-1586075010633-24701fb7fe89?auto=format&fit=crop&q=80&w=800`,
+                    preview_url: `https://images.unsplash.com/photo-1503676260728-1c00da07bb5e?auto=format&fit=crop&q=80&w=800`, // Better educational default
                     is_active: false
                 })
                 .select()
@@ -257,7 +262,7 @@ export class EnhancedDatabasePoster {
                     duration_seconds: video.totalDurationSeconds || 0,
                     tier_required: 'legends_plus',
                     video_url: '#', // Requires video generation/upload
-                    thumbnail_url: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&q=80&w=800',
+                    thumbnail_url: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=800', // Better video default
                     is_active: false
                 })
                 .select()
