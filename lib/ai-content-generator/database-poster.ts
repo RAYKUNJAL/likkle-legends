@@ -331,7 +331,7 @@ export class EnhancedDatabasePoster {
      */
     private async testConnection(): Promise<boolean> {
         try {
-            const result = await supabaseManager.testConnection();
+            const result = await supabaseManager.testConnection(true);
             if (!result.success) {
                 console.error('❌ Database connection check failed:', result.error);
             }
