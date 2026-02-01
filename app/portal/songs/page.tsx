@@ -315,6 +315,7 @@ function SongsPageContent() {
                                 <button
                                     onClick={() => toggleFavorite(currentSong.id)}
                                     className="p-2 hover:bg-white/10 rounded-full"
+                                    aria-label={favorites.has(currentSong.id) ? "Remove from favorites" : "Add to favorites"}
                                 >
                                     <Heart
                                         size={20}
@@ -328,28 +329,31 @@ function SongsPageContent() {
                                 <button
                                     onClick={() => setShuffle(!shuffle)}
                                     className={`p-2 rounded-full ${shuffle ? 'text-primary' : 'text-white/60 hover:text-white'}`}
+                                    aria-label={shuffle ? "Disable shuffle" : "Enable shuffle"}
                                 >
                                     <Shuffle size={18} />
                                 </button>
 
-                                <button onClick={handlePrev} className="p-2 hover:bg-white/10 rounded-full">
+                                <button onClick={handlePrev} className="p-2 hover:bg-white/10 rounded-full" aria-label="Previous song">
                                     <SkipBack size={24} />
                                 </button>
 
                                 <button
                                     onClick={togglePlay}
                                     className="w-12 h-12 bg-white text-deep rounded-full flex items-center justify-center hover:scale-105 transition-transform"
+                                    aria-label={isPlaying ? "Pause" : "Play"}
                                 >
                                     {isPlaying ? <Pause size={24} /> : <Play size={24} className="ml-1" />}
                                 </button>
 
-                                <button onClick={handleNext} className="p-2 hover:bg-white/10 rounded-full">
+                                <button onClick={handleNext} className="p-2 hover:bg-white/10 rounded-full" aria-label="Next song">
                                     <SkipForward size={24} />
                                 </button>
 
                                 <button
                                     onClick={() => setRepeat(repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off')}
                                     className={`p-2 rounded-full ${repeat !== 'off' ? 'text-primary' : 'text-white/60 hover:text-white'}`}
+                                    aria-label={`Repeat: ${repeat}`}
                                 >
                                     <Repeat size={18} />
                                     {repeat === 'one' && <span className="absolute text-[8px]">1</span>}
@@ -366,6 +370,7 @@ function SongsPageContent() {
                                     <button
                                         onClick={() => setIsMuted(!isMuted)}
                                         className="p-2 hover:bg-white/10 rounded-full"
+                                        aria-label={isMuted ? "Unmute" : "Mute"}
                                     >
                                         {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
                                     </button>
@@ -376,6 +381,7 @@ function SongsPageContent() {
                                         value={isMuted ? 0 : volume}
                                         onChange={(e) => { setVolume(Number(e.target.value)); setIsMuted(false); }}
                                         className="w-24 accent-primary"
+                                        aria-label="Volume"
                                     />
                                 </div>
                             </div>
@@ -481,6 +487,7 @@ function SongCard({
                 <button
                     onClick={(e) => { e.stopPropagation(); onFavorite(); }}
                     className="p-2 hover:bg-gray-100 rounded-full"
+                    aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
                 >
                     <Heart
                         size={18}

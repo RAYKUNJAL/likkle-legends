@@ -44,6 +44,7 @@
 
   .glass-card {
     background-color: rgba(255, 255, 255, 0.7);
+    -webkit-backdrop-filter: blur(24px);
     backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.4);
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
@@ -52,9 +53,17 @@
 
   .glass-nav {
     background-color: rgba(255, 255, 255, 0.6);
+    -webkit-backdrop-filter: blur(40px);
     backdrop-filter: blur(40px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     @apply relative;
+  }
+
+  .glassmorphism-tanty {
+    background: rgba(255, 255, 255, 0.8);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
   }
 
   .shimmer-btn {

@@ -206,6 +206,7 @@ const TantyRecordingStudio: React.FC = () => {
                                     className="p-4 bg-white rounded-2xl font-black text-xs uppercase outline-none"
                                     value={filterType}
                                     onChange={e => setFilterType(e.target.value as any)}
+                                    aria-label="Filter content type"
                                 >
                                     <option value="all">All Types</option>
                                     <option value="story">Stories</option>
@@ -254,6 +255,7 @@ const TantyRecordingStudio: React.FC = () => {
                                                     else setSelectedIds(prev => prev.filter(id => id !== item.id));
                                                 }}
                                                 className="absolute top-6 left-6 w-6 h-6 rounded-lg cursor-pointer z-10 opacity-0 group-hover:opacity-100 checked:opacity-100 transition-opacity"
+                                                aria-label={`Select ${item.title}`}
                                             />
                                             <div>
                                                 <div className="flex justify-between items-start mb-6 pl-8">
@@ -291,29 +293,29 @@ const TantyRecordingStudio: React.FC = () => {
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-3xl font-heading font-black text-blue-950">Drafting: {activeContent.title}</h3>
                                         <button onClick={() => fileInputRef.current?.click()} className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-all">Import Script 📥</button>
-                                        <input type="file" ref={fileInputRef} className="hidden" accept=".txt,.doc,.docx" onChange={handleFileUpload} />
+                                        <input type="file" ref={fileInputRef} className="hidden" accept=".txt,.doc,.docx" onChange={handleFileUpload} aria-label="Import script file" />
                                     </div>
 
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-blue-300 px-2">Title</label>
-                                            <input type="text" className="w-full p-4 bg-blue-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-200" value={activeContent.title} onChange={e => setActiveContent({ ...activeContent, title: e.target.value })} />
+                                            <label htmlFor="content-title" className="text-[10px] font-black uppercase tracking-widest text-blue-300 px-2">Title</label>
+                                            <input id="content-title" type="text" className="w-full p-4 bg-blue-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-blue-200" value={activeContent.title} onChange={e => setActiveContent({ ...activeContent, title: e.target.value })} />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-blue-300 px-2">Category</label>
-                                            <select className="w-full p-4 bg-blue-50 rounded-2xl font-bold outline-none" value={activeContent.category} onChange={e => setActiveContent({ ...activeContent, category: e.target.value })}>
+                                            <label htmlFor="content-category" className="text-[10px] font-black uppercase tracking-widest text-blue-300 px-2">Category</label>
+                                            <select id="content-category" className="w-full p-4 bg-blue-50 rounded-2xl font-bold outline-none" value={activeContent.category} onChange={e => setActiveContent({ ...activeContent, category: e.target.value })}>
                                                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-blue-300 px-2">Age Group</label>
-                                            <select className="w-full p-4 bg-blue-50 rounded-2xl font-bold outline-none" value={activeContent.ageGroup} onChange={e => setActiveContent({ ...activeContent, ageGroup: e.target.value })}>
+                                            <label htmlFor="content-age-group" className="text-[10px] font-black uppercase tracking-widest text-blue-300 px-2">Age Group</label>
+                                            <select id="content-age-group" className="w-full p-4 bg-blue-50 rounded-2xl font-bold outline-none" value={activeContent.ageGroup} onChange={e => setActiveContent({ ...activeContent, ageGroup: e.target.value })}>
                                                 {AGE_GROUPS.map(a => <option key={a} value={a}>{a}</option>)}
                                             </select>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-blue-300 px-2">Reading Level</label>
-                                            <select className="w-full p-4 bg-blue-50 rounded-2xl font-bold outline-none text-xs uppercase" value={activeContent.readingLevel} onChange={e => setActiveContent({ ...activeContent, readingLevel: e.target.value as any })}>
+                                            <label htmlFor="content-reading-level" className="text-[10px] font-black uppercase tracking-widest text-blue-300 px-2">Reading Level</label>
+                                            <select id="content-reading-level" className="w-full p-4 bg-blue-50 rounded-2xl font-bold outline-none text-xs uppercase" value={activeContent.readingLevel} onChange={e => setActiveContent({ ...activeContent, readingLevel: e.target.value as any })}>
                                                 {READING_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                                             </select>
                                         </div>
@@ -381,12 +383,14 @@ const TantyRecordingStudio: React.FC = () => {
                                                     className="w-full h-3 bg-blue-50 rounded-full appearance-none cursor-pointer accent-orange-500"
                                                     value={activeContent.voiceSpeed}
                                                     onChange={e => setActiveContent({ ...activeContent, voiceSpeed: parseFloat(e.target.value) })}
+                                                    aria-label="Narrative Speed"
                                                 />
                                             </div>
 
                                             <div className="space-y-3">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-blue-300 px-2">Voice Emotion</label>
+                                                <label htmlFor="voice-emotion" className="text-[10px] font-black uppercase tracking-widest text-blue-300 px-2">Voice Emotion</label>
                                                 <select
+                                                    id="voice-emotion"
                                                     className="w-full p-4 bg-blue-50 rounded-2xl font-black text-xs uppercase outline-none"
                                                     value={activeContent.voiceEmotion}
                                                     onChange={e => setActiveContent({ ...activeContent, voiceEmotion: e.target.value as any })}
@@ -467,7 +471,7 @@ const TantyRecordingStudio: React.FC = () => {
                                 <div className="space-y-6">
                                     <label className="text-xs font-black uppercase tracking-widest text-blue-400 px-4">Tanty Accent Intensity</label>
                                     <div className="bg-white p-8 rounded-[3rem] shadow-inner space-y-6">
-                                        <input type="range" className="w-full h-4 bg-blue-50 rounded-full appearance-none cursor-pointer accent-blue-600" />
+                                        <input type="range" className="w-full h-4 bg-blue-50 rounded-full appearance-none cursor-pointer accent-blue-600" aria-label="Tanty Accent Intensity" />
                                         <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-blue-300">
                                             <span>Subtle Bajan</span>
                                             <span>Standard Island</span>

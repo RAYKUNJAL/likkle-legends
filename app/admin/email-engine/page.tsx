@@ -251,6 +251,7 @@ export default function AdminEmailEnginePage() {
                             <button
                                 onClick={() => setShowBroadcastModal(false)}
                                 className="absolute top-8 right-8 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"
+                                aria-label="Close modal"
                             >
                                 <XCircle size={24} />
                             </button>
@@ -262,6 +263,7 @@ export default function AdminEmailEnginePage() {
                                     value={broadcastTemplate}
                                     onChange={(e) => setBroadcastTemplate(e.target.value)}
                                     className="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-2xl font-bold focus:border-primary focus:ring-0"
+                                    aria-label="Select Template"
                                 >
                                     <option value="WELCOME">Welcome (Manual)</option>
                                     <option value="ONBOARDING_DAY_7">Village Update (Value)</option>
@@ -324,6 +326,7 @@ function CampaignToggle({ title, description, enabled, onToggle, icon }: {
             <button
                 onClick={onToggle}
                 className={`w-14 h-8 rounded-full transition-colors relative ${enabled ? 'bg-primary' : 'bg-gray-300'}`}
+                aria-label={`Toggle ${title}`}
             >
                 <div className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${enabled ? 'left-7' : 'left-1'}`} />
             </button>

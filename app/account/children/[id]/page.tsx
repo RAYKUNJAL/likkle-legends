@@ -106,8 +106,9 @@ export default function EditChildPage() {
 
                         <div className="space-y-6">
                             <div>
-                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">First Name</label>
+                                <label htmlFor="child-first-name" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">First Name</label>
                                 <input
+                                    id="child-first-name"
                                     type="text"
                                     value={formData.first_name}
                                     onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
@@ -118,8 +119,9 @@ export default function EditChildPage() {
 
                             <div className="grid grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Age</label>
+                                    <label htmlFor="child-age" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Age</label>
                                     <input
+                                        id="child-age"
                                         type="number"
                                         min="2"
                                         max="12"
@@ -145,11 +147,13 @@ export default function EditChildPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Primary Island Heritage</label>
+                                <label htmlFor="child-island" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Primary Island Heritage</label>
                                 <select
+                                    id="child-island"
                                     value={formData.primary_island}
                                     onChange={(e) => setFormData({ ...formData, primary_island: e.target.value })}
                                     className="block w-full px-6 py-4 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all font-bold text-deep appearance-none"
+                                    aria-label="Primary Island Heritage"
                                 >
                                     {islands.map(island => (
                                         <option key={island} value={island}>{island}</option>
