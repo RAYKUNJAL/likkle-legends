@@ -14,7 +14,12 @@ if (!API_KEY) {
     console.warn('   Please set GEMINI_API_KEY in your .env.local file');
 }
 
-const genAI = new GoogleGenerativeAI(API_KEY);
+const getGenAI = () => {
+    if (!API_KEY) {
+        throw new Error('Gemini API Key is missing. Check GEMINI_API_KEY environment variable.');
+    }
+    return new GoogleGenerativeAI(API_KEY);
+};
 
 export interface GenerationOptions {
     model?: string;
@@ -49,6 +54,7 @@ export class ContentGenerator {
             for (const modelName of modelsToTry) {
                 try {
                     console.log(`🤖 Attempting generation with model: ${modelName}...`);
+                    const genAI = getGenAI();
                     const model = genAI.getGenerativeModel({
                         model: modelName,
                         generationConfig: {
