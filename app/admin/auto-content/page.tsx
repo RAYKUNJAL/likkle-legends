@@ -88,14 +88,21 @@ export default function AutonomousContentPage() {
             else if (file.type.startsWith('video/')) bucket = BUCKETS.VIDEOS;
             else if (file.type === 'application/pdf') bucket = BUCKETS.PRINTABLES;
 
-            const result = await uploadFile(bucket, file);
-            if (result) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('bucket', bucket);
+
+            const response = await fetch('/api/upload', { method: 'POST', body: formData });
+            const result = await response.json();
+
+            if (response.ok && result.url) {
                 setUploadStatus('success');
-                // Could open a form to finalize metadata here
             } else {
+                console.error('Upload failed:', result.error);
                 setUploadStatus('error');
             }
         } catch (error) {
+            console.error('Upload error:', error);
             setUploadStatus('error');
         }
     };

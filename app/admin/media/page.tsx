@@ -67,9 +67,6 @@ function MediaManagerContent() {
     };
 
     const handleFileUpload = async (file: File, type: 'main' | 'thumbnail') => {
-        const { createClient } = await import('@/lib/supabase/client');
-        const supabase = createClient();
-
         let bucket: any = BUCKETS.SONGS;
         if (activeTab === 'songs') bucket = BUCKETS.SONGS;
         else if (activeTab === 'videos') bucket = BUCKETS.VIDEOS;
@@ -82,10 +79,24 @@ function MediaManagerContent() {
             else if (type === 'thumbnail') bucket = BUCKETS.AVATARS;
         }
 
-        // Use the authenticated client to ensure RLS passes, but force admin flag if we are in admin panel
-        const result = await uploadFile(bucket, file, undefined, { customClient: supabase, useAdmin: false });
+        // Use the new server-side upload API
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('bucket', bucket);
 
-        if (result) {
+        try {
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                console.error('Upload failed:', result.error);
+                return;
+            }
+
             setFormData((prev: any) => {
                 const updates = { ...prev };
                 if (type === 'main') {
@@ -100,6 +111,8 @@ function MediaManagerContent() {
                 }
                 return updates;
             });
+        } catch (error) {
+            console.error('Upload error:', error);
         }
     };
 

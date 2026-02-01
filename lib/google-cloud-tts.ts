@@ -38,7 +38,7 @@ export async function synthesizeSpeech(
     text: string,
     config: TTSConfig = {}
 ): Promise<string | null> {
-    const apiKey = process.env.GOOGLE_CLOUD_TTS_API_KEY;
+    const apiKey = process.env.GOOGLE_CLOUD_TTS_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
     if (!apiKey) {
         console.warn("[Google Cloud TTS] API key not configured (GOOGLE_CLOUD_TTS_API_KEY)");
@@ -145,6 +145,35 @@ export async function getTantySpiceVoice(text: string): Promise<{
         return { success: false, error: "Failed to generate audio" };
     } catch (error) {
         console.error("[Tanty Voice] Generation error:", error);
+        return { success: false, error: "Voice generation failed" };
+    }
+}
+
+/**
+ * R.O.T.I specific voice preset
+ * Friendly, energetic robot companion
+ * Voice: en-US-Neural2-J (Male) with pitch +2.0st and rate 1.10
+ */
+export async function getRotiVoice(text: string): Promise<{
+    success: boolean;
+    audio?: string;
+    error?: string;
+}> {
+    try {
+        const audioUrl = await getTTSAudioUrl(text, {
+            voiceName: "en-US-Neural2-J",
+            pitch: 2.0,         // Higher pitch for youthful/robotic energy
+            speakingRate: 1.10, // Faster pace for excitement
+            volumeGainDb: 1.0,
+        });
+
+        if (audioUrl) {
+            return { success: true, audio: audioUrl };
+        }
+
+        return { success: false, error: "Failed to generate audio" };
+    } catch (error) {
+        console.error("[ROTI Voice] Generation error:", error);
         return { success: false, error: "Voice generation failed" };
     }
 }

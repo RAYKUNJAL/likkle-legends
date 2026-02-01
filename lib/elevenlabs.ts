@@ -1,7 +1,8 @@
 // ElevenLabs Text-to-Speech Integration
 // Custom Caribbean accent voice for Tanty Spice
 
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || '';
+// ElevenLabs API Key should be read inside functions to ensure late-binding after dotenv
+// const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || '';
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 
 // Voice IDs - replace with your custom Caribbean voice model
@@ -31,12 +32,15 @@ export async function generateSpeech(
         style = 0.65, // More expressive style
     } = options;
 
-    if (!ELEVENLABS_API_KEY) {
+    const apiKey = process.env.ELEVENLABS_API_KEY;
+
+    if (!apiKey) {
         console.warn('ElevenLabs API key not configured');
         return null;
     }
 
     try {
+        console.log(`[ElevenLabs] Generating for voice: ${VOICES[voice]} with Key: ${apiKey.substring(0, 5)}...`);
         const response = await fetch(
             `${ELEVENLABS_API_URL}/text-to-speech/${VOICES[voice]}`,
             {
@@ -44,7 +48,7 @@ export async function generateSpeech(
                 headers: {
                     'Accept': 'audio/mpeg',
                     'Content-Type': 'application/json',
-                    'xi-api-key': ELEVENLABS_API_KEY,
+                    'xi-api-key': apiKey,
                 },
                 body: JSON.stringify({
                     text,
@@ -60,7 +64,8 @@ export async function generateSpeech(
         );
 
         if (!response.ok) {
-            throw new Error(`ElevenLabs API error: ${response.status}`);
+            const errText = await response.text();
+            throw new Error(`ElevenLabs API error: ${response.status} - ${errText}`);
         }
 
         return await response.arrayBuffer();

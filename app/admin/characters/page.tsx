@@ -75,16 +75,38 @@ export default function AdminCharactersPage() {
     };
 
     const handleImageUpload = async (file: File) => {
-        const result = await uploadFile(BUCKETS.CHARACTERS, file);
-        if (result) {
-            setFormData(prev => ({ ...prev, image_url: result.url }));
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('bucket', BUCKETS.CHARACTERS);
+
+        try {
+            const response = await fetch('/api/upload', { method: 'POST', body: formData });
+            const result = await response.json();
+            if (response.ok && result.url) {
+                setFormData(prev => ({ ...prev, image_url: result.url }));
+            } else {
+                console.error('Upload failed:', result.error);
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
         }
     };
 
     const handleModelUpload = async (file: File) => {
-        const result = await uploadFile(BUCKETS.AR_MODELS, file);
-        if (result) {
-            setFormData(prev => ({ ...prev, model_3d_url: result.url }));
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('bucket', BUCKETS.AR_MODELS);
+
+        try {
+            const response = await fetch('/api/upload', { method: 'POST', body: formData });
+            const result = await response.json();
+            if (response.ok && result.url) {
+                setFormData(prev => ({ ...prev, model_3d_url: result.url }));
+            } else {
+                console.error('Upload failed:', result.error);
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
         }
     };
 

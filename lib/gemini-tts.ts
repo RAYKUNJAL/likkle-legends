@@ -3,7 +3,19 @@ import { TANTY_ISLAND_ENGINE } from '@/services/tantyConfig';
 
 export interface GeminiTTSOptions {
     voiceName?: string;
+    character?: 'tanty' | 'roti';
 }
+
+const VOICE_PROFILES = {
+    tanty: {
+        voiceName: "Kore",
+        direction: "Tone: Warm Caribbean Grandmother. Emotion: Joyful. Accent: Caribbean."
+    },
+    roti: {
+        voiceName: "Puck",
+        direction: "Tone: Friendly, energetic robot companion. Emotion: Excited and curious. Speed: Slightly fast."
+    }
+};
 
 /**
  * Generate speech using Gemini TTS
@@ -13,7 +25,12 @@ export async function generateGeminiSpeech(
     text: string,
     options: GeminiTTSOptions = {}
 ): Promise<ArrayBuffer | null> {
-    const { voiceName = TANTY_ISLAND_ENGINE.vocal_blueprint.voice_name } = options;
+    const { character = 'tanty' } = options;
+    const profile = VOICE_PROFILES[character];
+
+    // Allow override, otherwise use profile default
+    const voiceName = options.voiceName || profile.voiceName;
+
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
     if (!apiKey) {
@@ -25,21 +42,21 @@ export async function generateGeminiSpeech(
         const ai = new GoogleGenAI({ apiKey });
 
         const response = await ai.models.generateContent({
-            model: TANTY_ISLAND_ENGINE.technical_stack.vocal_model,
+            model: "models/gemini-2.5-flash-native-audio-latest",
             contents: [{
                 parts: [{
-                    text: `[Voice Direction: ${TANTY_ISLAND_ENGINE.vocal_blueprint.prosody_profile}. Tone: Warm Caribbean Grandmother. Emotion: Joyful.] ${text}`
+                    text: `[Voice Direction: ${profile.direction}] ${text}`
                 }]
             }],
             config: {
                 responseModalities: [Modality.AUDIO],
-                speechConfig: {
+                /* speechConfig: {
                     voiceConfig: {
                         prebuiltVoiceConfig: {
                             voiceName: voiceName
                         }
                     },
-                },
+                }, */
             },
         });
 
