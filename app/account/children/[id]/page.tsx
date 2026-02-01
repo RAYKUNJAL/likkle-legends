@@ -7,6 +7,15 @@ import { ArrowLeft, Save, Trash2, Sparkles, Palette, Baby } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { updateChild, deleteChild } from '@/lib/database';
 
+const AVATARS = [
+    { id: 'lion', emoji: '🦁', name: 'Likkle Lion', color: 'bg-orange-100' },
+    { id: 'parrot', emoji: '🦜', name: 'Pretty Parrot', color: 'bg-green-100' },
+    { id: 'dolphin', emoji: '🐬', name: 'Dashing Dolphin', color: 'bg-blue-100' },
+    { id: 'butterfly', emoji: '🦋', name: 'Bright Butterfly', color: 'bg-pink-100' },
+    { id: 'turtle', emoji: '🐢', name: 'Tough Turtle', color: 'bg-emerald-100' },
+    { id: 'crab', emoji: '🦀', name: 'Cool Crab', color: 'bg-red-100' },
+];
+
 export default function EditChildPage() {
     const { id } = useParams();
     const router = useRouter();
@@ -21,7 +30,8 @@ export default function EditChildPage() {
         first_name: '',
         age: 4,
         primary_island: 'Jamaica',
-        age_track: 'mini' as 'mini' | 'big'
+        age_track: 'mini' as 'mini' | 'big',
+        avatar_id: 'lion'
     });
 
     useEffect(() => {
@@ -30,7 +40,8 @@ export default function EditChildPage() {
                 first_name: child.first_name || '',
                 age: child.age || 4,
                 primary_island: child.primary_island || 'Jamaica',
-                age_track: child.age_track || (child.age && child.age >= 6 ? 'big' : 'mini')
+                age_track: child.age_track || (child.age && child.age >= 6 ? 'big' : 'mini'),
+                avatar_id: child.avatar_id || 'lion'
             });
         }
     }, [child]);
@@ -79,6 +90,8 @@ export default function EditChildPage() {
         "St. Kitts and Nevis", "Belize", "Suriname", "Haiti", "Dominican Republic"
     ];
 
+    const selectedAvatar = AVATARS.find(a => a.id === formData.avatar_id) || AVATARS[0];
+
     return (
         <div className="min-h-screen bg-[#FFFDF7] pb-24">
             <header className="bg-white border-b border-zinc-100 py-6 sticky top-0 z-30">
@@ -95,16 +108,36 @@ export default function EditChildPage() {
                 <form onSubmit={handleSave} className="space-y-10">
                     <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-zinc-100">
                         <div className="flex items-center gap-6 mb-10">
-                            <div className="w-20 h-20 bg-primary text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-lg shadow-primary/20">
-                                {formData.first_name.charAt(0) || '?'}
+                            <div className={`w-28 h-28 ${selectedAvatar.color} rounded-[2.5rem] flex items-center justify-center text-5xl font-black shadow-lg transition-colors duration-300`}>
+                                {selectedAvatar.emoji}
                             </div>
                             <div>
                                 <h2 className="text-2xl font-black text-deep">Legend Basics</h2>
-                                <p className="text-deep/40 font-bold">Update your child's journey details.</p>
+                                <p className="text-deep/40 font-bold mb-4">Update your child's journey details.</p>
+                                <div className="inline-flex px-4 py-2 bg-zinc-50 rounded-xl text-xs font-black uppercase tracking-wider text-zinc-400">
+                                    {selectedAvatar.name}
+                                </div>
                             </div>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-8">
+                            <div className="bg-zinc-50 p-6 rounded-[2rem]">
+                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-4 px-1">Choose an Avatar</label>
+                                <div className="flex flex-wrap gap-4 justify-center">
+                                    {AVATARS.map(avatar => (
+                                        <button
+                                            key={avatar.id}
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, avatar_id: avatar.id })}
+                                            className={`w-16 h-16 rounded-2xl text-2xl transition-all flex items-center justify-center border-2 ${formData.avatar_id === avatar.id ? 'bg-white border-primary shadow-lg scale-110' : 'bg-white/50 border-transparent hover:scale-105'} ${avatar.color}`}
+                                            title={avatar.name}
+                                        >
+                                            {avatar.emoji}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div>
                                 <label htmlFor="child-first-name" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">First Name</label>
                                 <input
