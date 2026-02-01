@@ -19,8 +19,8 @@ export async function generateStudioContentAction(
     contentType: 'song_video_script' | 'story' | 'activity_pack' = 'song_video_script'
 ): Promise<ContentPackage> {
     const genAI = getGenAI();
-    // Use the model defined in your config or a default fast one like gemini-1.5-flash
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    // Use the model defined in your config or a default fast one
+    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
     // Note: User might want to use specific models from config if they exist, but for now we hardcode a good one.
 
     const generatedContent: AIStudioAgentOutput = {};
