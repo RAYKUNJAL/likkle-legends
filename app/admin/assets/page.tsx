@@ -66,15 +66,27 @@ export default function AdminAssetDashboard() {
 
     const handleFileUpload = async (file: File, type: 'main' | 'thumbnail') => {
         const bucket = type === 'thumbnail' ? (activeTab === 'songs' ? 'songs' : activeTab === 'videos' ? 'videos' : activeTab === 'printables' ? 'printables' : 'storybooks') : (activeTab as any);
-        const result = await uploadFile(bucket, file);
-        if (result) {
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('bucket', bucket);
+
+        try {
+            const response = await fetch('/api/upload', { method: 'POST', body: formData });
+            const result = await response.json();
+
+            if (!response.ok) {
+                console.error('Upload failed:', result.error);
+                return;
+            }
+
             setFormData((prev: any) => {
                 const updates = { ...prev };
                 if (type === 'main') {
                     if (activeTab === 'songs') updates.audio_url = result.url;
                     else if (activeTab === 'videos') updates.video_url = result.url;
                     else if (activeTab === 'printables') updates.pdf_url = result.url;
-                    else if (activeTab === 'storybooks') updates.url = result.url; // Custom for stories
+                    else if (activeTab === 'storybooks') updates.url = result.url;
                 } else {
                     if (activeTab === 'songs') updates.thumbnail_url = result.url;
                     else if (activeTab === 'videos') updates.thumbnail_url = result.url;
@@ -83,6 +95,8 @@ export default function AdminAssetDashboard() {
                 }
                 return updates;
             });
+        } catch (error) {
+            console.error('Upload error:', error);
         }
     };
 

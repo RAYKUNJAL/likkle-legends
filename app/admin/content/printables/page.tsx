@@ -67,15 +67,18 @@ export default function PrintablesPage() {
 
         setIsUploading(true);
         try {
-            const url = await uploadFile(BUCKETS.PRINTABLES, file);
-            if (url) {
-                // Here we would normally insert into DB too. 
-                // For this quick fix, we'll just reload.
-                // In a real flow, we'd pop a modal to add metadata (Title, Island, etc).
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('bucket', BUCKETS.PRINTABLES);
+
+            const response = await fetch('/api/upload', { method: 'POST', body: formData });
+            const result = await response.json();
+
+            if (response.ok && result.url) {
                 alert("File uploaded to bucket! (Metadata entry pending implementation)");
                 loadPrintables();
             } else {
-                alert("Upload failed.");
+                alert("Upload failed: " + (result.error || "Unknown error"));
             }
         } catch (error) {
             console.error(error);
