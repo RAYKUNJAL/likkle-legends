@@ -112,12 +112,13 @@ export default function AdminContentPage() {
                             <Globe size={20} />
                             Site CMS
                         </Link>
-                        <button
+                        <Link
+                            href="/admin/studio"
                             className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-lg shadow-primary/20"
                         >
                             <Plus size={20} />
                             New Module
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </header>

@@ -111,7 +111,7 @@ export function PrintablesSection() {
                         <PrintableCard
                             key={item.id}
                             item={item}
-                            isLocked={!canAccess(item.tier_required)}
+                            isLocked={!canAccess(item.tier_required || 'free')}
                         />
                     ))}
                 </div>

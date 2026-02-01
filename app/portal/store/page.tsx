@@ -6,11 +6,11 @@ import { supabase } from '@/lib/storage';
 import { MusicStoreProduct, MUSIC_STORE_PRODUCTS } from '@/lib/paypal';
 import PurchaseModal from '@/components/MusicStore/PurchaseModal';
 import CustomSongForm from '@/components/MusicStore/CustomSongForm';
-import { Play, Download, Lock, Star, Music, Headbanging, Sparkles, Check } from 'lucide-react';
+import { Play, Download, Lock, Star, Music, Sparkles, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function MusicStorePage() {
-    const { user, subscription } = useUser();
+    const { user } = useUser();
     const [activeTab, setActiveTab] = useState<'music' | 'custom'>('music');
     const [songs, setSongs] = useState<any[]>([]);
     const [purchasedContent, setPurchasedContent] = useState<Set<string>>(new Set());
@@ -20,7 +20,7 @@ export default function MusicStorePage() {
     const [customRequestId, setCustomRequestId] = useState<string | null>(null);
 
     // Subscribers get everything for free
-    const isSubscriber = subscription?.status === 'active';
+    const isSubscriber = user?.subscription_status === 'active';
 
     const [bundles, setBundles] = useState<any[]>([]);
 
