@@ -4,20 +4,19 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import {
     BookOpen, Music, Play, Palette,
-    Target, Radio, Home, Camera, Sparkles,
-    Cloud, Sun, Bird
+    Target, Radio, Download, Sparkles,
+    Cloud, Sun, Anchor, Fish
 } from 'lucide-react';
-import Image from 'next/image';
 
 interface MapLocation {
     id: string;
     title: string;
     icon: any;
     color: string;
-    position: { x: string; y: string };
-    href: string;
+    position: { left: string; top: string };
     label: string;
-    animationDelay?: number;
+    description: string;
+    islandColor: string;
 }
 
 interface IslandVillageMapProps {
@@ -28,159 +27,181 @@ export default function IslandVillageMap({ onNavigate }: IslandVillageMapProps) 
     const locations: MapLocation[] = [
         {
             id: 'stories',
-            title: 'Story Library',
+            title: 'Story Island',
             icon: BookOpen,
-            color: 'bg-blue-500',
-            position: { x: '20%', y: '30%' },
-            href: '/portal/stories',
-            label: '📖 Library'
-        },
-        {
-            id: 'radio',
-            title: 'Tantys Radio',
-            icon: Radio,
-            color: 'bg-orange-500',
-            position: { x: '70%', y: '25%' },
-            href: '/portal/radio',
-            label: '📻 Radio'
-        },
-        {
-            id: 'lessons',
-            title: 'Video Cinema',
-            icon: Play,
-            color: 'bg-purple-500',
-            position: { x: '15%', y: '65%' },
-            href: '/portal/lessons',
-            label: '🎬 Cinema'
-        },
-        {
-            id: 'games',
-            title: 'The Arcade',
-            icon: Palette,
-            color: 'bg-green-500',
-            position: { x: '50%', y: '50%' },
-            href: '/portal/games',
-            label: '🎮 Arcade'
+            color: 'text-blue-600',
+            islandColor: 'bg-[#a3e635]', // Lime green
+            position: { left: '10%', top: '30%' },
+            label: 'Story Island',
+            description: 'Read & Listen'
         },
         {
             id: 'songs',
-            title: 'Music Studio',
+            title: 'Rhythm Reef',
             icon: Music,
-            color: 'bg-pink-500',
-            position: { x: '80%', y: '70%' },
-            href: '/portal/songs',
-            label: '🎵 Music'
+            color: 'text-pink-600',
+            islandColor: 'bg-[#f472b6]', // Pink
+            position: { left: '30%', top: '15%' },
+            label: 'Rhythm Reef',
+            description: 'Songs & Dance'
+        },
+        {
+            id: 'story-studio',
+            title: 'Story Studio',
+            icon: Sparkles,
+            color: 'text-purple-600',
+            islandColor: 'bg-[#d8b4fe]', // Purple
+            position: { left: '60%', top: '20%' },
+            label: 'Create Magic',
+            description: 'Make Your Own Stories'
+        },
+        {
+            id: 'lessons',
+            title: 'Cinema Cay',
+            icon: Play,
+            color: 'text-indigo-600',
+            islandColor: 'bg-[#818cf8]', // Indigo
+            position: { left: '85%', top: '40%' },
+            label: 'Cinema Cay',
+            description: 'Watch & Learn'
         },
         {
             id: 'missions',
-            title: 'Mission Hub',
+            title: 'Adventure Atoll',
             icon: Target,
-            color: 'bg-red-500',
-            position: { x: '45%', y: '80%' },
-            href: '/portal/missions',
-            label: '🎯 Missions'
+            color: 'text-orange-600',
+            islandColor: 'bg-[#fbbf24]', // Amber
+            position: { left: '45%', top: '48%' },
+            label: 'Adventure Atoll',
+            description: 'Quests'
+        },
+        {
+            id: 'games',
+            title: 'Play Port',
+            icon: Palette,
+            color: 'text-emerald-600',
+            islandColor: 'bg-[#34d399]', // Emerald
+            position: { left: '20%', top: '70%' },
+            label: 'Play Port',
+            description: 'Games & Fun'
+        },
+        {
+            id: 'printables',
+            title: 'Craft Cove',
+            icon: Download,
+            color: 'text-amber-600',
+            islandColor: 'bg-[#fb923c]', // Orange
+            position: { left: '70%', top: '75%' },
+            label: 'Craft Cove',
+            description: 'Printables'
+        },
+        {
+            id: 'radio',
+            title: 'Tanty\'s Tower',
+            icon: Radio,
+            color: 'text-red-500',
+            islandColor: 'bg-[#f87171]', // Red
+            position: { left: '90%', top: '10%' },
+            label: 'Broadcast',
+            description: 'Live Radio'
         },
     ];
 
     return (
-        <div className="relative w-full aspect-[16/9] bg-gradient-to-b from-sky-300 via-sky-200 to-emerald-100 rounded-[4rem] overflow-hidden shadow-2xl border-8 border-white/50 group">
+        <div className="relative w-full h-[600px] md:h-auto md:aspect-[16/9] bg-[#0ea5e9] overflow-hidden rounded-[2rem] md:rounded-[3rem] shadow-2xl border-4 border-white/20 group select-none">
+            {/* Ocean Texture */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-400 via-sky-500 to-sky-600 opacity-100"></div>
+
+            {/* Waves Animation */}
+            <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat"></div>
+
             {/* Sky Elements */}
-            <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute inset-0 pointer-events-none z-0">
                 <motion.div
                     animate={{ x: [0, 50, 0] }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
                     className="absolute top-10 left-10 text-white/40"
                 >
                     <Cloud size={80} />
                 </motion.div>
                 <motion.div
-                    animate={{ x: [0, -70, 0] }}
-                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-20 right-20 text-white/30"
-                >
-                    <Cloud size={100} />
-                </motion.div>
-                <motion.div
                     animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
                     transition={{ duration: 4, repeat: Infinity }}
-                    className="absolute top-10 right-1/3 text-yellow-300 drop-shadow-[0_0_20px_rgba(255,255,0,0.5)]"
+                    className="absolute top-5 right-20 text-yellow-300 drop-shadow-[0_0_20px_rgba(255,255,0,0.5)]"
                 >
                     <Sun size={60} />
                 </motion.div>
             </div>
 
-            {/* Island Base (SVG or stylized CSS) */}
-            <div className="absolute bottom-0 left-0 right-0 h-3/4 bg-emerald-400 rounded-t-[100%] scale-x-125 transform translate-y-1/4 shadow-inner overflow-hidden">
-                {/* Grass texture/patterns */}
-                <div className="absolute inset-0 opacity-10 bg-[url('/images/grass-pattern.png')] bg-repeat"></div>
+            {/* Ocean Decor */}
+            <motion.div
+                animate={{ x: [-10, 10, -10], rotate: [-5, 5, -5] }}
+                transition={{ duration: 5, repeat: Infinity }}
+                className="absolute bottom-20 left-1/3 text-white/20"
+            >
+                <Fish size={30} />
+            </motion.div>
+            <motion.div
+                animate={{ x: [10, -10, 10], rotate: [5, -5, 5] }}
+                transition={{ duration: 7, repeat: Infinity }}
+                className="absolute top-1/2 right-20 text-white/10"
+            >
+                <Fish size={40} />
+            </motion.div>
 
-                {/* Ambient Island Elements */}
-                <motion.div
-                    animate={{ y: [0, -10, 0], rotate: [0, 5, 0] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                    className="absolute bottom-1/4 left-1/4 text-emerald-800/20"
-                >
-                    <Bird size={40} />
-                </motion.div>
-
-                {/* Village Paths (SVG) */}
-                <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 1000 600">
-                    <path
-                        d="M 200 180 Q 500 300 800 150 Q 500 400 200 500 Q 500 450 800 550"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="40"
-                        strokeLinecap="round"
-                        strokeDasharray="20 40"
-                    />
-                </svg>
-            </div>
-
-            {/* Locations */}
-            {locations.map((loc) => (
+            {/* Islands */}
+            {locations.map((loc, index) => (
                 <motion.button
                     key={loc.id}
                     onClick={() => onNavigate(loc.id)}
+                    className="absolute z-10 flex flex-col items-center group/island focus:outline-none"
+                    style={{ left: loc.position.left, top: loc.position.top }}
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    whileHover={{ scale: 1.1, y: -10 }}
-                    whileTap={{ scale: 0.9 }}
-                    className="absolute z-20 flex flex-col items-center group/loc"
-                    style={{ left: loc.position.x, top: loc.position.y }}
+                    transition={{ delay: index * 0.1, type: "spring", stiffness: 200 }}
+                    whileHover={{ scale: 1.1, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
                 >
-                    {/* Shadow */}
-                    <div className="absolute -bottom-2 w-12 h-4 bg-black/10 rounded-full blur-md group-hover/loc:scale-150 transition-transform"></div>
+                    {/* Island Shape */}
+                    <div className={`relative w-24 h-24 md:w-32 md:h-32 rounded-full ${loc.islandColor} shadow-[0_10px_20px_rgba(0,0,0,0.2)] border-b-8 border-black/10 flex items-center justify-center transform overflow-hidden`}>
+                        {/* Sand/Shore Texture */}
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/concrete-wall.png')] opacity-30 mix-blend-multiply"></div>
 
-                    {/* Building/Icon Container */}
-                    <div className={`relative w-20 h-20 md:w-28 md:h-28 rounded-3xl flex items-center justify-center text-white shadow-xl ${loc.color} border-4 border-white transition-all`}>
-                        <loc.icon size={40} className="md:size-48" />
-
-                        {/* Sparkles on hover */}
-                        <div className="absolute -inset-4 opacity-0 group-hover/loc:opacity-100 transition-opacity">
-                            <Sparkles className="absolute top-0 right-0 text-yellow-400 animate-pulse" size={20} />
-                            <Sparkles className="absolute bottom-0 left-0 text-yellow-400 animate-pulse delay-75" size={16} />
+                        {/* Icon */}
+                        <div className="relative bg-white/90 w-12 h-12 md:w-16 md:h-16 rounded-2xl flex items-center justify-center shadow-lg transform group-hover/island:rotate-6 transition-transform duration-300">
+                            <loc.icon size={32} className={`md:w-8 md:h-8 ${loc.color}`} />
                         </div>
+
+                        {/* Palm Tree Decor (Randomly placed on some islands or specific) */}
+                        {index % 2 === 0 && (
+                            <div className="absolute -bottom-1 -right-2 text-green-800/20 transform -rotate-12 scale-150 pointer-events-none">🌴</div>
+                        )}
                     </div>
 
-                    {/* Label */}
-                    <div className="mt-4 px-4 py-2 bg-white rounded-2xl shadow-lg border-2 border-gray-100 transform -rotate-1 group-hover/loc:rotate-0 transition-transform">
-                        <span className="text-sm font-black text-gray-900 whitespace-nowrap uppercase tracking-tighter">
+                    {/* Ripples under island */}
+                    <div className="absolute -bottom-4 w-24 h-6 bg-black/20 rounded-full blur-lg -z-10 group-hover/island:scale-125 transition-transform duration-500"></div>
+
+                    {/* Label Tag */}
+                    <div className="mt-3 bg-white/90 backdrop-blur-sm px-4 py-1.5 rounded-full shadow-lg border-2 border-white/50 transform group-hover/island:scale-110 transition-all">
+                        <span className="block text-xs md:text-sm font-black text-slate-700 uppercase tracking-tight leading-none text-center">
                             {loc.label}
                         </span>
                     </div>
                 </motion.button>
             ))}
 
-            {/* Decorative Elements (Trees) */}
-            <div className="absolute bottom-20 left-10 text-emerald-600/30 select-none pointer-events-none">🌴</div>
-            <div className="absolute bottom-40 right-10 text-emerald-600/30 select-none pointer-events-none text-4xl">🌴</div>
-            <div className="absolute top-1/2 left-1/3 text-emerald-600/20 select-none pointer-events-none text-2xl">🐚</div>
-            <div className="absolute bottom-1/4 right-1/4 text-emerald-600/20 select-none pointer-events-none text-3xl">🌴</div>
+            {/* Ship Decoration */}
+            <motion.div
+                className="absolute bottom-10 right-32 text-white/40"
+                animate={{ y: [0, -5, 0], rotate: [-2, 2, -2] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+                <div className="relative">
+                    <Anchor size={40} />
+                    <div className="absolute -bottom-2 w-10 h-2 bg-black/20 blur-sm rounded-full"></div>
+                </div>
+            </motion.div>
 
-            {/* Ocean (Bottom overlay) */}
-            <div className="absolute bottom-0 left-0 right-0 h-10 bg-blue-400/30 backdrop-blur-sm">
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-500/20 to-transparent"></div>
-            </div>
         </div>
     );
 }
