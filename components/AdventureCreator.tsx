@@ -129,7 +129,7 @@ export default function AdventureCreator() {
                 >
                     {isGenerating ? (
                         <>
-                            <Loader2 className="animate-spin" size={24} className="sm:size-7" />
+                            <Loader2 className="animate-spin sm:size-7" size={24} />
                             <span className="text-sm sm:text-lg">Baking Your Magic Story...</span>
                         </>
                     ) : (

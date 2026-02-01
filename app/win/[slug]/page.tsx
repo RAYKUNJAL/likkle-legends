@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { notFound } from 'next/navigation';
 import { enterContest, getContestStats } from '@/app/actions/growth';
-import { Copy, Gift, Trophy, Star, Send } from 'lucide-react';
+import { Copy, Gift, Trophy, Star, Send, Check } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 

@@ -80,7 +80,7 @@ export const RADIO_CHANNELS = [
 ];
 
 // RADIO_TRACKS removed - now served from Database or empty by default
-export const RADIO_TRACKS = [];
+export const RADIO_TRACKS: { url: string; title?: string }[] = [];
 
 export const QUESTS: Quest[] = [
     {

@@ -329,7 +329,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                 setStep('upsells');
                                 // TRIGGER ABANDONMENT RECOVERY
                                 if (user?.email) {
-                                    await queueAbandonedCheckout(user.email, user.user_metadata?.full_name || 'Legend', plan.name);
+                                    await queueAbandonedCheckout(user.email, user.full_name || 'Legend', plan.name);
                                 }
                             }}
                             className="px-8 py-4 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary/90 transition-colors"

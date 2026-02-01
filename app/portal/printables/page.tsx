@@ -120,8 +120,8 @@ export default function PrintablesPage() {
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
                             className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black whitespace-nowrap transition-all border-b-4 ${activeCategory === cat.id
-                                    ? 'bg-amber-400 border-amber-600 text-white translate-y-1'
-                                    : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                                ? 'bg-amber-400 border-amber-600 text-white translate-y-1'
+                                : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
                                 }`}
                         >
                             <cat.icon size={18} />
@@ -160,7 +160,7 @@ export default function PrintablesPage() {
                                 <PrintableCard
                                     key={item.id}
                                     item={item}
-                                    isLocked={!canAccess(item.tier_required)}
+                                    isLocked={!canAccess(item.tier_required || 'free')}
                                     view={viewMode}
                                 />
                             ))}

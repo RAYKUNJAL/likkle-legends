@@ -52,8 +52,8 @@ export default function GrandparentDashboardPage() {
 
             if (result.success && result.child) {
                 setChild(result.child);
-                setActivities(result.activities);
-                setMessages(result.messages);
+                setActivities(result.activities || []);
+                setMessages(result.messages || []);
             } else {
                 console.error('Failed to load dashboard:', result.error);
                 // Redirect to access page if child invalid
