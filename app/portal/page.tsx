@@ -186,12 +186,7 @@ export default function ChildPortalPage() {
         { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
     ];
 
-    const portals = [
-        { id: 'story-studio', label: 'Story Studio', sub: 'Create Magic', icon: Wand2, color: 'bg-[#FF9D42]', iconColor: 'text-orange-600', shadow: 'shadow-orange-200', href: '/portal/story-studio' },
-        { id: 'songs', label: 'Songs', sub: 'Island Rhythms', icon: Music, color: 'bg-[#A855F7]', iconColor: 'text-purple-600', shadow: 'shadow-purple-200' },
-        { id: 'printables', label: 'Printables', sub: 'Fun Activities', icon: Download, color: 'bg-[#F59E0B]', iconColor: 'text-amber-600', shadow: 'shadow-amber-200' },
-        { id: 'missions', label: 'Adventures', sub: 'Island Quests', icon: MapIcon, color: 'bg-[#14B8A6]', iconColor: 'text-teal-600', shadow: 'shadow-teal-200' },
-    ];
+    // Portals definition removed as we now use IslandVillageMap
 
     return (
         <div className="min-h-screen bg-[#F0F9FF] font-heading overflow-hidden relative">
@@ -338,36 +333,16 @@ export default function ChildPortalPage() {
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-                                {portals.map((portal) => (
-                                    <button
-                                        key={portal.id}
-                                        onClick={() => {
-                                            if (portal.href) {
-                                                router.push(portal.href);
-                                            } else {
-                                                setActiveSection(portal.id as PortalSection);
-                                            }
-                                        }}
-                                        className={`group relative h-[320px] sm:h-[400px] rounded-[3rem] sm:rounded-[4rem] ${portal.color} p-1 shadow-xl sm:shadow-2xl ${portal.shadow} hover:-translate-y-4 transition-all duration-500 overflow-hidden`}
-                                    >
-                                        <div className="h-full bg-white/10 group-hover:bg-transparent rounded-[2.8rem] sm:rounded-[3.8rem] transition-colors p-6 sm:p-8 flex flex-col items-center justify-center gap-4 sm:gap-6 text-white text-center">
-                                            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-white rounded-[2rem] sm:rounded-[2.5rem] flex items-center justify-center shadow-2xl rotate-3 group-hover:rotate-0 group-hover:scale-110 transition-transform">
-                                                <portal.icon size={48} className={portal.iconColor} />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] sm:text-sm font-black uppercase tracking-[0.2em] opacity-80">{portal.sub}</p>
-                                                <h3 className="text-3xl sm:text-5xl font-black drop-shadow-sm">{portal.label}</h3>
-                                            </div>
-                                            <div className="mt-4 w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <ChevronRight size={32} />
-                                            </div>
-                                        </div>
-
-                                        {/* Decorative magic pattern */}
-                                        <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
-                                    </button>
-                                ))}
+                            <div className="w-full h-full min-h-[500px] flex items-center justify-center">
+                                <IslandVillageMap
+                                    onNavigate={(section) => {
+                                        if (section === 'story-studio') {
+                                            router.push('/portal/story-studio');
+                                        } else {
+                                            setActiveSection(section as PortalSection);
+                                        }
+                                    }}
+                                />
                             </div>
                         </div>
                     ) : (
