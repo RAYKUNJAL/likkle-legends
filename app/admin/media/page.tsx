@@ -82,8 +82,8 @@ function MediaManagerContent() {
             else if (type === 'thumbnail') bucket = BUCKETS.AVATARS;
         }
 
-        // Use the authenticated client to ensure RLS passes
-        const result = await uploadFile(bucket, file, undefined, { customClient: supabase });
+        // Use the authenticated client to ensure RLS passes, but force admin flag if we are in admin panel
+        const result = await uploadFile(bucket, file, undefined, { customClient: supabase, useAdmin: false });
 
         if (result) {
             setFormData((prev: any) => {
