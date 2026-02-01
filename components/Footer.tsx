@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { siteContent } from '@/lib/content';
+import { Instagram, Facebook, Twitter, Mail } from 'lucide-react';
 
 export default function Footer() {
     const { footer } = siteContent;
@@ -22,6 +23,22 @@ export default function Footer() {
                     <p className="text-white/80 text-xl leading-relaxed max-w-md font-bold">
                         {footer.brand_line}
                     </p>
+
+                    {/* Social Icons - Branding Fix */}
+                    <div className="flex items-center gap-4">
+                        <a href="#" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
+                            <Instagram size={20} />
+                        </a>
+                        <a href="#" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
+                            <Facebook size={20} />
+                        </a>
+                        <a href="#" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
+                            <Twitter size={20} />
+                        </a>
+                        <a href="mailto:hello@likklelegends.com" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
+                            <Mail size={20} />
+                        </a>
+                    </div>
                 </div>
                 {footer.columns.map((col, i) => (
                     <div key={i} className="space-y-8">
@@ -40,13 +57,13 @@ export default function Footer() {
                 ))}
             </div>
             <div className="container mt-24 pt-10 border-t border-white/5 flex flex-col items-center gap-8">
-                {/* Square Logo Placeholder Fix */}
+                {/* Brand Mark Fix */}
                 <div className="relative w-16 h-16 bg-white/5 rounded-2xl p-3 group hover:bg-white/10 transition-all border border-white/5">
                     <Image
-                        src="/images/logo.png"
-                        alt="Likkle Legends"
+                        src="/images/icon.png"
+                        alt="Likkle Legends Icon"
                         fill
-                        className="object-contain p-2 brightness-0 invert opacity-40 group-hover:opacity-100 transition-opacity"
+                        className="object-contain p-1 group-hover:scale-110 transition-transform"
                     />
                 </div>
 
