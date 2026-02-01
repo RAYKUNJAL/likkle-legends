@@ -441,8 +441,9 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
 
                     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 space-y-4">
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
+                            <label htmlFor="shipping-name" className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
                             <input
+                                id="shipping-name"
                                 type="text"
                                 value={shippingData.name}
                                 onChange={(e) => setShippingData({ ...shippingData, name: e.target.value })}
@@ -451,8 +452,9 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Address Line 1</label>
+                            <label htmlFor="shipping-line1" className="block text-sm font-bold text-gray-700 mb-1">Address Line 1</label>
                             <input
+                                id="shipping-line1"
                                 type="text"
                                 value={shippingData.line1}
                                 onChange={(e) => setShippingData({ ...shippingData, line1: e.target.value })}
@@ -461,8 +463,9 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-gray-700 mb-1">Address Line 2 (Optional)</label>
+                            <label htmlFor="shipping-line2" className="block text-sm font-bold text-gray-700 mb-1">Address Line 2 (Optional)</label>
                             <input
+                                id="shipping-line2"
                                 type="text"
                                 value={shippingData.line2}
                                 onChange={(e) => setShippingData({ ...shippingData, line2: e.target.value })}
@@ -472,8 +475,9 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">City</label>
+                                <label htmlFor="shipping-city" className="block text-sm font-bold text-gray-700 mb-1">City</label>
                                 <input
+                                    id="shipping-city"
                                     type="text"
                                     value={shippingData.city}
                                     onChange={(e) => setShippingData({ ...shippingData, city: e.target.value })}
@@ -481,8 +485,9 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">State / Province</label>
+                                <label htmlFor="shipping-state" className="block text-sm font-bold text-gray-700 mb-1">State / Province</label>
                                 <input
+                                    id="shipping-state"
                                     type="text"
                                     value={shippingData.state}
                                     onChange={(e) => setShippingData({ ...shippingData, state: e.target.value })}
@@ -492,8 +497,9 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Postal Code</label>
+                                <label htmlFor="shipping-postal" className="block text-sm font-bold text-gray-700 mb-1">Postal Code</label>
                                 <input
+                                    id="shipping-postal"
                                     type="text"
                                     value={shippingData.postalCode}
                                     onChange={(e) => setShippingData({ ...shippingData, postalCode: e.target.value })}
@@ -501,8 +507,9 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Country</label>
+                                <label htmlFor="shipping-country" className="block text-sm font-bold text-gray-700 mb-1">Country</label>
                                 <input
+                                    id="shipping-country"
                                     type="text"
                                     value={shippingData.country}
                                     onChange={(e) => setShippingData({ ...shippingData, country: e.target.value })}

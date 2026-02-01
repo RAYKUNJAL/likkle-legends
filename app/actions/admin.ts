@@ -538,13 +538,29 @@ export async function getStoreAnalytics(token: string) {
         const trackSales = purchases?.filter(p => p.content_type === 'song').length || 0;
         const requestSales = requests?.length || 0;
 
+        // Generate Chart Data (Last 7 Days)
+        const chartData = [];
+        const today = new Date();
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(today.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+
+            // Sum purchases for this day
+            const dailyRevenue = purchases?.filter(p => p.purchased_at?.startsWith(dateStr))
+                .reduce((acc, p) => acc + (Number(p.amount_paid) || 0), 0) || 0;
+
+            chartData.push({ date: dateStr, revenue: dailyRevenue });
+        }
+
         return {
             totalRevenue: parseFloat(totalRevenue.toFixed(2)),
             bundleSales,
             trackSales,
             requestSales,
             recentPurchases: (purchases || []).slice(0, 10),
-            recentRequests: (requests || []).slice(0, 5)
+            recentRequests: (requests || []).slice(0, 5),
+            chartData
         };
     } catch (e: any) {
         console.error("💥 getStoreAnalytics failure:", e.message);

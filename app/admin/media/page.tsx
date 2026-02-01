@@ -265,6 +265,7 @@ function MediaManagerContent() {
                             value={filterTier}
                             onChange={(e) => setFilterTier(e.target.value)}
                             className="bg-transparent border-none text-xs font-bold focus:ring-0"
+                            aria-label="Filter by Tier"
                         >
                             <option value="all">All Tiers</option>
                             <option value="free">Free</option>
@@ -276,6 +277,7 @@ function MediaManagerContent() {
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                             className="bg-transparent border-none text-xs font-bold focus:ring-0"
+                            aria-label="Filter by Status"
                         >
                             <option value="all">All Status</option>
                             <option value="active">Active Only</option>
@@ -395,8 +397,9 @@ function MediaManagerContent() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                                <label htmlFor="media-description" className="block text-sm font-bold text-gray-700 mb-2">Description</label>
                                 <textarea
+                                    id="media-description"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-200 rounded-xl"
@@ -406,8 +409,9 @@ function MediaManagerContent() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Tier Required</label>
+                                    <label htmlFor="media-tier" className="block text-sm font-bold text-gray-700 mb-2">Tier Required</label>
                                     <select
+                                        id="media-tier"
                                         value={formData.tier_required}
                                         onChange={(e) => setFormData({ ...formData, tier_required: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-xl"
@@ -419,8 +423,9 @@ function MediaManagerContent() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Age Track</label>
+                                    <label htmlFor="media-age" className="block text-sm font-bold text-gray-700 mb-2">Age Track</label>
                                     <select
+                                        id="media-age"
                                         value={formData.age_track}
                                         onChange={(e) => setFormData({ ...formData, age_track: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-xl"
@@ -431,8 +436,9 @@ function MediaManagerContent() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                                    <label htmlFor="media-category" className="block text-sm font-bold text-gray-700 mb-2">Category</label>
                                     <select
+                                        id="media-category"
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-xl"
