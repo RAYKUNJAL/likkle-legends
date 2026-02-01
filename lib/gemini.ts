@@ -1,8 +1,12 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SafetySetting } from "@google/generative-ai";
 import { TANTY_ISLAND_ENGINE } from "@/services/tantyConfig";
 
-const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
-const genAI = new GoogleGenerativeAI(apiKey);
+const getGenAI = () => {
+  const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
+  if (!key) return null;
+  return new GoogleGenerativeAI(key);
+};
+
 
 const safetySettings: SafetySetting[] = [
   {
@@ -24,7 +28,8 @@ const safetySettings: SafetySetting[] = [
 ];
 
 export async function generateAIResponse(userMessage: string) {
-  if (!apiKey) {
+  const genAI = getGenAI();
+  if (!genAI) {
     console.error("Missing Gemini API Key. Please set GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY in your environment.");
     return "Oye! My magic connection is a bit weak right now, darlin'. (Missing API Key)";
   }
@@ -46,7 +51,8 @@ export async function generateAIResponse(userMessage: string) {
 }
 
 export async function getReadingFeedback(age: string, text: string) {
-  if (!apiKey) return "You did amazing, little legend! Keep practicing!";
+  const genAI = getGenAI();
+  if (!genAI) return "You did amazing, little legend! Keep practicing!";
 
   try {
     const model = genAI.getGenerativeModel({
@@ -101,7 +107,8 @@ export async function generateImageEdit(prompt: string, imageUri: string) {
 }
 
 export async function getParentSuggestions(ageGroup: string, recentActivity: string, currentMonth: string) {
-  if (!apiKey) return [
+  const genAI = getGenAI();
+  if (!genAI) return [
     { title: "Story Time", description: "Read a story about Anansi today!", type: "Culture" },
     { title: "Island Talk", description: "Ask your little legend about their favorite island fruit.", type: "Language" },
     { title: "Art Attack", description: "Practice some new Patois words together.", type: "Creative" }
@@ -129,7 +136,8 @@ export async function getParentSuggestions(ageGroup: string, recentActivity: str
 }
 
 export async function generateAssetMetadata(title: string, type: string) {
-  if (!apiKey) return { description: "Island vibes and fun learning!", tags: ["culture", "fun"] };
+  const genAI = getGenAI();
+  if (!genAI) return { description: "Island vibes and fun learning!", tags: ["culture", "fun"] };
 
   try {
     const model = genAI.getGenerativeModel({

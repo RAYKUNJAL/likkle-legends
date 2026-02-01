@@ -1,7 +1,12 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SafetySetting } from "@google/generative-ai";
 
-const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
-const genAI = new GoogleGenerativeAI(apiKey);
+// Lazy init
+const getGenAI = () => {
+    const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
+    if (!key) return null;
+    return new GoogleGenerativeAI(key);
+};
+
 
 // STRICT Safety Settings as per Global Policy
 const safetySettings: SafetySetting[] = [
@@ -67,7 +72,8 @@ function getFallbackStory(inputs: StoryInputs) {
 }
 
 export async function generateCulturalStory(inputs: StoryInputs) {
-    if (apiKey) {
+    const genAI = getGenAI();
+    if (genAI) {
         try {
             const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", safetySettings });
 

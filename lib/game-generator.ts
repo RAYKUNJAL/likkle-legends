@@ -5,8 +5,12 @@
 
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SafetySetting } from "@google/generative-ai";
 
-const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
-const genAI = new GoogleGenerativeAI(apiKey);
+const getGenAI = () => {
+    const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
+    if (!key) return null;
+    return new GoogleGenerativeAI(key);
+};
+
 
 const safetySettings: SafetySetting[] = [
     { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
@@ -127,7 +131,8 @@ export async function generateTriviaGame(
     difficulty: 'easy' | 'medium' | 'hard' = 'easy',
     questionCount: number = 5
 ): Promise<GeneratedGame> {
-    if (!apiKey) {
+    const genAI = getGenAI();
+    if (!genAI) {
         return generateFallbackTrivia(island, difficulty, questionCount);
     }
 
@@ -281,7 +286,8 @@ export async function generateStoryAdventure(
     childName: string,
     island: string = 'Jamaica'
 ): Promise<GeneratedGame> {
-    if (!apiKey) {
+    const genAI = getGenAI();
+    if (!genAI) {
         return generateFallbackStory(childName, island);
     }
 
