@@ -60,6 +60,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
     const navItems = [
         { id: 'overview', label: 'Overview', icon: BarChart3, href: '/admin' },
         { id: 'leads', label: 'Leads & CRM', icon: Users, href: '/admin/leads' },
+        { id: 'affiliates', label: 'Affiliates', icon: Users, href: '/admin/affiliates' },
         { id: 'customers', label: 'Customers', icon: Users, href: '/admin/customers' },
         { id: 'orders', label: 'Orders & Fulfillment', icon: ShoppingCart, href: '/admin/orders' },
         { id: 'custom-requests', label: 'Custom Requests', icon: Music, href: '/admin/custom-requests' },
@@ -365,8 +366,8 @@ export function FileUpload({ accept, maxSize = 100, onUpload, label, description
             onDragLeave={() => setIsDragging(false)}
             onDrop={handleDrop}
             className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all relative overflow-hidden ${isDragging ? 'border-primary bg-primary/5' :
-                    isSuccess ? 'border-green-400 bg-green-50' :
-                        'border-gray-200 hover:border-gray-300'
+                isSuccess ? 'border-green-400 bg-green-50' :
+                    'border-gray-200 hover:border-gray-300'
                 }`}
         >
             {isUploading && (
