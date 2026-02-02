@@ -227,3 +227,89 @@ export async function getContestStats(contestSlug: string, userEntryId?: string)
         userStats
     };
 }
+
+// ==============================================================================
+// 4. ADMIN AFFILIATE MANAGEMENT
+// ==============================================================================
+
+/**
+ * Get all promoters for admin dashboard
+ */
+export async function getAllPromotersAdmin(token: string) {
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+        .from('promoters')
+        .select(`
+            *,
+            profiles:user_id (
+                full_name,
+                email
+            )
+        `)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching promoters:', error);
+        return [];
+    }
+
+    return data || [];
+}
+
+/**
+ * Update promoter status (approve/suspend)
+ */
+export async function updatePromoterStatus(token: string, promoterId: string, status: 'approved' | 'suspended') {
+    const supabase = createClient();
+
+    const { error } = await supabase
+        .from('promoters')
+        .update({ status })
+        .eq('id', promoterId);
+
+    if (error) {
+        console.error('Error updating promoter status:', error);
+        throw error;
+    }
+
+    return { success: true };
+}
+
+/**
+ * Get affiliate analytics for admin dashboard
+ */
+export async function getAffiliateAnalytics(token: string) {
+    const supabase = createClient();
+
+    // Get all promoters
+    const { data: promoters, error } = await supabase
+        .from('promoters')
+        .select('status, total_earned, total_paid');
+
+    if (error) {
+        console.error('Error fetching affiliate analytics:', error);
+        return null;
+    }
+
+    const totalAffiliates = promoters?.length || 0;
+    const activeAffiliates = promoters?.filter(p => p.status === 'approved').length || 0;
+    const pendingApplications = promoters?.filter(p => p.status === 'pending_approval').length || 0;
+    const totalCommissionsEarned = promoters?.reduce((sum, p) => sum + (p.total_earned || 0), 0) || 0;
+    const totalCommissionsPaid = promoters?.reduce((sum, p) => sum + (p.total_paid || 0), 0) || 0;
+
+    // Get referral count
+    const { count: totalReferrals } = await supabase
+        .from('referral_clicks')
+        .select('*', { count: 'exact', head: true });
+
+    return {
+        totalAffiliates,
+        activeAffiliates,
+        pendingApplications,
+        totalCommissionsEarned,
+        totalCommissionsPaid,
+        totalReferrals: totalReferrals || 0
+    };
+}
+
