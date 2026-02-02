@@ -308,7 +308,7 @@ export const siteContent = {
                     id: "guide",
                     label: "Choose your Island Guide",
                     type: "select",
-                    options: ["Tanty Spice", "Dilly Doubles", "Scorcha"]
+                    options: ["Tanty Spice", "Dilly Doubles", "Roti"]
                 },
                 {
                     id: "location",
