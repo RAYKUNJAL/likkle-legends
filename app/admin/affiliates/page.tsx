@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import {
     AdminLayout, SearchBar, DataTable, StatusBadge, Modal, Tabs, ActionButton,
-    Users, Edit, Eye, CheckCircle2, XCircle, RefreshCw
+    Users, Edit, Eye, CheckCircle2, RefreshCw
 } from '@/components/admin/AdminComponents';
-import { DollarSign, TrendingUp, UserCheck, UserX, ExternalLink, Copy } from 'lucide-react';
+import { DollarSign, TrendingUp, UserCheck, UserX, ExternalLink, Copy, XCircle } from 'lucide-react';
 import { getAllPromotersAdmin, updatePromoterStatus, getAffiliateAnalytics } from '@/app/actions/growth';
 import toast from 'react-hot-toast';
 
@@ -200,8 +200,8 @@ export default function AdminAffiliatesPage() {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`py-4 px-2 font-bold text-sm border-b-2 transition-colors ${activeTab === tab.id
-                                            ? 'border-purple-600 text-purple-600'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                                        ? 'border-purple-600 text-purple-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700'
                                         }`}
                                 >
                                     {tab.label}

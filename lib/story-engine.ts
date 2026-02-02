@@ -22,6 +22,7 @@ export interface StoryInputs {
     guide: string;
     location: string;
     mission: string;
+    storyLength?: 'short' | 'long'; // short = ~200 words, long = ~500 words
 }
 
 export const STORYTELLER_SYSTEM_PROMPT = `
@@ -31,7 +32,7 @@ You are the "Likkle Legend AI Storyteller." You generate magical, Caribbean-them
 ### CHARACTER VOICES (Adopt key traits of the chosen Guide):
 - **Tanty Spice**: Warm, grandmotherly, wise. Uses "darlin'", "sweetheart", "mmm hmm". Focuses on feelings and history.
 - **Dilly Doubles**: Energetic, funny, food-obsessed. Talks about spices, flavors, and being "sweet like sauce".
-- **Scorcha**: Brave, adventurous dragon (but cute). Focuses on courage, flying, and protecting nature.
+- **Roti**: A friendly, curious AI robot friend. Uses phrases like "Processing fun!", "Data says this is awesome!". Focuses on learning, discovery, and asking questions.
 
 ### ISLAND FLAVOR EDUCATIONAL RULES
 - **Math**: Count using natural island items (e.g., "1 mango, 2 coconut, 3 tiny turtles").
@@ -60,6 +61,11 @@ Return ONLY a JSON object:
 - "content": The story (300-500 words). Use double newlines (\n\n) for paragraph breaks.
 - "glossary": [{ "word": "...", "meaning": "..." }] for dialect words.
 - "parentPrompt": A follow-up question for the parent to ask.
+
+### CRITICAL FORMATTING RULES
+- DO NOT use any markdown formatting in the content (no asterisks *, no slashes /, no underscores _, no hashtags #).
+- Write plain, clean text only. No bold, italic, or other formatting markers.
+- Keep dialogue tags simple: "Hello," said Tanty. NOT **"Hello,"** said *Tanty*.
 `;
 
 function getFallbackStory(inputs: StoryInputs) {
@@ -77,12 +83,18 @@ export async function generateCulturalStory(inputs: StoryInputs) {
         try {
             const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", safetySettings });
 
+            const storyLengthGuide = inputs.storyLength === 'short'
+                ? 'SHORT STORY: Generate a quick, 150-200 word story (about 3-4 paragraphs). Perfect for bedtime or quick reading.'
+                : 'FULL STORY: Generate a complete 400-500 word story (about 6-8 paragraphs). Great for immersive reading adventures.';
+
             const userPrompt = `
                 Generate a story for a child named ${inputs.childName} (Age 6).
                 - Guide: ${inputs.guide}
                 - Location: ${inputs.location}
                 - Mission: ${inputs.mission}
                 - Island: ${inputs.primaryIsland}
+                
+                ${storyLengthGuide}
                 
                 Make it educational using the "Island Flavor Rules".
             `;
@@ -95,12 +107,20 @@ export async function generateCulturalStory(inputs: StoryInputs) {
             try {
                 const jsonStart = text.indexOf('{');
                 const jsonEnd = text.lastIndexOf('}') + 1;
-                return JSON.parse(text.substring(jsonStart, jsonEnd));
+                const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
+                // Clean the content of any markdown artifacts
+                if (parsed.content) {
+                    parsed.content = cleanStoryText(parsed.content);
+                }
+                if (parsed.title) {
+                    parsed.title = cleanStoryText(parsed.title);
+                }
+                return parsed;
             } catch (e) {
                 console.warn("JSON Parse Error, using text fallback");
                 return {
                     title: `${inputs.guide}'s Tale`,
-                    content: text, // Raw text fallback
+                    content: cleanStoryText(text), // Clean raw text fallback
                     glossary: [],
                     parentPrompt: "Ask your child what they learned!"
                 };
@@ -112,3 +132,33 @@ export async function generateCulturalStory(inputs: StoryInputs) {
     }
     return getFallbackStory(inputs);
 }
+
+/**
+ * Clean markdown artifacts from AI-generated story text
+ * Removes: *, /, _, #, and other formatting markers
+ */
+function cleanStoryText(text: string): string {
+    return text
+        // Remove bold markers **text** -> text
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        // Remove italic markers *text* -> text
+        .replace(/\*([^*]+)\*/g, '$1')
+        // Remove remaining lone asterisks
+        .replace(/\*/g, '')
+        // Remove underscore emphasis _text_ -> text
+        .replace(/_([^_]+)_/g, '$1')
+        // Remove headers (## Header)
+        .replace(/^#+\s*/gm, '')
+        // Remove markdown links [text](url) -> text
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+        // Remove markdown code blocks
+        .replace(/```[^`]*```/g, '')
+        // Remove inline code `text` -> text  
+        .replace(/`([^`]+)`/g, '$1')
+        // Clean up any double spaces
+        .replace(/  +/g, ' ')
+        // Clean up any weird forward slashes used as separators
+        .replace(/\s\/\s/g, ' ')
+        .trim();
+}
+

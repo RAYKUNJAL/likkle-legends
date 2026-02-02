@@ -5,9 +5,9 @@
 // const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY || '';
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 
-// Voice IDs - replace with your custom Caribbean voice model
+// Voice IDs - Custom Caribbean voice models
 export const VOICES = {
-    tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || 'MF3mGyEYCl7XYWbV9V6O', // 'Elli' - Warm, calm female or similar
+    tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS', // Tanty Spice - Warm Caribbean grandmother
     steelpan_sam: process.env.ELEVENLABS_SAM_VOICE_ID || 'ErXwobaYiN019PkySvjV',
     dilly_doubles: process.env.ELEVENLABS_DILLY_VOICE_ID || 'TxGEqnHWrfWFTfGW9XjX',
 };
