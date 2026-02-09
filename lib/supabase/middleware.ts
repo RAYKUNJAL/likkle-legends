@@ -36,7 +36,10 @@ export async function updateSession(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     // Protected routes logic
-    if (request.nextUrl.pathname.startsWith('/portal') || request.nextUrl.pathname.startsWith('/admin')) {
+    const isPortal = request.nextUrl.pathname.startsWith('/portal');
+    const isAdmin = request.nextUrl.pathname.startsWith('/admin') && request.nextUrl.pathname !== '/admin/central' && request.nextUrl.pathname !== '/admin';
+
+    if (isPortal || isAdmin) {
         if (!user) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
@@ -45,7 +48,8 @@ export async function updateSession(request: NextRequest) {
     // Auth routes logic (redirect if already logged in)
     if (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup') {
         if (user) {
-            return NextResponse.redirect(new URL('/portal', request.url))
+            const redirectTo = request.nextUrl.searchParams.get('redirect') || '/portal';
+            return NextResponse.redirect(new URL(redirectTo, request.url))
         }
     }
 

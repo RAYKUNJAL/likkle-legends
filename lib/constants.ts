@@ -1,4 +1,4 @@
-import { Character, AdminCharacter, Quest } from './types';
+import { Character, AdminCharacter, Quest, Track } from './types';
 
 export const BRAND_NAME = "Likkle Legends";
 export const TANTY_AVATAR = "/images/tanty_spice_avatar.jpg";
@@ -69,7 +69,6 @@ export const CHARACTERS: AdminCharacter[] = [
     }
 ];
 
-// Radio channels remain as they define the UI structure
 export const RADIO_CHANNELS = [
     { id: 'story', label: "Story Time", icon: "📚" },
     { id: 'lullaby', label: "Island Lullabies", icon: "🌙" },
@@ -79,8 +78,7 @@ export const RADIO_CHANNELS = [
     { id: 'vip', label: "Heritage VIP", icon: "👑" }
 ];
 
-// RADIO_TRACKS removed - now served from Database or empty by default
-export const RADIO_TRACKS: { url: string; title?: string }[] = [];
+export const RADIO_TRACKS: Track[] = [];
 
 export const QUESTS: Quest[] = [
     {
@@ -90,7 +88,7 @@ export const QUESTS: Quest[] = [
         rewardPoints: 100,
         icon: '🥭',
         category: 'Nature',
-        steps: ['Find a mango, pineapple, or banana', 'Draw its colors and shape', 'Tell Tanty Spice its name!']
+        steps: ['Find a mango, pineapple, or banner', 'Draw its colors and shape', 'Tell Tanty Spice its name!']
     },
     {
         id: 'q2',
@@ -109,23 +107,5 @@ export const QUESTS: Quest[] = [
         icon: '🥁',
         category: 'Music',
         steps: ['Find a pot lid or a spoon', 'Listen to its "Ting!" sound', 'Play your favorite soca rhythm']
-    },
-    {
-        id: 'q4',
-        title: 'Spice Detective',
-        description: 'Find something in the kitchen that smells like the islands.',
-        rewardPoints: 250,
-        icon: '🧂',
-        category: 'Food',
-        steps: ['Smell some cinnamon or nutmeg', 'Imagine you are at a local market', 'Help cook a meal with that spice']
-    },
-    {
-        id: 'q5',
-        title: 'Flag Flyer',
-        description: 'Discover the colors of a Caribbean flag.',
-        rewardPoints: 300,
-        icon: '🚩',
-        category: 'Culture',
-        steps: ['Look up the Jamaica or Trinidad flag', 'Name all the colors you see', 'Draw your own "Legend Flag"']
     }
 ];

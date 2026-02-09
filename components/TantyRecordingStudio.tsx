@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect, useRef } from 'react';
 import { StudioContent } from '../lib/types';
 import { narrateText, getGlobalAudioContext, kickstartMobileAudio } from '../services/geminiService';

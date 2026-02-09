@@ -1,3 +1,4 @@
+"use client";
 
 import React, { useEffect, useState } from 'react';
 import { getAdminStats, getRecentActivity } from '../../services/supabase/databaseService';

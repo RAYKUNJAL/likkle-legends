@@ -6,7 +6,7 @@ import {
 } from '@/components/admin/AdminComponents';
 import {
     TrendingUp, Users, ShoppingBag, CreditCard, Activity, Globe,
-    ArrowUpRight, ArrowDownRight, BarChart3, PieChart, Users2, Calendar, Star
+    ArrowUpRight, ArrowDownRight, BarChart, PieChart, Calendar, Star
 } from 'lucide-react';
 
 export default function AdminAnalyticsPage() {
@@ -98,7 +98,7 @@ export default function AdminAnalyticsPage() {
                     <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
                         <div className="flex items-center justify-between mb-8">
                             <h3 className="text-xl font-black text-gray-900 flex items-center gap-2">
-                                <BarChart3 className="text-primary" /> Subscription Growth
+                                <BarChart className="text-primary" /> Subscription Growth
                             </h3>
                             <select title="Choose Chart Category" className="bg-gray-50 border-none rounded-lg text-xs font-bold px-3 py-2 outline-none">
                                 <option>Total Subscribers</option>
@@ -159,7 +159,7 @@ export default function AdminAnalyticsPage() {
                     {/* Engagement Overview */}
                     <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
                         <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
-                            <Users2 className="text-purple-500" /> Engagement
+                            <Users className="text-purple-500" /> Engagement
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="p-4 bg-purple-50 rounded-2xl">

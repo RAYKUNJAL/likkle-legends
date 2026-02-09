@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
     Users, CreditCard, Package, TrendingUp, AlertCircle,
     Search, Activity, Upload, Music, Video, BookOpen,
-    Settings, Bell, BarChart3, FileText, MessageSquare,
+    Settings, Bell, BarChart, FileText, MessageSquare,
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
     Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap, Send,
@@ -15,11 +15,11 @@ import {
 export {
     Users, CreditCard, Package, TrendingUp, AlertCircle,
     Search, Activity, Upload, Music, Video, BookOpen,
-    Settings, Bell, BarChart3, FileText, MessageSquare,
+    Settings, Bell, BarChart, FileText, MessageSquare,
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
     Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap, Send,
-    Database, Smartphone, Accessibility, Lock, Star, Info
+    Database, Smartphone, Accessibility, Lock, Star, Info, Target
 };
 
 // ==========================================
@@ -58,7 +58,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
     }, []);
 
     const navItems = [
-        { id: 'overview', label: 'Overview', icon: BarChart3, href: '/admin' },
+        { id: 'overview', label: 'Overview', icon: BarChart, href: '/admin' },
         { id: 'leads', label: 'Leads & CRM', icon: Users, href: '/admin/leads' },
         { id: 'affiliates', label: 'Affiliates', icon: Users, href: '/admin/affiliates' },
         { id: 'customers', label: 'Customers', icon: Users, href: '/admin/customers' },
@@ -83,7 +83,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
         { id: 'announcements', label: 'Announcements', icon: Megaphone, href: '/admin/announcements' },
         { id: 'analytics', label: 'Analytics', icon: TrendingUp, href: '/admin/analytics' },
         { id: 'verify', label: 'Launch Verification', icon: ShieldCheck, href: '/admin/verify' },
-        { id: 'debug', label: 'AI Diagnostics', icon: Activity, href: '/admin/debug-ai' }, // Added for debugging
+        { id: 'debug', label: 'AI Diagnostics', icon: Activity, href: '/admin/debug' }, // Added for debugging
         { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
     ];
 
@@ -97,19 +97,22 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
                 </div>
 
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.id}
-                            href={item.href}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === item.id
-                                ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                : 'text-white/70 hover:bg-white/10 hover:text-white'
-                                }`}
-                        >
-                            <item.icon size={20} />
-                            <span className="font-medium">{item.label}</span>
-                        </Link>
-                    ))}
+                    {navItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                            <Link
+                                key={item.id}
+                                href={item.href}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === item.id
+                                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                    }`}
+                            >
+                                {Icon && <Icon size={20} />}
+                                <span className="font-medium">{item.label}</span>
+                            </Link>
+                        );
+                    })}
                 </nav>
 
                 <div className="p-4 border-t border-white/10">
@@ -458,16 +461,17 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
 
 interface StatusBadgeProps {
     status: string;
-    variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
+    variant?: 'default' | 'success' | 'warning' | 'danger' | 'error' | 'info';
 }
 
 export function StatusBadge({ status, variant = 'default' }: StatusBadgeProps) {
     const variants = {
-        default: 'bg-gray-100 text-gray-700',
-        success: 'bg-green-100 text-green-700',
-        warning: 'bg-amber-100 text-amber-700',
-        error: 'bg-red-100 text-red-700',
-        info: 'bg-blue-100 text-blue-700',
+        default: 'bg-gray-100 text-gray-700 border-gray-200',
+        success: 'bg-green-100 text-green-700 border-green-200',
+        warning: 'bg-amber-100 text-amber-700 border-amber-200',
+        danger: 'bg-red-100 text-red-700 border-red-200',
+        error: 'bg-red-100 text-red-700 border-red-200',
+        info: 'bg-blue-100 text-blue-700 border-blue-200',
     };
 
     return (
