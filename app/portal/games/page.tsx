@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
     ArrowLeft, Gamepad2, Star, Lock, Play, Trophy, Clock,
@@ -173,11 +173,7 @@ export default function GamesHubPage() {
     const [hoveredGame, setHoveredGame] = useState<string | null>(null);
     const [showOnlyAccessible, setShowOnlyAccessible] = useState(false);
 
-    useEffect(() => {
-        loadGames();
-    }, []);
-
-    const loadGames = async () => {
+    const loadGames = useCallback(async () => {
         setIsLoading(true);
         try {
             const data = await getGames();
@@ -187,7 +183,11 @@ export default function GamesHubPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        loadGames();
+    }, [loadGames]);
 
     const displayGames = games.length > 0 ? games : FEATURED_GAMES;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AdminLayout, RefreshCw } from '@/components/admin/AdminComponents';
 import {
     Save, Mail, Send, CheckCircle, XCircle, Clock,
@@ -32,11 +32,7 @@ export default function AdminEmailEnginePage() {
     const [broadcastTemplate, setBroadcastTemplate] = useState('ONBOARDING_DAY_7');
     const [lastRun, setLastRun] = useState<string | null>(null);
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
             const { supabase } = await import('@/lib/storage');
@@ -83,7 +79,11 @@ export default function AdminEmailEnginePage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
 
     const processQueue = async () => {
         setIsProcessing(true);
@@ -285,7 +285,7 @@ export default function AdminEmailEnginePage() {
                                 <Zap className="text-blue-600 mt-1 shrink-0" size={20} />
                                 <p className="text-sm text-blue-800 font-medium leading-relaxed">
                                     <b>Pro-Tip:</b> High-revenue emails for this niche focus on <b>Child Success</b>.
-                                    We recommend using the "Onboarding Day 7" template to share a new story or activity!
+                                    We recommend using the &quot;Onboarding Day 7&quot; template to share a new story or activity!
                                 </p>
                             </div>
                             <button

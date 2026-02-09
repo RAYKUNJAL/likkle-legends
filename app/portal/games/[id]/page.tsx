@@ -7,6 +7,7 @@ import { ArrowLeft, Gamepad2, Sparkles, Star, Trophy, RefreshCw, Home } from 'lu
 import dynamic from 'next/dynamic';
 import { useUser } from '@/components/UserContext';
 import confetti from 'canvas-confetti';
+import { getGameById } from '@/lib/database';
 
 // Dynamic Imports with Loaders
 const MangoCatch = dynamic(() => import('@/components/games/MangoCatch'), { loading: () => <LoadingGame /> });
@@ -138,6 +139,27 @@ export default function GamePlayerPage() {
     const [correctAnswers, setCorrectAnswers] = useState(0);
     const [totalQuestions, setTotalQuestions] = useState(0);
     const [gameKey, setGameKey] = useState(0);
+    const [dbGame, setDbGame] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    React.useEffect(() => {
+        const fetchGame = async () => {
+            if (!gameId) return;
+            // List of featured IDs that don't need DB fetch (matching renderGame logic)
+            const featuredIds = ['island-match', 'patois-puzzle', 'ai-trivia', 'trivia', 'mango-catch', 'color-match'];
+
+            if (!featuredIds.includes(gameId)) {
+                try {
+                    const game = await getGameById(gameId);
+                    setDbGame(game);
+                } catch (err) {
+                    console.error("Error fetching game:", err);
+                }
+            }
+            setIsLoading(false);
+        };
+        fetchGame();
+    }, [gameId]);
 
     const handleComplete = (earnedScore: number, correct: number, total: number) => {
         setScore(earnedScore);
@@ -155,6 +177,7 @@ export default function GamePlayerPage() {
     };
 
     const getGameTitle = () => {
+        if (dbGame) return dbGame.title;
         switch (gameId) {
             case 'island-match': return 'Island Memory Match';
             case 'patois-puzzle': return 'Patois Word Wizard';
@@ -167,6 +190,24 @@ export default function GamePlayerPage() {
     };
 
     const renderGame = () => {
+        if (isLoading) return <LoadingGame />;
+
+        // Handle Dynamic Games from DB
+        if (dbGame) {
+            const config = dbGame.game_config || {};
+            switch (dbGame.game_type) {
+                case 'trivia':
+                    return <IslandTrivia key={gameKey} onComplete={handleComplete} initialQuestions={config.questions} title={dbGame.title} />;
+                case 'memory':
+                    return <IslandMemory key={gameKey} onComplete={handleComplete} />; // Add config support to Memory later if needed
+                case 'word-match':
+                    return <PatoisWizard key={gameKey} onComplete={handleComplete} />; // Add config support to Wizard later if needed
+                default:
+                    break;
+            }
+        }
+
+        // Handle Featured/Static Games
         switch (gameId) {
             case 'island-match':
                 return <IslandMemory key={gameKey} onComplete={handleComplete} />;
@@ -185,7 +226,7 @@ export default function GamePlayerPage() {
                         <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🚧</div>
                         <h2 className="text-2xl font-black text-white mb-2">Game Coming Soon!</h2>
                         <p className="text-white/60 mb-8 max-w-xs mx-auto">
-                            Our team is building this island adventure. Check back soon!
+                            Tanty Spice and the team are building this island adventure. Check back soon!
                         </p>
                         <Link
                             href="/portal/games"

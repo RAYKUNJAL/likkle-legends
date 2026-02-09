@@ -26,10 +26,10 @@ export default function AboutPage() {
 
                     <div className="prose prose-xl max-w-none text-deep/70 space-y-8 leading-relaxed">
                         <p className="font-bold text-2xl text-deep">
-                            Likkle Legends was born in a living room in New York, where two Caribbean parents realized their children's bookshelf didn't look like their family history.
+                            Likkle Legends was born in a living room in New York, where two Caribbean parents realized their children&apos;s bookshelf didn&apos;t look like their family history.
                         </p>
                         <p>
-                            We started with a simple question: How can we make Caribbean culture part of our children's everyday life, no matter where in the world they are? We didn't want it to just be a holiday thing; we wanted it to be a pride thing.
+                            We started with a simple question: How can we make Caribbean culture part of our children&apos;s everyday life, no matter where in the world they are? We didn&apos;t want it to just be a holiday thing; we wanted it to be a pride thing.
                         </p>
                         <p>
                             Today, Likkle Legends Mail Club serves hundreds of families globally, combining the tactile joy of receiving a physical letter with the power of modern AI to build confidence, emotional literacy, and cultural identity.
@@ -38,13 +38,13 @@ export default function AboutPage() {
                         <div className="bg-white p-12 rounded-[3rem] border-2 border-primary/10 shadow-xl shadow-primary/5 my-12">
                             <h3 className="text-3xl font-black text-deep mb-6">Our Mission</h3>
                             <p className="text-xl italic">
-                                "To empower the next generation of Global Legends by wrapping Caribbean heritage and emotional intelligence in a monthly experience of joy and discovery."
+                                &quot;To empower the next generation of Global Legends by wrapping Caribbean heritage and emotional intelligence in a monthly experience of joy and discovery.&quot;
                             </p>
                         </div>
 
-                        <h3 className="text-3xl font-black text-deep">Why "Likkle Legends"?</h3>
+                        <h3 className="text-3xl font-black text-deep">Why &quot;Likkle Legends&quot;?</h3>
                         <p>
-                            In the Caribbean, we often say "likkle but tallawah"—small but mighty. We believe every child is a legend in the making. By teaching them their roots and giving them the tools to navigate their emotions, we help them stand tall on their own two feet.
+                            In the Caribbean, we often say &quot;likkle but tallawah&quot;&mdash;small but mighty. We believe every child is a legend in the making. By teaching them their roots and giving them the tools to navigate their emotions, we help them stand tall on their own two feet.
                         </p>
                     </div>
 

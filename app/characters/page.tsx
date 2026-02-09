@@ -48,7 +48,7 @@ export default function CharactersPage() {
                                         {char.role}
                                     </span>
                                     <h2 className="text-4xl lg:text-6xl font-black text-deep">{char.name}</h2>
-                                    <p className="text-2xl font-bold text-primary italic">"{char.tagline}"</p>
+                                    <p className="text-2xl font-bold text-primary italic">&quot;{char.tagline}&quot;</p>
                                     <p className="text-xl text-deep/70 leading-relaxed">
                                         {char.description}
                                     </p>
@@ -73,10 +73,10 @@ export default function CharactersPage() {
                             <div className="space-y-6">
                                 <h2 className="text-4xl font-black text-deep">Meet Tanty Spice (AI)</h2>
                                 <p className="text-xl text-deep/70 leading-relaxed max-w-2xl">
-                                    Tanty is our wise, warm, and funny Caribbean auntie. She's always online to help children talk about their feelings and help parents find the best tools for their little legend's growth.
+                                    Tanty is our wise, warm, and funny Caribbean auntie. She&apos;s always online to help children talk about their feelings and help parents find the best tools for their little legend&apos;s growth.
                                 </p>
                                 <Link href="/#tanty" className="inline-flex items-center font-bold text-primary hover:underline">
-                                    Chat with Tanty now →
+                                    Chat with Tanty now &rarr;
                                 </Link>
                             </div>
                         </div>

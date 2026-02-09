@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Play, Pause, Volume2, VolumeX, RefreshCw, Loader2 } from 'lucide-react';
 
 interface VoiceNarratorProps {
@@ -38,7 +38,7 @@ export default function VoiceNarrator({
     }, []);
 
     // Generate audio
-    const generateAudio = async () => {
+    const generateAudio = useCallback(async () => {
         if (!text.trim()) return;
 
         setIsLoading(true);
@@ -101,7 +101,7 @@ export default function VoiceNarrator({
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [text, voice, isMuted, onStart, onEnd]);
 
     const handlePlayPause = () => {
         if (!audioRef.current) {
@@ -137,7 +137,7 @@ export default function VoiceNarrator({
         if (autoPlay && text) {
             generateAudio();
         }
-    }, [autoPlay, text]);
+    }, [autoPlay, text, generateAudio]);
 
     return (
         <div className={`flex items-center gap-3 ${className}`}>
@@ -146,8 +146,8 @@ export default function VoiceNarrator({
                 onClick={handlePlayPause}
                 disabled={isLoading}
                 className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${isPlaying
-                        ? 'bg-primary text-white'
-                        : 'bg-primary/10 text-primary hover:bg-primary/20'
+                    ? 'bg-primary text-white'
+                    : 'bg-primary/10 text-primary hover:bg-primary/20'
                     } disabled:opacity-50`}
             >
                 {isLoading ? (

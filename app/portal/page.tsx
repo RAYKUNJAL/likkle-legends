@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -76,20 +76,7 @@ export default function ChildPortalPage() {
     const [activeVideo, setActiveVideo] = useState<Video | null>(null);
     const [activeSong, setActiveSong] = useState<Song | null>(null);
 
-    // Redirect to login if not authenticated
-    useEffect(() => {
-        if (!userLoading && !user) {
-            router.push('/login');
-        }
-    }, [user, userLoading, router]);
-
-    useEffect(() => {
-        if (user) {
-            loadPortalData();
-        }
-    }, [activeChild?.id, user]);
-
-    const loadPortalData = async () => {
+    const loadPortalData = useCallback(async () => {
         setIsLoading(true);
         try {
             const [songsData, storiesData, missionsData, videosData] = await Promise.all([
@@ -107,7 +94,20 @@ export default function ChildPortalPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [activeChild?.age_track]);
+
+    // Redirect to login if not authenticated
+    useEffect(() => {
+        if (!userLoading && !user) {
+            router.push('/login');
+        }
+    }, [user, userLoading, router]);
+
+    useEffect(() => {
+        if (user) {
+            loadPortalData();
+        }
+    }, [user, loadPortalData]);
 
     // Show loading while checking auth
     if (userLoading) {

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     AdminLayout, SearchBar, Modal, FileUpload, StatusBadge,
     Plus, Edit, Trash2, Palette
 } from '@/components/admin/AdminComponents';
+import Image from 'next/image';
 import { getCharacters, createCharacter, updateCharacter } from '@/lib/database';
 import { uploadFile, BUCKETS } from '@/lib/storage';
 
@@ -53,11 +54,7 @@ export default function AdminCharactersPage() {
     });
     const [newTrait, setNewTrait] = useState('');
 
-    useEffect(() => {
-        loadCharacters();
-    }, []);
-
-    const loadCharacters = async () => {
+    const loadCharacters = useCallback(async () => {
         setIsLoading(true);
         try {
             const { supabase } = await import('@/lib/storage');
@@ -72,7 +69,11 @@ export default function AdminCharactersPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        loadCharacters();
+    }, [loadCharacters]);
 
     const handleImageUpload = async (file: File) => {
         const formData = new FormData();
@@ -246,10 +247,11 @@ export default function AdminCharactersPage() {
                                 {/* Character Image */}
                                 <div className="relative aspect-square bg-gradient-to-br from-primary/10 to-secondary/10">
                                     {character.image_url ? (
-                                        <img
+                                        <Image
                                             src={character.image_url}
                                             alt={character.name}
-                                            className="w-full h-full object-cover"
+                                            fill
+                                            className="object-cover"
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center">
@@ -297,7 +299,7 @@ export default function AdminCharactersPage() {
                                     <h3 className="text-xl font-black text-gray-900 mb-1">{character.name}</h3>
                                     <p className="text-sm text-primary font-bold mb-2">{character.role}</p>
                                     {character.tagline && (
-                                        <p className="text-gray-500 italic text-sm mb-3">"{character.tagline}"</p>
+                                        <p className="text-gray-500 italic text-sm mb-3">&quot;{character.tagline}&quot;</p>
                                     )}
                                     {character.personality_traits && character.personality_traits.length > 0 && (
                                         <div className="flex flex-wrap gap-2">
@@ -333,10 +335,10 @@ export default function AdminCharactersPage() {
                         <label className="block text-sm font-bold text-gray-700 mb-2">Character Image *</label>
                         {formData.image_url ? (
                             <div className="relative aspect-square bg-gray-100 rounded-2xl overflow-hidden mb-4">
-                                <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                                <Image src={formData.image_url} alt="Preview" fill className="object-cover" />
                                 <button
                                     onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}
-                                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg"
+                                    className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg z-10"
                                     aria-label="Remove image"
                                 >
                                     <Trash2 size={16} />
@@ -443,7 +445,7 @@ export default function AdminCharactersPage() {
                                         className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
                                     >
                                         {trait}
-                                        <button onClick={() => removeTrait(trait)} className="hover:text-red-500" aria-label={`Remove ${trait}`}>×</button>
+                                        <button onClick={() => removeTrait(trait)} className="hover:text-red-500" aria-label={`Remove ${trait}`}>&times;</button>
                                     </span>
                                 ))}
                             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     AdminLayout, SearchBar, DataTable, StatusBadge, Modal,
     ActionButton, EmptyState,
@@ -38,11 +38,7 @@ export default function AdminAnnouncementsPage() {
         end_date: '',
     });
 
-    useEffect(() => {
-        loadAnnouncements();
-    }, []);
-
-    const loadAnnouncements = async () => {
+    const loadAnnouncements = useCallback(async () => {
         setIsLoading(true);
         try {
             const { supabase } = await import('@/lib/storage');
@@ -56,7 +52,11 @@ export default function AdminAnnouncementsPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        loadAnnouncements();
+    }, [loadAnnouncements]);
 
     const handleSubmit = async () => {
         try {

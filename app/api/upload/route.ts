@@ -16,14 +16,14 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
 // Allowed MIME types for security
 const ALLOWED_TYPES: Record<string, string[]> = {
-    songs: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp3', 'audio/x-wav'],
-    videos: ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-m4v'],
-    printables: ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'],
-    storybooks: ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'],
-    characters: ['image/png', 'image/jpeg', 'image/webp', 'image/gif'],
-    avatars: ['image/png', 'image/jpeg', 'image/webp'],
-    games: ['image/png', 'image/jpeg', 'image/webp'],
-    'ar-models': ['model/gltf-binary', 'model/gltf+json', 'application/octet-stream'],
+    songs: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/mp3', 'audio/x-wav', 'audio/mp4', 'audio/aac', 'audio/webm', 'audio/x-m4a'],
+    videos: ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-m4v', 'video/mpeg', 'video/ogg'],
+    printables: ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/svg+xml'],
+    storybooks: ['application/pdf', 'image/png', 'image/jpeg', 'image/webp', 'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-m4a'],
+    characters: ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'],
+    avatars: ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'],
+    games: ['image/png', 'image/jpeg', 'image/webp', 'application/zip', 'application/x-zip-compressed'],
+    'ar-models': ['model/gltf-binary', 'model/gltf+json', 'application/octet-stream', 'application/x-tika-msoffice', 'application/x-zip-compressed'],
 };
 
 // Max file sizes in bytes (per bucket)
@@ -53,7 +53,7 @@ const URL_FIELDS: Record<string, string> = {
     songs: 'audio_url',
     videos: 'video_url',
     printables: 'pdf_url',
-    storybooks: 'cover_image_url',
+    storybooks: 'cover_image_url', // Default to cover, but can be audio_narration_url
     characters: 'image_url',
     games: 'thumbnail_url',
 };

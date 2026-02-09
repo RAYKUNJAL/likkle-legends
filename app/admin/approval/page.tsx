@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { AdminLayout, DataTable, StatusBadge, ActionButton, Tabs, EmptyState, Modal } from '@/components/admin/AdminComponents';
 import { CheckCircle2, XCircle, Eye, AlertCircle, BookOpen, Music } from 'lucide-react';
 import { getPendingContent, approveContent, rejectContent } from '@/app/actions/content-actions';
@@ -124,10 +125,17 @@ export default function ApprovalPage() {
                 {selectedItem && (
                     <div className="space-y-6">
                         <div className="flex gap-4">
-                            <img src={selectedItem.cover_image_url} className="w-48 h-64 object-cover rounded-xl shadow-lg" alt="Cover" />
+                            <div className="relative w-48 h-64">
+                                <Image
+                                    src={selectedItem.cover_image_url}
+                                    className="object-cover rounded-xl shadow-lg"
+                                    alt="Cover"
+                                    fill
+                                />
+                            </div>
                             <div className="flex-1">
                                 <h3 className="text-2xl font-bold mb-2">{selectedItem.title}</h3>
-                                <p className="text-gray-600 mb-4 italic">"{selectedItem.summary}"</p>
+                                <p className="text-gray-600 mb-4 italic">&quot;{selectedItem.summary}&quot;</p>
                                 <div className="flex gap-2">
                                     <StatusBadge status={selectedItem.island_theme} variant="info" />
                                     <StatusBadge status={selectedItem.age_track} variant="success" />
