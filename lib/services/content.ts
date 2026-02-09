@@ -210,6 +210,17 @@ export async function getGames() {
     return data || [];
 }
 
+export async function getGameById(id: string) {
+    const { data, error } = await supabase
+        .from('games')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
 export async function createGame(gameData: Record<string, unknown>) {
     const { data, error } = await supabase
         .from('games')

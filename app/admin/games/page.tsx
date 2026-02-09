@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     AdminLayout, SearchBar, DataTable, StatusBadge, Modal,
     FileUpload, ActionButton, EmptyState,
@@ -145,11 +145,7 @@ export default function AdminGameBuilderPage() {
         name: '',
     });
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
             const { supabase } = await import('@/lib/storage');
@@ -169,7 +165,11 @@ export default function AdminGameBuilderPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
 
     const handleThumbnailUpload = async (file: File) => {
         const formData = new FormData();

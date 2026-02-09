@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
     AdminLayout, SearchBar, DataTable, StatusBadge, Modal,
     FileUpload, ActionButton, Tabs, EmptyState,
@@ -42,11 +42,7 @@ export default function AdminAssetDashboard() {
         tags: []
     });
 
-    useEffect(() => {
-        loadAssets();
-    }, [activeTab]);
-
-    const loadAssets = async () => {
+    const loadAssets = useCallback(async () => {
         setIsLoading(true);
         try {
             let data: any[] = [];
@@ -62,7 +58,11 @@ export default function AdminAssetDashboard() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [activeTab]);
+
+    useEffect(() => {
+        loadAssets();
+    }, [loadAssets]);
 
     const handleFileUpload = async (file: File, type: 'main' | 'thumbnail') => {
         const bucket = type === 'thumbnail' ? (activeTab === 'songs' ? 'songs' : activeTab === 'videos' ? 'videos' : activeTab === 'printables' ? 'printables' : 'storybooks') : (activeTab as any);
@@ -77,6 +77,7 @@ export default function AdminAssetDashboard() {
 
             if (!response.ok) {
                 console.error('Upload failed:', result.error);
+                alert(`Upload failed: ${result.error || 'Unknown error'}`);
                 return;
             }
 
@@ -86,17 +87,19 @@ export default function AdminAssetDashboard() {
                     if (activeTab === 'songs') updates.audio_url = result.url;
                     else if (activeTab === 'videos') updates.video_url = result.url;
                     else if (activeTab === 'printables') updates.pdf_url = result.url;
-                    else if (activeTab === 'storybooks') updates.url = result.url;
+                    else if (activeTab === 'storybooks') {
+                        if (file.type.startsWith('audio/')) updates.audio_narration_url = result.url;
+                        else updates.cover_image_url = result.url;
+                    }
                 } else {
-                    if (activeTab === 'songs') updates.thumbnail_url = result.url;
-                    else if (activeTab === 'videos') updates.thumbnail_url = result.url;
-                    else if (activeTab === 'printables') updates.preview_url = result.url;
-                    else if (activeTab === 'storybooks') updates.cover_image_url = result.url;
+                    if (activeTab === 'storybooks') updates.cover_image_url = result.url;
+                    else updates.thumbnail_url = result.url;
                 }
                 return updates;
             });
         } catch (error) {
             console.error('Upload error:', error);
+            alert("Upload failed. Please check your connection and file size.");
         }
     };
 

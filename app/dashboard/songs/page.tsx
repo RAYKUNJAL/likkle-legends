@@ -79,7 +79,7 @@ export default function NurserySongsPage() {
                             <div className="bg-gradient-to-br from-accent to-pink-500 p-10 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden group">
                                 <Sparkles className="absolute -top-4 -right-4 w-32 h-32 text-white/20 group-hover:rotate-12 transition-transform" />
                                 <h4 className="font-black text-2xl mb-4 relative z-10">LEGEND PLAYLIST</h4>
-                                <p className="text-white/80 font-bold mb-8 relative z-10 italic">"Kai's favorite jams for the morning school run!"</p>
+                                <p className="text-white/80 font-bold mb-8 relative z-10 italic">&quot;Kai&apos;s favorite jams for the morning school run!&quot;</p>
                                 <button className="w-full bg-white text-accent py-5 rounded-2xl font-black shadow-xl hover:scale-[1.02] transition-transform relative z-10">
                                     Create New Playlist
                                 </button>
@@ -95,7 +95,7 @@ export default function NurserySongsPage() {
                                     <div className="w-full h-3 bg-zinc-100 rounded-full overflow-hidden">
                                         <div className="w-[85%] h-full bg-primary rounded-full"></div>
                                     </div>
-                                    <p className="text-xs font-bold text-deep/40 leading-relaxed">Kai has listened to "Anansi Beat" 12 times this week!</p>
+                                    <p className="text-xs font-bold text-deep/40 leading-relaxed">Kai has listened to &quot;Anansi Beat&quot; 12 times this week!</p>
                                 </div>
                             </div>
                         </div>

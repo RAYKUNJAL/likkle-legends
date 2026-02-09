@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
     AdminLayout, SearchBar, DataTable, StatusBadge, Modal, Tabs,
@@ -44,11 +44,7 @@ function MediaManagerContent() {
         is_active: true
     });
 
-    useEffect(() => {
-        loadMedia();
-    }, [activeTab]);
-
-    const loadMedia = async () => {
+    const loadMedia = useCallback(async () => {
         setIsLoading(true);
         try {
             const { createClient } = await import('@/lib/supabase/client');
@@ -64,7 +60,11 @@ function MediaManagerContent() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [activeTab]);
+
+    useEffect(() => {
+        loadMedia();
+    }, [loadMedia]);
 
     const handleFileUpload = async (file: File, type: 'main' | 'thumbnail') => {
         let bucket: any = BUCKETS.SONGS;
@@ -94,6 +94,7 @@ function MediaManagerContent() {
 
             if (!response.ok) {
                 console.error('Upload failed:', result.error);
+                alert(`Upload failed: ${result.error || 'Unknown error'}`);
                 return;
             }
 
@@ -103,7 +104,11 @@ function MediaManagerContent() {
                     if (activeTab === 'songs') updates.audio_url = result.url;
                     else if (activeTab === 'videos') updates.video_url = result.url;
                     else if (activeTab === 'printables') updates.pdf_url = result.url;
-                    else if (activeTab === 'storybooks') updates.url = result.url;
+                    else if (activeTab === 'storybooks') {
+                        // For storybooks, main upload is usually the narration or the book itself
+                        if (file.type.startsWith('audio/')) updates.audio_narration_url = result.url;
+                        else updates.cover_image_url = result.url;
+                    }
                 } else {
                     if (activeTab === 'storybooks') updates.cover_image_url = result.url;
                     else if (activeTab === 'printables') updates.preview_url = result.url;
@@ -113,6 +118,7 @@ function MediaManagerContent() {
             });
         } catch (error) {
             console.error('Upload error:', error);
+            alert("Upload failed. Please check your connection and file size.");
         }
     };
 

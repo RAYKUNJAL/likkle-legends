@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { BookOpen, Star, Loader2 } from 'lucide-react';
@@ -43,11 +43,7 @@ export default function StoryReaderPage() {
     const [isCompleted, setIsCompleted] = useState(false);
     const [readingStartTime] = useState(Date.now());
 
-    useEffect(() => {
-        loadStory();
-    }, [storyId]);
-
-    const loadStory = async () => {
+    const loadStory = useCallback(async () => {
         setIsLoading(true);
         try {
             const { data, error } = await supabase
@@ -63,9 +59,13 @@ export default function StoryReaderPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [storyId]);
 
-    const handleStoryComplete = async (xpEarned: number) => {
+    useEffect(() => {
+        loadStory();
+    }, [loadStory]);
+
+    const handleStoryComplete = useCallback(async (xpEarned: number) => {
         if (!user || !activeChild || !story) return;
 
         // Calculate reading time
@@ -89,7 +89,11 @@ export default function StoryReaderPage() {
             console.error("Failed to save completion:", error);
             router.push('/portal');
         }
-    };
+    }, [user, activeChild, story, readingStartTime, storyId, router]);
+
+    const handleClose = useCallback(() => {
+        router.push('/portal');
+    }, [router]);
 
     if (isLoading) {
         return (
@@ -156,7 +160,7 @@ export default function StoryReaderPage() {
     return (
         <PremiumStoryReader
             story={story}
-            onClose={() => router.push('/portal')}
+            onClose={handleClose}
             onComplete={handleStoryComplete}
         />
     );

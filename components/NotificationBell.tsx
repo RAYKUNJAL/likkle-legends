@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { Bell, Check, X, Flame, Trophy, Gift, BookOpen, CreditCard, Settings } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
@@ -34,13 +34,7 @@ export default function NotificationBell() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    useEffect(() => {
-        if (isOpen && user) {
-            loadNotifications();
-        }
-    }, [isOpen, user]);
-
-    const loadNotifications = async () => {
+    const loadNotifications = useCallback(async () => {
         if (!user) return;
 
         setIsLoading(true);
@@ -52,7 +46,13 @@ export default function NotificationBell() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [user]);
+
+    useEffect(() => {
+        if (isOpen && user) {
+            loadNotifications();
+        }
+    }, [isOpen, user, loadNotifications]);
 
     const handleMarkAsRead = async (id: string) => {
         await markNotificationAsRead(id);

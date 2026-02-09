@@ -80,10 +80,24 @@ const ISLANDS = [
 // COMPONENT
 // ==========================================
 
-export default function IslandTrivia({ onComplete }: { onComplete?: (score: number, correct: number, total: number) => void }) {
+export default function IslandTrivia({
+    onComplete,
+    initialQuestions,
+    title
+}: {
+    onComplete?: (score: number, correct: number, total: number) => void,
+    initialQuestions?: any[],
+    title?: string
+}) {
     const router = useRouter();
-    const [view, setView] = useState<'map' | 'game' | 'complete'>('map');
-    const [selectedIsland, setSelectedIsland] = useState<typeof ISLANDS[0] | null>(null);
+    const [view, setView] = useState<'map' | 'game' | 'complete'>(initialQuestions ? 'game' : 'map');
+    const [selectedIsland, setSelectedIsland] = useState<any>(initialQuestions ? {
+        name: title || 'Island Trivia',
+        questions: initialQuestions,
+        id: 'dynamic',
+        flag: '✨',
+        color: 'from-amber-400 to-orange-500'
+    } : null);
     const [completedIslands, setCompletedIslands] = useState<string[]>([]);
 
     // Game State
@@ -280,7 +294,7 @@ export default function IslandTrivia({ onComplete }: { onComplete?: (score: numb
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {question.options.map((opt, i) => {
+                                {question.options.map((opt: string, i: number) => {
                                     let stateStyle = "bg-white/5 border-white/10 text-white hover:bg-white/10";
                                     if (showResult) {
                                         if (i === question.a) stateStyle = "bg-green-500 border-green-400 text-white shadow-lg shadow-green-500/20";

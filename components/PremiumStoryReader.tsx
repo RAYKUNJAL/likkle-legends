@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import {
     X, Volume2, VolumeX, ChevronLeft, ChevronRight,
@@ -52,32 +52,15 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
     const pages = story.content_json?.pages || [];
     const currentPageData = pages[currentPage] || { text: '', pageNumber: 1 };
 
-    // Handle Page Change
-    const nextPage = () => {
-        if (currentPage < pages.length - 1) {
-            stopAudio();
-            setCurrentPage(currentPage + 1);
-        } else {
-            handleComplete();
-        }
-    };
-
-    const prevPage = () => {
-        if (currentPage > 0) {
-            stopAudio();
-            setCurrentPage(currentPage - 1);
-        }
-    };
-
-    const stopAudio = () => {
+    const stopAudio = useCallback(() => {
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
             setIsPlaying(false);
         }
-    };
+    }, []);
 
-    const handleComplete = () => {
+    const handleComplete = useCallback(() => {
         stopAudio();
         setShowCompletion(true);
         confetti({
@@ -90,10 +73,26 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
         setTimeout(() => {
             onComplete(100); // 100 XP fixed reward
         }, 5000);
-    };
+    }, [stopAudio, onComplete]);
+
+    const nextPage = useCallback(() => {
+        if (currentPage < pages.length - 1) {
+            stopAudio();
+            setCurrentPage(currentPage + 1);
+        } else {
+            handleComplete();
+        }
+    }, [currentPage, pages.length, stopAudio, handleComplete]);
+
+    const prevPage = useCallback(() => {
+        if (currentPage > 0) {
+            stopAudio();
+            setCurrentPage(currentPage - 1);
+        }
+    }, [currentPage, stopAudio]);
 
     // Voice Narration Logic
-    const playNarration = async () => {
+    const playNarration = useCallback(async () => {
         if (isPlaying) {
             stopAudio();
             return;
@@ -127,7 +126,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             console.error("Narration error:", error);
             setIsLoadingAudio(false);
         }
-    };
+    }, [isPlaying, currentPageData?.text, isMuted, isAutoPlaying, currentPage, pages.length, nextPage, stopAudio]);
 
     // Auto-start narration on page change if in "Read to Me" mode
     useEffect(() => {
@@ -135,7 +134,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             playNarration();
         }
         return () => stopAudio();
-    }, [currentPage, readingMode]);
+    }, [currentPage, readingMode, showCompletion, playNarration]);
 
     return (
         <div className="fixed inset-0 z-[1000] bg-sky-950 flex items-center justify-center p-0 md:p-8 select-none">

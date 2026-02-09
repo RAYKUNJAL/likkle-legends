@@ -36,7 +36,7 @@ export async function initializeStorageBuckets() {
         console.log(`Creating bucket: ${bucket}...`);
         const { error } = await client.storage.createBucket(bucket, {
             public: true,
-            fileSizeLimit: 52428800, // 50MB
+            fileSizeLimit: 524288000, // 500MB
         });
 
         if (error && !error.message.includes('already exists')) {

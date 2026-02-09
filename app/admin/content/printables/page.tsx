@@ -6,7 +6,7 @@ import {
     AdminLayout, DataTable, SearchBar, StatusBadge,
     Download, Upload, RefreshCw, FileText
 } from '@/components/admin/AdminComponents'; // Adjust path if needed
-import { BUCKETS, uploadFile, getPublicUrl } from '@/lib/storage';
+import { BUCKETS, uploadFile } from '@/lib/storage';
 
 interface Printable {
     id: string;
@@ -75,14 +75,25 @@ export default function PrintablesPage() {
             const result = await response.json();
 
             if (response.ok && result.url) {
-                alert("File uploaded to bucket! (Metadata entry pending implementation)");
+                // Save metadata to database
+                const { createPrintable } = await import('@/lib/database');
+                await createPrintable({
+                    title: file.name.split('.')[0] || "New Printable",
+                    description: "Uploaded via Activity Sheets manager",
+                    pdf_url: result.url,
+                    category: 'coloring',
+                    is_active: true,
+                    age_track: 'all'
+                });
+
+                alert("File uploaded and saved to database!");
                 loadPrintables();
             } else {
                 alert("Upload failed: " + (result.error || "Unknown error"));
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert("Upload error.");
+            alert("Upload error: " + error.message);
         } finally {
             setIsUploading(false);
         }

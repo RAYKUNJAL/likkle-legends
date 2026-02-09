@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Sparkles, Calendar, Settings } from 'lucide-react';
 import { useUser } from './UserContext';
@@ -12,13 +12,7 @@ const ParentDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const locked = !canAccess('legends_plus');
 
-  useEffect(() => {
-    if (!locked && activeChild) {
-      loadMissions();
-    }
-  }, [locked, activeChild?.age_track]);
-
-  const loadMissions = async () => {
+  const loadMissions = useCallback(async () => {
     if (!activeChild) return;
     setLoading(true);
     const data = await getParentSuggestions(
@@ -28,7 +22,13 @@ const ParentDashboard: React.FC = () => {
     );
     setMissions(data);
     setLoading(false);
-  };
+  }, [activeChild]);
+
+  useEffect(() => {
+    if (!locked && activeChild) {
+      loadMissions();
+    }
+  }, [locked, activeChild?.age_track, loadMissions, activeChild]);
 
   return (
     <section id="parents" className="py-24 bg-background">

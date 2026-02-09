@@ -5,7 +5,7 @@ import {
     AdminLayout, StatCard, DataTable, StatusBadge, Modal, Tabs,
     FileUpload, ActionButton, EmptyState,
     Sparkles, Wand2, RefreshCw, CheckCircle2, AlertCircle,
-    Download, Music, Video, BookOpen, Send, Zap, Plus
+    Download, Music, Video, BookOpen, Send, Zap, Plus, Trash2
 } from '@/components/admin/AdminComponents';
 import { runModuleManagerAgent, publishModuleToLive } from '@/app/actions/agents';
 import { uploadFile, BUCKETS } from '@/lib/storage';
@@ -116,7 +116,7 @@ export default function AutonomousContentPage() {
                             <Zap className="text-primary fill-primary" />
                             Fresh Content Agent
                         </h1>
-                        <p className="text-gray-500">Autonomous content generation & deployment engine</p>
+                        <p className="text-gray-500">Autonomous content generation &amp; deployment engine</p>
                     </div>
                     <div className="flex gap-4">
                         <button
@@ -240,7 +240,7 @@ export default function AutonomousContentPage() {
                             {isGenerating && (
                                 <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10 flex items-center justify-center gap-3 animate-pulse">
                                     <p className="text-xs font-bold text-emerald-300">
-                                        <span className="opacity-70">Creating Story...</span> → <span className="opacity-70">Composing Music...</span> → <span className="opacity-70">Writing Scripts...</span> → <span className="opacity-70">Designing Printables...</span>
+                                        <span className="opacity-70">Creating Story...</span> &rarr; <span className="opacity-70">Composing Music...</span> &rarr; <span className="opacity-70">Writing Scripts...</span> &rarr; <span className="opacity-70">Designing Printables...</span>
                                     </p>
                                 </div>
                             )}
@@ -393,7 +393,7 @@ export default function AutonomousContentPage() {
                     {uploadStatus === 'success' && (
                         <div className="p-4 bg-green-50 text-green-700 rounded-xl flex items-center gap-3 animate-in fade-in zoom-in duration-300">
                             <CheckCircle2 size={20} />
-                            <p className="font-bold text-sm">File uploaded successfully! It's now in the Media Library.</p>
+                            <p className="font-bold text-sm">File uploaded successfully! It&apos;s now in the Media Library.</p>
                         </div>
                     )}
 

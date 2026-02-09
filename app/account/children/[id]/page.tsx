@@ -113,7 +113,7 @@ export default function EditChildPage() {
                             </div>
                             <div>
                                 <h2 className="text-2xl font-black text-deep">Legend Basics</h2>
-                                <p className="text-deep/40 font-bold mb-4">Update your child's journey details.</p>
+                                <p className="text-deep/40 font-bold mb-4">Update your child&apos;s journey details.</p>
                                 <div className="inline-flex px-4 py-2 bg-zinc-50 rounded-xl text-xs font-black uppercase tracking-wider text-zinc-400">
                                     {selectedAvatar.name}
                                 </div>

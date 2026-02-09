@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase-client';
 import { GeneratedContent } from '@/lib/types';
 import { CheckCircle2, XCircle, Clock, Search, RefreshCw, BookOpen, Music, ShieldAlert } from 'lucide-react';
@@ -17,11 +17,7 @@ export default function AdminContentQueue() {
     const [generatingAudio, setGeneratingAudio] = useState<string | null>(null);
     const [useBypass, setUseBypass] = useState(false);
 
-    useEffect(() => {
-        fetchQueue();
-    }, [filter]);
-
-    const fetchQueue = async () => {
+    const fetchQueue = useCallback(async () => {
         setLoading(true);
         try {
             let token = "BYPASS_FOR_TESTING";
@@ -40,7 +36,11 @@ export default function AdminContentQueue() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filter, useBypass]);
+
+    useEffect(() => {
+        fetchQueue();
+    }, [fetchQueue]);
 
     const handleGenerateAudio = async (contentId: string) => {
         setGeneratingAudio(contentId);
