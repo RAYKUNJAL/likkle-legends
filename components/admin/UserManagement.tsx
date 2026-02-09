@@ -1,3 +1,4 @@
+"use client";
 
 import React, { useEffect, useState } from 'react';
 import { getAllUsers, updateUserPlan } from '../../services/supabase/databaseService';
@@ -94,9 +95,9 @@ export const UserManagement: React.FC = () => {
                                         <span
                                             onClick={() => setEditingUser(user.id)}
                                             className={`cursor-pointer px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${user.plan === 'annual_plus' ? 'bg-purple-100 text-purple-600' :
-                                                    user.plan === 'legends_plus' ? 'bg-orange-100 text-orange-600' :
-                                                        user.plan === 'mail_club' ? 'bg-blue-100 text-blue-600' :
-                                                            'bg-gray-100 text-gray-500'
+                                                user.plan === 'legends_plus' ? 'bg-orange-100 text-orange-600' :
+                                                    user.plan === 'mail_club' ? 'bg-blue-100 text-blue-600' :
+                                                        'bg-gray-100 text-gray-500'
                                                 }`}
                                         >
                                             {PRICING_TIERS.find(t => t.id === user.plan)?.name || user.plan} ✎

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import {
-    Settings, BarChart3, Users, Sparkles, Plus, ArrowRight,
+    Settings, BarChart, Users, Sparkles, Plus, ArrowRight,
     Edit, BookOpen, Music, Trophy, Flame, Target, TrendingUp,
     ChevronRight, Star, Calendar, MapPin, Gift, Download, ShieldCheck
 } from 'lucide-react';

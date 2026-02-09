@@ -14,7 +14,7 @@ import {
     Star,
     Briefcase,
     Plus,
-    BarChart3
+    BarChart
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -39,7 +39,7 @@ export default function Sidebar({ view = 'parent' }: SidebarProps) {
         { name: 'Media Library', href: '/admin/media', icon: Music },
         { name: 'Manage Customers', href: '/admin/customers', icon: UserCircle },
         { name: 'Content Library', href: '/admin/content', icon: BookOpen },
-        { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+        { name: 'Analytics', href: '/admin/analytics', icon: BarChart },
         { name: 'Settings', href: '/admin/settings', icon: Settings },
     ];
 

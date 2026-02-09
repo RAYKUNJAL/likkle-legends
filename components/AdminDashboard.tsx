@@ -1,3 +1,4 @@
+"use client";
 
 import React, { useState } from 'react';
 import { BrandIcon } from './BrandIcon';
@@ -16,8 +17,8 @@ const AdminDashboard: React.FC<{ userEmail: string; onLogout: () => void }> = ({
         <button
             onClick={() => setActiveView(view as any)}
             className={`w-full flex items-center gap-4 px-6 py-3 rounded-2xl font-black text-sm transition-all ${activeView === view
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'text-blue-900/60 hover:bg-blue-50'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'text-blue-900/60 hover:bg-blue-50'
                 } ${sub ? 'ml-4 w-auto text-xs' : ''}`}
         >
             <span className="text-xl">{icon}</span>

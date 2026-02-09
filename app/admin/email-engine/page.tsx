@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { AdminLayout, RefreshCw } from '@/components/admin/AdminComponents';
 import {
     Save, Mail, Send, CheckCircle, XCircle, Clock,
-    TrendingUp, Users, Zap, BarChart3, Play, Pause
+    TrendingUp, Users, Zap, BarChart, Play, Pause
 } from 'lucide-react';
 
 interface QueueStats {
@@ -210,7 +210,7 @@ export default function AdminEmailEnginePage() {
                 {/* Campaign Toggles */}
                 <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
                     <h2 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-3">
-                        <BarChart3 className="text-primary" size={24} />
+                        <BarChart className="text-primary" size={24} />
                         Automation Campaigns
                     </h2>
                     <div className="space-y-4">

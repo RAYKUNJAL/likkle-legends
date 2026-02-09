@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
     ArrowLeft, TrendingUp, Book, Music, Trophy, Clock,
     Calendar, ChevronDown, Download, Share2, Star, Flame,
-    Target, Award, BarChart3, LineChart, PieChart
+    Target, Award, BarChart, LineChart, PieChart
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { LEVELS, calculateLevel } from '@/lib/gamification';
