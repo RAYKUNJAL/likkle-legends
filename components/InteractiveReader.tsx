@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
 import {
-    X, Volume2, VolumeX, ChevronLeft, ChevronRight,
-    Play, Pause, Sparkles, RotateCcw, SkipForward,
-    BookOpen, Turtle, Rabbit, Loader2, Home,
-    AlertCircle, Lightbulb, Star
+    X, Volume2, ChevronLeft, ChevronRight,
+    Play, Pause, RotateCcw, SkipForward,
+    Loader2, Home, Star, Turtle, Rabbit, Music
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { awardStars } from '@/lib/services/user-progress';
 
 interface WordAlignment {
     text: string;
@@ -21,6 +21,11 @@ interface Page {
     text: string;
     imageUrl?: string;
     audioUrl?: string;
+    audio?: {
+        alignment?: {
+            words?: { text: string; startTimeSeconds: number; endTimeSeconds: number }[];
+        };
+    };
     words?: WordAlignment[];
 }
 
@@ -38,15 +43,34 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
     const [audioError, setAudioError] = useState<string | null>(null);
     const [activeWordIndex, setActiveWordIndex] = useState(-1);
     const [volume, setVolume] = useState(1);
-    const [isMuted, setIsMuted] = useState(false);
+    const [bgmVolume, setBgmVolume] = useState(0.15); // Low background volume
+    const [isBgmMuted, setIsBgmMuted] = useState(false);
     const [playbackRate, setPlaybackRate] = useState(0.85); // Slower, kid-friendly pace
-    const [autoPlay, setAutoPlay] = useState(true);
+    const [autoPlay] = useState(true);
     const [showPlayOverlay, setShowPlayOverlay] = useState(true);
     const [showReward, setShowReward] = useState(false); // Gamification State
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioProgress, setAudioProgress] = useState(0);
+
+    // Refs
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const bgmRef = useRef<HTMLAudioElement | null>(null);
     const rafRef = useRef<number | null>(null);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null); // For future visualizer if needed
+    const lastWordIndexRef = useRef<number>(-1);
+
+    // BGM Management
+    useEffect(() => {
+        if (!bgmRef.current) return;
+
+        bgmRef.current.volume = isBgmMuted ? 0 : bgmVolume;
+
+        if (isPlaying && !isBgmMuted && bgmRef.current.paused) {
+            bgmRef.current.play().catch(() => { });
+        } else if (!isPlaying && !bgmRef.current.paused) {
+            bgmRef.current.pause();
+        }
+    }, [isPlaying, bgmVolume, isBgmMuted]);
 
     // Confetti Effect
     useEffect(() => {
@@ -69,6 +93,9 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                 confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
             }, 250);
 
+            // Award Stars
+            awardStars('story-completed', 5).catch(console.error);
+
             return () => clearInterval(interval);
         }
     }, [showReward]);
@@ -81,7 +108,7 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
     const words = useMemo(() => {
         // 1. Support for new rigorous JSON format with exact timestamps
         if (pageData.audio?.alignment?.words) {
-            return pageData.audio.alignment.words.map((w: any) => ({
+            return pageData.audio.alignment.words.map((w) => ({
                 text: w.text,
                 start: w.startTimeSeconds,
                 end: w.endTimeSeconds
@@ -119,7 +146,10 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
     }, [pageData, audioDuration]);
 
     const wordsRef = useRef(words);
-    useEffect(() => { wordsRef.current = words; }, [words]);
+    useEffect(() => {
+        wordsRef.current = words;
+        lastWordIndexRef.current = -1; // Reset efficient tracking on new words
+    }, [words]);
 
     // PRECISE AUDIO ENGINE
     useEffect(() => {
@@ -131,6 +161,7 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
         setIsPlaying(false);
         setAudioProgress(0);
         setActiveWordIndex(-1);
+        lastWordIndexRef.current = -1;
 
         // Load correct source
         if (audio.src !== pageData.audioUrl) {
@@ -138,13 +169,39 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
             audio.load();
         }
 
+        // Optimized Tick Function
         const tick = () => {
             if (!audio.paused) {
                 const time = audio.currentTime;
                 setAudioProgress(time);
-                // Ultra-precise index finding
-                const idx = wordsRef.current.findIndex(w => time >= w.start && time < w.end);
-                if (idx !== -1) setActiveWordIndex(idx);
+
+                // Optimized Index Finding: Start from last known index
+                // Unless we jumped backwards (time < last known start), then reset
+                let startIndex = lastWordIndexRef.current;
+                if (startIndex !== -1 && startIndex < wordsRef.current.length) {
+                    if (time < wordsRef.current[startIndex].start) startIndex = 0;
+                } else {
+                    startIndex = 0;
+                }
+
+                // Linear scan forward is usually faster than full findIndex for continuous playback
+                let foundIndex = -1;
+                for (let i = startIndex; i < wordsRef.current.length; i++) {
+                    const w = wordsRef.current[i];
+                    if (time >= w.start && time < w.end) {
+                        foundIndex = i;
+                        break;
+                    }
+                    // Optimization: If we've passed the current time, no need to look further (assumes sorted)
+                    if (w.start > time) break;
+                }
+
+                if (foundIndex !== -1) {
+                    if (foundIndex !== activeWordIndex) {
+                        setActiveWordIndex(foundIndex);
+                        lastWordIndexRef.current = foundIndex;
+                    }
+                }
 
                 rafRef.current = requestAnimationFrame(tick);
             }
@@ -166,13 +223,19 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
             setIsBuffering(false);
             audio.playbackRate = playbackRate; // Force speed on new track
             if (autoPlay && !showPlayOverlay) {
-                audio.play().catch(() => { });
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => { });
+                }
             }
         };
 
         const onEnd = () => {
             setIsPlaying(false);
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
+
+            // Allow BGM to keep playing during transition delay
+
             if (autoPlay) {
                 if (currentPage < pages.length - 1) {
                     setTimeout(() => setCurrentPage(p => p + 1), 2000);
@@ -203,20 +266,23 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
             audio.removeEventListener('playing', () => setIsBuffering(false));
             audio.removeEventListener('error', () => { });
         };
-    }, [pageData.audioUrl, currentPage, autoPlay, showPlayOverlay]);
+    }, [pageData.audioUrl, currentPage, autoPlay, showPlayOverlay, pages.length, playbackRate]);
 
     useEffect(() => {
         if (audioRef.current) {
-            audioRef.current.volume = isMuted ? 0 : volume;
+            audioRef.current.volume = volume;
             audioRef.current.playbackRate = playbackRate;
         }
-    }, [volume, isMuted, playbackRate]);
+    }, [volume, playbackRate]);
 
     const handlePlayPause = async () => {
         if (!audioRef.current) return;
-        if (isPlaying) audioRef.current.pause();
-        else {
-            try { await audioRef.current.play(); } catch (e) { setShowPlayOverlay(true); }
+        if (isPlaying) {
+            audioRef.current.pause();
+        } else {
+            try {
+                await audioRef.current.play();
+            } catch (e) { setShowPlayOverlay(true); }
         }
     };
 
@@ -242,6 +308,15 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                 </div>
 
                 <div className="flex items-center gap-2 lg:gap-4">
+                    {/* BGM Toggle */}
+                    <button
+                        onClick={() => setIsBgmMuted(!isBgmMuted)}
+                        className={`p-1.5 lg:p-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5 ${!isBgmMuted ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'}`}
+                        title="Background Music"
+                    >
+                        <Music size={16} />
+                    </button>
+
                     <div className="hidden sm:flex items-center gap-2 bg-orange-50 px-3 py-1 rounded-full border border-orange-100">
                         <Volume2 size={12} className="text-orange-400" />
                         <input type="range" min="0" max="1" step="0.1" value={volume} onChange={e => setVolume(parseFloat(e.target.value))} className="w-12 lg:w-20 h-1 accent-orange-500" />
@@ -365,8 +440,8 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                 <button
                     onClick={() => currentPage < pages.length - 1 ? setCurrentPage(p => p + 1) : setShowReward(true)}
                     className={`flex items-center gap-2 px-6 lg:px-10 py-3 lg:py-4 rounded-2xl font-black text-sm lg:text-base shadow-xl transition-all group ${currentPage === pages.length - 1
-                            ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:scale-105'
-                            : 'bg-zinc-900 text-white hover:bg-orange-500'
+                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:scale-105'
+                        : 'bg-zinc-900 text-white hover:bg-orange-500'
                         }`}
                 >
                     <span>{currentPage === pages.length - 1 ? 'FINISH & CLAIM STAR' : 'NEXT PAGE'}</span>
@@ -374,8 +449,9 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                 </button>
             </footer>
 
-            {/* Invisible Audio */}
+            {/* Audio Elements */}
             <audio ref={audioRef} playsInline preload="auto" />
+            <audio ref={bgmRef} src="/audio/calypso-loop.mp3" loop playsInline preload="auto" />
 
             {/* Commercial Grade Tap-to-Start Overlay */}
             <AnimatePresence>
@@ -399,7 +475,12 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
 
                             <button onClick={async () => {
                                 setShowPlayOverlay(false);
-                                if (audioRef.current) try { await audioRef.current.play(); } catch (e) { }
+                                if (audioRef.current) {
+                                    try {
+                                        await audioRef.current.play();
+                                        if (!isBgmMuted && bgmRef.current) await bgmRef.current.play();
+                                    } catch (e) { }
+                                }
                             }} className="w-full py-5 text-center bg-zinc-900 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-orange-600 transition-all">
                                 START READING
                             </button>

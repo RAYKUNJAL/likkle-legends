@@ -42,6 +42,7 @@ export interface ContentPackage {
     metadata: {
         island_name: string;
         host_character: string;
+        support_characters: string[];
         topics: string[];
         safety_flags: string[];
         qa_report: {

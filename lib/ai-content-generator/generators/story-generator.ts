@@ -91,7 +91,11 @@ export class StoryGenerator {
         `;
 
         // Build the Prompt
-        const prompt = `Write a world-class children's story about "${theme}" set in ${islandPack.display_name}.
+        const coreRequest = params.customPrompt
+            ? params.customPrompt
+            : `Write a world-class children's story about "${theme}" set in ${islandPack.display_name}.`;
+
+        const prompt = `${coreRequest}
         
         **JSON STRUCTURE:**
         {

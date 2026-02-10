@@ -4,6 +4,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { LEGEND_STUDIO_CONFIG } from "@/lib/studio-config";
 import type { ContentPackage, AIStudioAgentOutput } from "@/lib/types/studio";
+import { storyAgent } from "@/lib/ai-content-generator/agents/StoryAgent";
 
 const getGenAI = () => {
     const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
@@ -167,4 +168,22 @@ export async function generateStudioContentAction(
     };
 
     return pkg;
+}
+
+/**
+ * 📖 Dedicated Interactive Story Generation
+ */
+export async function generateInteractiveStoryAction(params: {
+    childName: string;
+    island: string;
+    guide: 'tanty' | 'roti';
+    topic?: string;
+}) {
+    try {
+        const story = await storyAgent.createInterativeStory(params);
+        return { success: true, story };
+    } catch (error: any) {
+        console.error("Interactive Story generation failed:", error);
+        return { success: false, error: error.message || "Failed to generate story" };
+    }
 }

@@ -1,0 +1,49 @@
+﻿[dotenv@17.2.3] injecting env (17) from .env.local -- tip: ≡ƒôí add observability to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  suppress all logs with { quiet: true }
+node.exe : ΓÜá∩╕Å  Warning: 
+Missing recommended 
+environment variables:
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (ΓÜá∩╕  
+  Å  Warning...ment varia   
+ bles::String) [], Remot    
+eException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+   - RESEND_API_KEY
+   Scripts requiring these 
+might run in limited mode 
+(e.g., local save instead 
+of database)
+Γ£à Environment variables loaded successfully
+=== STEP 1: Env Check ===
+GEMINI_API_KEY: SET (AIzaSyDedd...)
+ELEVENLABS_API_KEY: SET
+ELEVENLABS_TANTY_VOICE_ID: JfiM1myzVx7xU2MZOAJS
+ELEVENLABS_ROTI_VOICE_ID: nQG6qMEBUTxBc8zgoyIY
+SUPABASE_URL: SET
+SUPABASE_ANON_KEY: MISSING/PLACEHOLDER
+SUPABASE_SERVICE_ROLE_KEY: MISSING/PLACEHOLDER
+
+=== STEP 2: ElevenLabs TTS (Tanty Spice) ===
+[ElevenLabs] Generating for voice: JfiM1myzVx7xU2MZOAJS with Key: d8b5e...
+TANTY OK - Audio URL length: 117111
+TANTY OK - Word count: 13
+TANTY OK - First 3 words: "Come" @0.00s, "likkle" @0.50s, "one," @1.20s
+
+=== STEP 3: ElevenLabs TTS (R.O.T.I.) ===
+[ElevenLabs] Generating for voice: nQG6qMEBUTxBc8zgoyIY with Key: d8b5e...
+ROTI OK - Audio URL length: 76987
+ROTI OK - Word count: 11
+ROTI OK - First 3 words: "Did" @0.00s, "you" @0.40s, "know?" @0.80s
+
+=== VERIFICATION COMPLETE ===

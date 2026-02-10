@@ -1,0 +1,588 @@
+﻿
+> likkle-legends-mail-club@0.1.0 dev
+> next dev
+
+   Γû▓ Next.js 14.1.0
+   - Local:        http://localhost:3000
+   - Environments: .env.local
+
+ Γ£ô Ready in 5s
+ Γ£ô Compiled /middleware in 476ms (115 modules)
+ Γùï Compiling /api/story-data ...
+ Γ£ô Compiled /api/story-data in 941ms (76 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γùï Compiling /story-demo ...
+ Γ£ô Compiled /story-demo in 12.8s (1648 modules)
+ Γ£ô Compiled in 1133ms (767 modules)
+node.exe : CMS DB Error: 
+Could not find the table 
+'public.site_settings' in 
+the schema cache
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (CMS D  
+  B Error: C...he schema    
+ cache:String) [], Remot    
+eException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /api/story-data ...
+ Γ£ô Compiled /api/story-data in 6.8s (1780 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 2.2s (1788 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 1643ms (1768 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /manifest.webmanifest ...
+ Γ£ô Compiled /api/story-data in 1055ms (1787 modules)
+ Γ£ô Compiled (1805 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 6.5s (1768 modules)
+ Γ£ô Compiled in 1689ms (887 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /manifest.webmanifest ...
+ Γ£ô Compiled /api/story-data in 1837ms (1787 modules)
+ Γ£ô Compiled (1805 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 6.1s (1770 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /api/story-data ...
+ Γ£ô Compiled /api/story-data in 2s (1807 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 4.2s (1772 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /manifest.webmanifest ...
+ Γ£ô Compiled /api/story-data in 1615ms (1791 modules)
+ Γ£ô Compiled (1809 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 3.2s (1772 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 2.9s (1776 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /api/story-data ...
+ Γ£ô Compiled /api/story-data in 516ms (1795 modules)
+ Γ£ô Compiled (1813 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 2.3s (1774 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /_error ...
+ Γ£ô Compiled /api/story-data in 2.1s (1825 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 1327ms (1766 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ ΓÜá Found a change in 
+next.config.mjs. Restarting 
+the server to apply the 
+changes...
+   Γû▓ Next.js 14.1.0
+   - Local:        http://localhost:3000
+   - Environments: .env.local
+
+ Γ£ô Ready in 6.1s
+ Γ£ô Compiled /middleware in 427ms (115 modules)
+ Γùï Compiling /story-demo ...
+ Γ£ô Compiled /story-demo in 13.5s (1642 modules)
+ Γ£ô Compiled in 1166ms (764 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /api/story-data ...
+ Γ£ô Compiled /api/story-data in 6.9s (1803 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 1254ms (1770 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /manifest.webmanifest ...
+ Γ£ô Compiled /api/story-data in 808ms (1789 modules)
+ Γ£ô Compiled (1807 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 1380ms (1821 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 1092ms (1770 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /api/story-data ...
+ Γ£ô Compiled /api/story-data in 780ms (1789 modules)
+ Γ£ô Compiled (1807 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 2.1s (1770 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 880ms (1770 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /manifest.webmanifest ...
+ Γ£ô Compiled /api/story-data in 815ms (1789 modules)
+ Γ£ô Compiled (1807 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 1144ms (1770 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 1130ms (1770 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 1750ms (1770 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 997ms (1770 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /api/story-data ...
+ Γ£ô Compiled /api/story-data in 2.1s (1821 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 3.4s (1770 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 1274ms (1756 modules)
+ Γ£ô Compiled in 2.1s (1756 modules)
+ Γ£ô Compiled in 1907ms (888 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 1868ms (888 modules)
+ Γ£ô Compiled in 1479ms (888 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 927ms (888 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 1085ms (888 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 1341ms (888 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 6.4s (1770 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 3.6s (1774 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γùï Compiling /api/story-data ...
+ Γ£ô Compiled /api/story-data in 757ms (904 modules)
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+ Γ£ô Compiled in 2.1s (1794 modules)
+CMS DB Error: Could not 
+find the table 
+'public.site_settings' in 
+the schema cache
+ Γ£ô Compiled in 1168ms (890 modules)
+ Γ£ô Compiled in 578ms (890 modules)
+ Γ£ô Compiled in 669ms (890 modules)
+ Γ£ô Compiled in 661ms (890 modules)
+ Γ£ô Compiled in 469ms (890 modules)
+ Γ£ô Compiled in 458ms (890 modules)
+<w> [webpack.cache.PackFileC
+acheStrategy] Serializing 
+big strings (102kiB) 
+impacts deserialization 
+performance (consider using 
+Buffer instead and decode 
+when needed)
+<w> [webpack.cache.PackFileC
+acheStrategy] Serializing 
+big strings (139kiB) 
+impacts deserialization 
+performance (consider using 
+Buffer instead and decode 
+when needed)
+ Γ£ô Compiled in 2.6s (1889 modules)
+ Γ£ô Compiled in 467ms (890 modules)
+ Γ£ô Compiled in 863ms (1774 modules)
+ Γ£ô Compiled in 497ms (890 modules)
+ Γ£ô Compiled in 774ms (890 modules)
+ Γ£ô Compiled in 2.3s (1889 modules)
+ Γ£ô Compiled in 641ms (890 modules)
+ Γ£ô Compiled in 1217ms (1776 modules)
+ Γ£ô Compiled in 982ms (1776 modules)
+ Γ£ô Compiled in 589ms (891 modules)
+ Γ£ô Compiled in 578ms (891 modules)
+ Γ£ô Compiled in 4.8s (1891 modules)
+ Γ£ô Compiled in 469ms (891 modules)
+ Γ£ô Compiled in 505ms (891 modules)
+ Γ£ô Compiled in 695ms (891 modules)

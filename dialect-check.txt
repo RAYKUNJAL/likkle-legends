@@ -1,0 +1,68 @@
+﻿node : node:internal/modules
+/cjs/loader:1424
+At line:1 char:1
++ node -e 
+"require('./lib/load-env'); 
+const 
+{supabaseAdmin}=require('./ 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (node:  
+  internal/modules/cjs/lo   
+ ader:1424:String) [], R    
+emoteException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+  throw err;
+  ^
+
+Error: Cannot find module 
+'./lib/load-env'
+Require stack:
+- C:\Users\Banjo\.gemini\ant
+igravity\scratch\likkle-lege
+nds-original\[eval]
+    at 
+Module._resolveFilename (nod
+e:internal/modules/cjs/loade
+r:1421:15)
+    at defaultResolveImpl (n
+ode:internal/modules/cjs/loa
+der:1059:19)
+    at 
+resolveForCJSWithHooks (node
+:internal/modules/cjs/loader
+:1064:22)
+    at Module._load (node:in
+ternal/modules/cjs/loader:12
+27:37)
+    at 
+TracingChannel.traceSync (no
+de:diagnostics_channel:328:1
+4)
+    at wrapModuleLoad (node:
+internal/modules/cjs/loader:
+245:24)
+    at Module.require (node:
+internal/modules/cjs/loader:
+1504:12)
+    at require (node:interna
+l/modules/helpers:152:16)
+    at [eval]:1:1
+    at 
+runScriptInThisContext 
+(node:internal/vm:219:10) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Banjo\\.gemi
+ni\\antigravity\\scratch\\li
+kkle-legends-original\\[eval
+]'
+  ]
+}
+
+Node.js v24.13.0

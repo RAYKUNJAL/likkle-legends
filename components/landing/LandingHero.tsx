@@ -30,12 +30,15 @@ export default function LandingHero({ content }: { content: any }) {
                     </div>
 
                     {/* Headline */}
-                    <div className="space-y-4">
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-deep leading-[1.1] tracking-tight">
-                            {hero.headline}
+                    <div className="space-y-6">
+                        <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20">
+                            🌴 Join 500+ Caribbean Families
+                        </div>
+                        <h1 className="text-4xl md:text-5xl lg:text-7xl font-black text-deep leading-[1.05] tracking-tight">
+                            Don't Let the <span className="text-emerald-600">Culture Fade.</span>
                         </h1>
                         <p className="text-lg md:text-xl text-deep/70 leading-relaxed max-w-xl">
-                            {hero.subheadline}
+                            Build their identity through personalized mail adventures and interactive island folklore.
                         </p>
                     </div>
 

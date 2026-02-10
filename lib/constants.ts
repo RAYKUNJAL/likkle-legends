@@ -78,7 +78,29 @@ export const RADIO_CHANNELS = [
     { id: 'vip', label: "Heritage VIP", icon: "👑" }
 ];
 
-export const RADIO_TRACKS: Track[] = [];
+export const RADIO_TRACKS: Track[] = [
+    {
+        id: 'track-1',
+        title: 'Anansi & The Magic Pot',
+        artist: 'Tanty Spice',
+        url: 'https://assets.mixkit.co/sfx/preview/mixkit-magical-twinkle-sound-2900.mp3',
+        channel: 'story'
+    },
+    {
+        id: 'track-2',
+        title: 'Steelpan Serenade',
+        artist: 'Steelpan Sam',
+        url: 'https://assets.mixkit.co/sfx/preview/mixkit-game-level-completed-2059.mp3',
+        channel: 'learning'
+    },
+    {
+        id: 'track-3',
+        title: 'Caribbean Waves',
+        artist: 'Mango Moko',
+        url: 'https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-loop-1196.mp3',
+        channel: 'calm'
+    }
+];
 
 export const QUESTS: Quest[] = [
     {

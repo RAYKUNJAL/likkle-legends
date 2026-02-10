@@ -7,9 +7,24 @@ const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 
 // Voice IDs - Custom Caribbean voice models
 export const VOICES = {
-    tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS', // Tanty Spice - Warm Caribbean grandmother
-    steelpan_sam: process.env.ELEVENLABS_SAM_VOICE_ID || 'ErXwobaYiN019PkySvjV',
-    dilly_doubles: process.env.ELEVENLABS_DILLY_VOICE_ID || 'TxGEqnHWrfWFTfGW9XjX',
+    tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS',
+    roti: process.env.ELEVENLABS_ROTI_VOICE_ID || 'nQG6qMEBUTxBc8zgoyIY',
+};
+
+// Character-specific Voice Settings (as per Registry v3.0.0)
+export const CHARACTER_SETTINGS = {
+    tanty_spice: {
+        stability: 0.35,
+        similarity_boost: 0.62,
+        style: 0.12,
+        use_speaker_boost: true
+    },
+    roti: {
+        stability: 0.32,
+        similarity_boost: 0.60,
+        style: 0.16,
+        use_speaker_boost: true
+    }
 };
 
 export type VoiceCharacter = keyof typeof VOICES;
@@ -27,10 +42,17 @@ export async function generateSpeech(
 ): Promise<ArrayBuffer | null> {
     const {
         voice = 'tanty_spice',
-        stability = 0.45, // Slightly lower for more expressive rhythm
-        similarityBoost = 0.8, // High fidelity to tone
-        style = 0.65, // More expressive style
+        stability,
+        similarityBoost,
+        style,
     } = options;
+
+    const characterKey = (voice as string) in CHARACTER_SETTINGS ? (voice as keyof typeof CHARACTER_SETTINGS) : 'tanty_spice';
+    const characterSettings = CHARACTER_SETTINGS[characterKey];
+
+    const finalStability = stability ?? characterSettings.stability;
+    const finalSimilarityBoost = similarityBoost ?? characterSettings.similarity_boost;
+    const finalStyle = style ?? characterSettings.style;
 
     const apiKey = process.env.ELEVENLABS_API_KEY;
 
@@ -40,9 +62,9 @@ export async function generateSpeech(
     }
 
     try {
-        console.log(`[ElevenLabs] Generating for voice: ${VOICES[voice]} with Key: ${apiKey.substring(0, 5)}...`);
+        console.log(`[ElevenLabs] Generating for voice: ${VOICES[characterKey]} with Key: ${apiKey.substring(0, 5)}...`);
         const response = await fetch(
-            `${ELEVENLABS_API_URL}/text-to-speech/${VOICES[voice]}`,
+            `${ELEVENLABS_API_URL}/text-to-speech/${VOICES[characterKey]}`,
             {
                 method: 'POST',
                 headers: {
@@ -54,9 +76,9 @@ export async function generateSpeech(
                     text,
                     model_id: 'eleven_multilingual_v2',
                     voice_settings: {
-                        stability,
-                        similarity_boost: similarityBoost,
-                        style,
+                        stability: finalStability,
+                        similarity_boost: finalSimilarityBoost,
+                        style: finalStyle,
                         use_speaker_boost: true,
                     },
                 }),
@@ -105,3 +127,40 @@ export const PATOIS_PRONUNCIATIONS: Record<string, string> = {
     'bwoy': 'Bwoy (boy)',
     'tanty': 'Tan-tee (auntie)',
 };
+
+export interface SpeechMetadata {
+    audioUrl: string;
+    words: { text: string; start: number; end: number }[];
+}
+
+/**
+ * Generates speech and estimates word-level timing for highlighting.
+ * In a full production environment, this would use ElevenLabs Websockets or alignment data.
+ */
+export async function generateSpeechWithMetadata(
+    text: string,
+    options: TTSOptions = {}
+): Promise<SpeechMetadata | null> {
+    const audioBuffer = await generateSpeech(text, options);
+    if (!audioBuffer) return null;
+
+    // Convert to base64 for data URL
+    const base64 = Buffer.from(audioBuffer).toString('base64');
+    const audioUrl = `data:audio/mpeg;base64,${base64}`;
+
+    // Estimate timing (rough approximation: 10 chars per second for Tanty's slow, warm voice)
+    const words = text.split(/\s+/);
+    let currentTime = 0;
+    const wordTimings = words.map(word => {
+        const duration = (word.length / 10) + 0.1; // estimate duration
+        const start = currentTime;
+        const end = currentTime + duration;
+        currentTime = end;
+        return { text: word, start, end };
+    });
+
+    return {
+        audioUrl,
+        words: wordTimings
+    };
+}

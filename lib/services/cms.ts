@@ -49,23 +49,48 @@ export async function updateSiteContent(key: string, content: any, userId?: stri
     return data;
 }
 
+
+let contentCache: any = null;
+let lastFetch = 0;
+const CACHE_TTL = 60000; // 1 minute
+
 /**
  * Gets the fully merged site content object.
- * Useful for the main page to get everything in one go.
+ * Incorporates DB overrides with proper caching.
  */
-export async function getMergedSiteContent() {
-    const keys = Object.keys(siteContent);
-    const { data: dbSettings } = await supabase.from('site_settings').select('key, content');
+export async function getMergedSiteContent(forceRefresh = false) {
+    const now = Date.now();
 
-    const mergedContent = { ...siteContent };
-
-    if (dbSettings) {
-        dbSettings.forEach((setting) => {
-            if (keys.includes(setting.key)) {
-                (mergedContent as any)[setting.key] = setting.content;
-            }
-        });
+    if (contentCache && !forceRefresh && (now - lastFetch < CACHE_TTL)) {
+        return contentCache;
     }
 
-    return mergedContent;
+    try {
+        const { data: dbSettings, error } = await supabase
+            .from('site_settings')
+            .select('key, content');
+
+        const mergedContent = JSON.parse(JSON.stringify(siteContent));
+
+        if (error) {
+            console.error("CMS DB Error:", error.message);
+            return mergedContent;
+        }
+
+        if (dbSettings) {
+            const keys = Object.keys(siteContent);
+            dbSettings.forEach((setting) => {
+                if (keys.includes(setting.key)) {
+                    (mergedContent as any)[setting.key] = setting.content;
+                }
+            });
+        }
+
+        contentCache = mergedContent;
+        lastFetch = now;
+        return mergedContent;
+    } catch (e) {
+        console.warn("CMS Merge Exception:", e);
+        return siteContent;
+    }
 }
