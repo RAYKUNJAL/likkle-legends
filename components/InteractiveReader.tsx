@@ -6,9 +6,10 @@ import {
     X, Volume2, VolumeX, ChevronLeft, ChevronRight,
     Play, Pause, Sparkles, RotateCcw, SkipForward,
     BookOpen, Turtle, Rabbit, Loader2, Home,
-    AlertCircle, Lightbulb
+    AlertCircle, Lightbulb, Star
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 
 interface WordAlignment {
     text: string;
@@ -41,10 +42,36 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
     const [playbackRate, setPlaybackRate] = useState(0.85); // Slower, kid-friendly pace
     const [autoPlay, setAutoPlay] = useState(true);
     const [showPlayOverlay, setShowPlayOverlay] = useState(true);
+    const [showReward, setShowReward] = useState(false); // Gamification State
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioProgress, setAudioProgress] = useState(0);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const rafRef = useRef<number | null>(null);
+
+    // Confetti Effect
+    useEffect(() => {
+        if (showReward) {
+            const duration = 3 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 300 };
+
+            const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+            const interval: any = setInterval(function () {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
+                confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+            }, 250);
+
+            return () => clearInterval(interval);
+        }
+    }, [showReward]);
 
     // Safety check for pages
     if (!pages || pages.length === 0) return null;
@@ -146,8 +173,12 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
         const onEnd = () => {
             setIsPlaying(false);
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
-            if (autoPlay && currentPage < pages.length - 1) {
-                setTimeout(() => setCurrentPage(p => p + 1), 2000); // Longer pause between pages
+            if (autoPlay) {
+                if (currentPage < pages.length - 1) {
+                    setTimeout(() => setCurrentPage(p => p + 1), 2000);
+                } else {
+                    setShowReward(true);
+                }
             }
         };
 
@@ -332,10 +363,13 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                 </div>
 
                 <button
-                    onClick={() => currentPage < pages.length - 1 ? setCurrentPage(p => p + 1) : onClose()}
-                    className="flex items-center gap-2 px-6 lg:px-10 py-3 lg:py-4 bg-zinc-900 text-white rounded-2xl font-black text-sm lg:text-base shadow-xl hover:bg-orange-500 transition-all group"
+                    onClick={() => currentPage < pages.length - 1 ? setCurrentPage(p => p + 1) : setShowReward(true)}
+                    className={`flex items-center gap-2 px-6 lg:px-10 py-3 lg:py-4 rounded-2xl font-black text-sm lg:text-base shadow-xl transition-all group ${currentPage === pages.length - 1
+                            ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:scale-105'
+                            : 'bg-zinc-900 text-white hover:bg-orange-500'
+                        }`}
                 >
-                    <span>{currentPage === pages.length - 1 ? 'ALL DONE!' : 'NEXT PAGE'}</span>
+                    <span>{currentPage === pages.length - 1 ? 'FINISH & CLAIM STAR' : 'NEXT PAGE'}</span>
                     <ChevronRight className="group-hover:translate-x-1 transition-transform" />
                 </button>
             </footer>
@@ -366,10 +400,50 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                             <button onClick={async () => {
                                 setShowPlayOverlay(false);
                                 if (audioRef.current) try { await audioRef.current.play(); } catch (e) { }
-                            }} className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-orange-600 transition-all">
+                            }} className="w-full py-5 text-center bg-zinc-900 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-orange-600 transition-all">
                                 START READING
                             </button>
                             <p className="mt-6 text-[10px] text-zinc-300 uppercase font-black tracking-widest">A Likkle Legends Adventure</p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ═══ Star Reward Overlay ═══ */}
+            <AnimatePresence>
+                {showReward && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-[250] bg-black/80 backdrop-blur-md flex items-center justify-center p-6"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.5, y: 50, opacity: 0 }}
+                            animate={{ scale: 1, y: 0, opacity: 1 }}
+                            transition={{ type: "spring", bounce: 0.5 }}
+                            className="bg-white p-10 lg:p-14 rounded-[3.5rem] shadow-2xl flex flex-col items-center max-w-sm w-full relative text-center border-4 border-yellow-300"
+                        >
+                            <motion.div
+                                animate={{ rotate: 360, scale: [1, 1.2, 1] }}
+                                transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
+                                className="mb-6"
+                            >
+                                <div className="relative">
+                                    <div className="absolute inset-0 bg-yellow-400 blur-xl opacity-50 rounded-full" />
+                                    <Star size={120} fill="#FACC15" className="text-yellow-400 relative z-10 drop-shadow-lg" />
+                                </div>
+                            </motion.div>
+
+                            <h2 className="text-4xl lg:text-5xl font-black text-orange-950 mb-2 leading-tight">YOU DID IT!</h2>
+                            <p className="text-orange-600 font-bold mb-8 text-xl">You earned a Story Star!</p>
+
+                            <button
+                                onClick={onClose}
+                                className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-2xl font-black text-xl shadow-xl hover:scale-105 active:scale-95 transition-all"
+                            >
+                                COLLECT REWARD 🌟
+                            </button>
                         </motion.div>
                     </motion.div>
                 )}
