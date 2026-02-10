@@ -6,6 +6,7 @@ import { Menu, X, User as UserIcon, LayoutDashboard } from 'lucide-react';
 import { useState } from 'react';
 import { siteContent } from '@/lib/content';
 import { useUser } from '@/components/UserContext';
+import StarCounter from '@/components/gamification/StarCounter';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -27,20 +28,26 @@ export default function Navbar() {
                         </Link>
                     ))}
 
-                    {user ? (
-                        <Link
-                            href="/parent"
-                            className="flex items-center gap-2 font-bold text-primary hover:text-primary/80 transition-colors bg-primary/5 px-4 py-2 rounded-full"
-                        >
-                            <LayoutDashboard size={18} />
-                            <span>Parent Dashboard</span>
+                    <div className="flex items-center gap-4 border-l pl-4 border-gray-200">
+                        <Link href="/profile" className="hover:scale-105 transition-transform">
+                            <StarCounter />
                         </Link>
-                    ) : (
-                        <Link href={navigation.auth.login_href} className="flex items-center gap-2 font-semibold hover:text-primary transition-colors">
-                            <UserIcon size={18} />
-                            <span>Parent Login</span>
-                        </Link>
-                    )}
+
+                        {user ? (
+                            <Link
+                                href="/parent"
+                                className="flex items-center gap-2 font-bold text-primary hover:text-primary/80 transition-colors bg-primary/5 px-4 py-2 rounded-full"
+                            >
+                                <LayoutDashboard size={18} />
+                                <span>Parent Dashboard</span>
+                            </Link>
+                        ) : (
+                            <Link href={navigation.auth.login_href} className="flex items-center gap-2 font-semibold hover:text-primary transition-colors">
+                                <UserIcon size={18} />
+                                <span>Parent Login</span>
+                            </Link>
+                        )}
+                    </div>
 
                     <Link href={navigation.auth.primary_cta.href} className="btn btn-primary animate-pulse-slow">
                         {navigation.auth.primary_cta.label}
@@ -59,6 +66,13 @@ export default function Navbar() {
                             {link.label}
                         </Link>
                     ))}
+
+                    <div className="py-2 border-t border-b border-gray-100">
+                        <Link href="/profile" className="flex items-center justify-between w-full" onClick={() => setIsOpen(false)}>
+                            <span className="text-sm font-bold text-gray-500 uppercase">My Progress</span>
+                            <StarCounter />
+                        </Link>
+                    </div>
 
                     {user ? (
                         <Link href="/parent" className="font-bold text-primary flex items-center gap-2" onClick={() => setIsOpen(false)}>

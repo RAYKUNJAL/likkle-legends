@@ -22,11 +22,11 @@ import {
   FoundersSection,
   WhoItIsFor,
   EducatorBlock,
-  StoryStudioLeadMagnet,
   FeatureShowcase
 } from '@/components/landing';
 
 import LibraryGrid from '@/components/library/LibraryGrid';
+import StoryStudioWizard from '@/components/studio/StoryStudioWizard';
 
 
 export default async function Home() {
@@ -87,8 +87,8 @@ export default async function Home() {
         {/* Character Roles */}
         <CharacterRoles content={content} />
 
-        {/* Story Studio Lead Magnet */}
-        <StoryStudioLeadMagnet content={content} />
+        {/* Story Studio Wizard (Actual Product UI) */}
+        <StoryStudioWizard />
 
         {/* Island Radio Preview */}
         <IslandRadioPreview content={content} />

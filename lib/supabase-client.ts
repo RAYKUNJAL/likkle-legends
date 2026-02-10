@@ -88,7 +88,7 @@ class SupabaseClientManager {
 
             // Simple query to test connection
             const { error } = await client
-                .from('storybooks')
+                .from('content_items')
                 .select('count')
                 .limit(1);
 
@@ -163,7 +163,7 @@ class SupabaseClientManager {
             // Test database query
             try {
                 const { error } = await this.getClient()
-                    .from('storybooks')
+                    .from('content_items')
                     .select('count')
                     .limit(1);
                 details.database = !error;

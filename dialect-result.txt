@@ -1,0 +1,35 @@
+﻿[dotenv@17.2.3] injecting env (17) from .env.local -- tip: ΓÜÖ∩╕Å  load multiple .env files with { path: ['.env.local', '.env'] }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒôí add observability to secrets: https://dotenvx.com/ops
+node.exe : ΓÜá∩╕Å  Warning: 
+Missing recommended 
+environment variables:
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: (ΓÜá∩╕  
+  Å  Warning...ment varia   
+ bles::String) [], Remot    
+eException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+   - RESEND_API_KEY
+   Scripts requiring these 
+might run in limited mode 
+(e.g., local save instead 
+of database)
+Γ£à Environment variables loaded successfully
+Existing dialect values: {"data":[{"dialect_type":"standard_english"},{"dialect_type":"local_dialect"},{"dialect_type":"standard_english"},{"dialect_type":"local_dialect"}],"error":null}
+Γ¥î "standard" failed: invalid input value for enum dialect_type: "standard"
+Γ¥î "en" failed: invalid input value for enum dialect_type: "en"
+Γ¥î "patois" failed: invalid input value for enum dialect_type: "patois"
+Γ¥î "light" failed: invalid input value for enum dialect_type: "light"
+Γ¥î "medium" failed: invalid input value for enum dialect_type: "medium"
+Γ¥î "heavy" failed: invalid input value for enum dialect_type: "heavy"
+Γ¥î "creole" failed: invalid input value for enum dialect_type: "creole"

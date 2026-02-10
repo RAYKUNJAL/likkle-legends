@@ -1,93 +1,84 @@
-# Likkle Legends 2.0 - Deployment & Setup Guide
+# Likkle Legends - App Deployment Guide 🚀
 
-## 1. Environment Setup
+This guide covers the steps to deploy the Likkle Legends gamified reading application.
 
-Ensure your `.env.local` file has the following variables:
+## 1. Prerequisites
+
+- **Node.js**: v18 or higher (LTS recommended).
+- **Supabase Account**: For authentication and database.
+- **Vercel Account**: For hosting (recommended).
+
+## 2. Environment Variables
+
+Create a `.env.local` file in the root directory if it doesn't exist. You need the following keys:
 
 ```bash
-# Supabase (Database & Auth)
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+# Public URL (for metadata)
+NEXT_PUBLIC_APP_URL=https://your-app-url.com
 
-# PayPal (Payments)
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=your_paypal_client_id
-PAYPAL_CLIENT_SECRET=your_paypal_secret
-PAYPAL_WEBHOOK_ID=your_webhook_id
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
-# ElevenLabs (AI Voice)
-ELEVENLABS_API_KEY=your_elevenlabs_key
-
-# Google Analytics
-NEXT_PUBLIC_GA_LOG_ID=your_ga_id
+# CMS / Content (Optional if using local content)
+# GOOGLE_GENERATIVE_AI_API_KEY=...
 ```
 
-## 2. Database Setup
+## 3. Database Setup (Supabase)
 
-Run the following SQL scripts in your Supabase SQL Editor to create the necessary tables:
+The application requires specific tables for gamification (XP, Levels, Badges).
 
-1.  **Core Schema**: Run `supabase_schema.sql` (Creates users, children, subscriptions, etc.)
-2.  **Messaging System**: Run `supabase_messaging.sql` (Creates messages, notifications tables)
-3.  **Gamification**: Ensure `xp_events`, `child_badges`, and `children` tables are created (included in schemas above).
+1.  Go to your **Supabase Dashboard** -> **SQL Editor**.
+2.  Open the file `supabase/migrations/20240210_gamification.sql` from this repository.
+3.  Copy the entire content and paste it into the SQL Editor.
+4.  Click **Run**.
+    - This will create the `activities`, `badge_definitions`, and `badge_earnings` tables.
+    - It sets up Row Level Security (RLS) policies.
+    - It seeds initial badges.
 
-## 3. Storage Setup
+## 4. Local Development
 
-Create the following public buckets in Supabase Storage:
-- `avatars` (for user and child profiles)
-- `stories` (for storybook covers and assets)
-- `songs` (for audio files and thumbnails)
-- `content` (for miscellaneous content)
+To run the app locally:
 
-## 4. Build & Production
+```bash
+# Install dependencies
+npm install
 
-To build the application for production:
+# Run development server
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view it.
+
+## 5. Building for Production
+
+To verify the build before deploying:
 
 ```bash
 npm run build
 ```
 
-To start the production server:
+The output will be in the `.next` folder.
 
-```bash
-npm start
-```
+## 6. Vercel Deployment
 
-## 5. Admin Usage
-Access the admin panel at `/admin`.
-*   **Media**: Upload songs and videos.
-*   **Characters**: Manage AR characters/voices.
-*   **Orders**: Track physical mailer fulfillment.
+1.  Push your code to a Git repository (GitHub/GitLab).
+2.  Log in to **Vercel** and click **"Add New..."** -> **"Project"**.
+3.  Import your repository.
+4.  In **Environment Variables**, add the keys from Step 2 (`NEXT_PUBLIC_SUPABASE_URL`, etc.).
+5.  Click **Deploy**.
 
-## 6. Parent & Child Flow
-*   **Sign Up**: Create a parent account and child profile.
-*   **Subscription**: Checkout via PayPal for physical/digital access.
-*   **Portal**: Children access `/portal` for stories, games, and missions.
-*   **Dashboard**: Parents track progress at `/analytics` and `/dashboard`.
+## Troubleshooting
 
-## 7. Deployment (Vercel)
-The recommended way to deploy is **Vercel**.
+-   **Lint Errors**: The build is configured to ignore TypeScript errors (`ignoreBuildErrors: true`) to ensure deployment succeeds even with minor type mismatches.
+-   **Missing Images**: Ensure `next.config.mjs` allows the domain of your image provider (default allows `*.supabase.co`).
+-   **Audio/Video**: If media doesn't play, check the Content Security Policy (CSP) in `next.config.mjs`.
 
-1.  **Push to GitHub**: Ensure your latest code is pushed to your repository.
-2.  **Import Project in Vercel**:
-    *   Go to Vercel Dashboard -> Add New -> Project.
-    *   Select `likkle-legends` repo.
-3.  **Configure Environment Variables**:
-    *   Copy all values from your `.env.local`.
-    *   **IMPORTANT**: Add `SUPABASE_SERVICE_ROLE_KEY` to the Environment Variables settings in Vercel. This is required for the Admin Dashboard to work.
-4.  **Deploy**: Click "Deploy".
+## Features Checklist
 
-## 8. DNS Configuration (GoLive)
-To make your site live at `likklelegends.com` (or `.cm`):
+- [x] **Interactive Reader**: "Read to Me" with sync.
+- [x] **Gamification**: XP, Levels, and Badges.
+- [x] **Profile Page**: Real-time stats dashboard.
+- [x] **Audio**: Background music and sound effects.
 
-1.  **In Vercel**:
-    *   Go to **Settings** -> **Domains**.
-    *   Enter your domain (e.g., `likklelegends.cm`).
-    *   Vercel will provide you with DNS records to add.
-2.  **In Your Domain Registrar (Namecheap, GoDaddy, etc.)**:
-    *   **A Record**: Point `@` to `76.76.21.21`.
-    *   **CNAME Record**: Point `www` to `cname.vercel-dns.com`.
-3.  **Propagation**: It may take up to 24-48 hours, but usually happens within minutes.
-
-## 9. Messaging
-*   Parents can invite grandparents/family.
-*   Messages appear in `/messages`.
+Happy Reading! 📚✨
