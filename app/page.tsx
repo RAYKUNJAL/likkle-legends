@@ -3,7 +3,6 @@ import Footer from '@/components/Footer';
 import FAQ from '@/components/FAQ';
 import { siteContent } from '@/lib/content';
 import { getMergedSiteContent } from '@/lib/services/cms';
-import { CheckCircle2 } from 'lucide-react';
 
 // New landing page components
 import {
@@ -27,15 +26,11 @@ import {
   FeatureShowcase
 } from '@/components/landing';
 
-export default async function Home() {
-  let content = {} as any;
-  try {
-    content = await getMergedSiteContent();
-  } catch (err) {
-    console.error("Home page CMS fetch error:", err);
-    content = siteContent;
-  }
+import LibraryGrid from '@/components/library/LibraryGrid';
 
+
+export default async function Home() {
+  const content = await getMergedSiteContent();
   const testimonials = content?.testimonials || siteContent.testimonials;
 
   return (
@@ -45,6 +40,9 @@ export default async function Home() {
       <main className="flex-grow">
         {/* Hero Section */}
         <LandingHero content={content} />
+
+        {/* Likkle Library Preview */}
+        <LibraryGrid />
 
         {/* Trust Banner */}
         <div className="bg-deep py-4 overflow-hidden select-none">
