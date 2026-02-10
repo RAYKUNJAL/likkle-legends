@@ -23,11 +23,13 @@
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
     "@types/canvas-confetti": "^1.9.0",
+    "@types/ws": "^8.18.1",
     "autoprefixer": "^10.4.19",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.3",
-    "framer-motion": "^12.23.26",
+    "elevenlabs": "^1.59.0",
+    "framer-motion": "^12.34.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",
     "lucide-react": "^0.562.0",
@@ -42,7 +44,8 @@
     "recharts": "^3.7.0",
     "resend": "^6.8.0",
     "swiper": "^12.1.0",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "ws": "^8.19.0"
   },
   "devDependencies": {
     "@types/node": "^20.19.27",
