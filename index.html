@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Likkle Legends | Premium Caribbean Heritage App</title>
+    <title>Likkle Legends | Experience the Caribbean</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -14,148 +15,429 @@
             --sand-gold: #FFD700;
             --deep-ocean: #003366;
             --vibrant-orange: #FF671F;
-            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
             --text-light: #f8f9fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            scroll-behavior: smooth;
         }
 
         body {
             margin: 0;
             padding: 0;
             font-family: 'Outfit', sans-serif;
-            background: linear-gradient(135deg, #003366 0%, #00A3E0 100%);
+            background: #001a33;
             color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- CRO Navbar --- */
+        .nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(0, 26, 51, 0.5);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .nav-logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--sand-gold);
+        }
+
+        .nav-cta {
+            background: var(--vibrant-orange);
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(255, 103, 31, 0.3);
+        }
+
+        /* --- Layout --- */
+        .hero {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
+            padding: 2rem;
+            position: relative;
         }
 
         .container {
-            text-align: center;
-            padding: 2rem;
-            max-width: 800px;
-            z-index: 2;
+            max-width: 1100px;
+            width: 100%;
+            z-index: 10;
         }
 
+        /* --- Typography --- */
         .logo {
-            font-size: 4rem;
+            font-size: clamp(3rem, 10vw, 5rem);
             font-weight: 800;
-            margin-bottom: 1rem;
-            background: linear-gradient(to right, var(--sand-gold), var(--vibrant-orange));
+            background: linear-gradient(135deg, var(--sand-gold), var(--vibrant-orange));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 10px 20px rgba(0,0,0,0.2);
-            letter-spacing: -2px;
+            margin-bottom: 0.5rem;
+            letter-spacing: -3px;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
         }
 
         .tagline {
-            font-size: 1.5rem;
+            font-size: clamp(1.1rem, 3vw, 1.8rem);
             font-weight: 300;
-            margin-bottom: 3rem;
-            opacity: 0.9;
+            opacity: 0.8;
+            margin-bottom: 4rem;
         }
 
-        .status-card {
+        .trust-badge {
+            background: var(--island-green);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 155, 119, 0.3);
+        }
+
+        /* --- Dialect Dial Component --- */
+        .dial-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 850px) {
+            .dial-section {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+
+        .dial-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            border-radius: 50%;
             background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 2.5rem;
-            border-radius: 24px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: float 6s ease-in-out infinite;
-        }
-
-        h2 { margin-top: 0; color: var(--sand-gold); }
-
-        .progress-list {
-            text-align: left;
-            margin: 2rem 0;
-            font-size: 1.1rem;
-        }
-
-        .progress-item {
+            border: 4px solid var(--glass-border);
             display: flex;
             align-items: center;
-            margin-bottom: 1rem;
+            justify-content: center;
+            box-shadow: 0 0 50px rgba(0, 163, 224, 0.2);
         }
 
-        .icon {
-            margin-right: 1rem;
+        .dial-handle {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            cursor: grab;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .dial-pointer {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 40px;
+            background: var(--sand-gold);
+            border-radius: 6px;
+            box-shadow: 0 0 15px var(--sand-gold);
+        }
+
+        .island-label {
+            position: absolute;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            opacity: 0.5;
+        }
+
+        .island-label.active {
+            opacity: 1;
+            color: var(--sand-gold);
+            transform: scale(1.2);
+            text-shadow: 0 0 10px var(--sand-gold);
+        }
+
+        /* --- Content Preview Card --- */
+        .content-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 2.5rem;
+            border-radius: 32px;
+            text-align: left;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s;
+        }
+
+        .content-card h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--caribbean-blue);
+        }
+
+        .dialect-text {
             font-size: 1.2rem;
+            line-height: 1.6;
+            font-style: italic;
+            margin-bottom: 2rem;
+            color: #ddd;
+        }
+
+        .standard-text {
+            font-size: 1rem;
+            opacity: 0.6;
+            border-left: 2px solid var(--caribbean-blue);
+            padding-left: 1rem;
+        }
+
+        /* --- Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, #003366, #001a33);
+            border: 1px solid var(--glass-border);
+            padding: 3rem;
+            border-radius: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            transform: translateY(20px);
+            transition: transform 0.5s;
+        }
+
+        .modal h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--sand-gold);
+        }
+
+        .modal p {
+            margin-bottom: 2rem;
+            opacity: 0.8;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
         }
 
         .btn {
             background: var(--vibrant-orange);
             color: white;
             border: none;
-            padding: 1rem 2.5rem;
-            font-size: 1.1rem;
-            font-weight: 600;
+            padding: 1.2rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 1rem;
         }
 
         .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
             background: #ff7e45;
+            transform: scale(1.02);
         }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
-        }
-
-        .bg-shapes div {
+        /* --- Background Animation --- */
+        .blob {
             position: absolute;
+            width: 600px;
+            height: 600px;
+            background: var(--caribbean-blue);
+            filter: blur(150px);
+            opacity: 0.2;
             z-index: 1;
-            border-radius: 50%;
-            filter: blur(80px);
+            animation: move 20s infinite alternate;
         }
 
-        .shape-1 { top: -10%; left: -10%; width: 400px; height: 400px; background: rgba(0, 155, 119, 0.3); }
-        .shape-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: rgba(255, 103, 31, 0.2); }
+        @keyframes move {
+            from {
+                transform: translate(-20%, -20%);
+            }
+
+            to {
+                transform: translate(20%, 20%);
+            }
+        }
+
+        /* --- Interactions Counter --- */
+        .counter {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            opacity: 0.5;
+        }
     </style>
 </head>
+
 <body>
-    <div class="bg-shapes">
-        <div class="shape-1"></div>
-        <div class="shape-2"></div>
-    </div>
+    <nav class="nav">
+        <div class="nav-logo">Likkle Legends</div>
+        <a href="#lead-form" class="nav-cta" onclick="showModal()">Get Early Access</a>
+    </nav>
 
-    <div class="container">
-        <div class="logo">Likkle Legends</div>
-        <p class="tagline">Identity-First. Heritage-Powered. Future-Ready.</p>
+    <div class="blob"></div>
 
-        <div class="status-card">
-            <h2>Drafting Civilization...</h2>
-            <div class="progress-list">
-                <div class="progress-item">
-                    <span class="icon">✅</span> Architecture Audit & spec v2.0.0
+    <main class="hero">
+        <div class="container">
+            <header style="text-align: center; margin-bottom: 4rem;">
+                <div class="trust-badge">🌴 JOIN 500+ CARIBBEAN FAMILIES IN THE DIASPORA</div>
+                <div class="logo">Likkle Legends</div>
+                <h1
+                    style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 400; line-height: 1.2; margin-bottom: 1.5rem;">
+                    Don't Let the <span style="color: var(--sand-gold); font-weight: 800;">Culture Fade.</span><br>
+                    Build Their Identity, One Story At A Time.
+                </h1>
+                <p class="tagline" style="margin-bottom: 2rem;">Interactive Folklore, Island Tracks, and AI-Powered
+                    Heritage Studio.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem;">
+                    <a href="#dial-section" class="btn" style="width: auto;">Try the Dialect Dial</a>
                 </div>
-                <div class="progress-item">
-                    <span class="icon">✅</span> Supabase Connection established via IPv4 Pooler
+            </header>
+
+            <div class="dial-section" id="dial-section">
+                <div>
+                    <h2 style="font-size: 2.5rem; margin-bottom: 1.5rem;">The Dialect Dial</h2>
+                    <p style="opacity: 0.7; max-width: 450px; line-height: 1.6; margin-bottom: 2rem;">
+                        Rotate the dial to explore the rhythm and soul of the islands. See how our stories shift from
+                        Standard English to the vibrant Patois of the Caribbean.
+                    </p>
+
+                    <div class="dial-container" id="dial-ring">
+                        <!-- Labels will be placed here by JS -->
+                        <div class="dial-handle" id="dial-handle">
+                            <div class="dial-pointer"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="progress-item">
-                    <span class="icon">✅</span> PostgreSQL Schema Initialized
-                </div>
-                <div class="progress-item">
-                    <span class="icon">✅</span> WhatsApp API Connection Verified
-                </div>
-                <div class="progress-item">
-                    <span class="icon">🚀</span> Assemble: Building the Premium UI
+
+                <div class="content-card" id="content-card">
+                    <div id="card-inner">
+                        <span
+                            style="color: var(--sand-gold); font-weight: 800; font-size: 0.8rem; text-transform: uppercase;">Folklore
+                            Snippet</span>
+                        <h3 id="story-title">Anansi and the Pot of Beans</h3>
+                        <p class="dialect-text" id="story-dialect">"Ef yuh nuh know weh yuh a guh, yuh mus' know weh yuh
+                            come from."</p>
+                        <p class="standard-text" id="story-standard">If you don't know where you are going, you must
+                            know where you come from.</p>
+                    </div>
                 </div>
             </div>
-            <p>Our digital roots are growing deep into the Supabase soil.</p>
-            <a href="#" class="btn" id="notify-btn">Keep Me Updated</a>
+        </div>
+    </main>
+
+    <div class="counter" id="interaction-counter">Interactions: 0 / 5</div>
+
+    <!-- Lead Capture Modal -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div
+                style="background: var(--island-green); color: white; padding: 0.5rem; font-size: 0.8rem; font-weight: 800; border-radius: 50px; display: inline-block; margin-bottom: 1rem;">
+                FREE FOUNDING MEMBER ACCESS</div>
+            <h2>Claim Your Island Track</h2>
+            <p>You've explored the snippet. Now, secure your child's <strong>Heritage Passport</strong> and unlock the
+                AI Story Studio for free.</p>
+
+            <form id="lead-form">
+                <div class="form-group">
+                    <label>What's your child's name?</label>
+                    <input type="text" placeholder="e.g. Malika" required>
+                </div>
+                <div class="form-group">
+                    <label>Which Island should we prioritize?</label>
+                    <select id="island-select"
+                        style="width:100%; padding:1rem; border-radius:12px; background:rgba(255,255,255,0.1); color:white; border:1px solid var(--glass-border);">
+                        <option value="JM">Jamaica</option>
+                        <option value="TT">Trinidad & Tobago</option>
+                        <option value="HT">Haiti</option>
+                        <option value="SL">Saint Lucia</option>
+                        <option value="BB">Barbados</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp Number (For weekly island tracks)</label>
+                    <input type="text" placeholder="+1..." required>
+                </div>
+                <button type="submit" class="btn">Get My Free Heritage Track</button>
+            </form>
+            <p style="font-size: 0.8rem; margin-top: 1rem; opacity: 0.5;">No credit card required. VIP Educator status
+                available.</p>
+            <button
+                style="background:none; border:none; color:white; opacity:0.3; margin-top:0.5rem; cursor:pointer; font-size: 0.8rem;"
+                onclick="closeModal()">Maybe later</button>
         </div>
     </div>
+
+    <script src="app.js"></script>
 </body>
+
 </html>
