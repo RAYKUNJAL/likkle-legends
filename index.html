@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Likkle Legends | Premium Caribbean Heritage App</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --caribbean-blue: #00A3E0;
+            --island-green: #009B77;
+            --sand-gold: #FFD700;
+            --deep-ocean: #003366;
+            --vibrant-orange: #FF671F;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --text-light: #f8f9fa;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #003366 0%, #00A3E0 100%);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 800px;
+            z-index: 2;
+        }
+
+        .logo {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--sand-gold), var(--vibrant-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            letter-spacing: -2px;
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+
+        .status-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        h2 { margin-top: 0; color: var(--sand-gold); }
+
+        .progress-list {
+            text-align: left;
+            margin: 2rem 0;
+            font-size: 1.1rem;
+        }
+
+        .progress-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .icon {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .btn {
+            background: var(--vibrant-orange);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            background: #ff7e45;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .bg-shapes div {
+            position: absolute;
+            z-index: 1;
+            border-radius: 50%;
+            filter: blur(80px);
+        }
+
+        .shape-1 { top: -10%; left: -10%; width: 400px; height: 400px; background: rgba(0, 155, 119, 0.3); }
+        .shape-2 { bottom: -10%; right: -10%; width: 500px; height: 500px; background: rgba(255, 103, 31, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="bg-shapes">
+        <div class="shape-1"></div>
+        <div class="shape-2"></div>
+    </div>
+
+    <div class="container">
+        <div class="logo">Likkle Legends</div>
+        <p class="tagline">Identity-First. Heritage-Powered. Future-Ready.</p>
+
+        <div class="status-card">
+            <h2>Drafting Civilization...</h2>
+            <div class="progress-list">
+                <div class="progress-item">
+                    <span class="icon">✅</span> Architecture Audit & spec v2.0.0
+                </div>
+                <div class="progress-item">
+                    <span class="icon">✅</span> Supabase Connection established via IPv4 Pooler
+                </div>
+                <div class="progress-item">
+                    <span class="icon">✅</span> PostgreSQL Schema Initialized
+                </div>
+                <div class="progress-item">
+                    <span class="icon">✅</span> WhatsApp API Connection Verified
+                </div>
+                <div class="progress-item">
+                    <span class="icon">🚀</span> Assemble: Building the Premium UI
+                </div>
+            </div>
+            <p>Our digital roots are growing deep into the Supabase soil.</p>
+            <a href="#" class="btn" id="notify-btn">Keep Me Updated</a>
+        </div>
+    </div>
+</body>
+</html>
