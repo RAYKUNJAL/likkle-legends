@@ -1,0 +1,379 @@
+"use client";
+
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import Image from 'next/image';
+import {
+    X, Volume2, VolumeX, ChevronLeft, ChevronRight,
+    Play, Pause, Sparkles, RotateCcw, SkipForward,
+    BookOpen, Turtle, Rabbit, Loader2, Home,
+    AlertCircle, Lightbulb
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface WordAlignment {
+    text: string;
+    start: number;
+    end: number;
+}
+
+interface Page {
+    text: string;
+    imageUrl?: string;
+    audioUrl?: string;
+    words?: WordAlignment[];
+}
+
+interface InteractiveReaderProps {
+    title?: string;
+    pages: Page[];
+    guide: 'tanty' | 'roti';
+    onClose: () => void;
+}
+
+export default function InteractiveReader({ title, pages, guide, onClose }: InteractiveReaderProps) {
+    const [currentPage, setCurrentPage] = useState(0);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [isBuffering, setIsBuffering] = useState(false);
+    const [audioError, setAudioError] = useState<string | null>(null);
+    const [activeWordIndex, setActiveWordIndex] = useState(-1);
+    const [volume, setVolume] = useState(1);
+    const [isMuted, setIsMuted] = useState(false);
+    const [playbackRate, setPlaybackRate] = useState(0.85); // Slower, kid-friendly pace
+    const [autoPlay, setAutoPlay] = useState(true);
+    const [showPlayOverlay, setShowPlayOverlay] = useState(true);
+    const [audioDuration, setAudioDuration] = useState(0);
+    const [audioProgress, setAudioProgress] = useState(0);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const rafRef = useRef<number | null>(null);
+
+    // Safety check for pages
+    if (!pages || pages.length === 0) return null;
+    const pageData = pages[currentPage] || pages[0];
+
+    // Ultra-High-Quality Weighted Word Map
+    const words = useMemo(() => {
+        // 1. Support for new rigorous JSON format with exact timestamps
+        if (pageData.audio?.alignment?.words) {
+            return pageData.audio.alignment.words.map((w: any) => ({
+                text: w.text,
+                start: w.startTimeSeconds,
+                end: w.endTimeSeconds
+            }));
+        }
+
+        // 2. Legacy/Simple format support
+        if (pageData.words && pageData.words.length > 0) return pageData.words;
+
+        // 3. Fallback: Weighted Simulation
+        const tokens = pageData.text ? pageData.text.split(/\s+/) : [];
+        if (tokens.length === 0) return [];
+
+        // Tuned weights for "Storyteller" cadence
+        const weights = tokens.map(token => {
+            let w = token.length; // Base weight = characters
+            if (/[.!?]/.test(token)) w += 8; // Major pause for sentence end
+            else if (/[,;:]/.test(token)) w += 4; // Minor pause for clauses
+            return Math.max(w, 2);
+        });
+
+        const totalWeight = weights.reduce((a, b) => a + b, 0);
+        // Use audioDuration if available, otherwise estimate 0.5s per "average" word
+        const duration = audioDuration > 0 ? audioDuration : tokens.length * 0.5;
+
+        // Distribution
+        let currentTime = 0;
+        return tokens.map((token, i) => {
+            const wordDuration = (weights[i] / totalWeight) * duration;
+            const start = currentTime;
+            const end = currentTime + wordDuration;
+            currentTime = end;
+            return { text: token, start, end };
+        });
+    }, [pageData, audioDuration]);
+
+    const wordsRef = useRef(words);
+    useEffect(() => { wordsRef.current = words; }, [words]);
+
+    // PRECISE AUDIO ENGINE
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (!audio || !pageData.audioUrl) return;
+
+        setAudioError(null);
+        setIsBuffering(true);
+        setIsPlaying(false);
+        setAudioProgress(0);
+        setActiveWordIndex(-1);
+
+        // Load correct source
+        if (audio.src !== pageData.audioUrl) {
+            audio.src = pageData.audioUrl;
+            audio.load();
+        }
+
+        const tick = () => {
+            if (!audio.paused) {
+                const time = audio.currentTime;
+                setAudioProgress(time);
+                // Ultra-precise index finding
+                const idx = wordsRef.current.findIndex(w => time >= w.start && time < w.end);
+                if (idx !== -1) setActiveWordIndex(idx);
+
+                rafRef.current = requestAnimationFrame(tick);
+            }
+        };
+
+        const onPlay = () => {
+            setIsPlaying(true);
+            setIsBuffering(false);
+            rafRef.current = requestAnimationFrame(tick);
+        };
+
+        const onPause = () => {
+            setIsPlaying(false);
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+        };
+
+        const onMetadata = () => {
+            setAudioDuration(audio.duration);
+            setIsBuffering(false);
+            audio.playbackRate = playbackRate; // Force speed on new track
+            if (autoPlay && !showPlayOverlay) {
+                audio.play().catch(() => { });
+            }
+        };
+
+        const onEnd = () => {
+            setIsPlaying(false);
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            if (autoPlay && currentPage < pages.length - 1) {
+                setTimeout(() => setCurrentPage(p => p + 1), 2000); // Longer pause between pages
+            }
+        };
+
+        audio.addEventListener('play', onPlay);
+        audio.addEventListener('pause', onPause);
+        audio.addEventListener('loadedmetadata', onMetadata);
+        audio.addEventListener('ended', onEnd);
+        audio.addEventListener('waiting', () => setIsBuffering(true));
+        audio.addEventListener('playing', () => setIsBuffering(false));
+        audio.addEventListener('error', () => {
+            setAudioError("Unable to play sound");
+            setIsBuffering(false);
+        });
+
+        return () => {
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            audio.removeEventListener('play', onPlay);
+            audio.removeEventListener('pause', onPause);
+            audio.removeEventListener('loadedmetadata', onMetadata);
+            audio.removeEventListener('ended', onEnd);
+            audio.removeEventListener('waiting', () => setIsBuffering(true));
+            audio.removeEventListener('playing', () => setIsBuffering(false));
+            audio.removeEventListener('error', () => { });
+        };
+    }, [pageData.audioUrl, currentPage, autoPlay, showPlayOverlay]);
+
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.volume = isMuted ? 0 : volume;
+            audioRef.current.playbackRate = playbackRate;
+        }
+    }, [volume, isMuted, playbackRate]);
+
+    const handlePlayPause = async () => {
+        if (!audioRef.current) return;
+        if (isPlaying) audioRef.current.pause();
+        else {
+            try { await audioRef.current.play(); } catch (e) { setShowPlayOverlay(true); }
+        }
+    };
+
+    const guideInfo = guide === 'tanty'
+        ? { name: 'Tanty Spice', avatar: '/images/tanty_spice_avatar.jpg', color: 'bg-orange-500' }
+        : { name: 'R.O.T.I.', avatar: '/images/roti-avatar.jpg', color: 'bg-blue-500' };
+
+    return (
+        <div className="fixed inset-0 z-[100] bg-[#FFFBF5] flex flex-col overflow-hidden select-none">
+            {/* ═══ Top Nav ═══ */}
+            <header className="h-14 lg:h-16 flex items-center justify-between px-4 lg:px-6 bg-white border-b-2 border-orange-50 shrink-0">
+                <div className="flex items-center gap-3">
+                    <button onClick={() => window.location.href = '/'} className="p-1.5 lg:p-2 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-500 hover:text-white transition-all shadow-sm">
+                        <Home size={18} />
+                    </button>
+                    <div>
+                        <h1 className="text-sm lg:text-base font-black text-orange-950 uppercase tracking-tight truncate max-w-[120px]">{title || 'Story'}</h1>
+                        <div className="flex items-center gap-1.5">
+                            <div className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-green-500' : 'bg-orange-200'}`} />
+                            <span className="text-[9px] font-bold text-orange-400 uppercase tracking-widest">{guideInfo.name} Reading</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 lg:gap-4">
+                    <div className="hidden sm:flex items-center gap-2 bg-orange-50 px-3 py-1 rounded-full border border-orange-100">
+                        <Volume2 size={12} className="text-orange-400" />
+                        <input type="range" min="0" max="1" step="0.1" value={volume} onChange={e => setVolume(parseFloat(e.target.value))} className="w-12 lg:w-20 h-1 accent-orange-500" />
+                    </div>
+                    <button onClick={onClose} className="p-1.5 lg:p-2 bg-red-100 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm">
+                        <X size={18} />
+                    </button>
+                </div>
+            </header>
+
+            {/* ═══ Main Adventure Area ═══ */}
+            <main className="flex-1 flex flex-col lg:flex-row overflow-hidden p-3 lg:p-4 gap-3 lg:gap-4 lg:max-h-[calc(100vh-120px)]">
+                {/* Visual Content */}
+                <div className="flex-1 bg-white rounded-[2rem] border-2 border-orange-50 p-6 flex flex-col relative shadow-sm overflow-hidden min-h-[220px]">
+                    <div className="flex-1 flex items-center justify-center">
+                        <motion.div
+                            key={currentPage}
+                            initial={{ scale: 0.8, opacity: 0, rotate: -3 }}
+                            animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                            className="text-8xl lg:text-9xl filter drop-shadow-xl"
+                        >
+                            📖
+                        </motion.div>
+                    </div>
+
+                    {/* Guide Character Mini-Card */}
+                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-2 rounded-2xl border border-orange-100 shadow-md flex items-center gap-2">
+                        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-200">
+                            <Image src={guideInfo.avatar} alt={guideInfo.name} width={40} height={40} className="object-cover" />
+                        </div>
+                        {isPlaying && (
+                            <div className="flex gap-0.5 h-3">
+                                {[1, 2, 3].map(i => <motion.div key={i} animate={{ height: [4, 12, 4] }} transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }} className="w-0.5 bg-orange-500 rounded-full" />)}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Text Story Section */}
+                <div className="flex-1 lg:flex-[1.2] bg-white rounded-[2rem] border-2 border-orange-100 shadow-xl flex flex-col overflow-hidden relative">
+                    <div className="flex-1 p-6 lg:p-10 overflow-y-auto overflow-x-hidden scrollbar-hide">
+                        <div className="flex flex-wrap gap-x-2 gap-y-3 lg:gap-y-4 text-2xl md:text-3xl lg:text-4xl font-extrabold leading-tight tracking-tight text-zinc-900 pb-12">
+                            {words.map((word: WordAlignment, i: number) => (
+                                <motion.span
+                                    key={i}
+                                    animate={{
+                                        color: i === activeWordIndex ? '#FFFFFF' : (i < activeWordIndex ? '#1E3A8A' : 'rgba(24, 24, 27, 0.4)'),
+                                        backgroundColor: i === activeWordIndex ? '#F97316' : 'transparent',
+                                        scale: i === activeWordIndex ? 1.05 : 1,
+                                        boxShadow: i === activeWordIndex ? '0 10px 15px -3px rgba(249, 115, 22, 0.3)' : 'none'
+                                    }}
+                                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                                    className="px-2 py-0.5 rounded-xl cursor-default transition-colors duration-200"
+                                >
+                                    {word.text}
+                                </motion.span>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Controls Footer Overlay */}
+                    <div className="bg-gradient-to-t from-white via-white to-white/0 p-4 lg:p-8 pt-10 shrink-0">
+                        <div className="max-w-xl mx-auto flex flex-col gap-6">
+                            {/* Pro Progress Bar */}
+                            <div className="relative group">
+                                <div className="h-3 bg-orange-100 rounded-full overflow-hidden cursor-pointer shadow-inner" onClick={e => {
+                                    if (!audioRef.current) return;
+                                    const rect = e.currentTarget.getBoundingClientRect();
+                                    audioRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * audioDuration;
+                                }}>
+                                    <motion.div className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500" animate={{ width: `${(audioProgress / (audioDuration || 1)) * 100}%` }} transition={{ duration: 0.1 }} />
+                                </div>
+                                {audioError && <p className="absolute -top-6 left-0 right-0 text-center text-[9px] font-black text-red-500 uppercase tracking-widest">{audioError}</p>}
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <button onClick={() => setCurrentPage(p => Math.max(0, p - 1))} className="w-10 h-10 flex items-center justify-center text-orange-200 hover:text-orange-500 transition-colors">
+                                        <RotateCcw size={20} />
+                                    </button>
+                                    <div className="px-3 py-1 bg-orange-50 rounded-full text-[10px] font-black text-orange-400 hidden sm:block">PAGE {currentPage + 1}</div>
+                                </div>
+
+                                <button
+                                    onClick={handlePlayPause}
+                                    className="w-20 h-20 bg-orange-500 text-white rounded-3xl shadow-lg shadow-orange-200 flex items-center justify-center hover:scale-105 active:scale-95 transition-all outline-none"
+                                >
+                                    {isBuffering ? <Loader2 size={32} className="animate-spin" /> : (isPlaying ? <Pause size={32} fill="white" /> : <Play size={32} fill="white" className="ml-1.5" />)}
+                                </button>
+
+                                <div className="flex items-center gap-3">
+                                    <button onClick={() => setPlaybackRate(playbackRate === 1 ? 0.8 : 1)} className="p-2 text-orange-300 hover:text-orange-500 transition-colors">
+                                        {playbackRate === 0.8 ? <Turtle size={18} /> : <Rabbit size={18} className="opacity-20 hover:opacity-100" />}
+                                    </button>
+                                    <button onClick={() => currentPage < pages.length - 1 && setCurrentPage(p => p + 1)} className="w-10 h-10 flex items-center justify-center text-orange-200 hover:text-orange-600 transition-colors">
+                                        <SkipForward size={20} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            {/* ═══ Navigation Bar ═══ */}
+            <footer className="h-16 lg:h-20 bg-white border-t border-orange-50 flex items-center justify-between px-6 lg:px-12 shrink-0">
+                <button
+                    disabled={currentPage === 0}
+                    onClick={() => setCurrentPage(p => p - 1)}
+                    className="flex items-center gap-2 font-black text-sm lg:text-base text-zinc-400 hover:text-orange-500 disabled:opacity-30 transition-all group"
+                >
+                    <ChevronLeft className="group-hover:-translate-x-1 transition-transform" /> <span className="hidden sm:inline">PREVIOUS</span>
+                </button>
+
+                <div className="flex gap-2">
+                    {pages.map((_, i) => (
+                        <div key={i} className={`h-2 rounded-full transition-all duration-300 ${i === currentPage ? 'w-8 bg-orange-500 shadow-sm' : 'w-2 bg-orange-100'}`} />
+                    ))}
+                </div>
+
+                <button
+                    onClick={() => currentPage < pages.length - 1 ? setCurrentPage(p => p + 1) : onClose()}
+                    className="flex items-center gap-2 px-6 lg:px-10 py-3 lg:py-4 bg-zinc-900 text-white rounded-2xl font-black text-sm lg:text-base shadow-xl hover:bg-orange-500 transition-all group"
+                >
+                    <span>{currentPage === pages.length - 1 ? 'ALL DONE!' : 'NEXT PAGE'}</span>
+                    <ChevronRight className="group-hover:translate-x-1 transition-transform" />
+                </button>
+            </footer>
+
+            {/* Invisible Audio */}
+            <audio ref={audioRef} playsInline preload="auto" />
+
+            {/* Commercial Grade Tap-to-Start Overlay */}
+            <AnimatePresence>
+                {showPlayOverlay && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[200] bg-orange-950/40 backdrop-blur-md flex items-center justify-center p-6">
+                        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} className="bg-white p-10 lg:p-14 rounded-[3.5rem] shadow-2xl flex flex-col items-center max-w-sm w-full relative">
+                            <button onClick={() => setShowPlayOverlay(false)} className="absolute top-8 right-8 text-zinc-300 hover:text-zinc-600">
+                                <X size={24} />
+                            </button>
+
+                            <motion.div
+                                animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+                                transition={{ repeat: Infinity, duration: 3 }}
+                                className="w-24 h-24 lg:w-32 lg:h-32 bg-gradient-to-br from-orange-400 to-amber-500 rounded-full flex items-center justify-center text-white shadow-2xl mb-10 border-8 border-orange-50/50"
+                            >
+                                <Play size={56} fill="white" className="ml-2" />
+                            </motion.div>
+
+                            <h2 className="text-3xl lg:text-4xl font-black text-zinc-900 mb-2 leading-tight">Ready to Listen?</h2>
+                            <p className="text-orange-600 font-bold mb-10 text-lg">Tap to hear {guideInfo.name} read!</p>
+
+                            <button onClick={async () => {
+                                setShowPlayOverlay(false);
+                                if (audioRef.current) try { await audioRef.current.play(); } catch (e) { }
+                            }} className="w-full py-5 bg-zinc-900 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-orange-600 transition-all">
+                                START READING
+                            </button>
+                            <p className="mt-6 text-[10px] text-zinc-300 uppercase font-black tracking-widest">A Likkle Legends Adventure</p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
