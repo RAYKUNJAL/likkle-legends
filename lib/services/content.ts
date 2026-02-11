@@ -24,7 +24,14 @@ export async function getContentItems(type?: string, island?: string) {
     }
 
     const { data, error } = await query;
-    if (error) throw error;
+
+    if (error) {
+        // Build-safe error handling: Log warning but return empty array to prevent build crash
+        // This is critical for initial deployment when tables might not exist yet.
+        console.warn(`Content Fetch Warning (${type || 'all'}):`, error.message);
+        return [];
+    }
+
     return data || [];
 }
 
@@ -38,7 +45,11 @@ export async function getContentById(id: string) {
         .eq('id', id)
         .single();
 
-    if (error) throw error;
+    if (error) {
+        // Build-safe: Return null instead of crashing
+        console.warn(`Content Fetch Warning (id: ${id}):`, error.message);
+        return null;
+    }
     return data;
 }
 
@@ -48,6 +59,8 @@ export const getSongs = () => getContentItems('song');
 export const getStorybooks = () => getContentItems('story');
 export const getVideos = () => getContentItems('video');
 export const getPrintables = () => getContentItems('resource_pdf');
+export const getMissions = (ageTrack?: string) => getContentItems('mission');
+export const getGameById = (id: string) => getContentById(id);
 
 // Admin Operations
 export async function upsertContent(contentData: any) {
@@ -66,6 +79,23 @@ export async function deleteContent(id: string) {
     if (error) throw error;
     return true;
 }
+
+// Type-specific CRUD aliases for Admin Pages
+export const createSong = (data: any) => upsertContent({ ...data, content_type: 'song' });
+export const updateSong = (id: string, data: any) => upsertContent({ ...data, id });
+export const deleteSong = deleteContent;
+
+export const createStorybook = (data: any) => upsertContent({ ...data, content_type: 'story' });
+export const updateStorybook = (id: string, data: any) => upsertContent({ ...data, id });
+export const deleteStorybook = deleteContent;
+
+export const createVideo = (data: any) => upsertContent({ ...data, content_type: 'video' });
+export const updateVideo = (id: string, data: any) => upsertContent({ ...data, id });
+export const deleteVideo = deleteContent;
+
+export const createPrintable = (data: any) => upsertContent({ ...data, content_type: 'resource_pdf' });
+export const updatePrintable = (id: string, data: any) => upsertContent({ ...data, id });
+export const deletePrintable = deleteContent;
 
 // Support for other tables that might still exist or be added
 export async function getGames() {

@@ -69,11 +69,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   let content = siteContent;
+  /* 
   try {
     content = await getMergedSiteContent();
   } catch (err) {
     console.error("Failed to load CMS content:", err);
   }
+  */
 
   return (
     <html lang="en">

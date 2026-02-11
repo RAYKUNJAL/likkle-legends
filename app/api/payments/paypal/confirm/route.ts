@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Create initial order if this is a mail-based plan
-        if (shipping && tier !== 'trial_access') {
+        if (shipping && tier !== 'plan_free_forever' && tier !== 'plan_digital_legends') {
             const plan = SUBSCRIPTION_PLANS[tier as SubscriptionTier];
             const price = billingCycle === 'year' ? (plan?.priceYearly || 0) : (plan?.price || 0);
             const hub = getFulfillmentHub(shipping.country);

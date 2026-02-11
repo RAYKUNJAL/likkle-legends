@@ -1,11 +1,13 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Sparkles, Star, Mic, BookOpen, Music, Video } from 'lucide-react';
 import Image from 'next/image';
-import InteractiveReader from '../InteractiveReader';
+import dynamic from 'next/dynamic';
+
+const InteractiveReader = dynamic(() => import('../InteractiveReader'), { ssr: false });
 
 // Mock Data (until we hook up Supabase)
 const STORIES = [
@@ -48,7 +50,15 @@ export default function LibraryGrid() {
     const [selectedStory, setSelectedStory] = useState<any>(null);
     const [filter, setFilter] = useState<'all' | 'tanty' | 'roti'>('all');
     const [stories, setStories] = useState<any[]>([]);
+
     const [isLoading, setIsLoading] = useState(true);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) return null;
 
     useEffect(() => {
         async function fetchLibrary() {
@@ -238,7 +248,6 @@ export default function LibraryGrid() {
 
             </div>
 
-            {/* ═══ Reader Overlay ═══ */}
             <AnimatePresence>
                 {selectedStory && (
                     <motion.div

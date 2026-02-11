@@ -22,19 +22,23 @@ export default function Pricing({ content }: PricingProps) {
 
   const getPlanIcon = (id: string) => {
     switch (id) {
-      case 'starter_mailer': return '📬';
-      case 'legends_plus': return '⭐';
-      case 'family_legacy': return '👑';
+      case 'plan_free_forever': return '🌱';
+      case 'plan_digital_legends': return '📱';
+      case 'plan_mail_intro': return '📬';
+      case 'plan_legends_plus': return '⭐';
+      case 'plan_family_legacy': return '👑';
       default: return '✨';
     }
   };
 
   const getPlanGradient = (id: string) => {
     switch (id) {
-      case 'starter_mailer': return 'from-blue-500 to-cyan-500';
-      case 'legends_plus': return 'from-primary to-accent';
-      case 'family_legacy': return 'from-amber-500 to-orange-500';
-      default: return 'from-gray-500 to-gray-600';
+      case 'plan_free_forever': return 'from-green-100 to-emerald-200';
+      case 'plan_digital_legends': return 'from-sky-400 to-blue-500 text-white';
+      case 'plan_mail_intro': return 'from-indigo-400 to-purple-500 text-white';
+      case 'plan_legends_plus': return 'from-primary to-accent text-white';
+      case 'plan_family_legacy': return 'from-amber-400 to-orange-500 text-white';
+      default: return 'from-gray-100 to-gray-200';
     }
   };
 
@@ -83,70 +87,86 @@ export default function Pricing({ content }: PricingProps) {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {(Object.entries(SUBSCRIPTION_PLANS) as [SubscriptionTier, typeof SUBSCRIPTION_PLANS.starter_mailer][]).map(([id, plan]) => {
-            const price = geoInfo
-              ? getLocalizedPrice(plan.price, geoInfo.countryCode)
-              : { price: plan.price, symbol: '$', currency: 'USD' };
+        <div className="flex flex-wrap justify-center gap-6 max-w-[90rem] mx-auto">
+          {(Object.entries(SUBSCRIPTION_PLANS) as [SubscriptionTier, typeof SUBSCRIPTION_PLANS.plan_free_forever][]).map(([id, plan]) => {
+            const isFree = id === 'plan_free_forever';
 
-            const annualPrice = billingCycle === 'annual'
+            const price = isFree
+              ? { price: 0, symbol: '', currency: 'USD' }
+              : geoInfo
+                ? getLocalizedPrice(plan.price, geoInfo.countryCode)
+                : { price: plan.price, symbol: '$', currency: 'USD' };
+
+            const annualPrice = isFree || billingCycle === 'annual'
               ? (geoInfo ? getLocalizedPrice(plan.priceYearly || plan.price * 10, geoInfo.countryCode) : { ...price, price: plan.priceYearly || plan.price * 10 })
               : price;
 
-            const monthlyEquivalent = billingCycle === 'annual'
-              ? Math.round(annualPrice.price / 12 * 100) / 100
-              : price.price;
+            const monthlyEquivalent = isFree
+              ? 0
+              : billingCycle === 'annual'
+                ? Math.round(annualPrice.price / 12 * 100) / 100
+                : price.price;
 
-            const isPopular = id === 'legends_plus';
+            const isPopular = id === 'plan_digital_legends'; // Digital is Most Popular
+            const isPremium = id === 'plan_legends_plus' || id === 'plan_family_legacy';
 
             return (
               <div
                 key={id}
-                className={`relative rounded-[2rem] overflow-hidden transition-all hover:scale-105 ${isPopular ? 'ring-4 ring-primary/30 shadow-2xl' : 'shadow-xl'
+                className={`relative rounded-[2rem] overflow-hidden transition-all hover:scale-105 w-full md:w-[48%] lg:w-[30%] xl:w-[19%] flex flex-col ${isPopular ? 'ring-4 ring-primary/30 shadow-2xl scale-105 z-10' : 'shadow-xl bg-white'
                   }`}
               >
                 {/* Popular Badge */}
-                {isPopular && (
-                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-primary to-accent py-2 text-center">
-                    <span className="text-white text-sm font-bold flex items-center justify-center gap-1">
-                      <Star size={14} /> MOST POPULAR
+                {plan.badge && (
+                  <div className={`absolute top-0 left-0 right-0 py-2 text-center ${id === 'plan_free_forever' ? 'bg-gray-100 text-gray-500' :
+                    isPopular ? 'bg-gradient-to-r from-primary to-accent text-white' :
+                      isPremium ? 'bg-amber-100 text-amber-800' : 'bg-gray-50 text-gray-500'
+                    }`}>
+                    <span className="text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1">
+                      {isPopular && <Star size={12} />} {plan.badge}
                     </span>
                   </div>
                 )}
 
-                <div className={`bg-white p-8 ${isPopular ? 'pt-14' : ''}`}>
+                <div className={`p-6 pt-12 flex-1 flex flex-col ${isPopular ? 'bg-white' : ''}`}>
                   {/* Plan Header */}
-                  <div className="text-center mb-6">
-                    <div className={`inline-flex w-16 h-16 rounded-2xl bg-gradient-to-br ${getPlanGradient(id)} items-center justify-center text-3xl mb-4`}>
+                  <div className="text-center mb-4">
+                    <div className={`inline-flex w-12 h-12 rounded-xl bg-gradient-to-br ${getPlanGradient(id)} items-center justify-center text-2xl mb-3 shadow-sm`}>
                       {getPlanIcon(id)}
                     </div>
-                    <h3 className="text-2xl font-black text-gray-900">{plan.name}</h3>
-                    <p className="text-gray-500 text-sm mt-1">{plan.description}</p>
+                    <h3 className="text-xl font-black text-gray-900 leading-tight min-h-[3rem] flex items-center justify-center">{plan.name}</h3>
+                    <p className="text-gray-500 text-xs mt-1 min-h-[2.5rem]">{plan.description}</p>
                   </div>
 
                   {/* Price */}
                   <div className="text-center mb-6">
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-5xl font-black text-gray-900">
-                        {price.symbol}{monthlyEquivalent.toFixed(2)}
-                      </span>
-                      <span className="text-gray-400">/mo</span>
+                    <div className="flex items-baseline justify-center gap-0.5">
+                      {isFree ? (
+                        <span className="text-4xl font-black text-gray-900">Free</span>
+                      ) : (
+                        <>
+                          <span className="text-4xl font-black text-gray-900">
+                            {price.symbol}{monthlyEquivalent.toFixed(2)}
+                          </span>
+                          <span className="text-gray-400 text-sm">/mo</span>
+                        </>
+                      )}
                     </div>
-                    {billingCycle === 'annual' && (
-                      <p className="text-sm text-green-600 font-medium mt-1">
-                        Billed annually at {price.symbol}{annualPrice.price.toFixed(2)}
+                    {!isFree && billingCycle === 'annual' && (
+                      <p className="text-xs text-green-600 font-bold mt-1">
+                        Billed {price.symbol}{annualPrice.price.toFixed(2)}/yr
                       </p>
                     )}
                   </div>
 
                   {/* Features */}
-                  <ul className="space-y-3 mb-8">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                          <Check size={12} className="text-green-600" />
+                  <ul className="space-y-2 mb-8 flex-1">
+                    {plan.features.slice(0, 6).map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <div className="w-4 h-4 bg-green-100 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                          <Check size={10} className="text-green-600" />
                         </div>
-                        <span className="text-gray-600 text-sm">{feature}</span>
+                        <span className="text-gray-600 text-xs leading-snug text-left">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -154,12 +174,14 @@ export default function Pricing({ content }: PricingProps) {
                   {/* CTA */}
                   <Link
                     href={`/checkout?plan=${id}&cycle=${billingCycle}`}
-                    className={`block w-full py-4 rounded-2xl font-bold text-center transition-all ${isPopular
-                      ? 'bg-gradient-to-r from-primary to-accent text-white hover:opacity-90'
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                    className={`block w-full py-3 rounded-xl font-bold text-center text-sm transition-all ${isPopular
+                      ? 'bg-gradient-to-r from-primary to-accent text-white hover:opacity-90 shadow-lg shadow-primary/20'
+                      : isFree
+                        ? 'bg-gray-900 text-white hover:bg-gray-800'
+                        : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                       }`}
                   >
-                    Get Started
+                    {isFree ? 'Start Free' : 'Choose Plan'}
                   </Link>
                 </div>
               </div>
