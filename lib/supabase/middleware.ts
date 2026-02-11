@@ -16,6 +16,9 @@ export async function updateSession(request: NextRequest) {
         supabaseUrl,
         supabaseKey,
         {
+            cookieOptions: {
+                name: 'sb-likkle-auth',
+            },
             cookies: {
                 getAll() {
                     return request.cookies.getAll()

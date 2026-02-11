@@ -3,9 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
     AdminLayout, SearchBar, Modal, FileUpload, StatusBadge,
-    Plus, Edit, Trash2, Palette
 } from '@/components/admin/AdminComponents';
+import Link from 'next/link';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
+import { Plus, Search, Palette, Edit, Trash2, X, Upload, CheckCircle2, AlertCircle, Smartphone, Box } from 'lucide-react';
+
+const CharacterARViewer = dynamic(() => import('@/components/CharacterARViewer'), { ssr: false });
 import { getCharacters, createCharacter, updateCharacter } from '@/lib/database';
 import { uploadFile, BUCKETS } from '@/lib/storage';
 
@@ -356,15 +360,34 @@ export default function AdminCharactersPage() {
 
                         <div className="mt-6">
                             <label className="block text-sm font-bold text-gray-700 mb-2">3D Model (for AR)</label>
-                            <FileUpload
-                                accept=".glb,.gltf"
-                                onUpload={handleModelUpload}
-                                label="Upload 3D Model"
-                                description="GLB or GLTF file"
-                                maxSize={50}
-                            />
-                            {formData.model_3d_url && (
-                                <p className="text-xs text-green-600 mt-2">✓ 3D model uploaded</p>
+                            {formData.model_3d_url ? (
+                                <div className="space-y-4">
+                                    <div className="relative aspect-square bg-blue-50/50 rounded-2xl overflow-hidden border-2 border-dashed border-blue-200 p-2">
+                                        <CharacterARViewer
+                                            src={formData.model_3d_url}
+                                            poster={formData.image_url}
+                                            alt="Model Preview"
+                                        />
+                                        <button
+                                            onClick={() => setFormData(prev => ({ ...prev, model_3d_url: '' }))}
+                                            className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-lg z-30 shadow-lg hover:bg-red-600 transition-colors"
+                                            title="Remove model"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-green-600 font-bold flex items-center gap-2">
+                                        <CheckCircle2 size={14} /> 3D Model Loaded & Ready for AR
+                                    </p>
+                                </div>
+                            ) : (
+                                <FileUpload
+                                    accept=".glb,.gltf"
+                                    onUpload={handleModelUpload}
+                                    label="Upload 3D Model"
+                                    description="GLB or GLTF file"
+                                    maxSize={50}
+                                />
                             )}
                         </div>
                     </div>
