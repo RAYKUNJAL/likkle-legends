@@ -105,3 +105,7 @@ export async function getGames() {
         .eq('content_type', 'game');
     return data || [];
 }
+
+export const createCharacter = (data: any) => upsertContent({ ...data, content_type: 'character' });
+export const updateCharacter = (id: string, data: any) => upsertContent({ ...data, id });
+export const deleteCharacter = deleteContent;

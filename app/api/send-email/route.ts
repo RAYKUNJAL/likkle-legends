@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
         const result = await sendEmail({ to, subject, html });
 
         if (result.success) {
-            return NextResponse.json({ success: true, daa: result.data });
+            return NextResponse.json({ success: true, messageId: (result as any).messageId });
         } else {
             return NextResponse.json({ error: result.error }, { status: 500 });
         }

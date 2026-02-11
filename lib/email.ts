@@ -188,6 +188,31 @@ export const ABANDONED_CHECKOUT_TEMPLATE = (userName: string, planName?: string)
             ${SOCIAL_TRUST_FOOTER}
         </div>
     </div>
+    </div>
+</body>
+</html>
+`;
+
+// 3.5 EMAIL VERIFICATION (Magic Link)
+export const CONFIRMATION_EMAIL_TEMPLATE = (name: string, link: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1e293b; background: #fff; }
+        .btn { display: inline-block; padding: 18px 36px; background: #2563eb; color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div style="max-width: 600px; margin: 40px auto; padding: 40px; border: 1px solid #e2e8f0; border-radius: 24px;">
+        <h2 style="margin-top: 0; color: #1e293b;">Confirm your Likkle Legends Login 🌴</h2>
+        <p>Hi ${name},</p>
+        <p>Click the magic link below to sign in instantly:</p>
+        <div style="margin: 30px 0;">
+            <a href="${link}" class="btn">Sign In Now</a>
+        </div>
+        <p style="font-size: 14px; color: #64748b;">If you didn't request this, you can safely ignore this email.</p>
+    </div>
 </body>
 </html>
 `;
