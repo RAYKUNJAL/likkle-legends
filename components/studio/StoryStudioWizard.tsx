@@ -69,9 +69,9 @@ export default function StoryStudioWizard() {
     };
 
     return (
-        <div className="min-h-screen bg-[#FFFBF5] text-orange-950 font-sans selection:bg-orange-200">
-            {/* ═══ Header ═══ */}
-            <header className="fixed top-0 inset-x-0 h-20 bg-white/80 backdrop-blur-md border-b border-orange-100 z-50 flex items-center justify-between px-6 lg:px-12">
+        <section className="py-16 bg-[#FFFBF5] text-orange-950 font-sans selection:bg-orange-200">
+            {/* ═══ Header - Embedded Section Header ═══ */}
+            <header className="sticky top-[80px] h-20 bg-white/80 backdrop-blur-md border-b border-orange-100 z-40 flex items-center justify-between px-6 lg:px-12">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center text-white shadow-lg">
                         <Wand2 size={20} />
@@ -98,7 +98,7 @@ export default function StoryStudioWizard() {
             </header>
 
             {/* ═══ Main Content ═══ */}
-            <main className="pt-32 pb-20 px-6 container mx-auto max-w-4xl">
+            <div className="pt-8 pb-20 px-6 container mx-auto max-w-4xl">
                 <AnimatePresence mode="wait">
 
                     {/* STEP 1: TOPIC */}
