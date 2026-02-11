@@ -1,5 +1,6 @@
 
 import { supabase } from '@/lib/storage';
+import { isSupabaseConfigured } from '@/lib/supabase-client';
 
 /**
  * Likkle Legends v2.0.0 Content Service
@@ -7,6 +8,11 @@ import { supabase } from '@/lib/storage';
  */
 
 export async function getContentItems(type?: string, island?: string) {
+    if (!isSupabaseConfigured()) {
+        console.warn(`⚠️ Supabase not configured. Skipping content fetch (${type || 'all'}).`);
+        return [];
+    }
+
     let query = supabase
         .from('content_items')
         .select(`
@@ -36,6 +42,10 @@ export async function getContentItems(type?: string, island?: string) {
 }
 
 export async function getContentById(id: string) {
+    if (!isSupabaseConfigured()) {
+        return null;
+    }
+
     const { data, error } = await supabase
         .from('content_items')
         .select(`
@@ -99,6 +109,9 @@ export const deletePrintable = deleteContent;
 
 // Support for other tables that might still exist or be added
 export async function getGames() {
+    if (!isSupabaseConfigured()) {
+        return [];
+    }
     const { data, error } = await supabase
         .from('content_items')
         .select('*')

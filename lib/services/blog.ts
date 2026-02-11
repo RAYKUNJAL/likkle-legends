@@ -1,5 +1,6 @@
 // Blog Service - Database operations for blog posts
 import { supabase } from '@/lib/storage';
+import { isSupabaseConfigured } from '@/lib/supabase-client';
 
 export interface BlogPost {
     id: string;
@@ -44,6 +45,11 @@ export async function getPublishedPosts(options?: {
     offset?: number;
     search?: string;
 }) {
+    if (!isSupabaseConfigured()) {
+        console.warn('⚠️ Supabase not configured. Skipping blog fetch.');
+        return [];
+    }
+
     let query = supabase
         .from('blog_posts')
         .select('*')
@@ -78,6 +84,10 @@ export async function getPublishedPosts(options?: {
 
 // Get a single post by slug
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+    if (!isSupabaseConfigured()) {
+        return null; // Build-safe
+    }
+
     const { data, error } = await supabase
         .from('blog_posts')
         .select('*')
@@ -108,6 +118,10 @@ export async function getPostsByCategory(category: string, limit = 10) {
 
 // Get all categories with post counts
 export async function getCategories(): Promise<BlogCategory[]> {
+    if (!isSupabaseConfigured()) {
+        return [];
+    }
+
     const { data, error } = await supabase
         .from('blog_categories')
         .select('*')
