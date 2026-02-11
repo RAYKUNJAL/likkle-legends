@@ -1,0 +1,369 @@
+{
+    "meta": {
+        "version": "2.0.0",
+        "name": "Likkle Legends - Master Rebuild JSON",
+        "notes": [
+            "v2 adds: content localization for Dialect Dial, user interests storage, family groups, AI usage/credits, WhatsApp cost strategy, anonymous interaction merge flow."
+        ]
+    },
+    "app": {
+        "name": "Likkle Legends",
+        "tagline": "Start Free. Keep the Culture Alive.",
+        "mission": "Build the digital home of Caribbean childhood — free learning for kids and teachers, with optional digital and physical upgrades for families worldwide.",
+        "principles": [
+            "Free Forever for core learning",
+            "Identity required for continuity (email/WhatsApp), not payment",
+            "Teachers are VIPs and never see locks or upsells",
+            "WhatsApp is primary for OTP + sharing; email is primary for newsletters + downloads to manage costs",
+            "Never sell raw data; monetize via controlled sponsorship placements and products"
+        ]
+    },
+    "plans": {
+        "currency": "USD",
+        "plan_ids_ordered": [
+            "plan_free_forever",
+            "plan_digital_legends",
+            "plan_mail_intro",
+            "plan_legends_plus",
+            "plan_family_legacy"
+        ],
+        "plans_list": [
+            {
+                "id": "plan_free_forever",
+                "name": "Free Forever",
+                "price": 0,
+                "billing": "none",
+                "highlight": true,
+                "badge": "Default",
+                "identity_required_for": [
+                    "save_progress",
+                    "badge_history",
+                    "favorites",
+                    "share_progress_link",
+                    "downloads_over_free_limit",
+                    "story_generator_over_free_limit"
+                ],
+                "limits": {
+                    "pdf_downloads_per_month": 3,
+                    "ai_story_uses_per_month": 2
+                }
+            },
+            {
+                "id": "plan_digital_legends",
+                "name": "Digital Legends",
+                "price": 4.99,
+                "billing": "monthly",
+                "highlight": true,
+                "badge": "Most Popular",
+                "limits": {
+                    "pdf_downloads_per_month": -1,
+                    "ai_story_uses_per_month": 20
+                }
+            },
+            {
+                "id": "plan_mail_intro",
+                "name": "Legend Mail Intro",
+                "price": 9.99,
+                "billing": "monthly",
+                "limits": {
+                    "pdf_downloads_per_month": -1,
+                    "ai_story_uses_per_month": 20
+                },
+                "shipping_constraints": {
+                    "enabled": true,
+                    "regions_allowed": [
+                        "USA",
+                        "Canada",
+                        "UK"
+                    ],
+                    "inherit_to_higher_plans": true
+                }
+            },
+            {
+                "id": "plan_legends_plus",
+                "name": "Legends Plus",
+                "price": 19.99,
+                "billing": "monthly",
+                "limits": {
+                    "pdf_downloads_per_month": -1,
+                    "ai_story_uses_per_month": 50
+                },
+                "shipping_constraints": {
+                    "inherit_from": "plan_mail_intro"
+                }
+            },
+            {
+                "id": "plan_family_legacy",
+                "name": "Family Legacy",
+                "price": 34.99,
+                "billing": "monthly",
+                "limits": {
+                    "pdf_downloads_per_month": -1,
+                    "ai_story_uses_per_month": 100,
+                    "child_profiles_max": 6,
+                    "family_members_max": 6
+                },
+                "shipping_constraints": {
+                    "inherit_from": "plan_mail_intro",
+                    "applies_to": [
+                        "quarterly_heritage_box"
+                    ]
+                }
+            }
+        ]
+    },
+    "dialect_dial": {
+        "enabled": true,
+        "dialect_types": [
+            "standard_english",
+            "local_dialect"
+        ],
+        "supported_local_dialects": [
+            {
+                "island_code": "TT",
+                "dialect_label": "Trini"
+            },
+            {
+                "island_code": "JM",
+                "dialect_label": "Patois"
+            },
+            {
+                "island_code": "HT",
+                "dialect_label": "Kreyòl"
+            },
+            {
+                "island_code": "BB",
+                "dialect_label": "Bajan"
+            },
+            {
+                "island_code": "SR",
+                "dialect_label": "Sranan Tongo"
+            }
+        ],
+        "fallback_rules": {
+            "if_local_missing": "show_standard_english_only",
+            "ui_label_when_missing": "Dialect version coming soon"
+        }
+    },
+    "island_tracks": {
+        "enabled": true,
+        "default_island_code": "TT",
+        "islands": [
+            {
+                "island_code": "TT",
+                "name": "Trinidad & Tobago",
+                "music_focus": [
+                    "Soca",
+                    "Calypso"
+                ],
+                "folklore_focus": [
+                    "La Diablesse",
+                    "Douen",
+                    "Papa Bois"
+                ]
+            },
+            {
+                "island_code": "JM",
+                "name": "Jamaica",
+                "music_focus": [
+                    "Reggae",
+                    "Dancehall"
+                ],
+                "folklore_focus": [
+                    "Anansi",
+                    "Duppy stories"
+                ]
+            },
+            {
+                "island_code": "BB",
+                "name": "Barbados",
+                "music_focus": [
+                    "Soca"
+                ],
+                "folklore_focus": [
+                    "Bajan tales"
+                ]
+            },
+            {
+                "island_code": "GY",
+                "name": "Guyana",
+                "music_focus": [
+                    "Chutney",
+                    "Soca"
+                ],
+                "folklore_focus": [
+                    "Old-time stories"
+                ]
+            },
+            {
+                "island_code": "HT",
+                "name": "Haiti",
+                "music_focus": [
+                    "Kompa",
+                    "Zouk",
+                    "Rara"
+                ],
+                "folklore_focus": [
+                    "Bouki and Malice",
+                    "Loup-garou",
+                    "Tezin"
+                ]
+            },
+            {
+                "island_code": "LC",
+                "name": "Saint Lucia",
+                "music_focus": [
+                    "Dennery Segment",
+                    "Soca"
+                ],
+                "folklore_focus": [
+                    "Compere Lapin"
+                ]
+            }
+        ]
+    },
+    "logic": {
+        "anonymous_merge": {
+            "strategy": "local_to_remote",
+            "trigger": "on_auth_success",
+            "key": "ll_interaction_history",
+            "merge_items": [
+                "progress",
+                "favorites",
+                "unlocked_badges"
+            ]
+        },
+        "story_studio": {
+            "provider_options": [
+                "Gemini 1.5 Pro",
+                "OpenAI GPT-4o"
+            ],
+            "default_system_prompt": "You are a Caribbean storyteller. Write stories for children aged {{child_age}}, localized to {{island_name}}. Use appropriate cultural references and occasional {{dialect}} phrases."
+        }
+    },
+    "database": {
+        "tables": [
+            {
+                "name": "users",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "uuid",
+                        "pk": true
+                    },
+                    {
+                        "name": "email",
+                        "type": "text",
+                        "unique": true,
+                        "nullable": true
+                    },
+                    {
+                        "name": "whatsapp_number",
+                        "type": "phone",
+                        "unique": true,
+                        "nullable": true
+                    },
+                    {
+                        "name": "first_name",
+                        "type": "text"
+                    },
+                    {
+                        "name": "origin_island",
+                        "type": "text"
+                    },
+                    {
+                        "name": "interests",
+                        "type": "jsonb"
+                    },
+                    {
+                        "name": "role",
+                        "type": "enum",
+                        "values": [
+                            "parent",
+                            "teacher",
+                            "grandparent",
+                            "caregiver"
+                        ]
+                    },
+                    {
+                        "name": "created_at",
+                        "type": "timestamp",
+                        "default": "now()"
+                    }
+                ]
+            },
+            {
+                "name": "family_groups",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "uuid",
+                        "pk": true
+                    },
+                    {
+                        "name": "name",
+                        "type": "text"
+                    },
+                    {
+                        "name": "owner_id",
+                        "type": "uuid",
+                        "fk": "users.id"
+                    },
+                    {
+                        "name": "created_at",
+                        "type": "timestamp"
+                    }
+                ]
+            },
+            {
+                "name": "family_members",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "uuid",
+                        "pk": true
+                    },
+                    {
+                        "name": "family_id",
+                        "type": "uuid",
+                        "fk": "family_groups.id"
+                    },
+                    {
+                        "name": "user_id",
+                        "type": "uuid",
+                        "fk": "users.id"
+                    },
+                    {
+                        "name": "role_in_family",
+                        "type": "text"
+                    }
+                ]
+            },
+            {
+                "name": "ai_usage_logs",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "uuid",
+                        "pk": true
+                    },
+                    {
+                        "name": "user_id",
+                        "type": "uuid",
+                        "fk": "users.id"
+                    },
+                    {
+                        "name": "service_type",
+                        "type": "text",
+                        "default": "story_generator"
+                    },
+                    {
+                        "name": "used_at",
+                        "type": "timestamp",
+                        "default": "now()"
+                    }
+                ]
+            }
+        ]
+    }
+}

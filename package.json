@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "likkle-legends-mail-club",
   "version": "0.1.0",
   "private": true,
@@ -56,5 +57,22 @@
     "tailwindcss": "^3.4.15",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
+=======
+  "name": "likkle-legends",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.2.4",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.18.0"
+>>>>>>> ai-studio-integration
   }
 }
