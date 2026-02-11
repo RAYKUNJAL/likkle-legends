@@ -262,6 +262,6 @@ export default function StoryStudioWizard() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </section>
     );
 }
