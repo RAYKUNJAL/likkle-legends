@@ -174,7 +174,8 @@ export const siteContent = {
                     "Makes learning routines feel fun and familiar",
                     "Guides children through lessons independently"
                 ],
-                image: "/images/roti-new.jpg"
+                image: "/images/roti-new.jpg",
+                model_3d_url: "https://modelviewer.dev/shared-assets/models/RobotExpressive.glb"
             },
             {
                 id: "tanty_spice",
@@ -188,7 +189,8 @@ export const siteContent = {
                     "Creates a sense of safety and calm",
                     "Balances learning with compassion"
                 ],
-                image: "/images/tanty_spice_avatar.jpg"
+                image: "/images/tanty_spice_avatar.jpg",
+                model_3d_url: "https://modelviewer.dev/shared-assets/models/Astronaut.glb"
             },
             {
                 id: "dilly_doubles",

@@ -1,5 +1,5 @@
-
 import { supabase } from '@/lib/storage';
+import { isSupabaseConfigured } from '@/lib/supabase-client';
 
 export async function createOrder(orderData: {
     profile_id: string;
@@ -29,6 +29,7 @@ export async function createOrder(orderData: {
 }
 
 export async function getOrders(profileId: string) {
+    if (!isSupabaseConfigured()) return [];
     const { data, error } = await supabase
         .from('orders')
         .select('*')
@@ -61,6 +62,7 @@ export async function updateOrderStatus(orderId: string, status: string, trackin
 }
 
 export async function getAllOrders(status?: string, limit = 100, offset = 0) {
+    if (!isSupabaseConfigured()) return { orders: [], total: 0 };
     let query = supabase
         .from('orders')
         .select('*, profiles(full_name, email)', { count: 'exact' })

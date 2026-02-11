@@ -17,7 +17,12 @@ const STYLE_OPTIONS = [
     { id: 'nature', name: 'Island Nature', emoji: '🌺', color: 'from-green-400 to-emerald-600' },
 ];
 
-import InteractiveReader from '../InteractiveReader';
+import dynamic from 'next/dynamic';
+
+const InteractiveReader = dynamic(() => import('../InteractiveReader'), {
+    ssr: false,
+    loading: () => <div className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm flex items-center justify-center"><Loader2 className="animate-spin text-white" size={48} /></div>
+});
 
 export default function StoryStudioWizard() {
     const [step, setStep] = useState(0);

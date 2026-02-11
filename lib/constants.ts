@@ -17,7 +17,8 @@ export const TANTY_CHARACTER: Character = {
     description: "Tanty is the heart of the village. She always has a warm bench, a sweet sugar-cake, and a listening ear for every child.",
     color: "bg-orange-50",
     image: TANTY_AVATAR,
-    traits: ["Kind", "Wise", "Warm"]
+    traits: ["Kind", "Wise", "Warm"],
+    model_3d_url: "https://modelviewer.dev/shared-assets/models/Astronaut.glb"
 };
 
 export const CHARACTERS: AdminCharacter[] = [
@@ -28,7 +29,8 @@ export const CHARACTERS: AdminCharacter[] = [
         description: "A friendly guide who helps children learn step by step through stories, games, and gentle encouragement.",
         color: "bg-blue-50",
         image: "/images/roti-avatar.jpg",
-        traits: ["Guided", "Friendly", "Curriculum"]
+        traits: ["Guided", "Friendly", "Curriculum"],
+        model_3d_url: "https://modelviewer.dev/shared-assets/models/RobotExpressive.glb"
     },
     {
         name: "Dilly Doubles",

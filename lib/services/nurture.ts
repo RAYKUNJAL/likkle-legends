@@ -1,5 +1,4 @@
-
-import { supabaseAdmin } from "@/lib/supabase-client";
+import { supabaseAdmin, isSupabaseConfigured } from "@/lib/supabase-client";
 import {
     sendEmail,
     ABANDONED_CHECKOUT_TEMPLATE,
@@ -8,6 +7,7 @@ import {
 } from "@/lib/email";
 
 export async function processEmailNurture() {
+    if (!isSupabaseConfigured()) return;
     console.log("[NURTURE] Starting email nurture processing...");
 
     // 1. Abandoned Checkout (Created > 1 hour ago, Inactive)

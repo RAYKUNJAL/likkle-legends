@@ -1,5 +1,5 @@
-
 import { supabase } from '@/lib/storage';
+import { isSupabaseConfigured } from '@/lib/supabase-client';
 import { getChild, updateChild } from './children';
 
 export async function logActivity(
@@ -11,6 +11,7 @@ export async function logActivity(
     durationSeconds?: number,
     metadata: Record<string, unknown> = {}
 ) {
+    if (!isSupabaseConfigured()) return;
     const { error } = await supabase.from('activities').insert({
         profile_id: profileId,
         child_id: childId,
@@ -75,6 +76,7 @@ async function checkBadgeUnlock(childId: string, activityType: string) {
 }
 
 export async function getRecentActivities(childId: string, limit = 20) {
+    if (!isSupabaseConfigured()) return [];
     const { data, error } = await supabase
         .from('activities')
         .select('*')
@@ -166,6 +168,7 @@ export async function earnBadge(childId: string, badgeId: string) {
 }
 
 export async function getEarnedBadges(childId: string) {
+    if (!isSupabaseConfigured()) return [];
     const { data, error } = await supabase
         .from('badge_earnings')
         .select('*')

@@ -31,8 +31,7 @@ import StoryStudioWizard from '@/components/studio/StoryStudioWizard';
 
 export default async function Home() {
   try {
-    // const content = await getMergedSiteContent();
-    const content = siteContent; // Fallback to static content purely to fix build RLS error
+    const content = await getMergedSiteContent();
     const testimonials = content.testimonials;
 
     return (

@@ -1,7 +1,9 @@
 
 import { supabase } from '@/lib/storage';
+import { isSupabaseConfigured } from '@/lib/supabase-client';
 
 export async function getChildren(parentId: string) {
+    if (!isSupabaseConfigured()) return [];
     const { data, error } = await supabase
         .from('children')
         .select('*')
@@ -13,6 +15,7 @@ export async function getChildren(parentId: string) {
 }
 
 export async function getChild(childId: string) {
+    if (!isSupabaseConfigured()) return null;
     const { data, error } = await supabase
         .from('children')
         .select('*')

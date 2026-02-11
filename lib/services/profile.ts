@@ -1,5 +1,5 @@
-
 import { supabase } from '@/lib/storage';
+import { isSupabaseConfigured } from '@/lib/supabase-client';
 import { calculateLevel, getNextLevel } from '@/lib/gamification';
 
 export interface UserProfileStats {
@@ -16,6 +16,20 @@ export interface UserProfileStats {
 }
 
 export async function getUserStats(userId?: string): Promise<UserProfileStats> {
+    const defaultStats = {
+        totalStars: 0,
+        storiesRead: 0,
+        songsListened: 0,
+        currentStreak: 0,
+        level: 1,
+        levelName: 'Likkle Sprout',
+        nextLevelXP: 100,
+        currentXP: 0,
+        badges: [],
+        recentActivity: []
+    };
+
+    if (!isSupabaseConfigured()) return defaultStats;
     // 1. Get User ID (if not provided, try to get current session)
     let effectiveUserId = userId;
     if (!effectiveUserId) {

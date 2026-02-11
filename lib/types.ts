@@ -24,6 +24,7 @@ export interface Character {
     color: string;
     image: string;
     traits: string[];
+    model_3d_url?: string;
 }
 
 export interface StudioContent {
