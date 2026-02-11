@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Sparkles, Star, Mic, BookOpen, Music, Video } from 'lucide-react';
 import Image from 'next/image';
