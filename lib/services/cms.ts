@@ -73,7 +73,12 @@ export async function getMergedSiteContent(forceRefresh = false) {
         const mergedContent = JSON.parse(JSON.stringify(siteContent));
 
         if (error) {
-            console.error("CMS DB Error:", error.message);
+            // If table doesn't exist (e.g. fresh install), just warn and use static content
+            if (error.code === '42P01') { // undefined_table
+                console.warn("CMS Table (site_settings) not found. Using static content.");
+            } else {
+                console.warn("CMS Fetch Warning:", error.message);
+            }
             return mergedContent;
         }
 
