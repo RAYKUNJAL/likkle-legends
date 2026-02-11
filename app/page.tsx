@@ -55,7 +55,7 @@ export default async function Home() {
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
                   <span>📚 Early Learning</span>
                   <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
-                  <span>🛡️ Safe & Ad-Free</span>
+                  <span>🛡️ Safe &amp; Ad-Free</span>
                   <span className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
                 </div>
               ))}
