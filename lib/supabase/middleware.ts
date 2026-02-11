@@ -9,9 +9,12 @@ export async function updateSession(request: NextRequest) {
         },
     })
 
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
+
     const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        supabaseUrl,
+        supabaseKey,
         {
             cookies: {
                 getAll() {
@@ -33,7 +36,13 @@ export async function updateSession(request: NextRequest) {
     )
 
     // refresh the session
-    const { data: { user } } = await supabase.auth.getUser()
+    let user = null;
+    try {
+        const { data } = await supabase.auth.getUser();
+        user = data.user;
+    } catch (e) {
+        // Safe fail for build or missing env
+    }
 
     // Protected routes logic
     const isPortal = request.nextUrl.pathname.startsWith('/portal');
