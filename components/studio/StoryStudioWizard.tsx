@@ -220,7 +220,7 @@ export default function StoryStudioWizard() {
                         <ChevronRight className="group-hover:translate-x-1 transition-transform" />
                     </button>
                 </div>
-            </main>
+            </div>
 
             {/* ═══ Loading Overlay ═══ */}
             <AnimatePresence>
