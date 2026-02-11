@@ -101,8 +101,12 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
     }, [showReward]);
 
     // Safety check for pages
-    if (!pages || pages.length === 0) return null;
-    const pageData = pages[currentPage] || pages[0];
+    // Safety check for pages handle
+    const safePages = pages && pages.length > 0 ? pages : [{
+        text: "No pages available",
+        words: []
+    }];
+    const pageData = safePages[currentPage] || safePages[0];
 
     // Ultra-High-Quality Weighted Word Map
     const words = useMemo(() => {
@@ -289,6 +293,8 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
     const guideInfo = guide === 'tanty'
         ? { name: 'Tanty Spice', avatar: '/images/tanty_spice_avatar.jpg', color: 'bg-orange-500' }
         : { name: 'R.O.T.I.', avatar: '/images/roti-avatar.jpg', color: 'bg-blue-500' };
+
+    if (!pages || pages.length === 0) return null;
 
     return (
         <div className="fixed inset-0 z-[100] bg-[#FFFBF5] flex flex-col overflow-hidden select-none">

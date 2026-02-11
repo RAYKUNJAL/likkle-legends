@@ -128,7 +128,6 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
 
     const totalPrice = displayPrice.price + (addGrandparent ? grandparentPrice.price : 0);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handlePayPalApprove = async (data: any) => {
         setIsProcessing(true);
         // Payment approved

@@ -58,8 +58,6 @@ export default function LibraryGrid() {
         setIsMounted(true);
     }, []);
 
-    if (!isMounted) return null;
-
     useEffect(() => {
         async function fetchLibrary() {
             try {
@@ -93,6 +91,8 @@ export default function LibraryGrid() {
         }
         fetchLibrary();
     }, []);
+
+    if (!isMounted) return null;
 
     const filteredStories = stories.filter(s =>
         filter === 'all' ? true : s.character === filter
