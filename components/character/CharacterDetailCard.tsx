@@ -6,7 +6,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Box, Image as ImageIcon, Smartphone } from 'lucide-react';
 
-const CharacterARViewer = dynamic(() => import('../CharacterARViewer'), { ssr: false });
+const CharacterARViewer = dynamic(() => import('@/components/CharacterARViewer'), { ssr: false });
 
 interface CharacterDetailCardProps {
     char: any;

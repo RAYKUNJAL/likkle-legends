@@ -1,0 +1,162 @@
+﻿
+> likkle-legends-mail-club@0.1.0 build
+> next build
+
+   Γû▓ Next.js 14.1.0
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  override existing env vars with { override: true }
+   Generating static pages (0/116) ...
+API Request: /api/story-data
+URL available: true
+Service Key available: true
+
+   Generating static pages (29/116) 
+
+   Generating static pages (58/116) 
+
+   Generating static pages (87/116) 
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒæÑ sync secrets across teammates & machines: https://dotenvx.com/ops
+
+ Γ£ô Generating static pages (116/116) 
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                  Size     First Load JS
+Γöî Γùï /                                        24.1 kB         228 kB
+Γö£ Γùï /_not-found                              0 B                0 B
+Γö£ Γùï /about                                   166 B           208 kB
+Γö£ Γùï /account                                 9.57 kB         157 kB
+Γö£ ╬╗ /account/children/[id]                   8.93 kB         159 kB
+Γö£ Γùï /admin                                   145 B          85.4 kB
+Γö£ Γùï /admin/affiliates                        3.61 kB         110 kB
+Γö£ Γùï /admin/ai-review                         9.74 kB         218 kB
+Γö£ Γùï /admin/analytics                         2.46 kB         103 kB
+Γö£ Γùï /admin/announcements                     3.92 kB         105 kB
+Γö£ Γùï /admin/approval                          2.52 kB         113 kB
+Γö£ Γùï /admin/assets                            11.8 kB         177 kB
+Γö£ Γùï /admin/auto-content                      7.3 kB          159 kB
+Γö£ Γùï /admin/blog                              6.95 kB         159 kB
+Γö£ Γùï /admin/central                           18.8 kB         213 kB
+Γö£ Γùï /admin/characters                        6.98 kB         164 kB
+Γö£ Γùï /admin/client-debug                      1.17 kB        92.9 kB
+Γö£ Γùï /admin/cms                               2.53 kB         103 kB
+Γö£ Γùï /admin/content                           2.24 kB         103 kB
+Γö£ Γùï /admin/content/printables                4.45 kB         156 kB
+Γö£ Γùï /admin/custom-requests                   6.85 kB         168 kB
+Γö£ Γùï /admin/customers                         2.34 kB         103 kB
+Γö£ Γùï /admin/debug                             828 B          86.1 kB
+Γö£ Γùï /admin/debug-ai                          1.91 kB         103 kB
+Γö£ Γùï /admin/email-engine                      3.36 kB         104 kB
+Γö£ Γùï /admin/games                             5.94 kB         112 kB
+Γö£ Γùï /admin/leads                             1.96 kB         103 kB
+Γö£ Γùï /admin/media                             6.96 kB         164 kB
+Γö£ Γùï /admin/messages                          5.94 kB         160 kB
+Γö£ Γùï /admin/orders                            2.83 kB         104 kB
+Γö£ Γùï /admin/personality                       4.18 kB         105 kB
+Γö£ Γùï /admin/pixels                            2.39 kB         103 kB
+Γö£ Γùï /admin/settings                          3.85 kB         110 kB
+Γö£ Γùï /admin/store-analytics                   106 kB          267 kB
+Γö£ Γùï /admin/studio                            3.52 kB         104 kB
+Γö£ Γùï /admin/verify                            4.21 kB         105 kB
+Γö£ Γùï /analytics                               8.57 kB         156 kB
+Γö£ ╬╗ /api/admin/blog/batch                    0 B                0 B
+Γö£ ╬╗ /api/admin/blog/generate                 0 B                0 B
+Γö£ ╬╗ /api/admin/seed-cms                      0 B                0 B
+Γö£ ╬╗ /api/auth/callback                       0 B                0 B
+Γö£ ╬╗ /api/cron/nurture                        0 B                0 B
+Γö£ ╬╗ /api/cron/process-emails                 0 B                0 B
+Γö£ ╬╗ /api/elevenlabs-tts                      0 B                0 B
+Γö£ ╬╗ /api/gamification/xp                     0 B                0 B
+Γö£ Γùï /api/health                              0 B                0 B
+Γö£ ╬╗ /api/island-brain/generate               0 B                0 B
+Γö£ ╬╗ /api/island-brain/monthly-drop/generate  0 B                0 B
+Γö£ ╬╗ /api/library/stories                     0 B                0 B
+Γö£ ╬╗ /api/messages                            0 B                0 B
+Γö£ ╬╗ /api/notifications                       0 B                0 B
+Γö£ ╬╗ /api/payments/paypal/capture-order       0 B                0 B
+Γö£ ╬╗ /api/payments/paypal/confirm             0 B                0 B
+Γö£ ╬╗ /api/payments/paypal/create-order        0 B                0 B
+Γö£ ╬╗ /api/payments/paypal/webhooks            0 B                0 B
+Γö£ ╬╗ /api/roti-chat                           0 B                0 B
+Γö£ ╬╗ /api/roti-voice                          0 B                0 B
+Γö£ ╬╗ /api/send-email                          0 B                0 B
+Γö£ Γùï /api/story-data                          0 B                0 B
+Γö£ ╬╗ /api/story/generate                      0 B                0 B
+Γö£ ╬╗ /api/tanty-spice                         0 B                0 B
+Γö£ Γùï /api/test-story                          0 B                0 B
+Γö£ ╬╗ /api/upload                              0 B                0 B
+Γö£ ╬╗ /api/voice/generate                      0 B                0 B
+Γö£ Γùï /blog                                    7.36 kB         155 kB
+Γö£ ╬╗ /blog/[slug]                             190 B          97.3 kB
+Γö£ Γùï /characters                              6.42 kB         210 kB
+Γö£ ╬╗ /characters/[slug]                       164 B           208 kB
+Γö£ Γùï /checkout                                6.67 kB         167 kB
+Γö£ Γùï /contact                                 9.07 kB         215 kB
+Γö£ Γùï /dashboard                               497 B          85.8 kB
+Γö£ Γùï /dashboard/admin/pixels                  8.43 kB         149 kB
+Γö£ Γùï /dashboard/printables                    2.41 kB         212 kB
+Γö£ Γùï /dashboard/songs                         4.13 kB         214 kB
+Γö£ Γùï /dashboard/stories                       4.66 kB         214 kB
+Γö£ Γùï /educators                               8.1 kB          212 kB
+Γö£ Γùï /faq                                     5.65 kB         209 kB
+Γö£ Γùï /feed.xml                                0 B                0 B
+Γö£ Γùï /forgot-password                         3.42 kB         100 kB
+Γö£ Γùï /get-started                             7.03 kB         144 kB
+Γö£ Γùï /grandparent                             5.76 kB        97.9 kB
+Γö£ Γùï /grandparent/access                      2.69 kB        94.8 kB
+Γö£ ╬╗ /library/stories/[storyId]               34.1 kB         180 kB
+Γö£ Γùï /login                                   4.42 kB         101 kB
+Γö£ Γùï /manifest.webmanifest                    0 B                0 B
+Γö£ Γùï /messages                                7.4 kB          155 kB
+Γö£ Γùï /notifications                           3.74 kB        95.8 kB
+Γö£ Γùï /onboarding/child                        12.5 kB         201 kB
+Γö£ Γùï /onboarding/complete                     6.59 kB         194 kB
+Γö£ Γùï /onboarding/welcome                      4.15 kB         136 kB
+Γö£ Γùï /opengraph-image.png                     0 B                0 B
+Γö£ Γùï /parent                                  14.1 kB         220 kB
+Γö£ Γùï /portal                                  18.5 kB         283 kB
+Γö£ Γùï /portal/badges                           9.47 kB         160 kB
+Γö£ Γùï /portal/games                            9.93 kB         164 kB
+Γö£ ╬╗ /portal/games/[id]                       8.62 kB         158 kB
+Γö£ Γùï /portal/games/anansi-web                 6.85 kB         185 kB
+Γö£ Γùï /portal/games/color-match                11.4 kB         206 kB
+Γö£ Γùï /portal/games/mango-catch                12.3 kB         207 kB
+Γö£ Γùï /portal/lessons                          6.01 kB         162 kB
+Γö£ Γùï /portal/missions                         8.16 kB         156 kB
+Γö£ Γùï /portal/printables                       9.29 kB         203 kB
+Γö£ Γùï /portal/radio                            4.68 kB         206 kB
+Γö£ Γùï /portal/settings                         7.66 kB         155 kB
+Γö£ Γùï /portal/songs                            7 kB            163 kB
+Γö£ Γùï /portal/store                            14.1 kB         172 kB
+Γö£ Γùï /portal/stories                          13.6 kB         169 kB
+Γö£ ╬╗ /portal/stories/[id]                     12.7 kB         216 kB
+Γö£ Γùï /portal/story-studio                     13.3 kB         153 kB
+Γö£ Γùï /pricing                                 8.86 kB         212 kB
+Γö£ Γùï /privacy                                 164 B           208 kB
+Γö£ Γùï /profile                                 9.98 kB         213 kB
+Γö£ ╬╗ /promoters                               9.22 kB         213 kB
+Γö£ Γùï /robots.txt                              0 B                0 B
+Γö£ Γùï /safety                                  165 B           208 kB
+Γö£ Γùï /shipping                                4.81 kB         208 kB
+Γö£ Γùï /signup                                  7.38 kB         155 kB
+Γö£ Γùï /sitemap.xml                             0 B                0 B
+Γö£ Γùï /story-demo                              3.72 kB         129 kB
+Γö£ Γùï /terms                                   166 B           208 kB
+Γöö Γùï /twitter-image.png                       0 B                0 B
++ First Load JS shared by all                85.3 kB
+  Γö£ chunks/8069-3f006584582da4d4.js          29.1 kB
+  Γö£ chunks/fd9d1056-5107410c898ddba7.js      53.4 kB
+  Γöö other shared chunks (total)              2.86 kB
+
+
+╞Æ Middleware                                 162 kB
+
+Γùï  (Static)   prerendered as static content
+╬╗  (Dynamic)  server-rendered on demand using Node.js
+

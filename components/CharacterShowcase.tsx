@@ -8,7 +8,7 @@ import { LazyImage } from './LazyImage';
 import dynamic from 'next/dynamic';
 import { Box, Smartphone, Image as ImageIcon } from 'lucide-react';
 
-const CharacterARViewer = dynamic(() => import('./CharacterARViewer'), { ssr: false });
+const CharacterARViewer = dynamic(() => import('@/components/CharacterARViewer'), { ssr: false });
 
 const CharacterShowcase: React.FC = () => {
     // Fix: Explicitly type the collection to allow access to the isMystery property which is not on the base Character type

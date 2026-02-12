@@ -42,7 +42,7 @@ export async function generateGeminiSpeech(
         const ai = new GoogleGenAI({ apiKey });
 
         const response = await ai.models.generateContent({
-            model: "models/gemini-2.5-flash-native-audio-latest",
+            model: "models/gemini-2.0-flash",
             contents: [{
                 parts: [{
                     text: `[Voice Direction: ${profile.direction}] ${text}`

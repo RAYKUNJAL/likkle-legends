@@ -72,7 +72,7 @@ export const ROTI_VOICE_ENGINE = {
     },
     technical_stack: {
         brain_model: "gemini-2.0-flash-exp",
-        vocal_model: "gemini-2.5-flash-preview-tts",
+        vocal_model: "gemini-2.0-flash",
         audio_sample_rate: 24000,
         audio_format: "WAV"
     },

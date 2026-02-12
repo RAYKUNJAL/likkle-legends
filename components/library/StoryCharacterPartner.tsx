@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Smartphone, Box, Zap } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
-const CharacterARViewer = dynamic(() => import('../CharacterARViewer'), { ssr: false });
+const CharacterARViewer = dynamic(() => import('@/components/CharacterARViewer'), { ssr: false });
 
 interface StoryCharacterPartnerProps {
     guide: 'tanty' | 'roti';
