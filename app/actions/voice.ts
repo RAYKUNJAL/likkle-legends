@@ -4,6 +4,8 @@ import { getTantySpiceVoice as getGoogleCloudTanty, getRotiVoice as getGoogleClo
 import { generateGeminiSpeechBase64 } from "@/lib/gemini-tts";
 import { generateSpeechBase64 as getElevenLabsVoice } from "@/lib/elevenlabs";
 
+export const maxDuration = 60; // Allow 60 seconds for voice generation
+
 /**
  * 🎙️ Tanty Spice Voice Action (Legacy Wrapper)
  */

@@ -14,6 +14,7 @@ import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
 import StoryCharacterPartner from './library/StoryCharacterPartner';
 import BadgeUnlockModal from './gamification/BadgeUnlockModal';
+import { generateCharacterAudio } from '@/app/actions/voice';
 
 interface WordAlignment {
     text: string;
@@ -170,23 +171,53 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
         lastWordIndexRef.current = -1; // Reset efficient tracking on new words
     }, [words]);
 
-    // PRECISE AUDIO ENGINE
     useEffect(() => {
         const audio = audioRef.current;
-        if (!audio || !pageData.audioUrl) return;
+        if (!audio) return;
 
-        setAudioError(null);
-        setIsBuffering(true);
-        setIsPlaying(false);
-        setAudioProgress(0);
-        setActiveWordIndex(-1);
-        lastWordIndexRef.current = -1;
+        let active = true; // Prevent race conditions
 
-        // Load correct source
-        if (audio.src !== pageData.audioUrl) {
-            audio.src = pageData.audioUrl;
-            audio.load();
-        }
+        const setupAudio = async () => {
+            setAudioError(null);
+            setIsBuffering(true);
+            setIsPlaying(false);
+            setAudioProgress(0);
+            setActiveWordIndex(-1);
+            lastWordIndexRef.current = -1;
+
+            let source = pageData.audioUrl;
+
+            // If no pre-generated audio, generate on the fly
+            if (!source && pageData.text) {
+                try {
+                    const res = await generateCharacterAudio(pageData.text, guide);
+                    if (active && res.success && res.audio) {
+                        source = res.audio.startsWith('data:') ? res.audio : `data:audio/mp3;base64,${res.audio}`;
+                    } else if (active && !res.success) {
+                        console.warn("Audio generation failed:", res.error);
+                        setAudioError("Audio unavailable");
+                        setIsBuffering(false);
+                        return;
+                    }
+                } catch (e) {
+                    if (active) {
+                        console.error("Audio generation exception:", e);
+                        setAudioError("Audio unavailable");
+                        setIsBuffering(false);
+                    }
+                    return;
+                }
+            }
+
+            if (active && source && audio.src !== source) {
+                audio.src = source;
+                audio.load();
+            } else if (active && !source) {
+                setIsBuffering(false);
+            }
+        };
+
+        setupAudio();
 
         // Optimized Tick Function
         const tick = () => {
@@ -276,6 +307,7 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
         });
 
         return () => {
+            active = false;
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
             audio.removeEventListener('play', onPlay);
             audio.removeEventListener('pause', onPause);
@@ -285,7 +317,7 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
             audio.removeEventListener('playing', () => setIsBuffering(false));
             audio.removeEventListener('error', () => { });
         };
-    }, [pageData.audioUrl, currentPage, autoPlay, showPlayOverlay, pages.length, playbackRate]);
+    }, [pageData, currentPage, autoPlay, showPlayOverlay, pages.length, playbackRate, guide]);
 
     useEffect(() => {
         if (audioRef.current) {
