@@ -35,22 +35,26 @@ export async function POST(request: NextRequest) {
         let audioBuffer: ArrayBuffer | null = null;
         let contentType = 'audio/mpeg';
 
-        // Try Gemini TTS first (as per user's tanty_spice_v1 config)
-        const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-        if (geminiApiKey) {
-            console.log('Voice API: Using Gemini TTS');
-            audioBuffer = await generateGeminiSpeech(text);
-            if (audioBuffer) {
-                contentType = 'audio/wav'; // Gemini returns PCM/WAV
+        // 1. Try ElevenLabs first (Premium - Custom Caribbean Voices)
+        const elevenApiKey = process.env.ELEVENLABS_API_KEY;
+        if (elevenApiKey) {
+            console.log('Voice API: Using ElevenLabs');
+            const voiceId = voice as VoiceCharacter;
+            // Map 'steelpan_sam' to 'roti' if needed
+            const finalVoice = (voiceId as string) === 'steelpan_sam' ? 'roti' : voiceId;
+
+            if (VOICES[finalVoice as VoiceCharacter]) {
+                audioBuffer = await generateElevenLabsSpeech(text, { voice: finalVoice as VoiceCharacter });
+                if (audioBuffer) contentType = 'audio/mpeg';
             }
         }
 
-        // Fallback to ElevenLabs if Gemini fails or unavailable
+        // 2. Fallback to Gemini TTS if ElevenLabs fails or unavailable
         if (!audioBuffer) {
-            console.log('Voice API: Falling back to ElevenLabs');
-            const voiceId = voice as VoiceCharacter;
-            if (VOICES[voiceId]) {
-                audioBuffer = await generateElevenLabsSpeech(text, { voice: voiceId });
+            console.log('Voice API: Falling back to Gemini TTS');
+            audioBuffer = await generateGeminiSpeech(text);
+            if (audioBuffer) {
+                contentType = 'audio/wav'; // Gemini returns PCM/WAV
             }
         }
 

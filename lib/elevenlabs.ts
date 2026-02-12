@@ -9,6 +9,9 @@ const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 export const VOICES = {
     tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS',
     roti: process.env.ELEVENLABS_ROTI_VOICE_ID || 'nQG6qMEBUTxBc8zgoyIY',
+    // Aliases
+    steelpan_sam: process.env.ELEVENLABS_ROTI_VOICE_ID || 'nQG6qMEBUTxBc8zgoyIY',
+    tanty: process.env.ELEVENLABS_TANTY_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS',
 };
 
 // Character-specific Voice Settings (as per Registry v3.0.0)
@@ -23,6 +26,18 @@ export const CHARACTER_SETTINGS = {
         stability: 0.32,
         similarity_boost: 0.60,
         style: 0.16,
+        use_speaker_boost: true
+    },
+    steelpan_sam: {
+        stability: 0.32,
+        similarity_boost: 0.60,
+        style: 0.16,
+        use_speaker_boost: true
+    },
+    tanty: {
+        stability: 0.35,
+        similarity_boost: 0.62,
+        style: 0.12,
         use_speaker_boost: true
     }
 };

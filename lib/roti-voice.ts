@@ -14,6 +14,7 @@ import {
     ROTI_VOICE_MODES,
     ROTI_VOICE_ENGINE
 } from "./roti-voice-config";
+import { generateSpeechBase64 as getElevenLabsVoice } from "./elevenlabs";
 
 /**
  * Generate R.O.T.I. speech using Gemini TTS
@@ -152,6 +153,23 @@ export async function getROTIVoice(
     const limitedText = text.trim().substring(0, 800);
 
     try {
+        // 1. Try ElevenLabs first (Premium quality)
+        if (process.env.ELEVENLABS_API_KEY) {
+            try {
+                const elAudio = await getElevenLabsVoice(limitedText, { voice: 'roti' });
+                if (elAudio) {
+                    return {
+                        success: true,
+                        audio: elAudio,
+                        voiceMode
+                    };
+                }
+            } catch (elError) {
+                console.warn('[ROTI Voice] ElevenLabs failed, falling back to Gemini:', elError);
+            }
+        }
+
+        // 2. Fallback to Gemini TTS
         const audioUrl = await generateROTISpeechBase64(limitedText, { voiceMode });
 
         if (audioUrl) {

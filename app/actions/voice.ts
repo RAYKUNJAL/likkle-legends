@@ -34,7 +34,7 @@ export async function generateCharacterAudio(
         if (process.env.ELEVENLABS_API_KEY) {
             try {
                 // Map 'roti' to 'steelpan_sam' if not explicitly defined in lib/elevenlabs
-                const voiceKey = character === 'tanty' ? 'tanty_spice' : 'steelpan_sam';
+                const voiceKey = character === 'tanty' ? 'tanty_spice' : 'roti';
                 const elAudio = await getElevenLabsVoice(cleanText, { voice: voiceKey as any });
                 if (elAudio) {
                     return { success: true, audio: elAudio };
