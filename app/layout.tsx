@@ -84,7 +84,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${quicksand.variable} font-quicksand antialiased`}
         suppressHydrationWarning
       >
-        <NotificationBar content={content} />
+
         <AnalyticsLoader />
         <CookieConsentBanner />
         <Toaster position="top-right" />

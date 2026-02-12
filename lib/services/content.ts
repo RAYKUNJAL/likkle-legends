@@ -7,7 +7,7 @@ import { isSupabaseConfigured } from '@/lib/supabase-client';
  * Unified access to 'content_items' table.
  */
 
-export async function getContentItems(type?: string, island?: string) {
+export async function getContentItems(type?: string, island?: string, ageTrack?: string) {
     if (!isSupabaseConfigured()) {
         console.warn(`⚠️ Supabase not configured. Skipping content fetch (${type || 'all'}).`);
         return [];
@@ -27,6 +27,10 @@ export async function getContentItems(type?: string, island?: string) {
 
     if (island) {
         query = query.eq('island_code', island);
+    }
+
+    if (ageTrack) {
+        query = query.eq('age_track', ageTrack);
     }
 
     const { data, error } = await query;
@@ -69,7 +73,7 @@ export const getSongs = () => getContentItems('song');
 export const getStorybooks = () => getContentItems('story');
 export const getVideos = () => getContentItems('video');
 export const getPrintables = () => getContentItems('resource_pdf');
-export const getMissions = (ageTrack?: string) => getContentItems('mission');
+export const getMissions = (ageTrack?: string) => getContentItems('mission', undefined, ageTrack);
 export const getGameById = (id: string) => getContentById(id);
 
 // Admin Operations
