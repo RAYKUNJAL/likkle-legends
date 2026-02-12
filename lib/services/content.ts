@@ -69,7 +69,6 @@ export async function getContentById(id: string) {
 
 // Legacy Aliases for compatibility during transition
 export const getCharacters = () => getContentItems('character');
-export const getSongs = () => getContentItems('song');
 export const getStorybooks = () => getContentItems('story');
 export const getVideos = () => getContentItems('video');
 export const getPrintables = () => getContentItems('resource_pdf');
@@ -94,10 +93,27 @@ export async function deleteContent(id: string) {
     return true;
 }
 
-// Type-specific CRUD aliases for Admin Pages
-export const createSong = (data: any) => upsertContent({ ...data, content_type: 'song' });
-export const updateSong = (id: string, data: any) => upsertContent({ ...data, id });
-export const deleteSong = deleteContent;
+// Songs (Dedicated Table)
+export async function getSongs() {
+    if (!isSupabaseConfigured()) {
+        return [];
+    }
+    const { data, error } = await supabase
+        .from('songs')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.warn('Songs Fetch Warning:', error.message);
+        return [];
+    }
+    return data || [];
+}
+
+export const createSong = (data: any) => supabase.from('songs').insert(data).select().single();
+export const updateSong = (id: string, data: any) => supabase.from('songs').update(data).eq('id', id).select().single();
+export const deleteSong = (id: string) => supabase.from('songs').delete().eq('id', id);
 
 export const createStorybook = (data: any) => upsertContent({ ...data, content_type: 'story' });
 export const updateStorybook = (id: string, data: any) => upsertContent({ ...data, id });

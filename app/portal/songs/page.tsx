@@ -49,7 +49,7 @@ function SongsPageContent() {
                     album: s.album || 'Island Beats',
                     duration_seconds: s.duration_seconds || 180,
                     audio_url: s.audio_url || '',
-                    cover_image_url: s.cover_image_url || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300',
+                    cover_image_url: s.thumbnail_url || s.cover_image_url || '/images/music-placeholder.svg',
                     island_origin: s.island_origin || 'Caribbean',
                     tier_required: s.tier_required || 'free',
                     play_count: 0
@@ -94,40 +94,51 @@ function SongsPageContent() {
 
     const playSong = (song: Song) => {
         if (!canAccess(song.tier_required)) return;
-
-        setCurrentSong(song);
-        setIsPlaying(true);
-        setProgress(0);
-
-        // Simulate playback progress
-        if (progressInterval.current) clearInterval(progressInterval.current);
-        progressInterval.current = setInterval(() => {
-            setProgress(prev => {
-                if (prev >= 100) {
-                    handleNext();
-                    return 0;
-                }
-                return prev + (100 / song.duration_seconds);
-            });
-        }, 1000);
+        if (currentSong?.id === song.id) {
+            if (audioRef.current?.paused) {
+                audioRef.current.play();
+                setIsPlaying(true);
+            }
+        } else {
+            setCurrentSong(song);
+            setIsPlaying(true);
+            // Effect will handle loading
+        }
     };
 
     const togglePlay = () => {
-        if (!currentSong) return;
-        setIsPlaying(!isPlaying);
+        if (!currentSong || !audioRef.current) return;
+        if (isPlaying) {
+            audioRef.current.pause();
+            setIsPlaying(false);
+        } else {
+            audioRef.current.play();
+            setIsPlaying(true);
+        }
+    };
 
-        if (isPlaying && progressInterval.current) {
-            clearInterval(progressInterval.current);
-        } else if (currentSong) {
-            progressInterval.current = setInterval(() => {
-                setProgress(prev => {
-                    if (prev >= 100) {
-                        handleNext();
-                        return 0;
-                    }
-                    return prev + (100 / currentSong.duration_seconds);
-                });
-            }, 1000);
+    // Auto-play effect
+    useEffect(() => {
+        if (currentSong && audioRef.current) {
+            if (audioRef.current.src !== currentSong.audio_url) {
+                audioRef.current.src = currentSong.audio_url;
+                audioRef.current.load();
+                if (isPlaying) audioRef.current.play().catch(console.warn);
+            }
+        }
+    }, [currentSong, isPlaying]);
+
+    // Volume effect
+    useEffect(() => {
+        if (audioRef.current) audioRef.current.volume = isMuted ? 0 : volume / 100;
+    }, [volume, isMuted]);
+
+    const handleTimeUpdate = () => {
+        if (audioRef.current && currentSong?.duration_seconds) {
+            // Use real duration if available from metadata, else fallback
+            const duration = audioRef.current.duration || currentSong.duration_seconds;
+            const current = audioRef.current.currentTime;
+            setProgress((current / duration) * 100);
         }
     };
 
@@ -389,6 +400,16 @@ function SongsPageContent() {
                     </div>
                 </div>
             )}
+
+            {/* Hidden Audio Element */}
+            <audio
+                ref={audioRef}
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleNext}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                className="hidden"
+            />
         </div>
     );
 }
