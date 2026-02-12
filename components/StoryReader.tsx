@@ -1,10 +1,10 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
 import { getTantyVoice } from '@/app/actions/voice';
 import { X, Volume2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { StoryPage } from '@/lib/types';
+import toast from 'react-hot-toast';
 
 interface StoryReaderProps {
     title: string;
@@ -56,10 +56,18 @@ export default function StoryReader({ title, pages, onClose }: StoryReaderProps)
                 newAudio.onended = () => setIsPlaying(false);
                 setAudio(newAudio);
                 setIsPlaying(true);
-                newAudio.play();
+                newAudio.play().catch(e => {
+                    console.error("Audio playback error:", e);
+                    toast.error("Audio format not supported by your browser");
+                    setIsPlaying(false);
+                });
+            } else {
+                console.error("Voice generation failed:", res.error);
+                toast.error("Tanty is clearing her throat... try again in a moment! (Voice Error)");
             }
         } catch (error) {
             console.error("Failed to play narration:", error);
+            toast.error("Something went wrong with the island magic.");
         } finally {
             setIsLoadingAudio(false);
         }

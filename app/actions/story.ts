@@ -2,7 +2,7 @@
 
 import { generateCulturalStory, StoryInputs } from "@/lib/story-engine";
 
-export const maxDuration = 60; // Allow 60 seconds for story generation
+// export const maxDuration = 60; // Config not supported in Server Actions
 
 export async function createStoryAction(inputs: StoryInputs) {
     try {

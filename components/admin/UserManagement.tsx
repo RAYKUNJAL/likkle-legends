@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { getAllUsers, updateUserPlan } from '../../services/supabase/databaseService';
+import { getAllUsersAction, updateUserPlanAction } from '@/app/actions/admin';
 import { PRICING_TIERS } from '../../lib/constants';
 
 export const UserManagement: React.FC = () => {
@@ -17,8 +17,8 @@ export const UserManagement: React.FC = () => {
     const loadUsers = async () => {
         setLoading(true);
         try {
-            const data = await getAllUsers();
-            setUsers(data);
+            const data = await getAllUsersAction();
+            setUsers(data as any[]);
         } catch (e) {
             console.error(e);
         } finally {
@@ -27,8 +27,9 @@ export const UserManagement: React.FC = () => {
     };
 
     const handlePlanChange = async (userId: string, newPlan: string) => {
-        const success = await updateUserPlan(userId, newPlan);
-        if (success) {
+        const result = await updateUserPlanAction(userId, newPlan);
+        if (result.success) {
+
             setUsers(prev => prev.map(u => u.id === userId ? { ...u, plan: newPlan } : u));
             setEditingUser(null);
         } else {

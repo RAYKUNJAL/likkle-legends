@@ -1,6 +1,5 @@
 
-import { supabase } from '@/lib/storage';
-import { isSupabaseConfigured } from '@/lib/supabase-client';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase-client';
 
 /**
  * Likkle Legends v2.0.0 Content Service

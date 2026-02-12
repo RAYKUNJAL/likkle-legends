@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Star, Lock, Sparkles, CheckCircle, Clock, Loader2 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
-import { BADGES_LIST, LEVELS, calculateLevel, getChildBadges } from '@/lib/database';
+import { BADGES_LIST, LEVELS, calculateLevel } from '@/lib/gamification';
+import { getChildBadges } from '@/lib/services/gamification';
 
 interface Badge {
     id: string;
