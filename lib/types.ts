@@ -35,7 +35,17 @@ export interface StudioContent {
     ageGroup: string;
     readingLevel: 'beginner' | 'intermediate' | 'advanced';
     text: string;
-    pages: { id: string; text: string; audioUrl?: string; imageUrl?: string }[];
+    pages: {
+        id: string;
+        text: string;
+        audioUrl?: string;
+        imageUrl?: string;
+        audio?: {
+            alignment?: {
+                words?: { text: string; startTimeSeconds: number; endTimeSeconds: number }[];
+            };
+        };
+    }[];
     status: 'draft' | 'processing' | 'published' | 'archived';
     backgroundMusic?: string;
     voiceSpeed: number;

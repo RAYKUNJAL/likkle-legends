@@ -30,6 +30,7 @@ export default function CharacterARViewer({
 }: CharacterARViewerProps) {
     const [isLoaded, setIsLoaded] = useState(false);
     const [isReady, setIsReady] = useState(false);
+    const [hasError, setHasError] = useState(false);
 
     useEffect(() => {
         // Import model-viewer for client-side side effects
@@ -39,6 +40,28 @@ export default function CharacterARViewer({
             console.error('Failed to load model-viewer:', err);
         });
     }, []);
+
+    const modelRef = useRef<any>(null);
+
+    useEffect(() => {
+        const model = modelRef.current;
+        if (!model) return;
+
+        const handleLoad = () => setIsLoaded(true);
+        const handleError = (e: any) => {
+            console.error("Model Viewer Error:", e);
+            setHasError(true);
+            setIsLoaded(true);
+        };
+
+        model.addEventListener('load', handleLoad);
+        model.addEventListener('error', handleError);
+
+        return () => {
+            model.removeEventListener('load', handleLoad);
+            model.removeEventListener('error', handleError);
+        };
+    }, [isReady]); // Re-attach when ready/mounted
 
     if (!isReady) {
         return (
@@ -60,7 +83,18 @@ export default function CharacterARViewer({
                 </div>
             )}
 
+            {/* Error State */}
+            {hasError && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/80 backdrop-blur-sm p-4 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="text-red-500 font-bold">Failed to load 3D Model</div>
+                        <p className="text-xs text-gray-500">Check your connection or try again.</p>
+                    </div>
+                </div>
+            )}
+
             <model-viewer
+                ref={modelRef}
                 src={src}
                 poster={poster}
                 alt={alt}
@@ -72,7 +106,6 @@ export default function CharacterARViewer({
                 interaction-prompt="auto"
                 camera-orbit="0deg 75deg 105%"
                 style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }}
-                onLoad={() => setIsLoaded(true)}
                 className="relative z-10"
             >
                 {/* AR Button */}

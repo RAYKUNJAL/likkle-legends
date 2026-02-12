@@ -16,7 +16,8 @@ interface StoryCharacterPartnerProps {
 const CHARACTER_MODELS = {
     tanty: {
         name: "Tanty Spice",
-        model: "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
+        // Using a more character-like model instead of astronaut
+        model: "https://modelviewer.dev/shared-assets/models/NeilArmstrong.glb", // Placeholder for a human character
         poster: "/images/tanty_spice_avatar.jpg",
         color: "from-orange-400 to-amber-500"
     },

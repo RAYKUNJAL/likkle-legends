@@ -43,12 +43,11 @@ export async function logActivity(
         await addXP(childId, xpEarned, activityType);
     }
     // Check for badges
-    // Note: checkBadgeUnlock is internal
-    // const unlockedBadge = await checkBadgeUnlock(childId, activityType);
+    const unlockedBadge = await checkBadgeUnlock(childId, activityType);
 
     return {
         xpEarned,
-        // unlockedBadge
+        unlockedBadge
     };
 }
 

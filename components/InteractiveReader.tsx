@@ -370,15 +370,6 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                         <Music size={16} />
                     </button>
 
-                    <button
-                        onClick={() => setShowPartner(!showPartner)}
-                        className={`p-1.5 lg:p-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5 ${showPartner ? 'bg-orange-500 text-white animate-pulse' : 'bg-orange-100 text-orange-600'}`}
-                        title={`Summon ${guideInfo.name}`}
-                    >
-                        <Zap size={16} className={showPartner ? 'fill-current' : ''} />
-                        <span className="hidden sm:inline text-[10px] font-black uppercase">Summon</span>
-                    </button>
-
                     <div className="hidden sm:flex items-center gap-2 bg-orange-50 px-3 py-1 rounded-full border border-orange-100">
                         <Volume2 size={12} className="text-orange-400" />
                         <input type="range" min="0" max="1" step="0.1" value={volume} onChange={e => setVolume(parseFloat(e.target.value))} className="w-12 lg:w-20 h-1 accent-orange-500" />
@@ -394,14 +385,34 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                 {/* Visual Content */}
                 <div className="flex-1 bg-white rounded-[2rem] border-2 border-orange-50 p-6 flex flex-col relative shadow-sm overflow-hidden min-h-[220px]">
                     <div className="flex-1 flex items-center justify-center">
-                        <motion.div
-                            key={currentPage}
-                            initial={{ scale: 0.8, opacity: 0, rotate: -3 }}
-                            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                            className="text-8xl lg:text-9xl filter drop-shadow-xl"
-                        >
-                            📖
-                        </motion.div>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentPage}
+                                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                                animate={{ scale: 1, opacity: 1, y: 0 }}
+                                exit={{ scale: 1.05, opacity: 0, y: -20 }}
+                                transition={{ type: "spring", damping: 20, stiffness: 100 }}
+                                className="w-full h-full flex items-center justify-center"
+                            >
+                                {pageData.imageUrl ? (
+                                    <div className="relative w-full h-full max-h-[500px] rounded-3xl overflow-hidden shadow-2xl border-4 border-white group">
+                                        <Image
+                                            src={pageData.imageUrl}
+                                            alt={`Illustration for page ${currentPage + 1}`}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                                        {/* Paper texture overlay */}
+                                        <div className="absolute inset-0 opacity-10 mix-blend-multiply pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/old-map.png')]" />
+                                    </div>
+                                ) : (
+                                    <div className="text-8xl lg:text-9xl filter drop-shadow-xl select-none">
+                                        📖
+                                    </div>
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
                     </div>
 
                     {/* Guide Character Mini-Card */}
@@ -591,13 +602,6 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                     </motion.div>
                 )}
             </AnimatePresence>
-            {/* ═══ 3D Character Partner ═══ */}
-            <StoryCharacterPartner
-                guide={guide}
-                isVisible={showPartner}
-                onClose={() => setShowPartner(false)}
-            />
-
             {/* ═══ Badge Unlock Celebration ═══ */}
             <BadgeUnlockModal
                 badge={unlockedBadge}

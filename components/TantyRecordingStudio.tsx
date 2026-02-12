@@ -98,6 +98,56 @@ const TantyRecordingStudio: React.FC = () => {
         const reader = new FileReader();
         reader.onload = (event) => {
             const content = event.target?.result as string;
+
+            // Try parsing as structured JSON first
+            try {
+                const data = JSON.parse(content);
+                // Support both the new CaribbeanKidsStorybook schema and the previous simple schema
+                const metadata = data.metadata || data;
+                const pages = data.pages || [];
+
+                if (Array.isArray(pages)) {
+                    const newPages = pages.map((p: any, i: number) => ({
+                        id: `json_${i}_${Date.now()}`,
+                        text: p.story_text || p.content || p.text || "",
+                        imageUrl: p.illustration_url || p.imageUrl || undefined,
+                        audioUrl: p.audio_url || p.audioUrl || undefined,
+                        audio: p.audio || (p.word_timings ? {
+                            alignment: {
+                                words: p.word_timings.map((wt: any) => ({
+                                    text: wt.word,
+                                    startTimeSeconds: wt.start,
+                                    endTimeSeconds: wt.end
+                                }))
+                            }
+                        } : undefined)
+                    }));
+
+                    // Map reading levels: 'pre-reader'/'emerging' -> beginner, etc.
+                    let level: any = 'intermediate';
+                    const rawLevel = (metadata.target_reading_level || metadata.readingLevel || metadata.reading_level || '').toLowerCase();
+                    if (rawLevel.includes('pre') || rawLevel.includes('emerging') || rawLevel.includes('beginner')) level = 'beginner';
+                    else if (rawLevel.includes('fluent') || rawLevel.includes('advanced')) level = 'advanced';
+
+                    setActiveContent({
+                        ...activeContent,
+                        title: metadata.title || activeContent.title,
+                        ageGroup: metadata.age_range || metadata.ageGroup || activeContent.ageGroup,
+                        readingLevel: level,
+                        category: (data.learning_profile?.core_themes?.[0]) || (data.themes?.[0]) || activeContent.category,
+                        pages: newPages,
+                        text: data.parent_and_teacher_notes?.summary_of_lessons || data.summary || "",
+                        // New Technical Fields
+                        voiceEmotion: data.audio_settings?.voice_emotion || activeContent.voiceEmotion,
+                        voiceSpeed: data.audio_settings?.voice_speed || activeContent.voiceSpeed,
+                        backgroundMusic: data.audio_settings?.background_music || activeContent.backgroundMusic
+                    });
+                    return;
+                }
+            } catch (e) {
+                // Not JSON or invalid format, fallback to plain text
+            }
+
             if (activeContent.type === 'story') {
                 // Simple page-by-page parsing by double newline
                 const lines = content.split(/\n\n+/).filter(l => l.trim().length > 0);
@@ -295,7 +345,7 @@ const TantyRecordingStudio: React.FC = () => {
                                     <div className="flex items-center justify-between">
                                         <h3 className="text-3xl font-heading font-black text-blue-950">Drafting: {activeContent.title}</h3>
                                         <button onClick={() => fileInputRef.current?.click()} className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-100 transition-all">Import Script 📥</button>
-                                        <input type="file" ref={fileInputRef} className="hidden" accept=".txt,.doc,.docx" onChange={handleFileUpload} aria-label="Import script file" />
+                                        <input type="file" ref={fileInputRef} className="hidden" accept=".txt,.doc,.docx,.json" onChange={handleFileUpload} aria-label="Import script file" />
                                     </div>
 
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
