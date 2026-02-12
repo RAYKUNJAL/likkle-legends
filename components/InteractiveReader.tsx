@@ -5,11 +5,12 @@ import Image from 'next/image';
 import {
     X, Volume2, ChevronLeft, ChevronRight,
     Play, Pause, RotateCcw, SkipForward,
-    Loader2, Home, Star, Turtle, Rabbit, Music
+    Loader2, Home, Star, Turtle, Rabbit, Music, Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { awardStars } from '@/lib/services/user-progress';
+import StoryCharacterPartner from './library/StoryCharacterPartner';
 
 interface WordAlignment {
     text: string;
@@ -51,6 +52,7 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
     const [showReward, setShowReward] = useState(false); // Gamification State
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioProgress, setAudioProgress] = useState(0);
+    const [showPartner, setShowPartner] = useState(false);
 
     // Refs
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -323,6 +325,15 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                         <Music size={16} />
                     </button>
 
+                    <button
+                        onClick={() => setShowPartner(!showPartner)}
+                        className={`p-1.5 lg:p-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5 ${showPartner ? 'bg-orange-500 text-white animate-pulse' : 'bg-orange-100 text-orange-600'}`}
+                        title={`Summon ${guideInfo.name}`}
+                    >
+                        <Zap size={16} className={showPartner ? 'fill-current' : ''} />
+                        <span className="hidden sm:inline text-[10px] font-black uppercase">Summon</span>
+                    </button>
+
                     <div className="hidden sm:flex items-center gap-2 bg-orange-50 px-3 py-1 rounded-full border border-orange-100">
                         <Volume2 size={12} className="text-orange-400" />
                         <input type="range" min="0" max="1" step="0.1" value={volume} onChange={e => setVolume(parseFloat(e.target.value))} className="w-12 lg:w-20 h-1 accent-orange-500" />
@@ -535,6 +546,12 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                     </motion.div>
                 )}
             </AnimatePresence>
+            {/* ═══ 3D Character Partner ═══ */}
+            <StoryCharacterPartner
+                guide={guide}
+                isVisible={showPartner}
+                onClose={() => setShowPartner(false)}
+            />
         </div>
     );
 }
