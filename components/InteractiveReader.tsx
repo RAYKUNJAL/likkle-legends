@@ -10,7 +10,10 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { awardStars } from '@/lib/services/user-progress';
+import { useUser } from '@/components/UserContext';
+import { logActivity } from '@/lib/database';
 import StoryCharacterPartner from './library/StoryCharacterPartner';
+import BadgeUnlockModal from './gamification/BadgeUnlockModal';
 
 interface WordAlignment {
     text: string;
@@ -38,6 +41,7 @@ interface InteractiveReaderProps {
 }
 
 export default function InteractiveReader({ title, pages, guide, onClose }: InteractiveReaderProps) {
+    const { user, activeChild, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge } = useUser();
     const [currentPage, setCurrentPage] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isBuffering, setIsBuffering] = useState(false);
@@ -97,6 +101,15 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
 
             // Award Stars
             awardStars('story-completed', 5).catch(console.error);
+
+            // Log real activity and check for badges
+            if (user && activeChild) {
+                logActivity(user.id, activeChild.id, 'story', title, 50).then(result => {
+                    if (result?.unlockedBadge) {
+                        triggerBadgeUnlock(result.unlockedBadge);
+                    }
+                }).catch(console.error);
+            }
 
             return () => clearInterval(interval);
         }
@@ -551,6 +564,12 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                 guide={guide}
                 isVisible={showPartner}
                 onClose={() => setShowPartner(false)}
+            />
+
+            {/* ═══ Badge Unlock Celebration ═══ */}
+            <BadgeUnlockModal
+                badge={unlockedBadge}
+                onClose={() => clearUnlockedBadge()}
             />
         </div>
     );

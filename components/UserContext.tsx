@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { BADGES, BadgeId } from '@/lib/gamification';
 
 const supabase = createClient();
 
@@ -64,6 +65,11 @@ interface UserContextType {
   refreshChildren: () => Promise<void>;
   logout: () => Promise<void>;
 
+  // Gamification
+  unlockedBadge: any | null;
+  clearUnlockedBadge: () => void;
+  triggerBadgeUnlock: (badgeId: any) => void;
+
   // Subscription Helpers
   isSubscribed: boolean;
   canAccess: (tierRequired: string) => boolean;
@@ -98,6 +104,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
   const [activeChild, setActiveChildState] = useState<Child | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unlockedBadge, setUnlockedBadge] = useState<any | null>(null);
 
   // Refresh user profile
   const refreshUser = useCallback(async () => {
@@ -232,13 +239,22 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
   }, [children]);
 
   // Logout
-  const logout = useCallback(async () => {
+  const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setChildren([]);
     setActiveChildState(null);
     localStorage.removeItem('activeChildId');
-  }, []);
+  };
+
+  const clearUnlockedBadge = () => setUnlockedBadge(null);
+
+  const triggerBadgeUnlock = (badgeId: BadgeId) => {
+    const badge = (BADGES as any)[badgeId];
+    if (badge) {
+      setUnlockedBadge(badge);
+    }
+  };
 
   // Check access to tier-locked content
   const canAccess = useCallback((tierRequired: string): boolean => {
@@ -361,6 +377,9 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     tierLevel: user ? (TIER_LEVELS[user.subscription_tier] || 0) : 0,
     unreadCount,
     refreshNotifications,
+    unlockedBadge,
+    clearUnlockedBadge,
+    triggerBadgeUnlock,
   }), [
     user,
     children,
@@ -372,7 +391,8 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     logout,
     canAccess,
     unreadCount,
-    refreshNotifications
+    refreshNotifications,
+    unlockedBadge
   ]);
 
   return (
