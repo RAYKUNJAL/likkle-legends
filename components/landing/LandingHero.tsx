@@ -8,96 +8,98 @@ export default function LandingHero({ content }: { content: any }) {
     const { hero } = content;
 
     return (
-        <section className="relative pt-16 pb-24 overflow-hidden bg-gradient-to-b from-amber-50/80 via-emerald-50/40 to-white">
-            {/* Subtle background decorations */}
-            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-emerald-100/30 to-transparent pointer-events-none" />
-            <div className="absolute -top-32 -left-32 w-96 h-96 bg-amber-200/20 rounded-full blur-3xl pointer-events-none" />
+        <section className="relative pt-24 pb-32 overflow-hidden bg-[#FFFDF7]">
+            {/* Premium v3 Background Glows */}
+            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-100/40 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber-100/30 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
-            <div className="container grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div className="container grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
                 {/* Content Side */}
-                <div className="space-y-8 order-2 lg:order-1">
-                    {/* Trust indicators */}
-                    <div className="flex flex-wrap gap-3">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
-                            <Shield className="w-3 h-3" /> Safe
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
-                            <Sparkles className="w-3 h-3" /> Ad-free
-                        </span>
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">
-                            <Heart className="w-3 h-3" /> For diaspora families
-                        </span>
-                    </div>
-
-                    {/* Headline */}
-                    <div className="space-y-6">
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20">
-                            🌴 Join 500+ Caribbean Families
+                <div className="space-y-10 order-2 lg:order-1 relative z-10">
+                    <div className="space-y-8">
+                        {/* Original Trust indicators & Micro-copy merged with v3 style */}
+                        <div className="flex flex-wrap gap-3">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-100/50 text-emerald-700 text-[10px] font-black uppercase tracking-wider">
+                                <Shield className="w-3 h-3" /> Kid Safe
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-100/50 text-blue-700 text-[10px] font-black uppercase tracking-wider">
+                                <Sparkles className="w-3 h-3" /> Ad-free
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100/50 text-amber-700 text-[10px] font-black uppercase tracking-wider">
+                                <Heart className="w-3 h-3" /> Diaspora First
+                            </span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl lg:text-7xl font-black text-deep leading-[1.05] tracking-tight">
-                            Don't Let the <span className="text-emerald-600">Culture Fade.</span>
-                        </h1>
-                        <p className="text-lg md:text-xl text-deep/70 leading-relaxed max-w-xl">
-                            Build their identity through personalized mail adventures and interactive island folklore.
-                        </p>
+
+                        <div className="space-y-6">
+                            <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20">
+                                🌴 Join 500+ Caribbean Families
+                            </div>
+                            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-deep leading-[1.05] tracking-tight">
+                                Don't Let the <span className="text-emerald-600">Culture Fade.</span>
+                            </h1>
+                            <p className="text-xl md:text-2xl text-deep/70 leading-relaxed max-w-xl font-medium">
+                                Build their identity through personalized mail adventures and interactive island folklore.
+                            </p>
+                        </div>
                     </div>
 
-                    {/* CTAs */}
-                    <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex flex-col sm:flex-row gap-5">
                         <Link
                             href="/get-started"
-                            className="btn btn-primary btn-lg px-8 py-5 text-lg shadow-xl shadow-primary/20 hover:shadow-2xl hover:scale-[1.02] transition-all group text-center"
+                            className="btn btn-primary btn-lg px-10 py-6 text-xl shadow-premium hover:shadow-2xl hover:scale-[1.02] transition-all group flex items-center justify-center font-black"
+                            style={{ borderRadius: '2rem' }}
                         >
                             {hero.primary_cta?.label || "Try the $10 Intro Experience"}
-                            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-2 transition-transform" />
                         </Link>
                         <Link
                             href="/get-started"
-                            className="btn bg-white border-2 border-zinc-200 text-deep hover:bg-zinc-50 px-8 py-5 text-lg transition-all text-center"
+                            className="bg-white border-2 border-slate-100 text-deep hover:bg-slate-50 px-10 py-6 text-xl font-black flex items-center justify-center transition-all shadow-sm"
+                            style={{ borderRadius: '2rem' }}
                         >
                             Explore Free Trial
                         </Link>
                     </div>
 
-                    {/* Micro-copy */}
-                    <p className="text-sm text-deep/50 font-medium">
-                        Cancel anytime • No spam • Kid-safe content
+                    <p className="text-sm text-deep/40 font-bold uppercase tracking-widest">
+                        Cancel anytime • No spam • Child-safe Content
                     </p>
                 </div>
 
                 {/* Visual Side */}
                 <div className="relative order-1 lg:order-2 flex justify-center">
-                    <div className="relative w-full max-w-md">
+                    <div className="relative w-full max-w-lg">
                         {/* Glow effect */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-amber-300/30 via-emerald-300/20 to-blue-300/30 rounded-[3rem] blur-[60px] scale-110" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-amber-300/40 via-emerald-300/30 to-blue-300/40 rounded-[4rem] blur-[80px] scale-110" />
 
                         {/* Main image container */}
-                        <div className="relative rounded-[2.5rem] overflow-hidden border-8 border-white shadow-2xl aspect-[4/5] bg-gradient-to-br from-emerald-100 to-amber-50">
+                        <div className="relative rounded-[3.5rem] overflow-hidden border-[12px] border-white shadow-premium aspect-[4/5] bg-slate-50 group">
                             <Image
                                 src={hero.hero_media?.src || "/images/hero_landing.png"}
                                 alt={hero.hero_media?.alt || "Caribbean children enjoying learning activities"}
                                 fill
-                                className="object-cover"
+                                className="object-cover group-hover:scale-105 transition-transform duration-700"
                                 priority
                             />
+                            {/* Island Glass Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-deep/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
 
-                        {/* Floating badge - mail */}
-                        <div className="absolute -bottom-4 -left-4 bg-white rounded-2xl p-4 shadow-xl border border-zinc-100 animate-float">
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-2xl">
+                        {/* Floating v3 Badges */}
+                        <div className="absolute -bottom-8 -left-8 glass-card p-6 shadow-premium translate-y-4 animate-float">
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 bg-amber-100 rounded-[1.5rem] flex items-center justify-center text-4xl shadow-inner">
                                     📬
                                 </div>
                                 <div>
-                                    <p className="text-xs font-bold text-deep/60 uppercase tracking-wide">Physical Mail</p>
-                                    <p className="text-sm font-bold text-deep">+ Digital Unlock</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Physical Mail</p>
+                                    <p className="text-lg font-black text-deep">+ Digital Unlock</p>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Floating badge - monthly */}
-                        <div className="absolute -top-4 -right-4 bg-emerald-500 text-white rounded-2xl px-4 py-2 shadow-xl hidden sm:block">
-                            <p className="text-xs font-bold uppercase tracking-wide">New Monthly</p>
+                        <div className="absolute -top-6 -right-6 bg-emerald-500 text-white rounded-[1.5rem] px-6 py-3 shadow-premium hidden sm:block rotate-6">
+                            <p className="text-xs font-black uppercase tracking-widest">New Monthly Drop</p>
                         </div>
                     </div>
                 </div>

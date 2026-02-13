@@ -43,48 +43,63 @@ export const UserManagement: React.FC = () => {
     );
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex justify-between items-center bg-white p-4 rounded-[2rem] border-2 border-blue-50 shadow-sm">
+        <div className="space-y-8">
+            <div className="flex justify-between items-center glass-card p-6 border border-slate-100 shadow-premium" style={{ borderRadius: '2rem' }}>
                 <div className="relative w-full max-w-md">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
                     <input
                         type="text"
                         placeholder="Search by email..."
-                        className="w-full pl-10 pr-4 py-3 bg-blue-50 rounded-xl font-bold text-blue-950 outline-none focus:ring-2 focus:ring-blue-200"
+                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded-2xl font-bold text-deep outline-none focus:ring-2 focus:ring-blue-100 transition-all"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <button onClick={loadUsers} className="bg-blue-100 text-blue-600 px-4 py-3 rounded-xl font-black text-xs uppercase hover:bg-blue-200">
-                    Refresh
+                <button
+                    onClick={loadUsers}
+                    className="bg-deep text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                >
+                    Refresh List
                 </button>
             </div>
 
-            <div className="bg-white rounded-[2.5rem] border-4 border-blue-50 overflow-hidden shadow-sm">
+            <div className="glass-card border border-slate-100 overflow-hidden shadow-premium" style={{ borderRadius: '2.5rem' }}>
                 <table className="w-full text-left">
-                    <thead className="bg-blue-50 text-[10px] font-black uppercase tracking-widest text-blue-400">
+                    <thead className="bg-slate-50/50 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                         <tr>
-                            <th className="p-6">User / Email</th>
-                            <th className="p-6">Plan Status</th>
-                            <th className="p-6">Joined</th>
-                            <th className="p-6">Actions</th>
+                            <th className="p-8">Citizens</th>
+                            <th className="p-8">Plan Access</th>
+                            <th className="p-8">Arrival Date</th>
+                            <th className="p-8">Control</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-blue-50">
+                    <tbody className="divide-y divide-slate-50">
                         {loading ? (
-                            <tr><td colSpan={4} className="p-10 text-center font-bold text-gray-400">Loading Citizens...</td></tr>
+                            <tr><td colSpan={4} className="p-20 text-center">
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="w-10 h-10 border-4 border-blue-100 border-t-blue-500 rounded-full animate-spin"></div>
+                                    <p className="font-black text-slate-400 uppercase text-[10px] tracking-widest">Identifying Citizens...</p>
+                                </div>
+                            </td></tr>
                         ) : filteredUsers.length === 0 ? (
-                            <tr><td colSpan={4} className="p-10 text-center font-bold text-gray-400">No users found.</td></tr>
+                            <tr><td colSpan={4} className="p-20 text-center font-black text-slate-400 uppercase text-xs tracking-widest">No Citizens Recorded</td></tr>
                         ) : filteredUsers.map(user => (
-                            <tr key={user.id} className="hover:bg-blue-50/30 transition-colors">
-                                <td className="p-6">
-                                    <p className="font-bold text-blue-950 text-sm">{user.email}</p>
-                                    <p className="text-[10px] text-gray-400 font-mono">{user.id.slice(0, 8)}...</p>
+                            <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
+                                <td className="p-8">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-slate-100 flex items-center justify-center font-black text-blue-600 text-xs">
+                                            {user.email?.[0].toUpperCase()}
+                                        </div>
+                                        <div>
+                                            <p className="font-black text-deep text-sm">{user.email}</p>
+                                            <p className="text-[10px] text-slate-400 font-bold font-mono tracking-tighter">{user.id}</p>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td className="p-6">
+                                <td className="p-8">
                                     {editingUser === user.id ? (
                                         <select
-                                            className="p-2 bg-white border-2 border-blue-200 rounded-lg text-xs font-bold outline-none"
+                                            className="p-3 bg-white border border-slate-200 rounded-xl text-xs font-black outline-none shadow-premium animate-in zoom-in-95 duration-200"
                                             value={user.plan}
                                             onChange={(e) => handlePlanChange(user.id, e.target.value)}
                                             onBlur={() => setEditingUser(null)}
@@ -95,22 +110,24 @@ export const UserManagement: React.FC = () => {
                                     ) : (
                                         <span
                                             onClick={() => setEditingUser(user.id)}
-                                            className={`cursor-pointer px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${user.plan === 'annual_plus' ? 'bg-purple-100 text-purple-600' :
-                                                user.plan === 'legends_plus' ? 'bg-orange-100 text-orange-600' :
-                                                    user.plan === 'mail_club' ? 'bg-blue-100 text-blue-600' :
-                                                        'bg-gray-100 text-gray-500'
+                                            className={`cursor-pointer px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all hover:scale-105 active:scale-95 ${user.plan === 'annual_plus' ? 'bg-purple-50 text-purple-600 border-purple-100 shadow-sm' :
+                                                    user.plan === 'legends_plus' ? 'bg-orange-50 text-orange-600 border-orange-100 shadow-sm' :
+                                                        user.plan === 'mail_club' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm' :
+                                                            'bg-slate-50 text-slate-500 border-slate-100'
                                                 }`}
                                         >
-                                            {PRICING_TIERS.find(t => t.id === user.plan)?.name || user.plan} ✎
+                                            {PRICING_TIERS.find(t => t.id === user.plan)?.name || user.plan} <span className="ml-2 text-[8px] opacity-40">✎</span>
                                         </span>
                                     )}
                                 </td>
-                                <td className="p-6 text-xs font-bold text-gray-500">
-                                    {user.joinedAt ? new Date(user.joinedAt).toLocaleDateString() : 'N/A'}
+                                <td className="p-8 text-xs font-black text-slate-400 uppercase">
+                                    {user.joinedAt ? new Date(user.joinedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '---'}
                                 </td>
-                                <td className="p-6">
-                                    <button className="text-blue-600 font-bold text-xs hover:underline mr-4">View</button>
-                                    <button className="text-red-400 font-bold text-xs hover:underline">Ban</button>
+                                <td className="p-8">
+                                    <div className="flex items-center gap-3">
+                                        <button className="px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all">Profile</button>
+                                        <button className="px-3 py-1.5 hover:bg-red-50 text-red-400 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all">Ban</button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
