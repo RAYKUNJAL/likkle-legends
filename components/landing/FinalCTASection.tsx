@@ -29,14 +29,14 @@ export default function FinalCTASection({ content }: { content: any }) {
                                     href={cta_banner?.primary_cta?.href || "/get-started"}
                                     className="inline-flex items-center justify-center gap-2 btn btn-primary btn-lg px-10 py-5 text-lg shadow-xl shadow-primary/30 hover:shadow-2xl hover:scale-[1.02] transition-all group"
                                 >
-                                    {cta_banner?.primary_cta?.label || "Start Mail Club for $10/month"}
+                                    {cta_banner?.primary_cta?.label || "Start Free Forever"}
                                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </Link>
                                 <Link
                                     href={cta_banner?.secondary_cta?.href || "/get-started"}
-                                    className="inline-flex items-center justify-center gap-2 btn bg-white/10 hover:bg-white/20 text-white px-8 py-5 text-lg border border-white/20 transition-all"
+                                    className="inline-flex items-center justify-center gap-2 btn bg-white/10 hover:bg-white/20 text-white px-8 py-5 text-lg border border-white/20 transition-all font-bold"
                                 >
-                                    {cta_banner?.secondary_cta?.label || "Start Free Digital Trial"}
+                                    {cta_banner?.secondary_cta?.label || "Explore Free Library"}
                                 </Link>
                             </div>
 

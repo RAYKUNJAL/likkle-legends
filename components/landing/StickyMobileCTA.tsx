@@ -24,16 +24,10 @@ export default function StickyMobileCTA() {
             <div className="flex gap-2">
                 <Link
                     href="/get-started"
-                    className="flex-1 flex items-center justify-center gap-1 bg-primary text-white py-3 px-4 rounded-xl font-bold text-sm shadow-lg"
+                    className="flex-1 flex items-center justify-center gap-2 bg-deep text-white py-4 px-6 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl"
                 >
-                    Try $10 Intro
+                    Start Free Forever
                     <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                    href="/get-started"
-                    className="flex items-center justify-center gap-1 bg-zinc-100 text-deep py-3 px-4 rounded-xl font-bold text-sm"
-                >
-                    Free Trial
                 </Link>
             </div>
         </div>

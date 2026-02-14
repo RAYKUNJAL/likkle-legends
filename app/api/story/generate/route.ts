@@ -1,30 +1,71 @@
-
 import { NextResponse } from 'next/server';
 import { storyGenerator } from '@/lib/ai-content-generator/generators/story-generator';
-
 import { databasePoster } from '@/lib/ai-content-generator/database-poster';
 import { audioGenerationService } from '@/lib/services/audio-generation-service';
+import { VOICES } from '@/lib/services/elevenlabs';
+import { supabaseAdmin } from '@/lib/supabase-client';
+import { createClient } from '@/lib/supabase/server';
+import { CONTENT_CONFIG } from '@/lib/ai-content-generator/config';
 
-export const runtime = 'nodejs'; // Use nodejs runtime for heavier AI operations
-export const maxDuration = 60; // Allow 1 minute for generation (if platform supports it)
+export const runtime = 'nodejs';
+export const maxDuration = 300; // Increased to 5 mins for Gemini Story Maker image generation overhead
 
 export async function POST(req: Request) {
     try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized. Please log in to generate stories." }, { status: 401 });
+        }
+
         const body = await req.json();
-        const { topic, heroName, heroType, style } = body;
+        const { topic, heroName, heroType, style, narrator = 'roti' } = body;
 
         if (!topic || !heroName || !heroType) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        console.log(`🪄 API: Generating story for ${heroName} (${heroType}) about ${topic} in style ${style}`);
+        // --- USAGE LIMIT CHECK ---
+        const today = new Date().toISOString().split('T')[0];
+        const { count, error: usageError } = await supabaseAdmin
+            .from('ai_usage')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('feature', 'story_studio')
+            .gte('used_at', today);
+
+        if (usageError) console.error("Usage check error:", usageError);
+
+        // Fetch user profile for tier check
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('subscription_tier')
+            .eq('id', user.id)
+            .single();
+
+        const tier = profile?.subscription_tier || 'free';
+        const limit = tier === 'legends_plus' ? 5 : (tier === 'family_legacy' ? 20 : CONTENT_CONFIG.generation.storiesPerDay);
+
+        if (count !== null && count >= limit) {
+            return NextResponse.json({
+                error: "Daily limit reached",
+                details: `You have used all ${limit} story generations for today on your ${tier.replace('_', ' ')} plan. Upgrade for more magic!`
+            }, { status: 429 });
+        }
+
+        console.log(`🪄 API: Generating story for ${heroName} (${heroType}) about ${topic} in style ${style} for user ${user.id}`);
 
         // Construct the prompt
-        // Map style ID to a descriptive string
         const styleMap: Record<string, string> = {
-            'folklore': 'Traditional Caribbean Folklore, mysterious and magical',
-            'scifi': 'Afro-Futurist Sci-Fi, colorful and high-tech',
-            'nature': 'Lush Island Nature, peaceful and grounded'
+            'silly_funny': 'Silly & Funny: Goofy, lighthearted, and full of jokes kids understand.',
+            'brave_adventure': 'Brave Adventure: Heroic, exploring, and exciting with a happy ending.',
+            'bedtime_calm': 'Bedtime Calm: Soft, gentle, and peaceful words for relaxation.',
+            'friendship_kindness': 'Friendship & Kindness: Focused on helping, sharing, and being kind.',
+            'mystery_not_scary': 'Mystery: A curious investigation with no scary parts.',
+            'carnival_party': 'Carnival Party: Vibrant, musical, and full of big island energy.',
+            'animal_helpers': 'Animal Helpers: Friendly animals solving simple problems together.',
+            'super_helpers': 'Super Helpers: Heroic kid actions with simple powers and a big heart.'
         };
         const styleDesc = styleMap[style] || 'Caribbean Folklore';
 
@@ -44,29 +85,37 @@ export async function POST(req: Request) {
         // Call the generator
         let story = await storyGenerator.generateStory({
             customPrompt,
-            ageTrack: 'big', // Default to 'big' for more detail for now, or make this dynamic later
-            theme: topic // Fallback theme
-            // characterId defaults to Roti (host)
+            ageTrack: tier === 'starter_mailer' ? 'mini' : 'big',
+            theme: topic
         });
 
         let storyId: string | undefined;
 
         // 1. Save to Database
-        const postResult = await databasePoster.postStory(story);
+        const postResult = await databasePoster.postStory(story, user.id);
         if (postResult.success) {
             storyId = postResult.id;
+            if (postResult.updatedStory) {
+                story = postResult.updatedStory;
+            }
             console.log(`💾 Story saved with ID: ${storyId}`);
 
+            // Increment usage
+            await supabaseAdmin.from('ai_usage').insert({
+                user_id: user.id,
+                feature: 'story_studio',
+                metadata: { story_id: storyId, tier }
+            });
+
             // 2. Generate Audio (Voice)
-            // We await this because Vercel/Next.js serverless functions might kill background tasks
             if (storyId) {
                 try {
-                    console.log("🎙️ Starting synchronous audio generation...");
-                    const storyWithAudio = await audioGenerationService.generateAudioForStory(story, storyId);
-                    story = storyWithAudio; // Update story object with audio URLs
+                    console.log(`🎙️ Starting synchronous audio generation for narrator: ${narrator}...`);
+                    const voiceId = narrator === 'tanty_spice' ? VOICES.tanty_spice : VOICES.roti;
+                    const storyWithAudio = await audioGenerationService.generateAudioForStory(story, storyId, true, voiceId);
+                    story = storyWithAudio;
                 } catch (audioError) {
                     console.error("Audio generation failed (partial success):", audioError);
-                    // Continue with text-only story
                 }
             }
         } else {
@@ -78,7 +127,6 @@ export async function POST(req: Request) {
             story,
             storyId
         });
-
 
     } catch (error: any) {
         console.error("Story Generation Error:", error);

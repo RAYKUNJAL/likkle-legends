@@ -8,9 +8,9 @@ const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 // Voice IDs - Custom Caribbean voice models
 export const VOICES = {
     tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS',
-    roti: process.env.ELEVENLABS_ROTI_VOICE_ID || 'nQG6qMEBUTxBc8zgoyIY',
+    roti: process.env.ELEVENLABS_ROTI_VOICE_ID || 'eppqEXVumQ3CfdndcIB',
     // Aliases
-    steelpan_sam: process.env.ELEVENLABS_ROTI_VOICE_ID || 'nQG6qMEBUTxBc8zgoyIY',
+    steelpan_sam: process.env.ELEVENLABS_ROTI_VOICE_ID || 'eppqEXVumQ3CfdndcIB',
     tanty: process.env.ELEVENLABS_TANTY_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS',
 };
 

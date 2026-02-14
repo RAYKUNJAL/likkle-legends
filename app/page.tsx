@@ -76,12 +76,6 @@ export default async function Home() {
           {/* Founders Section */}
           <FoundersSection content={content} />
 
-          {/* $10 Offer Spotlight */}
-          <OfferSpotlight />
-
-          {/* Free Trial Section */}
-          <FreeTrialSection />
-
           {/* How It Works */}
           <HowItWorksV2 content={content} />
 

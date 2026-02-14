@@ -15,7 +15,7 @@ export class EnhancedDatabasePoster {
     /**
      * Save generated story to database with retry logic
      */
-    async postStory(story: GeneratedStory): Promise<{ success: boolean; id?: string; error?: string; offline?: boolean }> {
+    async postStory(story: GeneratedStory, userId?: string): Promise<{ success: boolean; id?: string; error?: string; offline?: boolean; updatedStory?: GeneratedStory }> {
         try {
             console.log(`📝 Posting story: "${story.title}"...`);
 
@@ -36,18 +36,21 @@ export class EnhancedDatabasePoster {
                 if (genUrl) coverImageUrl = genUrl;
             } catch (ignored) { }
 
-            // Process Pages (Generate images for first 3 pages only to save costs/time for now, or all if needed)
+            // Process Pages (Generate images for ALL pages with new 5min API timeout)
             const pagesWithImages = await Promise.all(story.pages.map(async (page, index) => {
-                let pageImg = `https://images.unsplash.com/photo-1512820660846-51897326bb2d?auto=format&fit=crop&q=80&w=800`; // Better default: Book/Lib
-                if (index < 5) { // More pages for real launch
-                    try {
-                        const { generateImage } = await import('@/lib/ai-image-generator/image-client');
-                        const genUrl = await generateImage(page.imagePrompt + " children's book illustration style", `page-${index}-${story.title.replace(/\s+/g, '-')}`);
-                        if (genUrl) pageImg = genUrl;
-                    } catch (ignored) { }
-                }
+                let pageImg = `https://images.unsplash.com/photo-1512820660846-51897326bb2d?auto=format&fit=crop&q=80&w=800`;
+                try {
+                    const { generateImage } = await import('@/lib/ai-image-generator/image-client');
+                    const genUrl = await generateImage(page.imagePrompt + " children's book illustration style", `page-${index}-${story.title.replace(/\s+/g, '-')}`);
+                    if (genUrl) pageImg = genUrl;
+                } catch (ignored) { }
                 return { ...page, imageUrl: pageImg };
             }));
+
+            const updatedStory: GeneratedStory = {
+                ...story,
+                pages: pagesWithImages
+            };
 
             // Insert into storybooks table with retry
             const result = await supabaseManager.executeWithRetry(async (client) => {
@@ -70,6 +73,7 @@ export class EnhancedDatabasePoster {
                         difficulty_level: story.metadata.difficultyLevel,
                         is_active: false, // Pending approval
                         display_order: 0,
+                        user_id: userId, // Link to user if available
                     })
                     .select()
                     .single();
@@ -79,7 +83,7 @@ export class EnhancedDatabasePoster {
             }, true); // Use service role
 
             console.log(`✅ Story posted successfully! ID: ${result.id}`);
-            return { success: true, id: result.id };
+            return { success: true, id: result.id, updatedStory };
         } catch (error: any) {
             console.error('❌ Failed to post story:', error.message);
 

@@ -65,9 +65,9 @@ export class ContentGenerator {
                     });
 
                     // WRAP IN TIMEOUT for Vercel Function Limit Protection
-                    // Reduced to 20 seconds to fail fast before Vercel 10s default limit (if on hobby) or 60s pro
+                    // Increased to 60 seconds for complex storytelling
                     const timeoutPromise = new Promise<never>((_, reject) =>
-                        setTimeout(() => reject(new Error(`Timeout - Model ${modelName} took too long (>20s)`)), 20000)
+                        setTimeout(() => reject(new Error(`Timeout - Model ${modelName} took too long (>60s)`)), 60000)
                     );
 
                     const generationPromise = async () => {
@@ -154,6 +154,8 @@ export class ContentGenerator {
      */
     async generateImage(prompt: string, characterName?: string): Promise<string> {
         try {
+            const { generateImage: callGeminiImage } = await import('../ai-image-generator/image-client');
+
             // Enhance prompt with character profile if specified
             let fullPrompt = prompt;
 
@@ -167,11 +169,12 @@ export class ContentGenerator {
             // Add safety and quality guidelines
             fullPrompt += `. IMPORTANT: Child-friendly, culturally authentic Caribbean illustration. No violence, scary elements, or inappropriate content. High quality, detailed, warm and inviting.`;
 
-            // TODO: Implement actual image generation
-            // For now, return a placeholder URL
-            // In production, you'd upload to Supabase Storage and return that URL
-            console.log(`[Image Generation] ${fullPrompt.substring(0, 100)}...`);
-            return 'placeholder-image-url';
+            console.log(`🎨 [AI Core] Requesting Gemini Story Maker Image: ${fullPrompt.substring(0, 80)}...`);
+
+            const fileName = `story-page-${Date.now()}`;
+            const imageUrl = await callGeminiImage(fullPrompt, fileName);
+
+            return imageUrl || 'placeholder-image-url';
 
         } catch (error) {
             console.error('Error generating image:', error);

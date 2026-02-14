@@ -49,15 +49,8 @@ export default function LandingHero({ content }: { content: any }) {
                             className="btn btn-primary btn-lg px-10 py-6 text-xl shadow-premium hover:shadow-2xl hover:scale-[1.02] transition-all group flex items-center justify-center font-black"
                             style={{ borderRadius: '2rem' }}
                         >
-                            {hero.primary_cta?.label || "Try the $10 Intro Experience"}
+                            Start Free Forever
                             <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                        </Link>
-                        <Link
-                            href="/get-started"
-                            className="bg-white border-2 border-slate-100 text-deep hover:bg-slate-50 px-10 py-6 text-xl font-black flex items-center justify-center transition-all shadow-sm"
-                            style={{ borderRadius: '2rem' }}
-                        >
-                            Explore Free Trial
                         </Link>
                     </div>
 
