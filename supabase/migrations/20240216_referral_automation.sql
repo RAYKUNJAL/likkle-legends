@@ -24,7 +24,7 @@ END $$;
 
 CREATE TABLE IF NOT EXISTS public.referral_credits (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID REFERENCES NOT NULL auth.users(id) ON DELETE CASCADE, -- The parent who earned the credit
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, -- The parent who earned the credit
     referred_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL, -- The friend who signed up
     reward_type referral_reward_type DEFAULT 'subscription_credit',
     credit_amount NUMERIC(10, 2) DEFAULT 0.00, -- Optional: used if it's a dollar discount
