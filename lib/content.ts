@@ -536,8 +536,8 @@ export const siteContent = {
         title: "Likkle Legends for Schools",
         description: "Bring Caribbean culture and SEL into your classroom with our institutional plans.",
         cta: {
-            label: "Contact Sales",
-            href: "/contact/educators"
+            label: "Explore School Plans",
+            href: "/schools"
         }
     }
 };
