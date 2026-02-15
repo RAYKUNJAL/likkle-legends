@@ -5,12 +5,18 @@ import { getCharacters } from '../services/storageService';
 import { Character, AdminCharacter } from '../lib/types';
 import { LazyImage } from './LazyImage';
 
+import dynamic from 'next/dynamic';
+import { Box, Smartphone, Image as ImageIcon } from 'lucide-react';
+
+const CharacterARViewer = dynamic(() => import('@/components/CharacterARViewer'), { ssr: false });
+
 const CharacterShowcase: React.FC = () => {
     // Fix: Explicitly type the collection to allow access to the isMystery property which is not on the base Character type
     const DEFAULT_ALL: AdminCharacter[] = [TANTY_CHARACTER, ...CHARACTERS];
 
     const [activeCharacters, setActiveCharacters] = useState<AdminCharacter[]>(DEFAULT_ALL);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [is3DMode, setIs3DMode] = useState(false);
 
     useEffect(() => {
         const fetchCustomCharacters = async () => {
@@ -26,10 +32,12 @@ const CharacterShowcase: React.FC = () => {
     }, []);
 
     const handleNext = () => {
+        setIs3DMode(false);
         setCurrentIndex((prev) => (prev + 1) % activeCharacters.length);
     };
 
     const handlePrev = () => {
+        setIs3DMode(false);
         setCurrentIndex((prev) => (prev - 1 + activeCharacters.length) % activeCharacters.length);
     };
 
@@ -69,16 +77,37 @@ const CharacterShowcase: React.FC = () => {
                     </div>
 
                     <div className="flex flex-col lg:flex-row items-center gap-12 md:gap-20 transition-all duration-500 animate-in fade-in slide-in-from-bottom-8">
-                        <div className="w-full lg:w-1/2 flex justify-center relative">
+                        <div className="w-full lg:w-1/2 flex justify-center relative min-h-[400px]">
                             {/* Background Glow */}
                             <div className={`absolute inset-0 blur-[100px] opacity-20 ${active.color} rounded-full`}></div>
 
-                            <div className={`relative w-64 h-64 md:w-96 md:h-96 rounded-[4rem] ${active.color} shadow-2xl border-8 border-white overflow-hidden transition-all duration-700 ${active.isMystery ? 'ring-4 ring-indigo-500/20' : ''}`}>
-                                <LazyImage
-                                    src={active.image}
-                                    alt={active.name}
-                                    className={`w-full h-full transition-all duration-700 ${active.isMystery ? 'brightness-[0.1] contrast-[1.2] saturate-0' : 'group-hover:scale-110'}`}
-                                />
+                            <div className={`relative w-full max-w-[400px] aspect-square rounded-[4rem] shadow-2xl border-8 border-white overflow-hidden transition-all duration-700 ${active.isMystery ? 'ring-4 ring-indigo-500/20' : ''}`}>
+                                {is3DMode && active.model_3d_url ? (
+                                    <CharacterARViewer
+                                        src={active.model_3d_url}
+                                        poster={active.image}
+                                        alt={active.name}
+                                    />
+                                ) : (
+                                    <LazyImage
+                                        src={active.image}
+                                        alt={active.name}
+                                        className={`w-full h-full transition-all duration-700 ${active.isMystery ? 'brightness-[0.1] contrast-[1.2] saturate-0' : 'group-hover:scale-110'}`}
+                                    />
+                                )}
+
+                                {/* Mode Switcher Overlay */}
+                                {!active.isMystery && active.model_3d_url && (
+                                    <div className="absolute top-4 right-4 flex gap-2 z-30">
+                                        <button
+                                            onClick={() => setIs3DMode(!is3DMode)}
+                                            className={`p-3 rounded-2xl shadow-lg transition-all transform hover:scale-110 active:scale-90 ${is3DMode ? 'bg-orange-500 text-white' : 'bg-white/90 backdrop-blur text-blue-600'}`}
+                                            title={is3DMode ? "Switch to 2D Image" : "Switch to 3D Model"}
+                                        >
+                                            {is3DMode ? <ImageIcon size={20} /> : <Box size={20} />}
+                                        </button>
+                                    </div>
+                                )}
 
                                 {/* Redesigned Mystery Character Overlay */}
                                 {active.isMystery && (
@@ -113,12 +142,33 @@ const CharacterShowcase: React.FC = () => {
                                 ))}
                             </div>
 
+                            {/* Action Buttons */}
+                            {!active.isMystery && (
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-4">
+                                    {active.model_3d_url && (
+                                        <button
+                                            onClick={() => setIs3DMode(true)}
+                                            className="btn btn-secondary flex items-center gap-2 group"
+                                        >
+                                            <Smartphone className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                                            View in AR
+                                        </button>
+                                    )}
+                                    <button className="btn btn-primary">
+                                        Learn More
+                                    </button>
+                                </div>
+                            )}
+
                             {/* Dot Indicators for Navigation */}
                             <div className="flex gap-3 justify-center lg:justify-start pt-6">
                                 {activeCharacters.map((_, idx) => (
                                     <button
                                         key={idx}
-                                        onClick={() => setCurrentIndex(idx)}
+                                        onClick={() => {
+                                            setIs3DMode(false);
+                                            setCurrentIndex(idx);
+                                        }}
                                         className={`h-3 rounded-full transition-all duration-300 ${currentIndex === idx ? 'bg-orange-500 w-10 shadow-lg' : 'bg-blue-100 w-3 hover:bg-blue-200'}`}
                                         aria-label={`Go to character ${idx + 1}`}
                                     />

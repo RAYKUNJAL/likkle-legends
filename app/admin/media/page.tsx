@@ -66,7 +66,7 @@ function MediaManagerContent() {
         loadMedia();
     }, [loadMedia]);
 
-    const handleFileUpload = async (file: File, type: 'main' | 'thumbnail', onProgress?: (percent: number) => void) => {
+    const handleFileUpload = async (file: File, type: 'main' | 'thumbnail') => {
         let bucket: any = BUCKETS.SONGS;
         if (activeTab === 'songs') bucket = BUCKETS.SONGS;
         else if (activeTab === 'videos') bucket = BUCKETS.VIDEOS;
@@ -79,13 +79,24 @@ function MediaManagerContent() {
             else if (type === 'thumbnail') bucket = BUCKETS.AVATARS;
         }
 
+        // Use the new server-side upload API
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('bucket', bucket);
+
         try {
-            const result = await uploadFile(bucket, file, undefined, {
-                onProgress,
-                useProxy: true // Since we want to use the /api/upload proxy with service role
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
             });
 
-            if (!result) throw new Error("Upload failed");
+            const result = await response.json();
+
+            if (!response.ok) {
+                console.error('Upload failed:', result.error);
+                alert(`Upload failed: ${result.error || 'Unknown error'}`);
+                return;
+            }
 
             setFormData((prev: any) => {
                 const updates = { ...prev };
@@ -94,6 +105,7 @@ function MediaManagerContent() {
                     else if (activeTab === 'videos') updates.video_url = result.url;
                     else if (activeTab === 'printables') updates.pdf_url = result.url;
                     else if (activeTab === 'storybooks') {
+                        // For storybooks, main upload is usually the narration or the book itself
                         if (file.type.startsWith('audio/')) updates.audio_narration_url = result.url;
                         else updates.cover_image_url = result.url;
                     }
@@ -104,9 +116,9 @@ function MediaManagerContent() {
                 }
                 return updates;
             });
-        } catch (error: any) {
+        } catch (error) {
             console.error('Upload error:', error);
-            alert(error.message || "Upload failed. Please check your connection and file size.");
+            alert("Upload failed. Please check your connection and file size.");
         }
     };
 
@@ -466,7 +478,7 @@ function MediaManagerContent() {
                             <label className="block text-sm font-bold text-gray-700">Media Files</label>
                             <FileUpload
                                 accept={activeTab === 'songs' ? 'audio/*' : activeTab === 'videos' ? 'video/*' : 'application/pdf,image/*'}
-                                onUpload={(file, progress) => handleFileUpload(file, 'main', progress)}
+                                onUpload={(file) => handleFileUpload(file, 'main')}
                                 label={`Upload ${activeTab.slice(0, -1)}`}
                                 description={getMainUrl(formData) ? 'File uploaded!' : 'Drop file here'}
                             />
@@ -474,7 +486,7 @@ function MediaManagerContent() {
                             <label className="block text-sm font-bold text-gray-700">Thumbnail</label>
                             <FileUpload
                                 accept="image/*"
-                                onUpload={(file, progress) => handleFileUpload(file, 'thumbnail', progress)}
+                                onUpload={(file) => handleFileUpload(file, 'thumbnail')}
                                 label="Upload Thumbnail"
                                 description="Image preview"
                             />

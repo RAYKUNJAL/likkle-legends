@@ -1,5 +1,5 @@
-
 import { supabase } from '@/lib/storage';
+import { isSupabaseConfigured } from '@/lib/supabase-client';
 import { createAdminClient } from '@/lib/admin';
 import { siteContent } from '@/lib/content';
 
@@ -59,6 +59,7 @@ const CACHE_TTL = 60000; // 1 minute
  * Incorporates DB overrides with proper caching.
  */
 export async function getMergedSiteContent(forceRefresh = false) {
+    if (!isSupabaseConfigured()) return siteContent;
     const now = Date.now();
 
     if (contentCache && !forceRefresh && (now - lastFetch < CACHE_TTL)) {

@@ -85,9 +85,10 @@ export class StoryGenerator {
         **WORLD-CLASS STANDARDS:**
         1. MORAL: Start with a clear positive Caribbean value.
         2. TONE: Gentle, encouraging, and magical.
-        3. LITERACY BUILDING: **IMPORTANT** Use **BOLD** (Markdown **word**) for key educational words, new Patois words, or important objects. This helps young children focus on key vocabulary.
-        4. LANGUAGE: Culturally authentic English with specific island dialect words.
-        5. STRUCTURE: ${ageTrack === 'mini' ? 'Engaging repetition with a full island adventure, 6-8 pages' : 'Highly detailed and immersive exploration or adventure plot, 10-12 pages'}.
+        3. LITERACY BUILDING: **IMPORTANT** Use **BOLD** (Markdown **word**) for exactly 2-3 key educational words, new Patois words, or important objects. Do not bold entire sentences.
+        4. TEXT QUALITY: Do not use bullet points, emojis, or special symbols (like #, >, or @) inside the story text. Keep it pure narrative. Ensure all dialogue is clearly quoted with "quotation marks".
+        5. LANGUAGE: Culturally authentic English with specific island dialect words.
+        6. STRUCTURE: ${ageTrack === 'mini' ? 'Engaging repetition with a full island adventure, 6-8 pages' : 'Highly detailed and immersive exploration or adventure plot, 10-12 pages'}.
         `;
 
         // Build the Prompt

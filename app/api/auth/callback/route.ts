@@ -11,16 +11,9 @@ export async function GET(request: Request) {
 
     if (code) {
         const cookieStore = cookies()
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-        const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-        if (!url || !key || url === 'false' || key === 'false') {
-            return NextResponse.redirect(`${origin}/login?error=missing-config`)
-        }
-
         const supabase = createServerClient(
-            url,
-            key,
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
             {
                 cookies: {
                     getAll() {

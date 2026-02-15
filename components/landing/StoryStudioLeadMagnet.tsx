@@ -6,8 +6,6 @@ import { Sparkles, BookOpen, Wand2, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function StoryStudioLeadMagnet({ content }: { content: any }) {
     const { ai_story_studio } = content;
-    if (!ai_story_studio) return null;
-
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<null | { title: string, snippet: string }>(null);
     const [formData, setFormData] = useState({
@@ -49,6 +47,8 @@ export default function StoryStudioLeadMagnet({ content }: { content: any }) {
             setLoading(false);
         }
     };
+
+    if (!ai_story_studio) return null;
 
     return (
         <section id="story-studio" className="py-24 bg-zinc-50 relative overflow-hidden">

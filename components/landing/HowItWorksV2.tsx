@@ -26,16 +26,21 @@ export default function HowItWorksV2({ content }: { content: any }) {
     const stepsData = how_it_works?.steps || [];
 
     return (
-        <section id="how-it-works" className="py-20 bg-white">
-            <div className="container">
-                <div className="text-center mb-14 space-y-4">
-                    <h2 className="text-3xl md:text-4xl font-black text-deep">
+        <section id="how-it-works" className="py-32 bg-white relative overflow-hidden">
+            {/* Background Decor */}
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-50/50 rounded-full blur-[100px] pointer-events-none" />
+
+            <div className="container relative z-10">
+                <div className="text-center mb-20 space-y-4">
+                    <span className="text-[10px] font-black uppercase text-blue-500 tracking-[0.2em]">The Journey</span>
+                    <h2 className="text-4xl md:text-5xl font-black text-deep tracking-tight">
                         {how_it_works?.title || "How It Works"}
                     </h2>
+                    <div className="h-1.5 w-16 bg-blue-500 mx-auto rounded-full" />
                 </div>
 
-                <div className="max-w-4xl mx-auto">
-                    <div className="grid md:grid-cols-3 gap-8">
+                <div className="max-w-6xl mx-auto">
+                    <div className="grid md:grid-cols-3 gap-10">
                         {stepsData.map((step: any, idx: number) => {
                             const colorKey = colorMapArray[idx % colorMapArray.length];
                             const colors = colorMap[colorKey];
@@ -45,21 +50,24 @@ export default function HowItWorksV2({ content }: { content: any }) {
                                 <div key={step.title} className="relative">
                                     {/* Connector line (hidden on mobile, visible between cards on desktop) */}
                                     {idx < stepsData.length - 1 && (
-                                        <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-0.5 bg-zinc-200" />
+                                        <div className="hidden md:block absolute top-1/2 left-[70%] w-[60%] h-px border-t-2 border-dashed border-slate-200 -translate-y-1/2 z-0" />
                                     )}
 
-                                    <div className={`relative bg-white rounded-3xl p-8 border-2 ${colors.border} hover:shadow-xl transition-all group h-full`}>
+                                    <div
+                                        className={`relative glass-card p-10 border border-slate-100 hover:shadow-2xl transition-all group h-full z-10`}
+                                        style={{ borderRadius: '3rem', boxShadow: 'var(--shadow-premium)' }}
+                                    >
                                         {/* Step number */}
-                                        <div className="absolute -top-3 -left-3 w-8 h-8 bg-deep text-white rounded-full flex items-center justify-center text-sm font-black">
+                                        <div className="absolute -top-4 -left-4 w-12 h-12 bg-deep text-white rounded-2xl flex items-center justify-center text-lg font-black shadow-lg">
                                             {idx + 1}
                                         </div>
 
-                                        <div className={`w-16 h-16 ${colors.bg} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                                            <Icon className={`w-8 h-8 ${colors.icon}`} />
+                                        <div className={`w-20 h-20 ${colors.bg} rounded-[1.5rem] flex items-center justify-center mb-8 group-hover:scale-110 transition-transform shadow-inner`}>
+                                            <Icon className={`w-10 h-10 ${colors.icon}`} />
                                         </div>
 
-                                        <h3 className="text-xl font-black text-deep mb-3">{step.title}</h3>
-                                        <p className="text-deep/60 leading-relaxed text-sm">{step.description || step.text}</p>
+                                        <h3 className="text-2xl font-black text-deep mb-4">{step.title}</h3>
+                                        <p className="text-deep/60 leading-relaxed text-sm font-medium">{step.description || step.text}</p>
                                     </div>
                                 </div>
                             );

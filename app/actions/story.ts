@@ -2,6 +2,8 @@
 
 import { generateCulturalStory, StoryInputs } from "@/lib/story-engine";
 
+// export const maxDuration = 60; // Config not supported in Server Actions
+
 export async function createStoryAction(inputs: StoryInputs) {
     try {
         const story = await generateCulturalStory(inputs);

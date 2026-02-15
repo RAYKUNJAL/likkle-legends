@@ -20,6 +20,7 @@ import TantyRadio from '@/components/TantyRadio';
 import IslandVillageMap from '@/components/IslandVillageMap';
 import PremiumVideoPlayer from '@/components/PremiumVideoPlayer';
 import PremiumMusicPlayer from '@/components/PremiumMusicPlayer';
+import BadgeUnlockModal from '@/components/gamification/BadgeUnlockModal';
 
 interface Song {
     id: string;
@@ -62,7 +63,7 @@ type PortalSection = 'home' | 'stories' | 'songs' | 'missions' | 'games' | 'less
 
 export default function ChildPortalPage() {
     const router = useRouter();
-    const { user, activeChild, canAccess, isSubscribed, isLoading: userLoading } = useUser();
+    const { user, activeChild, canAccess, isSubscribed, isLoading: userLoading, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge } = useUser();
     const [songs, setSongs] = useState<Song[]>([]);
     const [stories, setStories] = useState<Storybook[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
@@ -126,51 +127,51 @@ export default function ChildPortalPage() {
         return null;
     }
 
-    const handleMediaComplete = async (type: 'video' | 'song', id: string, xp: number) => {
+    const handleActivityLog = async (type: string, id: string, title?: string, xp?: number) => {
         if (!user || !activeChild) return;
-
         try {
-            await logActivity(
+            const result = await logActivity(
                 user.id,
                 activeChild.id,
                 type,
                 id,
-                xp,
+                xp || 0,
                 0,
-                { title: type === 'video' ? activeVideo?.title : activeSong?.title }
-            );
+                { title }
+            ) as any;
 
-            // Close player after a bit (the player component usually handles its own close but we clean up state)
-            if (type === 'video') setActiveVideo(null);
-            else setActiveSong(null);
+            if (result?.unlockedBadge) {
+                triggerBadgeUnlock(result.unlockedBadge);
+            }
 
-            // Refresh portal data to show new XP
             loadPortalData();
         } catch (err) {
             console.error("Failed to log activity:", err);
         }
     };
 
-    const handleMissionComplete = async (xp: number, questId: string) => {
+    const handleMediaComplete = async (type: 'video' | 'song', id: string, xp: number) => {
         if (!user || !activeChild) return;
 
         try {
-            await logActivity(
-                user.id,
-                activeChild.id,
-                'mission',
-                questId,
-                xp,
-                0,
-                { quest_id: questId }
+            await handleActivityLog(
+                type,
+                id,
+                type === 'video' ? activeVideo?.title : activeSong?.title,
+                xp
             );
 
-            // Update local child state to show completion immediately if possible
-            // but refreshing data is safer
-            loadPortalData();
+            // Close player after a bit (the player component usually handles its own close but we clean up state)
+            if (type === 'video') setActiveVideo(null);
+            else setActiveSong(null);
+
         } catch (err) {
-            console.error("Failed to log mission completion:", err);
+            console.error("Failed to log activity:", err);
         }
+    };
+
+    const handleMissionComplete = async (xp: number, questId: string) => {
+        await handleActivityLog('mission', questId, undefined, xp);
     };
 
     const currentLevel = activeChild ? calculateLevel(activeChild.total_xp) : LEVELS[0];
@@ -185,8 +186,6 @@ export default function ChildPortalPage() {
         { id: 'printables', label: 'Printables', icon: Download, color: 'from-amber-400 to-orange-500' },
         { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
     ];
-
-    // Portals definition removed as we now use IslandVillageMap
 
     return (
         <div className="min-h-screen bg-[#F0F9FF] font-heading overflow-hidden relative">
@@ -622,6 +621,11 @@ export default function ChildPortalPage() {
                     onComplete={(xp) => handleMediaComplete('song', activeSong.id, xp)}
                 />
             )}
+            {/* Badge Unlock Celebration */}
+            <BadgeUnlockModal
+                badge={unlockedBadge}
+                onClose={() => clearUnlockedBadge()}
+            />
         </div>
     );
 }

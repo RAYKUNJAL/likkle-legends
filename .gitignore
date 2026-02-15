@@ -1,9 +1,6 @@
-<<<<<<< HEAD
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
-/node_modules
-/.pnp
+node_modules
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -12,18 +9,24 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
-/build
+build
+dist/
 
 # misc
 .DS_Store
 *.pem
+.env*
+*.local
+.vercel
+.tmp
+credentials/
 
 # debug
 npm-debug.log*
@@ -31,13 +34,6 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 *.log
-
-# env files (can opt-in for committing if needed)
-.env*
-*.local
-
-# vercel
-.vercel
 
 # typescript
 *.tsbuildinfo
@@ -47,27 +43,15 @@ next-env.d.ts
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.env*.local
 
-# Ignored Clones
+# Ignored Clones & Specific Folders
 likkle-legend-ai-studio_clone/
 likkle-legends-second/
 temp_plex/
 temp_plex_2/
 voice-server/
-=======
-node_modules
-.env
-.tmp
-*.log
-credentials/
-.DS_Store
-dist/
-build/
->>>>>>> ai-studio-integration

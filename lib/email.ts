@@ -188,36 +188,36 @@ export const ABANDONED_CHECKOUT_TEMPLATE = (userName: string, planName?: string)
             ${SOCIAL_TRUST_FOOTER}
         </div>
     </div>
-</body>
-</html>
-`;
-
-// 4. MAGIC LINK / CONFIRMATION
-export const CONFIRMATION_EMAIL_TEMPLATE = (name: string, magicLink: string) => `
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { font-family: 'Inter', sans-serif; color: #1e293b; background: #fffdf7; }
-        .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 40px; overflow: hidden; border: 1px solid #f1f5f9; }
-        .btn { display: inline-block; padding: 22px 44px; background: #10b981; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; text-transform: uppercase; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div style="padding: 40px; text-align: center;">
-            <h1 style="margin:0; font-size: 24px; font-weight: 900; color: #10b981;">Likkle Legends</h1>
-            <h2 style="font-size: 32px; font-weight: 900; color: #0f172a; margin-top: 20px;">Your Magic Link is Here! 🌴</h2>
-            <p style="font-size: 18px; color: #475569; margin: 20px 0;">Hi ${name}, click de button below to fly straight into de village. No password needed!</p>
-            <a href="${magicLink}" class="btn">Enter de Village</a>
-            <p style="margin-top: 30px; font-size: 12px; color: #94a3b8;">This magic link will expire in 1 hour. If you didn't request this, just ignore it!</p>
-        </div>
     </div>
 </body>
 </html>
 `;
 
-// 4. RESET PASSWORD
+// 3.5 EMAIL VERIFICATION (Magic Link)
+export const CONFIRMATION_EMAIL_TEMPLATE = (name: string, link: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1e293b; background: #fff; }
+        .btn { display: inline-block; padding: 18px 36px; background: #2563eb; color: white !important; text-decoration: none; border-radius: 12px; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div style="max-width: 600px; margin: 40px auto; padding: 40px; border: 1px solid #e2e8f0; border-radius: 24px;">
+        <h2 style="margin-top: 0; color: #1e293b;">Confirm your Likkle Legends Login 🌴</h2>
+        <p>Hi ${name},</p>
+        <p>Click the magic link below to sign in instantly:</p>
+        <div style="margin: 30px 0;">
+            <a href="${link}" class="btn">Sign In Now</a>
+        </div>
+        <p style="font-size: 14px; color: #64748b;">If you didn't request this, you can safely ignore this email.</p>
+    </div>
+</body>
+</html>
+`;
+
+// 4. SUBSCRIPTION CONFIRMATION
 export const SUBSCRIPTION_CONFIRMATION_TEMPLATE = (name: string, tier?: string, childName?: string) => `
 <!DOCTYPE html>
 <html>

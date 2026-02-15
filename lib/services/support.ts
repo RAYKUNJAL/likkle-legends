@@ -1,5 +1,5 @@
-
 import { supabase } from '@/lib/storage';
+import { isSupabaseConfigured } from '@/lib/supabase-client';
 
 export interface SupportMessage {
     id?: string;
@@ -30,6 +30,7 @@ export async function sendSupportMessage(messageData: SupportMessage) {
 }
 
 export async function getSupportMessages() {
+    if (!isSupabaseConfigured()) return [];
     const { data, error } = await supabase
         .from('support_messages')
         .select('*')

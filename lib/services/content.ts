@@ -1,166 +1,143 @@
 
-import { supabase } from '@/lib/storage';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase-client';
 
 /**
- * Likkle Legends v3.1.0 Content Service
- * Professional Schema: Using separate tables for optimized assets
+ * Likkle Legends v2.0.0 Content Service
+ * Unified access to 'content_items' table.
  */
 
-// --- Storybooks ---
-export async function getStorybooks(island?: string) {
+export async function getContentItems(type?: string, island?: string, ageTrack?: string) {
+    if (!isSupabaseConfigured()) {
+        console.warn(`⚠️ Supabase not configured. Skipping content fetch (${type || 'all'}).`);
+        return [];
+    }
+
     let query = supabase
-        .from('storybooks')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true })
+        .from('content_items')
+        .select(`
+            *,
+            content_localizations(*)
+        `)
         .order('created_at', { ascending: false });
 
-    if (island && island !== 'All Islands') {
-        query = query.eq('island_theme', island);
+    if (type) {
+        query = query.eq('content_type', type);
+    }
+
+    if (island) {
+        query = query.eq('island_code', island);
+    }
+
+    if (ageTrack) {
+        query = query.eq('age_track', ageTrack);
     }
 
     const { data, error } = await query;
-    if (error) throw error;
+
+    if (error) {
+        // Build-safe error handling: Log warning but return empty array to prevent build crash
+        // This is critical for initial deployment when tables might not exist yet.
+        console.warn(`Content Fetch Warning (${type || 'all'}):`, error.message);
+        return [];
+    }
+
     return data || [];
 }
 
-export async function getStorybookById(id: string) {
+export async function getContentById(id: string) {
+    if (!isSupabaseConfigured()) {
+        return null;
+    }
+
     const { data, error } = await supabase
-        .from('storybooks')
-        .select('*')
+        .from('content_items')
+        .select(`
+            *,
+            content_localizations(*)
+        `)
         .eq('id', id)
+        .single();
+
+    if (error) {
+        // Build-safe: Return null instead of crashing
+        console.warn(`Content Fetch Warning (id: ${id}):`, error.message);
+        return null;
+    }
+    return data;
+}
+
+// Legacy Aliases for compatibility during transition
+export const getCharacters = () => getContentItems('character');
+export const getStorybooks = () => getContentItems('story');
+export const getVideos = () => getContentItems('video');
+export const getPrintables = () => getContentItems('resource_pdf');
+export const getMissions = (ageTrack?: string) => getContentItems('mission', undefined, ageTrack);
+export const getGameById = (id: string) => getContentById(id);
+
+// Admin Operations
+export async function upsertContent(contentData: any) {
+    const { data, error } = await supabase
+        .from('content_items')
+        .upsert(contentData, { onConflict: 'slug' })
+        .select()
         .single();
 
     if (error) throw error;
     return data;
 }
 
-// --- Songs ---
-export async function getSongs(island?: string) {
-    let query = supabase
+export async function deleteContent(id: string) {
+    const { error } = await supabase.from('content_items').delete().eq('id', id);
+    if (error) throw error;
+    return true;
+}
+
+// Songs (Dedicated Table)
+export async function getSongs() {
+    if (!isSupabaseConfigured()) {
+        return [];
+    }
+    const { data, error } = await supabase
         .from('songs')
         .select('*')
         .eq('is_active', true)
-        .order('display_order', { ascending: true });
+        .order('created_at', { ascending: false });
 
-    if (island) {
-        query = query.eq('island_origin', island);
+    if (error) {
+        console.warn('Songs Fetch Warning:', error.message);
+        return [];
     }
-
-    const { data, error } = await query;
-    if (error) throw error;
     return data || [];
 }
-
-// --- Videos ---
-export async function getVideos(island?: string) {
-    let query = supabase
-        .from('videos')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-
-    if (island) {
-        query = query.eq('island_theme', island);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-}
-
-// --- Characters ---
-export async function getCharacters() {
-    const { data, error } = await supabase
-        .from('characters')
-        .select('*')
-        .order('display_order', { ascending: true });
-
-    if (error) throw error;
-    return data || [];
-}
-
-// --- Printables ---
-export async function getPrintables(category?: string) {
-    let query = supabase
-        .from('printables')
-        .select('*')
-        .eq('is_active', true);
-
-    if (category) {
-        query = query.eq('category', category);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data || [];
-}
-
-// --- Games ---
-export async function getGames() {
-    const { data, error } = await supabase
-        .from('games')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true });
-
-    if (error) throw error;
-    return data || [];
-}
-
-export async function getGameById(id: string) {
-    const { data, error } = await supabase
-        .from('games')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-    if (error) throw error;
-    return data;
-}
-
-// --- Legacy Aliases for minimal code breakage ---
-export const deleteContent = (id: string) => supabase.from('storybooks').delete().eq('id', id); // Simplified for now
 
 export const createSong = (data: any) => supabase.from('songs').insert(data).select().single();
 export const updateSong = (id: string, data: any) => supabase.from('songs').update(data).eq('id', id).select().single();
 export const deleteSong = (id: string) => supabase.from('songs').delete().eq('id', id);
 
-export const createVideo = (data: any) => supabase.from('videos').insert(data).select().single();
-export const updateVideo = (id: string, data: any) => supabase.from('videos').update(data).eq('id', id).select().single();
-export const deleteVideo = (id: string) => supabase.from('videos').delete().eq('id', id);
+export const createStorybook = (data: any) => upsertContent({ ...data, content_type: 'story' });
+export const updateStorybook = (id: string, data: any) => upsertContent({ ...data, id });
+export const deleteStorybook = deleteContent;
 
-export const createStorybook = (data: any) => supabase.from('storybooks').insert(data).select().single();
-export const updateStorybook = (id: string, data: any) => supabase.from('storybooks').update(data).eq('id', id).select().single();
-export const deleteStorybook = (id: string) => supabase.from('storybooks').delete().eq('id', id);
+export const createVideo = (data: any) => upsertContent({ ...data, content_type: 'video' });
+export const updateVideo = (id: string, data: any) => upsertContent({ ...data, id });
+export const deleteVideo = deleteContent;
 
-export const createPrintable = (data: any) => supabase.from('printables').insert(data).select().single();
-export const updatePrintable = (id: string, data: any) => supabase.from('printables').update(data).eq('id', id).select().single();
-export const deletePrintable = (id: string) => supabase.from('printables').delete().eq('id', id);
+export const createPrintable = (data: any) => upsertContent({ ...data, content_type: 'resource_pdf' });
+export const updatePrintable = (id: string, data: any) => upsertContent({ ...data, id });
+export const deletePrintable = deleteContent;
 
-// --- Missions ---
-export async function getMissions() {
-    // Missions are currently stored in a separate table or filtered from storybooks
-    // For now, let's look for content marked as mission or use a placeholder
+// Support for other tables that might still exist or be added
+export async function getGames() {
+    if (!isSupabaseConfigured()) {
+        return [];
+    }
     const { data, error } = await supabase
-        .from('storybooks')
+        .from('content_items')
         .select('*')
-        .eq('is_active', true)
-        .eq('age_track', 'mission'); // Example filter
-
-    if (error) return [];
+        .eq('content_type', 'game');
     return data || [];
 }
 
-export const getContentItems = (type?: string) => {
-    switch (type) {
-        case 'story': return getStorybooks();
-        case 'song': return getSongs();
-        case 'video': return getVideos();
-        case 'character': return getCharacters();
-        case 'resource_pdf': return getPrintables();
-        case 'game': return getGames();
-        default: return getStorybooks();
-    }
-}
-export const getContentById = (id: string) => getStorybookById(id);
+export const createCharacter = (data: any) => upsertContent({ ...data, content_type: 'character' });
+export const updateCharacter = (id: string, data: any) => upsertContent({ ...data, id });
+export const deleteCharacter = deleteContent;

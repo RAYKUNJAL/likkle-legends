@@ -9,8 +9,7 @@ import {
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
     Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap, Send,
-    Database, Smartphone, Accessibility, Lock, Star, Info, Target,
-    Trophy, Medal
+    Database, Smartphone, Accessibility, Lock, Star, Info, Target
 } from 'lucide-react';
 
 export {
@@ -20,8 +19,7 @@ export {
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
     Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap, Send,
-    Database, Smartphone, Accessibility, Lock, Star, Info, Target,
-    Trophy, Medal
+    Database, Smartphone, Accessibility, Lock, Star, Info, Target
 };
 
 // ==========================================
@@ -60,20 +58,33 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
     }, []);
 
     const navItems = [
-        { id: 'analytics', label: 'Mission Control', icon: TrendingUp, href: '/admin/central' },
-        { id: 'affiliates', label: 'Affiliates', icon: Users, href: '/admin/affiliates' },
-        { id: 'contests', label: 'Contest Builder', icon: Target, href: '/admin/contests' },
-        { id: 'email-engine', label: 'Growth Agent', icon: Zap, href: '/admin/email-engine' },
+        { id: 'overview', label: 'Overview', icon: BarChart, href: '/admin' },
         { id: 'leads', label: 'Leads & CRM', icon: Users, href: '/admin/leads' },
+        { id: 'affiliates', label: 'Affiliates', icon: Users, href: '/admin/affiliates' },
         { id: 'customers', label: 'Customers', icon: Users, href: '/admin/customers' },
         { id: 'orders', label: 'Orders & Fulfillment', icon: ShoppingCart, href: '/admin/orders' },
+        { id: 'custom-requests', label: 'Custom Requests', icon: Music, href: '/admin/custom-requests' },
+        { id: 'store-analytics', label: 'Store Analytics', icon: TrendingUp, href: '/admin/store-analytics' },
         { id: 'content', label: 'Content Library', icon: BookOpen, href: '/admin/content' },
-        { id: 'approval', label: 'Approval Queue', icon: CheckCircle2, href: '/admin/approval' },
+        { id: 'approval', label: 'Standard Approval', icon: CheckCircle2, href: '/admin/approval' },
+        { id: 'ai-review', label: 'AI Verification Queue', icon: Sparkles, href: '/admin/ai-review' },
+        { id: 'auto-content', label: 'Fresh Content Agent', icon: Zap, href: '/admin/auto-content' },
         { id: 'studio', label: 'Legend AI Studio', icon: Sparkles, href: '/admin/studio' },
+        { id: 'characters', label: 'Characters', icon: Palette, href: '/admin/characters' },
+        { id: 'personality', label: 'AI Brain & Personality', icon: Zap, href: '/admin/personality' },
+        { id: 'media', label: 'Media Library', icon: Video, href: '/admin/media' },
+        { id: 'games', label: 'Game Builder', icon: Gamepad2, href: '/admin/games' },
+        { id: 'voice', label: 'Voice AI Demo', icon: MessageSquare, href: '/voice-demo' },
+        { id: 'blog', label: 'Blog Manager', icon: MessageSquare, href: '/admin/blog' },
+        { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/admin/messages' },
         { id: 'cms', label: 'Site CMS', icon: Globe, href: '/admin/cms' },
-        { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
+        { id: 'pixels', label: 'Launch Pixels', icon: Target, href: '/admin/pixels' },
+        { id: 'email-engine', label: 'Growth Agent', icon: Zap, href: '/admin/email-engine' },
+        { id: 'announcements', label: 'Announcements', icon: Megaphone, href: '/admin/announcements' },
+        { id: 'analytics', label: 'Analytics', icon: TrendingUp, href: '/admin/analytics' },
         { id: 'verify', label: 'Launch Verification', icon: ShieldCheck, href: '/admin/verify' },
         { id: 'debug', label: 'AI Diagnostics', icon: Activity, href: '/admin/debug' }, // Added for debugging
+        { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
     ];
 
     return (
@@ -298,7 +309,7 @@ export function SearchBar({ value, onChange, placeholder = 'Search...', onRefres
 interface FileUploadProps {
     accept: string;
     maxSize?: number; // in MB
-    onUpload: (file: File, onProgress?: (percent: number) => void) => Promise<void>;
+    onUpload: (file: File) => Promise<void>;
     label: string;
     description?: string;
 }
@@ -319,21 +330,25 @@ export function FileUpload({ accept, maxSize = 100, onUpload, label, description
     };
 
     const handleFile = async (file: File) => {
+        setError(null);
+        setIsSuccess(false);
+        setProgress(0);
+
+        // Validate size
         if (file.size > maxSize * 1024 * 1024) {
-            setError(`File too large. Max ${maxSize}MB allowed.`);
+            setError(`File too large. Maximum size is ${maxSize}MB.`);
             return;
         }
 
         setIsUploading(true);
-        setError(null);
-        setProgress(0);
+
+        // Simulated progress for better UX
+        const interval = setInterval(() => {
+            setProgress(prev => (prev < 90 ? prev + 10 : prev));
+        }, 100);
 
         try {
-            // onUpload is expected to take the file and an optional progress callback
-            await onUpload(file, (percent: number) => {
-                setProgress(percent);
-            });
-
+            await onUpload(file);
             setProgress(100);
             setIsSuccess(true);
             setTimeout(() => {
@@ -343,6 +358,7 @@ export function FileUpload({ accept, maxSize = 100, onUpload, label, description
         } catch (err: any) {
             setError(err.message || 'Upload failed. Please try again.');
         } finally {
+            clearInterval(interval);
             setIsUploading(false);
         }
     };

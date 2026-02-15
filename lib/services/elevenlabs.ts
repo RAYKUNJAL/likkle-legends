@@ -9,6 +9,11 @@ dotenv.config();
  * Commercial-grade voice generation with word alignment support.
  */
 
+export const VOICES = {
+    tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS',
+    roti: process.env.ELEVENLABS_ROTI_VOICE_ID || 'eppqEXVumQ3CfdndcIB',
+};
+
 export interface VoiceAlignment {
     characters: string[];
     character_start_times_seconds: number[];

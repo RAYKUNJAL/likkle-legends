@@ -1,0 +1,52 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg-sky" x1="0" y1="0" x2="0" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8" /> <!-- Sky Blue -->
+      <stop offset="100%" stop-color="#0284c7" /> <!-- Darker Blue -->
+    </linearGradient>
+    <filter id="dropShadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" fill="url(#bg-sky)"/>
+  
+  <!-- Sun Rays -->
+  <circle cx="256" cy="256" r="220" stroke="white" stroke-opacity="0.1" stroke-width="40" stroke-dasharray="20 40"/>
+  
+  <!-- Classic Boombox / Radio Icon -->
+  <g filter="url(#dropShadow)">
+      <!-- Handle -->
+      <path d="M186 120 H 326 V 160 H 186 Z" fill="#cbd5e1"/>
+      <path d="M196 120 V 100 Q 196 80 216 80 H 296 Q 316 80 316 100 V 120" stroke="#94a3b8" stroke-width="12" stroke-linecap="round" fill="none"/>
+      
+      <!-- Body -->
+      <rect x="106" y="150" width="300" height="200" rx="30" fill="#f97316"/> <!-- Orange Brand Color -->
+      
+      <!-- Speakers -->
+      <circle cx="176" cy="250" r="50" fill="#334155"/>
+      <circle cx="176" cy="250" r="40" fill="#475569"/>
+      <circle cx="176" cy="250" r="15" fill="#1e293b"/>
+      
+      <circle cx="336" cy="250" r="50" fill="#334155"/>
+      <circle cx="336" cy="250" r="40" fill="#475569"/>
+      <circle cx="336" cy="250" r="15" fill="#1e293b"/>
+      
+      <!-- Central Panel -->
+      <rect x="236" y="170" width="40" height="160" rx="4" fill="#fbbf24"/>
+      <!-- Frequency Dial -->
+      <rect x="246" y="190" width="20" height="120" fill="#fff7ed"/>
+      <rect x="246" y="240" width="20" height="4" fill="#ef4444"/> <!-- Needle -->
+  </g>
+
+  <!-- Antenna with Spark -->
+  <line x1="380" y1="150" x2="420" y2="80" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="420" cy="80" r="6" fill="#ef4444"/>
+  <path d="M430 70 L 440 60 M 435 85 L 450 85 M 430 100 L 440 110" stroke="#fbbf24" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Branding Text -->
+  <text x="256" y="410" font-family="Verdana, sans-serif" font-weight="900" font-size="38" fill="white" text-anchor="middle" letter-spacing="1" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">LIKKLE LEGENDS</text>
+  <text x="256" y="455" font-family="Verdana, sans-serif" font-weight="bold" font-size="24" fill="#fef3c7" text-anchor="middle" letter-spacing="4" style="text-transform: uppercase;">Island Radio</text>
+
+</svg>

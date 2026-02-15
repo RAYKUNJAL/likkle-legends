@@ -58,3 +58,23 @@ export async function getPendingContent() {
         songs: songs.data || []
     };
 }
+
+export async function saveGeneratedStory(storyId: string) {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const { error } = await supabase
+        .from('storybooks')
+        .update({ is_active: true })
+        .eq('id', storyId)
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.error('Save failed:', error);
+        throw error;
+    }
+
+    revalidatePath('/portal/stories');
+    return { success: true };
+}

@@ -4,6 +4,8 @@ import { getTantySpiceVoice as getGoogleCloudTanty, getRotiVoice as getGoogleClo
 import { generateGeminiSpeechBase64 } from "@/lib/gemini-tts";
 import { generateSpeechBase64 as getElevenLabsVoice } from "@/lib/elevenlabs";
 
+// export const maxDuration = 60; // Config not supported in Server Actions
+
 /**
  * 🎙️ Tanty Spice Voice Action (Legacy Wrapper)
  */
@@ -34,7 +36,13 @@ export async function generateCharacterAudio(
         if (process.env.ELEVENLABS_API_KEY) {
             try {
                 // Map 'roti' to 'steelpan_sam' if not explicitly defined in lib/elevenlabs
-                const voiceKey = character === 'tanty' ? 'tanty_spice' : 'steelpan_sam';
+                const voiceKey = character === 'tanty' ? 'tanty_spice' : 'roti';
+
+                // Use generateSpeechBase64 instead of getElevenLabsVoice (alias issue)
+                // We need to import generateSpeechBase64 if getElevenLabsVoice is just generateSpeechBase64
+                // Checking imports: import { generateSpeechBase64 as getElevenLabsVoice } from "@/lib/elevenlabs";
+                // lib/elevenlabs.ts generateSpeechBase64 returns Data URI.
+
                 const elAudio = await getElevenLabsVoice(cleanText, { voice: voiceKey as any });
                 if (elAudio) {
                     return { success: true, audio: elAudio };
@@ -48,6 +56,7 @@ export async function generateCharacterAudio(
         try {
             const geminiAudio = await generateGeminiSpeechBase64(cleanText, { character });
             if (geminiAudio) {
+                // geminiAudio is already a Data URI from generateGeminiSpeechBase64
                 return { success: true, audio: geminiAudio };
             }
         } catch (geminiError) {

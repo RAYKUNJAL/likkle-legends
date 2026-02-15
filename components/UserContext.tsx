@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { BADGES, BadgeId } from '@/lib/gamification';
 
 const supabase = createClient();
 
@@ -64,6 +65,11 @@ interface UserContextType {
   refreshChildren: () => Promise<void>;
   logout: () => Promise<void>;
 
+  // Gamification
+  unlockedBadge: any | null;
+  clearUnlockedBadge: () => void;
+  triggerBadgeUnlock: (badgeId: any) => void;
+
   // Subscription Helpers
   isSubscribed: boolean;
   canAccess: (tierRequired: string) => boolean;
@@ -98,11 +104,18 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
   const [activeChild, setActiveChildState] = useState<Child | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unlockedBadge, setUnlockedBadge] = useState<any | null>(null);
 
   // Refresh user profile
   const refreshUser = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      // Use getUser() for higher security but keep getSession() for speed
+      // In SSR/Next.js, we need to be careful with session staleness
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+      }
 
       if (!session?.user) {
         setUser(null);
@@ -111,10 +124,13 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
         return;
       }
 
+      // If we have a session, ensure we have the most up-to-date user object
+      const userObj = session.user;
+
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', session.user.id)
+        .eq('id', userObj.id)
         .single();
 
       if (profile) {
@@ -122,13 +138,13 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       } else {
         // Fallback: If profile row is missing (trigger delay/fail), construct from session
         console.warn('Profile missing from DB, using session fallback');
-        const meta = session.user.user_metadata || {};
+        const meta = userObj.user_metadata || {};
         const fallbackProfile: Profile = {
-          id: session.user.id,
-          full_name: meta.full_name || 'Parent',
-          email: session.user.email || '',
+          id: userObj.id,
+          full_name: meta.full_name || 'Legend Parent',
+          email: userObj.email || '',
           subscription_tier: (meta.chosen_plan as any) || 'free',
-          subscription_status: 'inactive', // Default to inactive until DB confirms
+          subscription_status: 'inactive',
           country_code: 'US',
           currency: 'USD',
           has_grandparent_dashboard: false,
@@ -140,14 +156,17 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
         };
         setUser(fallbackProfile);
 
-        // Use a detached upsert to ensure it exists (self-healing)
+        // Self-healing: create the profile row if it doesn't exist
+        // Use service role via API if possible, but here we try user-side upsert
         supabase.from('profiles').upsert({
           id: fallbackProfile.id,
           email: fallbackProfile.email,
           full_name: fallbackProfile.full_name,
           role: 'parent'
-        }).then(({ error }) => {
-          if (error) console.error('Self-healing profile creation failed:', error);
+        }, { onConflict: 'id' }).then(({ error }) => {
+          if (error && !error.message.includes('permission denied')) {
+            console.error('Self-healing profile creation error:', error);
+          }
         });
       }
     } catch (error) {
@@ -155,53 +174,60 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     }
   }, []);
 
+  // ... (refreshChildren and others unchanged) ...
+
   // Refresh children
   const refreshChildren = useCallback(async () => {
-    if (!user?.id) return;
+    // We check user from the current state (inside the closure)
+    // but we need to be careful with stale state. 
+    // Usually it's better to pass the userId or get it from Supabase session.
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) return;
 
     try {
       const { data } = await supabase
         .from('children')
         .select('*')
-        .eq('parent_id', user.id)
+        .eq('parent_id', userId)
         .order('created_at', { ascending: true });
 
       if (data) {
         setChildren(data as Child[]);
 
         // Restore active child from localStorage or set first child as active
-        if (!activeChild && data.length > 0) {
-          const savedChildId = localStorage.getItem('activeChildId');
-          const savedChild = data.find(c => c.id === savedChildId);
+        const savedChildId = localStorage.getItem('activeChildId');
+        const savedChild = data.find(c => c.id === savedChildId);
 
-          if (savedChild) {
-            setActiveChildState(savedChild as Child);
-          } else {
-            setActiveChildState(data[0] as Child);
-          }
+        if (savedChild) {
+          setActiveChildState(savedChild as Child);
+        } else if (data.length > 0) {
+          setActiveChildState(data[0] as Child);
         }
       }
     } catch (error) {
       console.error('Error refreshing children:', error);
     }
-  }, [user?.id]);
+  }, []);
 
   // Refresh notifications
   const refreshNotifications = useCallback(async () => {
-    if (!user?.id) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+    if (!userId) return;
 
     try {
       const { count } = await supabase
         .from('notifications')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('is_read', false);
 
       setUnreadCount(count || 0);
     } catch (error) {
       console.error('Error refreshing notifications:', error);
     }
-  }, [user?.id]);
+  }, []);
 
   // Set active child
   const setActiveChild = useCallback((childId: string) => {
@@ -213,13 +239,22 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
   }, [children]);
 
   // Logout
-  const logout = useCallback(async () => {
+  const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
     setChildren([]);
     setActiveChildState(null);
     localStorage.removeItem('activeChildId');
-  }, []);
+  };
+
+  const clearUnlockedBadge = () => setUnlockedBadge(null);
+
+  const triggerBadgeUnlock = (badgeId: BadgeId) => {
+    const badge = (BADGES as any)[badgeId];
+    if (badge) {
+      setUnlockedBadge(badge);
+    }
+  };
 
   // Check access to tier-locked content
   const canAccess = useCallback((tierRequired: string): boolean => {
@@ -240,7 +275,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     return userLevel >= requiredLevel;
   }, [user]);
 
-  // Initialize on mount with timeout protection
+  // Initialize on mount with improved protection
   useEffect(() => {
     let mounted = true;
 
@@ -248,14 +283,21 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       if (!mounted) return;
       setIsLoading(true);
 
-      // Timeout to prevent infinite loading state
-      const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000));
-
       try {
+        // Increased timeout to 10s for slow island connections
+        const timeoutPromise = new Promise(resolve => setTimeout(resolve, 10000));
+
+        // Wait for profile and initial children check
         await Promise.race([
           refreshUser(),
           timeoutPromise
         ]);
+
+        if (mounted) {
+          // If we have a user, try to load children before showing the UI
+          // This prevents the "no kids" redirect loop
+          await refreshChildren();
+        }
       } catch (err) {
         console.error("Auth initialization failed:", err);
       } finally {
@@ -265,14 +307,17 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
 
     initialize();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
-      if (event === 'SIGNED_IN') {
+    // Listen for ALL auth changes to keep context synced
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log(`[AUTH] Event: ${event}`);
+
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
         await refreshUser();
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setChildren([]);
         setActiveChildState(null);
+        localStorage.removeItem('activeChildId');
       }
     });
 
@@ -280,7 +325,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [refreshUser]);
+  }, [refreshUser, refreshChildren]);
 
   // Load children when user changes
   useEffect(() => {
@@ -332,6 +377,9 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     tierLevel: user ? (TIER_LEVELS[user.subscription_tier] || 0) : 0,
     unreadCount,
     refreshNotifications,
+    unlockedBadge,
+    clearUnlockedBadge,
+    triggerBadgeUnlock,
   }), [
     user,
     children,
@@ -343,7 +391,8 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     logout,
     canAccess,
     unreadCount,
-    refreshNotifications
+    refreshNotifications,
+    unlockedBadge
   ]);
 
   return (

@@ -3,8 +3,9 @@ import { supabaseManager } from '@/lib/supabase-client';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-export async function GET(req: Request) {
+export async function GET() {
     try {
         console.log("📚 Fetching stories for library...");
 

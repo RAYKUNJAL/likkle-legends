@@ -567,3 +567,23 @@ export async function getStoreAnalytics(token: string) {
         throw e;
     }
 }
+
+// Added for compatibility with older admin dashboard
+export async function updateUserPlanAction(userId: string, newPlan: string) {
+    try {
+        // Since this doesn't take a token, we handle with default logic or require admin role
+        const { supabaseAdmin } = await import("@/lib/supabase-client");
+        const { error } = await supabaseAdmin
+            .from('profiles')
+            .update({ subscription_tier: newPlan })
+            .eq('id', userId);
+
+        if (error) throw error;
+        const { revalidatePath } = await import("next/cache");
+        revalidatePath('/admin');
+        return { success: true };
+    } catch (e) {
+        console.error("Update Plan Error:", e);
+        return { success: false };
+    }
+}

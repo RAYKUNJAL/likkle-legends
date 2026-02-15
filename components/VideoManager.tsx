@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { uploadVideoFile, getStreamThumbnailUrl } from '../services/cloudflareStream';
+import { uploadVideoAction } from '@/app/actions/video';
+import { getStreamThumbnailUrl } from '../services/cloudflareStream';
 import { addVideoToLibrary, getVideoLibrary, deleteVideoMetadata, setHeroVideo, VideoMetadata } from '../services/supabase/databaseService';
 import { LazyImage } from './LazyImage';
 
@@ -59,23 +60,29 @@ export const VideoManager: React.FC = () => {
         }
 
         setUploadProgress(10);
-        setUploadStatus("Uploading to Island Stream Cloud...");
+        setUploadStatus("Uploading to Island Stream Cloud (Via Secure Server)...");
 
         try {
-            const response = await uploadVideoFile(file);
+            // Using Server Action with FormData
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Call server action directly
+            const response = await uploadVideoAction(formData);
+
             setUploadProgress(50);
 
-            if (response && response.result) {
+            if (response && response.success && response.video) {
                 setUploadStatus("Processing Metadata...");
 
                 const newVideo: VideoMetadata = {
-                    id: response.result.uid, // Use Cloudflare UID as ID
-                    cloudflareId: response.result.uid,
+                    id: response.video.uid,
+                    cloudflareId: response.video.uid,
                     title,
                     description,
                     category,
                     tier,
-                    thumbnailUrl: getStreamThumbnailUrl(response.result.uid),
+                    thumbnailUrl: response.video.thumbnail || getStreamThumbnailUrl(response.video.uid),
                     isHero,
                     createdAt: new Date().toISOString()
                 };

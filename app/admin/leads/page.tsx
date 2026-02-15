@@ -76,7 +76,7 @@ export default function AdminLeadsPage() {
     );
 
     return (
-        <AdminLayout activeSection="leads">
+        <AdminLayout activeSection="customers">
             <header className="bg-white border-b border-gray-100 px-8 py-6">
                 <div className="flex items-center justify-between">
                     <div>

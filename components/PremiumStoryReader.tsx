@@ -10,6 +10,9 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { getTantyVoice } from '@/app/actions/voice';
+import { useUser } from '@/components/UserContext';
+import { logActivity } from '@/lib/database';
+import BadgeUnlockModal from './gamification/BadgeUnlockModal';
 
 interface StoryPage {
     pageNumber: number;
@@ -38,6 +41,7 @@ interface PremiumStoryReaderProps {
 }
 
 export default function PremiumStoryReader({ story, onClose, onComplete }: PremiumStoryReaderProps) {
+    const { user, activeChild, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge } = useUser();
     const [currentPage, setCurrentPage] = useState(0);
     const [readingMode, setReadingMode] = useState<'read-to-me' | 'read-by-myself'>('read-to-me');
     const [isPlaying, setIsPlaying] = useState(false);
@@ -70,6 +74,14 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             colors: ['#FFD700', '#FF4500', '#1E90FF', '#32CD32']
         });
         // Wait for animation then call onComplete
+        if (user && activeChild) {
+            logActivity(user.id, activeChild.id, 'story', story.id, 100, 0, { title: story.title }).then(result => {
+                if (result?.unlockedBadge) {
+                    triggerBadgeUnlock(result.unlockedBadge);
+                }
+            }).catch(console.error);
+        }
+
         setTimeout(() => {
             onComplete(100); // 100 XP fixed reward
         }, 5000);
@@ -418,6 +430,11 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                     </>
                 )}
             </AnimatePresence>
+            {/* ═══ Badge Unlock Celebration ═══ */}
+            <BadgeUnlockModal
+                badge={unlockedBadge}
+                onClose={() => clearUnlockedBadge()}
+            />
         </div>
     );
 }

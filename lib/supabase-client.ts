@@ -30,7 +30,7 @@ class SupabaseClientManager {
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
         // Validation
-        if (!url || !anonKey || url === 'false' || anonKey === 'false') {
+        if (!url || !anonKey) {
             console.warn(`⚠️  Supabase credentials missing. URL: ${!!url}, AnonKey: ${!!anonKey}. Using placeholder.`);
             return createClient('https://placeholder.supabase.co', 'placeholder');
         }

@@ -41,15 +41,15 @@ export const siteContent = {
             { label: "Mini Legends (4–5)", id: "mini" },
             { label: "Big Legends (6–8)", id: "big" }
         ],
-        headline: "Culture shouldn't be a memory. Let's make it their identity.",
-        subheadline: "The monthly mail club that delivers personalized letters, cultural activities, and AI-powered stories to Caribbean kids everywhere.",
+        headline: "Raise Proud, Confident Caribbean Kids.",
+        subheadline: "The monthly mail club that delivers personalized letters, cultural activities, and AI-powered stories to help your child love their roots.",
         primary_cta: {
-            label: "Try the $10 Intro Experience",
+            label: "Start Your Child's Adventure",
             href: "/get-started"
         },
         secondary_cta: {
-            label: "How it works",
-            href: "#how-it-works"
+            label: "Preview a free sample letter",
+            href: "#sample-letter"
         },
         trust_row: {
             badges: [
@@ -174,7 +174,8 @@ export const siteContent = {
                     "Makes learning routines feel fun and familiar",
                     "Guides children through lessons independently"
                 ],
-                image: "/images/roti-new.jpg"
+                image: "/images/roti-new.jpg",
+                model_3d_url: "https://modelviewer.dev/shared-assets/models/RobotExpressive.glb"
             },
             {
                 id: "tanty_spice",
@@ -188,7 +189,8 @@ export const siteContent = {
                     "Creates a sense of safety and calm",
                     "Balances learning with compassion"
                 ],
-                image: "/images/tanty_spice_avatar.jpg"
+                image: "/images/tanty_spice_avatar.jpg",
+                model_3d_url: "https://modelviewer.dev/shared-assets/models/Astronaut.glb"
             },
             {
                 id: "dilly_doubles",
@@ -333,7 +335,62 @@ export const siteContent = {
                 require_api_key: false
             }
         },
-        upsell_note: "Members can save stories, turn them into printable mini-books, and unlock audio read-aloud with island accents."
+        vibes: [
+            {
+                id: "silly_funny",
+                label: "Silly & Funny",
+                kid_prompt: "Make it goofy and fun with jokes kids understand.",
+                icon: "laugh",
+                color_hint: "bright",
+                audio_tone: "playful",
+                emoji: "😂"
+            },
+            {
+                id: "brave_adventure",
+                label: "Brave Adventure",
+                kid_prompt: "A hero moment with exploring and a happy ending.",
+                icon: "compass",
+                color_hint: "bold",
+                audio_tone: "excited",
+                emoji: "🧭"
+            },
+            {
+                id: "bedtime_calm",
+                label: "Bedtime Calm",
+                kid_prompt: "Soft, calm story for bedtime with gentle words.",
+                icon: "moon",
+                color_hint: "soft",
+                audio_tone: "calm",
+                emoji: "🌙"
+            },
+            {
+                id: "friendship_kindness",
+                label: "Friendship & Kindness",
+                kid_prompt: "A story about helping, sharing, and being kind.",
+                icon: "heart",
+                color_hint: "warm",
+                audio_tone: "warm",
+                emoji: "❤️"
+            },
+            {
+                id: "mystery_not_scary",
+                label: "Mystery (Not Scary)",
+                kid_prompt: "A little mystery with no scary parts.",
+                icon: "magnifier",
+                color_hint: "cool",
+                audio_tone: "curious",
+                emoji: "🔍"
+            },
+            {
+                id: "carnival_party",
+                label: "Carnival Party",
+                kid_prompt: "Music, dancing, colorful costumes, big joy.",
+                icon: "music",
+                color_hint: "vibrant",
+                audio_tone: "energetic",
+                emoji: "🎭"
+            }
+        ]
     },
     founders_section: {
         title: "Created by Caribbean parents and educators",
@@ -348,226 +405,87 @@ export const siteContent = {
         id: "pricing",
         title: "Start Your Culture Journey",
         subtitle: "Try the Intro Experience for just $10. Most families start here, then upgrade as their legends grow.",
+        tabs: [
+            { id: "mail", label: "Mail Club", description: "Identity in their hands" },
+            { id: "digital", label: "Digital Only", description: "Learning everywhere" }
+        ],
         plans: [
             {
-                id: "free_forever",
-                label: "START FOR FREE",
-                name: "Free Forever",
-                price_display: "$0/mo",
-                billing_note: "No credit card required. Perfect to explore.",
-                features: [
-                    "Rotating selection of island stories.",
-                    "Interactive Island Radio (5 basic songs).",
-                    "Basic progress badges & streaks.",
-                    "1 Child Profile.",
-                    "Limited AI Story Studio (2 builds/mo)."
-                ],
-                badges: ["Great for exploring"],
-                cta: {
-                    label: "Start Free Forever",
-                    href: "/signup?plan=free_forever",
-                    variant: "outline"
-                }
-            },
-            {
                 id: "starter_mailer",
-                label: "THE INTRO EXPERIENCE",
-                name: "Mail Club",
+                tab: "mail",
+                name: "Starter Mailer",
+                best_for: "New families wanting the physical connection of monthly letters.",
                 price_display: "$10/mo",
-                billing_note: "Perfect for testing the magic. Cancel anytime.",
                 features: [
-                    "Your first personalized physical letter.",
-                    "Coloring flashcards & stickers.",
-                    "Full digital portal access.",
-                    "A surprise welcome mission from R.O.T.I.",
-                    "Digital Island Experiences."
+                    "1 Personalized Physical Letter",
+                    "1 Cultural Flashcard & Sticker Pack",
+                    "Full Portal Digital Access",
+                    "Interactive Island Radio",
+                    "Earn Badges & Streaks"
                 ],
-                badges: ["Most popular for new families", "Ships worldwide"],
-                cta: {
-                    label: "Try for $10",
-                    href: "/signup?plan=starter_mailer",
-                    variant: "primary"
-                }
+                badge: "Intro Experience",
+                cta: { label: "Get Started", href: "/signup?plan=starter_mailer" }
             },
             {
                 id: "legends_plus",
-                label: "BEST FOR LEARNING",
+                tab: "mail",
                 name: "Legends Plus",
+                best_for: "Families looking for integrated cultural learning and SEL support.",
                 price_display: "$24/mo",
-                billing_note: "Billed monthly. Upgrade or downgrade anytime.",
                 features: [
-                    "Everything in Mail Club.",
-                    "20+ Island Nursery Songs library for daily rotation.",
-                    "Unlimited printable coloring pages for instant activities.",
-                    "3 digital storybooks unlocked each month.",
-                    "AI Reading Buddy access.",
-                    "Parent Co-Pilot Dashboard to track usage."
+                    "Everything in Starter Mailer",
+                    "3 Unlimited AI Story Studio Builds",
+                    "Premium Voice & Island Accents",
+                    "Monthly Educator Content Drop",
+                    "Parent Co-Pilot Dashboard"
                 ],
-                badges: ["Most popular", "Complete learning experience"],
-                cta: {
-                    label: "Upgrade to Plus",
-                    href: "/signup?plan=legends_plus",
-                    variant: "secondary"
-                }
+                badge: "Best Value",
+                cta: { label: "Choose Plus", href: "/signup?plan=legends_plus" }
             },
             {
-                id: "annual_plus",
-                label: "THE GRAND ADVENTURE",
-                name: "Annual Plus",
-                price_display: "$19/mo",
-                billing_note: "Billed annually ($228). 2 months free.",
+                id: "family_legacy",
+                tab: "mail",
+                name: "Family Legacy",
+                best_for: "The ultimate cultural experience for up to 3 children.",
+                price_display: "$45/mo",
                 features: [
-                    "Everything in Legends Plus.",
-                    "2 months free compared to paying monthly.",
-                    "Exclusive character welcome box to kick off the journey.",
-                    "All digital storybooks archive unlocked.",
-                    "Priority access to new songs and content drops.",
-                    "Custom child shoutout in a story."
+                    "Everything in Legends Plus",
+                    "Personalized Letters for 3 Kids",
+                    "Unlimited AI Story Builds",
+                    "Direct Support for Custom Topics",
+                    "Exclusive Seasonal Gift Box"
                 ],
-                badges: ["Best value", "VIP perks"],
-                cta: {
-                    label: "Choose Annual",
-                    href: "/signup?plan=annual_plus",
-                    variant: "outline"
-                }
+                cta: { label: "Choose Legacy", href: "/signup?plan=family_legacy" }
+            },
+            {
+                id: "digital_explorer",
+                tab: "digital",
+                name: "Digital Explorer",
+                best_for: "Simple digital-only access for quick learning.",
+                price_display: "$9/mo",
+                features: [
+                    "Full Digital Portal Access",
+                    "Interactive Island Radio",
+                    "Basic Progress Tracking",
+                    "Weekly Digital Missions"
+                ],
+                cta: { label: "Start Digital", href: "/signup?plan=digital_explorer" }
             }
         ],
-        reassurance_chips: [
-            "Ships by the 15th each month.",
-            "Designed for ages 4–8.",
-            "Perfect for Caribbean and non-Caribbean families.",
-            "Pause or cancel anytime. No hidden fees."
+        comparison_table: [
+            { label: "Physical Monthly Mail", values: ["Yes", "Yes", "Yes", "No"] },
+            { label: "Digital Portal Access", values: ["Yes", "Yes", "Yes", "Yes"] },
+            { label: "AI Story Studio", values: ["Basic", "Unlimited", "Unlimited", "Basic"] },
+            { label: "Island Radio", values: ["Yes", "Yes", "Yes", "Yes"] },
+            { label: "Multiple Child Profiles", values: ["1", "2", "3", "1"] }
         ]
     },
     educator_block: {
-        title: "Schools & Educators",
-        tagline: "FOR CLASSROOMS",
-        description: "Bring Caribbean cultural education to your classroom with our special educator pricing and curriculum resources.",
-        price_hint: "Custom licensing available for schools and libraries.",
+        title: "Likkle Legends for Schools",
+        description: "Bring Caribbean culture and SEL into your classroom with our institutional plans.",
         cta: {
-            label: "Explore Educator Plans",
-            href: "/educators"
+            label: "Contact Sales",
+            href: "/contact/educators"
         }
-    },
-    testimonials: {
-        id: "testimonials",
-        title: "What our legends say",
-        subtitle: "Real stories from families on their cultural journey.",
-        featured_rating: "4.9/5 from parents worldwide",
-        items: [
-            {
-                quote: "My daughter literally waits by the mailbox for her Likkle Legends letter. She’s finally learning about her Trinidadian roots in a way that’s fun and meaningful.",
-                headline: "She waits by the mailbox every month.",
-                name: "Sarah J.",
-                meta: "Mom of a 6-year-old · New York, USA"
-            },
-            {
-                quote: "The emotional literacy component is what sold me. My son is learning how to talk about his feelings while celebrating his culture. It’s beautiful.",
-                headline: "Culture and feelings in one place.",
-                name: "David R.",
-                meta: "Dad of a 7-year-old · London, UK"
-            }
-        ]
-    },
-    cta_banner: {
-        headline: "Ready to start your child’s Caribbean adventure?",
-        subheadline: "Join 500+ families building identity, emotional literacy, and joyful memories each month.",
-        primary_cta: {
-            label: "Start Mail Club for $10/month",
-            href: "/get-started"
-        },
-        secondary_cta: {
-            label: "See what’s inside a letter",
-            href: "#sample-letter"
-        }
-    },
-    faq: {
-        title: "Frequently Asked Questions",
-        subtitle: "Everything you need to know about the adventure.",
-        items: [
-            {
-                question: "How does the physical mail work?",
-                answer: "Every month, your child receives a personalized envelope addressed directly to them. Inside, they’ll find a letter from a Likkle Legend, a cultural flashcard, and a physical coloring sheet. Subscriptions ship by the 15th of every month."
-            },
-            {
-                question: "Is it suitable for children outside the Caribbean?",
-                answer: "Absolutely. Likkle Legends is designed for children everywhere. For those with Caribbean roots, it’s a way to stay connected. For others, it’s a beautiful way to learn about a vibrant culture, emotional literacy, and island pride."
-            },
-            {
-                question: "What age groups are supported?",
-                answer: "We have two main tracks: Mini Legends (ages 4–5), which focuses on simple cultural concepts and early SEL, and Big Legends (ages 6–8), which includes more advanced stories and emotional literacy activities."
-            },
-            {
-                question: "How do the digital storybooks work?",
-                answer: "Legends Plus and Annual members get access to our digital portal. Each month, new interactive storybooks are unlocked. Kids can read on any tablet or computer and enjoy AI-powered character interactions."
-            },
-            {
-                question: "Can I cancel my subscription?",
-                answer: "Yes. You can cancel your monthly subscription at any time through your parent dashboard. Annual plans are billed once and renew every year."
-            },
-            {
-                question: "What if my child is not Caribbean?",
-                answer: "Many of our families are multicultural or simply curious about the Caribbean. We focus on universal values like pride, empathy, and joy through a Caribbean lens, so all children feel welcome."
-            },
-            {
-                question: "When will we receive our first letter?",
-                answer: "Orders placed before the 10th of the month ship in the current cycle. Most families receive their first letter within 5–10 business days, depending on location."
-            }
-        ]
-    },
-    tanty_spice_chat: {
-        enabled: true,
-        name: "Tanty Spice",
-        status_text: "Online & listening",
-        welcome_message: "Bless up! I'm Tanty Spice. Ask me about our plans or tell me how you're feeling today!",
-        input_placeholder: "Type a message...",
-        button_label: "Send message",
-        states: {
-            idle: {},
-            loading: {
-                message: "Tanty is thinking..."
-            },
-            error: {
-                message: "Oye! My magic connection is a bit weak right now, darlin'. Please try again soon."
-            }
-        },
-        modes: {
-            child_mode: {
-                description: "Reflective feelings coach for children. No advice on safety or medical issues.",
-                safety_ruleset_id: "child-safe"
-            },
-            parent_mode: {
-                description: "Parent co-pilot that gives conversation prompts and activity ideas based on what your child shares.",
-                safety_ruleset_id: "parent-support"
-            }
-        }
-    },
-    footer: {
-        brand_line: "Bringing Caribbean culture, pride, and emotional literacy to children everywhere through personalized mail and interactive AI learning.",
-        columns: [
-            {
-                title: "Platform",
-                links: [
-                    { label: "How It Works", href: "/#how-it-works" },
-                    { label: "Pricing", href: "/pricing" },
-                    { label: "Blog", href: "/blog" },
-                    { label: "Child Portal", href: "/portal" },
-                    { label: "Parent Dashboard", href: "/parent" }
-                ]
-            },
-            {
-                title: "Company",
-                links: [
-                    { label: "About Us", href: "/about" },
-                    { label: "Contact", href: "/contact" },
-                    { label: "Shipping & Returns", href: "/shipping" }, // Added
-                    { label: "FAQ", href: "/faq" }, // Added
-                    { label: "Privacy Policy", href: "/privacy" },
-                    { label: "Terms of Use", href: "/terms" },
-                    { label: "Kids' Safety Policy", href: "/safety" }
-                ]
-            }
-        ],
-        copyright: "© 2026 Island Flavors Universe – Likkle Legends Mail Club. All rights reserved."
     }
 };

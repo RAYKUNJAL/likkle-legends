@@ -55,11 +55,11 @@ export async function uploadFile(
         useAdmin?: boolean,
         customClient?: any,
         upsert?: boolean,
-        onProgress?: (percent: number) => void,
-        useProxy?: boolean // New option to use /api/upload
+        onProgress?: (percent: number) => void
     } = {}
 ): Promise<{ url: string; path: string; name: string } | null> {
-    const { useAdmin = false, customClient, upsert = true, onProgress, useProxy = false } = options;
+    const { useAdmin = false, customClient, upsert = true } = options;
+    const client = customClient || (useAdmin ? getSupabaseAdmin() : getSupabase());
 
     // Extract name safely
     const originalName = (file as any).name || 'file';
@@ -68,54 +68,6 @@ export async function uploadFile(
 
     // Generate clean filename
     const fileName = path || `${baseName}-${Date.now()}.${extension}`;
-
-    // CLIENT-SIDE PROGRESS SUPPORT (Using XMLHttpRequest)
-    if (typeof window !== 'undefined' && onProgress && (useProxy || !useAdmin)) {
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            const formData = new FormData();
-            formData.append('file', file as any);
-            formData.append('bucket', bucket);
-
-            const url = useProxy ? '/api/upload' : `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/${bucket}/${fileName}`;
-
-            xhr.open('POST', url);
-
-            // Add Auth headers if NOT using proxy
-            if (!useProxy) {
-                const client = customClient || getSupabase();
-                // Note: Direct Supabase upload via XHR requires token management
-                // For simplicity and security, we recommend using the Proxy (useProxy: true)
-                // for progress-enabled uploads.
-            }
-
-            xhr.upload.onprogress = (event) => {
-                if (event.lengthComputable) {
-                    const percent = Math.round((event.loaded / event.total) * 100);
-                    onProgress(percent);
-                }
-            };
-
-            xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    const response = JSON.parse(xhr.responseText);
-                    resolve({
-                        url: response.url || response.publicURL,
-                        path: response.path || fileName,
-                        name: fileName
-                    });
-                } else {
-                    reject(new Error(xhr.responseText || 'Upload failed'));
-                }
-            };
-
-            xhr.onerror = () => reject(new Error('Network error during upload'));
-            xhr.send(formData);
-        });
-    }
-
-    // Standard Supabase Client Upload (Recommended for Server-Side or small files)
-    const client = customClient || (useAdmin ? getSupabaseAdmin() : getSupabase());
 
     try {
         const { data, error } = await client.storage
@@ -128,6 +80,7 @@ export async function uploadFile(
 
         if (error) {
             console.error(`❌ Upload failed (${bucket}/${fileName}):`, error.message);
+            // Check for specific error types if needed (e.g. RLS)
             if (error.message.includes('row-level security')) {
                 throw new Error("Access Denied: You don't have permission to upload to this bucket.");
             }
@@ -145,7 +98,7 @@ export async function uploadFile(
         };
     } catch (e: any) {
         console.error("Critical Upload Exception:", e);
-        throw e;
+        throw e; // Rethrow to allow UI to handle
     }
 }
 

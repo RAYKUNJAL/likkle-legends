@@ -58,7 +58,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
     const [step, setStep] = useState<'plan' | 'upsells' | 'shipping' | 'payment' | 'success'>('plan');
 
     // Normalize tier to ensure it's valid
-    const initialTier = (selectedTier && SUBSCRIPTION_PLANS[selectedTier]) ? selectedTier : 'legends_plus';
+    const initialTier = (selectedTier && SUBSCRIPTION_PLANS[selectedTier]) ? selectedTier : 'plan_legends_plus';
     const [activeTier, setActiveTier] = useState<SubscriptionTier>(initialTier);
 
     const [geoInfo, setGeoInfo] = useState<GeoInfo | null>(null);
@@ -98,7 +98,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
 
     // Force annual billing for Family Legacy (no monthly plan exists)
     useEffect(() => {
-        if (activeTier === 'family_legacy') {
+        if (activeTier === 'plan_family_legacy') {
             setPaymentBillingCycle('year');
         }
     }, [activeTier]);
@@ -106,7 +106,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
     // Don't render until mounted to avoid hydration mismatch
     if (!mounted) return <div className="py-20 flex justify-center"><Loader2 className="animate-spin text-primary" size={32} /></div>;
 
-    const plan = SUBSCRIPTION_PLANS[activeTier] || SUBSCRIPTION_PLANS['legends_plus'];
+    const plan = SUBSCRIPTION_PLANS[activeTier] || SUBSCRIPTION_PLANS['plan_legends_plus'];
     const grandparentUpsell = UPSELLS.grandparent_dashboard;
 
     // Determine base price to display (monthly or yearly / 12)
@@ -128,7 +128,6 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
 
     const totalPrice = displayPrice.price + (addGrandparent ? grandparentPrice.price : 0);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handlePayPalApprove = async (data: any) => {
         setIsProcessing(true);
         // Payment approved
@@ -161,7 +160,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                     currency: displayPrice.currency,
                     billingCycle: paymentBillingCycle,
                     userId: currentUserId, // Explicitly pass ID to be safe
-                    shipping: (activeTier === 'trial_access') ? null : shippingData
+                    shipping: (activeTier === 'plan_free_forever' || activeTier === 'plan_digital_legends') ? null : shippingData
                 }),
             });
 
@@ -204,7 +203,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
             <div className="flex items-center justify-center gap-4 mb-8">
                 {['plan', 'upsells', 'shipping', 'payment'].map((s, i) => {
                     // Skip shipping on digital only if we want, but keeping it for consistency
-                    const isDigital = activeTier === 'trial_access';
+                    const isDigital = activeTier === 'plan_free_forever' || activeTier === 'plan_digital_legends';
                     if (s === 'shipping' && isDigital) return null;
 
                     return (
@@ -239,10 +238,10 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                         <div className="bg-white rounded-2xl p-1.5 shadow-sm border border-gray-100 inline-flex">
                             <button
                                 onClick={() => setPaymentBillingCycle('month')}
-                                disabled={activeTier === 'family_legacy'}
+                                disabled={activeTier === 'plan_family_legacy'}
                                 className={`px-6 py-3 rounded-xl font-bold transition-all ${paymentBillingCycle === 'month'
                                     ? 'bg-primary text-white shadow-sm'
-                                    : activeTier === 'family_legacy'
+                                    : activeTier === 'plan_family_legacy'
                                         ? 'text-gray-300 cursor-not-allowed'
                                         : 'text-gray-500 hover:text-gray-700'
                                     }`}
@@ -276,7 +275,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                 ? (pPrice.price / 12).toFixed(2)
                                 : pPrice.price;
 
-                            const isPopular = id === 'legends_plus';
+                            const isPopular = id === 'plan_digital_legends';
 
                             return (
                                 <button
@@ -414,7 +413,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                         </button>
                         <button
                             onClick={() => {
-                                if (activeTier === 'trial_access') {
+                                if (activeTier === 'plan_free_forever' || activeTier === 'plan_digital_legends') {
                                     setStep('payment');
                                 } else {
                                     setStep('shipping');
@@ -427,7 +426,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                             }}
                             className="px-8 py-4 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary/90 transition-colors"
                         >
-                            Proceed to {activeTier === 'trial_access' ? 'Payment' : 'Shipping'} →
+                            Proceed to {activeTier === 'plan_free_forever' || activeTier === 'plan_digital_legends' ? 'Payment' : 'Shipping'} →
                         </button>
                     </div>
                 </div>
@@ -567,14 +566,14 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                         <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
                             {displayPrice.price === 0 ? (
                                 <button
-                                    onClick={() => handlePayPalApprove({ subscriptionID: 'TRIAL', orderID: 'TRIAL_ORDER' })}
+                                    onClick={() => handlePayPalApprove({ subscriptionID: 'FREE_FOREVER', orderID: 'FREE_FOREVER_ORDER' })}
                                     disabled={isProcessing}
                                     className="w-full py-4 bg-primary text-white rounded-xl font-bold text-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                                 >
                                     {isProcessing ? (
                                         <>Starting Access <Loader2 className="animate-spin" /></>
                                     ) : (
-                                        <>Start My 7-Day Free Pass <Sparkles size={20} /></>
+                                        <>Start My Free Forever Plan <Sparkles size={20} /></>
                                     )}
                                 </button>
                             ) : (
@@ -633,7 +632,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
 
                         <button
                             onClick={() => {
-                                if (activeTier === 'trial_access') {
+                                if (activeTier === 'plan_free_forever' || activeTier === 'plan_digital_legends') {
                                     setStep('upsells');
                                 } else {
                                     setStep('shipping');

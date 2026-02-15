@@ -1,13 +1,17 @@
-'use client';
 
 import Link from 'next/link';
 import { ArrowRight, Check, Star } from 'lucide-react';
-
-
+import { SUBSCRIPTION_PLANS } from '@/lib/paypal';
 
 export default function PricingLadderPreview({ content }: { content: any }) {
     const { pricing } = content;
-    const plans = pricing?.plans || [];
+    // We now use the constant, but can still use title/subtitle from content if available
+
+    const plansToShow = [
+        SUBSCRIPTION_PLANS.plan_free_forever,
+        SUBSCRIPTION_PLANS.plan_digital_legends,
+        SUBSCRIPTION_PLANS.plan_mail_intro
+    ];
 
     return (
         <section className="py-20 bg-white">
@@ -17,24 +21,26 @@ export default function PricingLadderPreview({ content }: { content: any }) {
                         {pricing?.title || "Choose Your Path"}
                     </h2>
                     <p className="text-lg text-deep/60 max-w-lg mx-auto">
-                        {pricing?.subtitle || "Start small, grow with your family. Most families begin with the $10 intro."}
+                        {pricing?.subtitle || "Start small, grow with your family. Most families begin with the free plan."}
                     </p>
                 </div>
 
                 <div className="max-w-6xl mx-auto">
                     <div className="grid md:grid-cols-3 gap-6">
-                        {plans.map((plan: any, idx: number) => {
-                            const isRecommended = idx === 1; // Legends Plus usually recommended
+                        {plansToShow.map((plan: any) => {
+                            const isRecommended = plan.id === 'plan_digital_legends';
+                            const isFree = plan.id === 'plan_free_forever';
+
                             return (
                                 <div
                                     key={plan.id}
                                     className={`relative rounded-3xl p-6 border-2 transition-all flex flex-col ${isRecommended
-                                        ? 'bg-emerald-50 border-emerald-300 shadow-xl scale-[1.02]'
+                                        ? 'bg-emerald-50 border-emerald-300 shadow-xl scale-[1.02] z-10'
                                         : 'bg-white border-zinc-200 hover:border-zinc-300 hover:shadow-lg'
                                         }`}
                                 >
                                     {isRecommended && (
-                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-max">
                                             <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-500 text-white text-xs font-bold rounded-full uppercase tracking-wide">
                                                 <Star className="w-3 h-3" /> Most Popular
                                             </span>
@@ -44,12 +50,19 @@ export default function PricingLadderPreview({ content }: { content: any }) {
                                     <div className="text-center mb-6 pt-2">
                                         <p className={`text-sm font-bold uppercase tracking-wider mb-2 ${isRecommended ? 'text-emerald-600' : 'text-deep/50'
                                             }`}>
-                                            {plan.label}
+                                            {plan.name}
                                         </p>
                                         <div className="flex items-baseline justify-center gap-1">
-                                            <span className="text-4xl font-black text-deep">{plan.price_display}</span>
+                                            {isFree ? (
+                                                <span className="text-4xl font-black text-deep">Free</span>
+                                            ) : (
+                                                <>
+                                                    <span className="text-4xl font-black text-deep">${plan.price}</span>
+                                                    <span className="text-deep/60">/mo</span>
+                                                </>
+                                            )}
                                         </div>
-                                        <p className="text-sm text-deep/60 mt-2">{plan.billing_note}</p>
+                                        <p className="text-sm text-deep/60 mt-2 min-h-[3rem]">{plan.description}</p>
                                     </div>
 
                                     <div className="space-y-3 mb-8 flex-1">
@@ -62,13 +75,13 @@ export default function PricingLadderPreview({ content }: { content: any }) {
                                     </div>
 
                                     <Link
-                                        href={plan.cta?.href || '/signup'}
+                                        href={isFree ? '/auth/signup' : `/checkout?plan=${plan.id}`}
                                         className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all group ${isRecommended
                                             ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
                                             : 'bg-zinc-100 hover:bg-zinc-200 text-deep'
                                             }`}
                                     >
-                                        {plan.cta?.label || "Choose Plan"}
+                                        {isFree ? "Start For Free" : "Choose Plan"}
                                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                     </Link>
                                 </div>
@@ -81,7 +94,7 @@ export default function PricingLadderPreview({ content }: { content: any }) {
                             href="/pricing"
                             className="inline-flex items-center gap-2 text-deep/60 hover:text-deep font-bold transition-colors group"
                         >
-                            Compare All Plans
+                            Compare All 5 Plans
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>

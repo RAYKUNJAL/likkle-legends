@@ -1,9 +1,9 @@
 
 import { supabaseManager } from '@/lib/supabase-client';
-import { elevenLabsService, VoiceResponse } from '@/lib/services/elevenlabs';
+import { elevenLabsService, VoiceResponse, VOICES } from '@/lib/services/elevenlabs';
 import { GeneratedStory } from '@/lib/ai-content-generator/generators/story-generator';
 
-const VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel (consistent default)
+const DEFAULT_VOICE_ID = VOICES.roti; // R.O.T.I. (consistent default)
 // Other voices available in config if needed
 
 export class AudioGenerationService {
@@ -11,14 +11,14 @@ export class AudioGenerationService {
     /**
      * Generate audio for a single page, upload it, and return the updated page object.
      */
-    async generatePageAudio(text: string, storyId: string, pageIndex: number): Promise<{ audioUrl: string; alignment: any } | null> {
+    async generatePageAudio(text: string, storyId: string, pageIndex: number, voiceId: string = DEFAULT_VOICE_ID): Promise<{ audioUrl: string; alignment: any } | null> {
         try {
             console.log(`   🎤 Generating audio for Page ${pageIndex + 1}...`);
 
             // 1. Generate Speech with Timestamps
             const result: VoiceResponse = await elevenLabsService.generateSpeech(
                 text,
-                VOICE_ID,
+                voiceId,
                 { stability: 0.5, similarity: 0.8 }
             );
 
@@ -50,12 +50,12 @@ export class AudioGenerationService {
      * Returns the updated story object with audio data.
      * Optionally updates the database directly if updateDB is true.
      */
-    async generateAudioForStory(story: GeneratedStory, storyId: string, updateDB: boolean = true): Promise<GeneratedStory> {
+    async generateAudioForStory(story: GeneratedStory, storyId: string, updateDB: boolean = true, voiceId: string = DEFAULT_VOICE_ID): Promise<GeneratedStory> {
         console.log(`🎙️ Starting audio generation for story: ${story.title} (${story.pages.length} pages)`);
 
         // Process all pages in parallel
         const processedPages = await Promise.all(story.pages.map(async (page, index) => {
-            const audioData = await this.generatePageAudio(page.text, storyId, index);
+            const audioData = await this.generatePageAudio(page.text, storyId, index, voiceId);
 
             if (audioData) {
                 return {
@@ -133,28 +133,32 @@ export class AudioGenerationService {
         let start = -1;
         let end = -1;
 
-        // Note: This needs to handle the case where characters array might be mismatched or complex
-        // But the simple logic from the script is a good baseline
         const chars = alignment.characters;
         const starts = alignment.character_start_times_seconds;
         const ends = alignment.character_end_times_seconds;
+
+        // Sync offset: ElevenLabs timestamps are often slightly "late" compared to the PCM stream
+        // Manual offset to improve perceived sync
+        const SYNC_OFFSET = -0.06;
 
         for (let i = 0; i < chars.length; i++) {
             const char = chars[i];
             const s = starts[i];
             const e = ends[i];
 
-            if (char === ' ') {
-                if (currentWord.trim().length > 0) {
+            // If it's a whitespace character, push the current word
+            if (/\s/.test(char)) {
+                if (currentWord.length > 0) {
                     words.push({
-                        text: currentWord.trim(),
-                        startTimeSeconds: start,
-                        endTimeSeconds: end
+                        text: currentWord,
+                        startTimeSeconds: Math.max(0, start + SYNC_OFFSET),
+                        endTimeSeconds: Math.max(0.01, end + SYNC_OFFSET)
                     });
+                    currentWord = "";
+                    start = -1;
                 }
-                currentWord = "";
-                start = -1;
             } else {
+                // If it's a non-whitespace character
                 if (start === -1) start = s;
                 end = e;
                 currentWord += char;
@@ -162,11 +166,11 @@ export class AudioGenerationService {
         }
 
         // Final word
-        if (currentWord.trim().length > 0) {
+        if (currentWord.length > 0) {
             words.push({
-                text: currentWord.trim(),
-                startTimeSeconds: start,
-                endTimeSeconds: end
+                text: currentWord,
+                startTimeSeconds: Math.max(0, start + SYNC_OFFSET),
+                endTimeSeconds: Math.max(0.01, end + SYNC_OFFSET)
             });
         }
 

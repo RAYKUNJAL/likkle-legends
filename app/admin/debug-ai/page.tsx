@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AdminLayout, RefreshCw, CheckCircle2, AlertCircle } from '@/components/admin/AdminComponents'; // Adjust imports if needed
-import { runDiagnostics } from '@/app/actions/debug-ai';
+
 
 export default function DebugAIPage() {
     const [results, setResults] = useState<any>(null);
@@ -31,22 +31,22 @@ export default function DebugAIPage() {
             // 1. Env Check
             toast.loading("Step 1: Checking Environment Keys...", { id: toastId });
             const env = await testEnv(token);
-            setResults(prev => ({ ...prev, env }));
+            setResults((prev: any) => ({ ...prev, env }));
 
             // 2. Supabase Reachability
             toast.loading("Step 2: Testing Network Connectivity...", { id: toastId });
             const sbReach = await testSupabase(token);
-            setResults(prev => ({ ...prev, supabase: sbReach }));
+            setResults((prev: any) => ({ ...prev, supabase: sbReach }));
 
             // 3. Auth Check
             toast.loading("Step 3: Verifying Admin Status...", { id: toastId });
             const authResult = await testAuth(token);
-            setResults(prev => ({ ...prev, auth: authResult }));
+            setResults((prev: any) => ({ ...prev, auth: authResult }));
 
             // 4. AI Check
             toast.loading("Step 4: Testing Gemini Handshake...", { id: toastId });
             const ai = await testAI(token);
-            setResults(prev => ({ ...prev, ai }));
+            setResults((prev: any) => ({ ...prev, ai }));
 
             toast.success("All System Checks PASSED!", { id: toastId });
         } catch (error: any) {
@@ -116,7 +116,7 @@ export default function DebugAIPage() {
                                             if (res.status === 'success') toast.success(res.message, { id: tid });
                                             else toast.error(res.message, { id: tid });
                                         } else {
-                                             alert("Please log in.");
+                                            alert("Please log in.");
                                         }
                                     } catch (e) { alert("Test Error"); }
                                 }}

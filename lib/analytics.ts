@@ -1,56 +1,32 @@
-'use client';
 
-type EventName =
-    | 'll_page_view'
-    | 'll_geo_toggle_set'
-    | 'll_cta_click'
-    | 'll_scroll_depth'
-    | 'll_start_free'
-    | 'll_onboarding_step'
-    | 'll_purchase';
+/**
+ * Defensive analytics wrapper to handle blocked tracking scripts
+ */
+export const trackEvent = (eventName: string, params: Record<string, any> = {}) => {
+    try {
+        if (typeof window !== 'undefined') {
+            // Google Analytics
+            if ((window as any).gtag) {
+                (window as any).gtag('event', eventName, params);
+            }
 
-interface EventParams {
-    [key: string]: string | number | boolean | undefined;
-}
+            // Facebook Pixel
+            if ((window as any).fbq) {
+                (window as any).fbq('track', eventName, params);
+            }
 
-export const trackEvent = (name: EventName, params?: EventParams) => {
-    if (typeof window === 'undefined') return;
+            // TikTok
+            if ((window as any).ttq) {
+                (window as any).ttq.track(eventName, params);
+            }
 
-    // Log to console for debugging
-    console.log(`[EVENT] ${name}`, params);
-
-    // Placeholder for GTM / Facebook Pixel / Posthog
-    if ((window as any).dataLayer) {
-        (window as any).dataLayer.push({
-            event: name,
-            ...params
-        });
+            // Snapchat
+            if ((window as any).snaptr) {
+                (window as any).snaptr('track', eventName, params);
+            }
+        }
+    } catch (error) {
+        // Silently fail if blocked or script fails
+        console.warn('Analytics event blocked or failed:', eventName);
     }
-
-    // Example: Track to custom internal analytics API
-    // fetch('/api/analytics', { method: 'POST', body: JSON.stringify({ name, params, timestamp: Date.now() }) });
 };
-
-// Hook for scroll depth tracking
-import { useEffect } from 'react';
-
-export function useScrollTracking() {
-    useEffect(() => {
-        const thresholds = [25, 50, 75, 90];
-        const tracked = new Set<number>();
-
-        const handleScroll = () => {
-            const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-
-            thresholds.forEach(threshold => {
-                if (scrollPercent >= threshold && !tracked.has(threshold)) {
-                    trackEvent('ll_scroll_depth', { percent: threshold });
-                    tracked.add(threshold);
-                }
-            });
-        };
-
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
-}

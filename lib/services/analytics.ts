@@ -1,7 +1,8 @@
-
 import { supabase } from '@/lib/storage';
+import { isSupabaseConfigured } from '@/lib/supabase-client';
 
 export async function getAllProfiles(limit = 100, offset = 0) {
+    if (!isSupabaseConfigured()) return { profiles: [], total: 0 };
     const { data, error, count } = await supabase
         .from('profiles')
         .select('*, children(*)', { count: 'exact' })
@@ -13,6 +14,7 @@ export async function getAllProfiles(limit = 100, offset = 0) {
 }
 
 export async function getAnalyticsSummary() {
+    if (!isSupabaseConfigured()) return { totalSubscribers: 0, activeSubscribers: 0, newSignups: 0, activeChildren: 0, pendingOrders: 0 };
     const today = new Date();
     const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -57,6 +59,7 @@ export async function getAnalyticsSummary() {
 }
 
 export async function getChildActivities(childId: string, limit = 10) {
+    if (!isSupabaseConfigured()) return [];
     const { data, error } = await supabase
         .from('activities')
         .select('*')
@@ -69,6 +72,7 @@ export async function getChildActivities(childId: string, limit = 10) {
 }
 
 export async function getChildBadges(childId: string) {
+    if (!isSupabaseConfigured()) return [];
     const { data, error } = await supabase
         .from('badge_earnings')
         .select('*')

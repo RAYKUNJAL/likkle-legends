@@ -5,11 +5,17 @@ import Image from 'next/image';
 import {
     X, Volume2, ChevronLeft, ChevronRight,
     Play, Pause, RotateCcw, SkipForward,
-    Loader2, Home, Star, Turtle, Rabbit, Music
+    Loader2, Home, Star, Turtle, Rabbit, Music, Zap, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { awardStars } from '@/lib/services/user-progress';
+import { useUser } from '@/components/UserContext';
+import { logActivity } from '@/lib/database';
+import StoryCharacterPartner from './library/StoryCharacterPartner';
+import BadgeUnlockModal from './gamification/BadgeUnlockModal';
+import { saveGeneratedStory } from '@/app/actions/content-actions';
+import { generateCharacterAudio as generateAudioAction } from '@/app/actions/voice';
 
 interface WordAlignment {
     text: string;
@@ -34,9 +40,14 @@ interface InteractiveReaderProps {
     pages: Page[];
     guide: 'tanty' | 'roti';
     onClose: () => void;
+    storyId?: string;
 }
 
-export default function InteractiveReader({ title, pages, guide, onClose }: InteractiveReaderProps) {
+export default function InteractiveReader({ title, pages, guide, onClose, storyId }: InteractiveReaderProps) {
+    const { user, activeChild, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge } = useUser();
+    const [isSaving, setIsSaving] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isBuffering, setIsBuffering] = useState(false);
@@ -46,11 +57,12 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
     const [bgmVolume, setBgmVolume] = useState(0.15); // Low background volume
     const [isBgmMuted, setIsBgmMuted] = useState(false);
     const [playbackRate, setPlaybackRate] = useState(0.85); // Slower, kid-friendly pace
-    const [autoPlay] = useState(true);
+    const [autoPlay] = useState(false);
     const [showPlayOverlay, setShowPlayOverlay] = useState(true);
     const [showReward, setShowReward] = useState(false); // Gamification State
     const [audioDuration, setAudioDuration] = useState(0);
     const [audioProgress, setAudioProgress] = useState(0);
+    const [showPartner, setShowPartner] = useState(false);
 
     // Refs
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -96,13 +108,26 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
             // Award Stars
             awardStars('story-completed', 5).catch(console.error);
 
+            // Log real activity and check for badges
+            if (user && activeChild) {
+                logActivity(user.id, activeChild.id, 'story', title, 50).then(result => {
+                    if (result?.unlockedBadge) {
+                        triggerBadgeUnlock(result.unlockedBadge);
+                    }
+                }).catch(console.error);
+            }
+
             return () => clearInterval(interval);
         }
     }, [showReward]);
 
     // Safety check for pages
-    if (!pages || pages.length === 0) return null;
-    const pageData = pages[currentPage] || pages[0];
+    // Safety check for pages handle
+    const safePages = pages && pages.length > 0 ? pages : [{
+        text: "No pages available",
+        words: []
+    }];
+    const pageData = safePages[currentPage] || safePages[0];
 
     // Ultra-High-Quality Weighted Word Map
     const words = useMemo(() => {
@@ -151,23 +176,53 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
         lastWordIndexRef.current = -1; // Reset efficient tracking on new words
     }, [words]);
 
-    // PRECISE AUDIO ENGINE
     useEffect(() => {
         const audio = audioRef.current;
-        if (!audio || !pageData.audioUrl) return;
+        if (!audio) return;
 
-        setAudioError(null);
-        setIsBuffering(true);
-        setIsPlaying(false);
-        setAudioProgress(0);
-        setActiveWordIndex(-1);
-        lastWordIndexRef.current = -1;
+        let active = true; // Prevent race conditions
 
-        // Load correct source
-        if (audio.src !== pageData.audioUrl) {
-            audio.src = pageData.audioUrl;
-            audio.load();
-        }
+        const setupAudio = async () => {
+            setAudioError(null);
+            setIsBuffering(true);
+            setIsPlaying(false);
+            setAudioProgress(0);
+            setActiveWordIndex(-1);
+            lastWordIndexRef.current = -1;
+
+            let source = pageData.audioUrl;
+
+            // If no pre-generated audio, generate on the fly
+            if (!source && pageData.text) {
+                try {
+                    const res = await generateAudioAction(pageData.text, guide);
+                    if (active && res.success && res.audio) {
+                        source = res.audio.startsWith('data:') ? res.audio : `data:audio/mp3;base64,${res.audio}`;
+                    } else if (active && !res.success) {
+                        console.warn("Audio generation failed:", res.error);
+                        setAudioError("Audio unavailable");
+                        setIsBuffering(false);
+                        return;
+                    }
+                } catch (e) {
+                    if (active) {
+                        console.error("Audio generation exception:", e);
+                        setAudioError("Audio unavailable");
+                        setIsBuffering(false);
+                    }
+                    return;
+                }
+            }
+
+            if (active && source && audio.src !== source) {
+                audio.src = source;
+                audio.load();
+            } else if (active && !source) {
+                setIsBuffering(false);
+            }
+        };
+
+        setupAudio();
 
         // Optimized Tick Function
         const tick = () => {
@@ -257,6 +312,7 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
         });
 
         return () => {
+            active = false;
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
             audio.removeEventListener('play', onPlay);
             audio.removeEventListener('pause', onPause);
@@ -266,7 +322,7 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
             audio.removeEventListener('playing', () => setIsBuffering(false));
             audio.removeEventListener('error', () => { });
         };
-    }, [pageData.audioUrl, currentPage, autoPlay, showPlayOverlay, pages.length, playbackRate]);
+    }, [pageData, currentPage, autoPlay, showPlayOverlay, pages.length, playbackRate, guide]);
 
     useEffect(() => {
         if (audioRef.current) {
@@ -289,6 +345,8 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
     const guideInfo = guide === 'tanty'
         ? { name: 'Tanty Spice', avatar: '/images/tanty_spice_avatar.jpg', color: 'bg-orange-500' }
         : { name: 'R.O.T.I.', avatar: '/images/roti-avatar.jpg', color: 'bg-blue-500' };
+
+    if (!pages || pages.length === 0) return null;
 
     return (
         <div className="fixed inset-0 z-[100] bg-[#FFFBF5] flex flex-col overflow-hidden select-none">
@@ -328,35 +386,59 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
             </header>
 
             {/* ═══ Main Adventure Area ═══ */}
-            <main className="flex-1 flex flex-col lg:flex-row overflow-hidden p-3 lg:p-4 gap-3 lg:gap-4 lg:max-h-[calc(100vh-120px)]">
-                {/* Visual Content */}
-                <div className="flex-1 bg-white rounded-[2rem] border-2 border-orange-50 p-6 flex flex-col relative shadow-sm overflow-hidden min-h-[220px]">
-                    <div className="flex-1 flex items-center justify-center">
-                        <motion.div
-                            key={currentPage}
-                            initial={{ scale: 0.8, opacity: 0, rotate: -3 }}
-                            animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                            className="text-8xl lg:text-9xl filter drop-shadow-xl"
-                        >
-                            📖
-                        </motion.div>
-                    </div>
+            <main className="flex-1 flex flex-col lg:flex-row overflow-hidden p-3 lg:p-4 gap-3 lg:gap-4 lg:max-h-[calc(100vh-120px)] relative">
+                {/* Visual Content (Only show if imageUrl exists) */}
+                {pageData.imageUrl && (
+                    <div className="flex-1 bg-white rounded-[2.5rem] border-4 border-orange-50 p-6 flex flex-col relative shadow-xl overflow-hidden min-h-[300px]">
+                        <div className="flex-1 flex items-center justify-center">
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentPage}
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    exit={{ scale: 1.1, opacity: 0 }}
+                                    className="w-full h-full flex items-center justify-center relative"
+                                >
+                                    {isBuffering && (
+                                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm rounded-3xl">
+                                            <Loader2 className="animate-spin text-orange-500 mb-2" size={40} />
+                                            <p className="text-xs font-black text-orange-950 uppercase tracking-widest">Loading Magic...</p>
+                                        </div>
+                                    )}
 
-                    {/* Guide Character Mini-Card */}
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-2 rounded-2xl border border-orange-100 shadow-md flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-orange-200">
-                            <Image src={guideInfo.avatar} alt={guideInfo.name} width={40} height={40} className="object-cover" />
+                                    <div className="relative w-full h-full max-h-[550px] aspect-[4/3] rounded-[2rem] overflow-hidden shadow-2xl border-8 border-white group">
+                                        <Image
+                                            src={pageData.imageUrl}
+                                            alt={`Illustration for page ${currentPage + 1}`}
+                                            fill
+                                            className={`object-cover transition-all duration-700 group-hover:scale-105 ${isBuffering ? 'blur-lg' : 'blur-0'}`}
+                                            onLoad={() => setIsBuffering(false)}
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                                    </div>
+                                </motion.div>
+                            </AnimatePresence>
                         </div>
-                        {isPlaying && (
-                            <div className="flex gap-0.5 h-3">
-                                {[1, 2, 3].map(i => <motion.div key={i} animate={{ height: [4, 12, 4] }} transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }} className="w-0.5 bg-orange-500 rounded-full" />)}
-                            </div>
-                        )}
                     </div>
-                </div>
+                )}
 
                 {/* Text Story Section */}
                 <div className="flex-1 lg:flex-[1.2] bg-white rounded-[2rem] border-2 border-orange-100 shadow-xl flex flex-col overflow-hidden relative">
+                    {/* Guide Character Mini-Card (Overlay if no image, nested if image) */}
+                    <div className={`${pageData.imageUrl ? 'absolute top-6 left-6' : 'm-6'} bg-white/95 backdrop-blur px-4 py-3 rounded-3xl border-2 border-orange-50 shadow-xl flex items-center gap-3 self-start z-20`}>
+                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-orange-200 shadow-inner">
+                            <Image src={guideInfo.avatar} alt={guideInfo.name} width={48} height={48} className="object-cover" />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest leading-none mb-1">Guide</p>
+                            <p className="text-sm font-black text-orange-950">{guideInfo.name}</p>
+                        </div>
+                        {isPlaying && (
+                            <div className="flex gap-1 h-4 items-center pl-2 border-l border-orange-100">
+                                {[1, 2, 3].map(i => <motion.div key={i} animate={{ height: [4, 16, 4] }} transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }} className="w-1 bg-orange-500 rounded-full" />)}
+                            </div>
+                        )}
+                    </div>
                     <div className="flex-1 p-6 lg:p-10 overflow-y-auto overflow-x-hidden scrollbar-hide">
                         <div className="flex flex-wrap gap-x-2 gap-y-3 lg:gap-y-4 text-2xl md:text-3xl lg:text-4xl font-extrabold leading-tight tracking-tight text-zinc-900 pb-12">
                             {words.map((word: WordAlignment, i: number) => (
@@ -471,7 +553,7 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
                             </motion.div>
 
                             <h2 className="text-3xl lg:text-4xl font-black text-zinc-900 mb-2 leading-tight">Ready to Listen?</h2>
-                            <p className="text-orange-600 font-bold mb-10 text-lg">Tap to hear {guideInfo.name} read!</p>
+                            <p className="text-orange-600 font-bold mb-10 text-lg">{guideInfo.name} is getting ready to read!</p>
 
                             <button onClick={async () => {
                                 setShowPlayOverlay(false);
@@ -521,14 +603,63 @@ export default function InteractiveReader({ title, pages, guide, onClose }: Inte
 
                             <button
                                 onClick={onClose}
-                                className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-2xl font-black text-xl shadow-xl hover:scale-105 active:scale-95 transition-all"
+                                className="w-full py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-2xl font-black text-xl shadow-xl hover:scale-105 active:scale-95 transition-all mb-4"
                             >
                                 COLLECT REWARD 🌟
                             </button>
+
+                            {storyId && !isSaved && (
+                                <button
+                                    onClick={async () => {
+                                        setIsSaving(true);
+                                        setSaveError(null);
+                                        try {
+                                            const res = await saveGeneratedStory(storyId);
+                                            if (res.success) {
+                                                setIsSaved(true);
+                                            }
+                                        } catch (e: any) {
+                                            setSaveError(e.message || "Failed to save");
+                                        } finally {
+                                            setIsSaving(false);
+                                        }
+                                    }}
+                                    disabled={isSaving}
+                                    className="w-full py-4 bg-zinc-900 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
+                                >
+                                    {isSaving ? (
+                                        <>
+                                            <Loader2 size={24} className="animate-spin" />
+                                            SAVING...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Star size={24} fill="white" />
+                                            SAVE TO MY LIBRARY
+                                        </>
+                                    )}
+                                </button>
+                            )}
+
+                            {isSaved && (
+                                <div className="p-4 bg-green-50 rounded-2xl border-2 border-green-200">
+                                    <p className="text-green-700 font-black flex items-center justify-center gap-2">
+                                        <Check className="w-5 h-5" />
+                                        SAVED TO YOUR ACCOUNT!
+                                    </p>
+                                </div>
+                            )}
+
+                            {saveError && <p className="mt-2 text-xs font-bold text-red-500 uppercase tracking-widest">{saveError}</p>}
                         </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>
+            {/* ═══ Badge Unlock Celebration ═══ */}
+            <BadgeUnlockModal
+                badge={unlockedBadge}
+                onClose={() => clearUnlockedBadge()}
+            />
         </div>
     );
 }

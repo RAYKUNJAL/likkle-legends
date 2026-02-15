@@ -46,7 +46,7 @@ export default function CustomSongRequestsPage() {
         }
     };
 
-    const columns = [
+    const columns: any[] = [
         { header: "Date", accessor: "created_at", render: (val: string) => new Date(val).toLocaleDateString() },
         { header: "Child", accessor: "child_name", className: "font-bold" },
         { header: "Occasion", accessor: "occasion", render: (val: string) => <span className="capitalize">{val.replace('_', ' ')}</span> },

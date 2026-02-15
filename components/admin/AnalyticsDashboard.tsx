@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Users, Activity, DollarSign, Smartphone, AlertTriangle, Clock, Zap } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
+import { Users, Activity, DollarSign, Smartphone, AlertTriangle, Clock } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 const data = [
     { name: 'Mon', usage: 4000, cost: 24 },
@@ -17,8 +17,8 @@ const data = [
 
 const StatCard = ({ title, value, icon: Icon, color, delay }: any) => (
     <div
-        className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex items-center gap-5 animate-in fade-in slide-in-from-bottom-5 duration-500"
-        style={{ animationDelay: `${delay}s` }}
+        className="glass-card p-6 flex items-center gap-5 animate-fade-in"
+        style={{ animationDelay: `${delay}s`, boxShadow: 'var(--shadow-premium)' }}
     >
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: `${color}15`, color: color }}>
             <Icon size={24} />
@@ -41,15 +41,14 @@ export const AnalyticsDashboard = () => {
 
     useEffect(() => {
         const fetchStats = async () => {
-            const supabase = createClient();
             const { data: kpis } = await supabase.from('v_admin_kpis_today').select('*').single();
             if (kpis) {
                 setStats({
-                    total_users: (kpis.total_users || 0).toLocaleString(),
-                    events_24h: (kpis.events_24h || 0).toLocaleString(),
-                    active_subscriptions: (kpis.active_subscriptions || 0).toLocaleString(),
+                    total_users: kpis.total_users.toLocaleString(),
+                    events_24h: kpis.events_24h.toLocaleString(),
+                    active_subscriptions: kpis.active_subscriptions.toLocaleString(),
                     ai_cost_24h: `$${Number(kpis.ai_cost_24h || 0).toFixed(2)}`,
-                    failed_jobs: (kpis.failed_jobs || 0).toString()
+                    failed_jobs: kpis.failed_jobs.toString()
                 });
             }
         };
@@ -79,7 +78,7 @@ export const AnalyticsDashboard = () => {
 
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm">
+                <div className="lg:col-span-2 glass-card p-8" style={{ boxShadow: 'var(--shadow-premium)' }}>
                     <div className="flex justify-between items-center mb-10">
                         <div>
                             <h3 className="text-xl font-black text-slate-800">Growth Engine</h3>
@@ -109,7 +108,7 @@ export const AnalyticsDashboard = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col">
+                <div className="glass-card p-8 flex flex-col" style={{ boxShadow: 'var(--shadow-premium)' }}>
                     <h3 className="text-xl font-black text-slate-800 mb-6">Recent Alerts</h3>
                     <div className="space-y-4 flex-1">
                         {stats.failed_jobs !== '0' ? (

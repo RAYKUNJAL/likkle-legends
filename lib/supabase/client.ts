@@ -1,12 +1,13 @@
 
 import { createBrowserClient } from '@supabase/ssr'
 
-export const createClient = () => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!url || !key || url === 'false' || key === 'false') {
-        return createBrowserClient('https://placeholder.supabase.co', 'placeholder');
-    }
-    return createBrowserClient(url, key);
-}
+export const createClient = () =>
+    createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
+        {
+            cookieOptions: {
+                name: 'sb-likkle-auth',
+            }
+        }
+    )
