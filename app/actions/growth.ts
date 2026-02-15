@@ -90,21 +90,14 @@ export async function getParentReferralCode() {
 
     if (!user) return null;
 
-    // We store the simple parent ref code in user_metadata for lightweight access
-    let refCode = user.user_metadata?.my_referral_code;
+    // Fetch from the new column in the users/profiles table
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('my_referral_code')
+        .eq('id', user.id)
+        .single();
 
-    if (!refCode) {
-        // Generate one
-        const namePart = user.user_metadata?.full_name?.replace(/[^a-zA-Z]/g, '').substring(0, 4).toUpperCase() || 'FAM';
-        const randomPart = Math.floor(100 + Math.random() * 900);
-        refCode = `${namePart}${randomPart}`;
-
-        await supabase.auth.updateUser({
-            data: { my_referral_code: refCode }
-        });
-    }
-
-    return refCode;
+    return profile?.my_referral_code || null;
 }
 
 /**

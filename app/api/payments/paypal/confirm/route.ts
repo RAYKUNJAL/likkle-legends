@@ -30,39 +30,40 @@ async function recordReferralConversion(userId: string, refCode: string, amount:
         });
 
         // Update Promoter Earnings
-        // FRAUD CHECK: Prevent self-referral
         if (promoter.user_id !== userId) {
             await supabase.rpc('increment_promoter_earnings', {
                 row_id: promoter.id,
                 amount: commission
             });
             console.log(`[GROWTH] Commission recorded for promoter ${promoter.id} ($${commission})`);
-        } else {
-            console.warn(`[GROWTH] Self-referral detected. Commission blocked for ${userId}`);
         }
-
         return { type: 'promoter', id: promoter.id, commission };
     }
 
-    // 2. Check if it's a PARENT code (via user_metadata)
-    // We search profiles to find who owns this code
-    // Note: This requires a new index or query on profiles if we stored it in metadata.
-    // Ideally we'd have a 'referral_codes' table mapping code -> user_id, 
-    // but for MVP we might search auth.users or profiles if we promoted it to a column.
-    // For now, let's assume we can lookup by a column 'my_referral_code' on profiles if added, 
-    // OR we scan a lookup table. 
-    // Let's rely on the `referral_credits` logic which uses `referrer_id`.
+    // 2. Check if it's a PARENT referral code
+    const { data: parent } = await supabase
+        .from('users')
+        .select('id')
+        .eq('my_referral_code', refCode)
+        .single();
 
-    // **FIX**: Since `my_referral_code` isn't an indexed column yet, we skip this for now 
-    // unless we added it to `profiles`. 
-    // Actually, let's query `promoters` table for "parents" too if we treat them as lightweight promoters?
-    // No, parents get credits.
+    if (parent && parent.id !== userId) {
+        // Create a pending credit for the parent
+        await supabase
+            .from('referral_credits')
+            .insert({
+                user_id: parent.id,
+                referred_user_id: userId,
+                reward_type: 'subscription_credit',
+                status: 'pending',
+                order_id: orderId
+            });
 
-    // To make this robust without schema changes on `profiles`, we'll assume 
-    // Parent Codes are just User IDs or we use a separate lookup table.
-    // For "Give $10/Get Month", let's pause parent attribution here until we migrate usage 
-    // to a proper lookup table or robust query.
-    // We will stick to PROMOTER attribution first as that's the "Million Dollar" revenue driver.
+        console.log(`[GROWTH] Parent referral credit recorded for ${parent.id} via user ${userId}`);
+        return { type: 'parent', id: parent.id };
+    }
+
+    return null;
 }
 
 export async function POST(request: NextRequest) {
