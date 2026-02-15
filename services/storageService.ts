@@ -16,40 +16,39 @@ export const PATHS = {
 };
 
 /**
- * Uploader (Supabase Storage with Local Fallback)
+ * Uploader (Supabase Storage with Real Progress)
  */
 export const uploadFile = async (
     file: File | Blob,
-    path: string
+    path: string,
+    onProgress?: (percent: number) => void
 ): Promise<string> => {
-    if (isSupabaseConfigured()) {
-        try {
-            const fileName = (file as File).name || `file_${Date.now()}`;
-            const sanitizedName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    try {
+        const { uploadFile: unifiedUpload } = await import("../lib/storage");
 
-            let bucket = path;
-            let filePath = sanitizedName;
+        // Extract bucket and folder from path
+        let bucket: any = 'public-radio';
+        let folder: string | undefined = undefined;
 
-            if (path.includes('/')) {
-                const parts = path.split('/');
-                bucket = parts[0];
-                filePath = parts.slice(1).join('/') + '/' + sanitizedName;
-            }
-
-            const { data, error } = await supabase.storage.from(bucket).upload(filePath, file, {
-                cacheControl: '3600',
-                upsert: true
-            });
-
-            if (error) throw error;
-
-            const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(filePath);
-            return urlData.publicUrl;
-        } catch (error) {
-            console.warn("[UPLOAD FAILED] Using local fallback", error);
+        if (path.includes('/')) {
+            const parts = path.split('/');
+            bucket = parts[0] as any;
+            folder = parts.slice(1).join('/');
+        } else {
+            bucket = path as any;
         }
+
+        const result = await unifiedUpload(bucket, file, folder, {
+            onProgress,
+            useProxy: true // Use proxy for service-role bypass and easier progress via XHR
+        });
+
+        if (result) return result.url;
+        throw new Error("Upload failed");
+    } catch (error) {
+        console.warn("[UPLOAD FAILED] Using local fallback", error);
+        return URL.createObjectURL(file);
     }
-    return URL.createObjectURL(file);
 };
 
 // --- HELPERS ---

@@ -41,15 +41,15 @@ export const siteContent = {
             { label: "Mini Legends (4–5)", id: "mini" },
             { label: "Big Legends (6–8)", id: "big" }
         ],
-        headline: "Raise Proud, Confident Caribbean Kids.",
-        subheadline: "The monthly mail club that delivers personalized letters, cultural activities, and AI-powered stories to help your child love their roots.",
+        headline: "Culture shouldn't be a memory. Let's make it their identity.",
+        subheadline: "The monthly mail club that delivers personalized letters, cultural activities, and AI-powered stories to Caribbean kids everywhere.",
         primary_cta: {
-            label: "Start Your Child's Adventure",
+            label: "Try the $10 Intro Experience",
             href: "/get-started"
         },
         secondary_cta: {
-            label: "Preview a free sample letter",
-            href: "#sample-letter"
+            label: "How it works",
+            href: "#how-it-works"
         },
         trust_row: {
             badges: [
@@ -346,26 +346,46 @@ export const siteContent = {
     },
     pricing: {
         id: "pricing",
-        title: "Choose your legend journey",
-        subtitle: "Start with Mail Club for $10/month and upgrade anytime. Cancel whenever you need.",
+        title: "Start Your Culture Journey",
+        subtitle: "Try the Intro Experience for just $10. Most families start here, then upgrade as their legends grow.",
         plans: [
             {
-                id: "mail_club",
-                label: "THE PERFECT STARTER",
+                id: "free_forever",
+                label: "START FOR FREE",
+                name: "Free Forever",
+                price_display: "$0/mo",
+                billing_note: "No credit card required. Perfect to explore.",
+                features: [
+                    "Rotating selection of island stories.",
+                    "Interactive Island Radio (5 basic songs).",
+                    "Basic progress badges & streaks.",
+                    "1 Child Profile.",
+                    "Limited AI Story Studio (2 builds/mo)."
+                ],
+                badges: ["Great for exploring"],
+                cta: {
+                    label: "Start Free Forever",
+                    href: "/signup?plan=free_forever",
+                    variant: "outline"
+                }
+            },
+            {
+                id: "starter_mailer",
+                label: "THE INTRO EXPERIENCE",
                 name: "Mail Club",
                 price_display: "$10/mo",
-                billing_note: "Billed monthly. Cancel anytime.",
+                billing_note: "Perfect for testing the magic. Cancel anytime.",
                 features: [
-                    "1 personalized physical letter every month.",
-                    "1 cultural flashcard in each envelope.",
-                    "1 physical coloring sheet that matches the story.",
-                    "Access to 5 Island Nursery Songs.",
-                    "Cancel anytime from your parent dashboard."
+                    "Your first personalized physical letter.",
+                    "Coloring flashcards & stickers.",
+                    "Full digital portal access.",
+                    "A surprise welcome mission from R.O.T.I.",
+                    "Digital Island Experiences."
                 ],
-                badges: ["Best for trying the magic", "Ships worldwide", "Low commitment"],
+                badges: ["Most popular for new families", "Ships worldwide"],
                 cta: {
-                    label: "Start Mail Club",
-                    href: "/signup?plan=mail_club",
+                    label: "Try for $10",
+                    href: "/signup?plan=starter_mailer",
                     variant: "primary"
                 }
             },

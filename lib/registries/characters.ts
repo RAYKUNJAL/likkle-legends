@@ -62,7 +62,7 @@ export const CHARACTER_REGISTRY: Record<string, CharacterProfile> = {
             "help_button"
         ],
         image_assets: {
-            primary: "/images/roti-avatar.jpg",
+            primary: "/images/roti-new.jpg",
             alt: "R.O.T.I. friendly robot guide"
         }
     },
@@ -101,7 +101,7 @@ export const CHARACTER_REGISTRY: Record<string, CharacterProfile> = {
             "bedtime_story"
         ],
         image_assets: {
-            primary: "/images/tanty_spice.png",
+            primary: "/images/tanty_spice_avatar.jpg",
             alt: "Tanty Spice warm island elder"
         }
     },
@@ -139,7 +139,7 @@ export const CHARACTER_REGISTRY: Record<string, CharacterProfile> = {
             "try_something_new_cards"
         ],
         image_assets: {
-            primary: "/images/dilly_doubles.png",
+            primary: "/images/dilly-doubles.jpg",
             alt: "Dilly Doubles cheerful Trinidad doubles character"
         }
     },
@@ -177,7 +177,7 @@ export const CHARACTER_REGISTRY: Record<string, CharacterProfile> = {
             "calm_story_mode"
         ],
         image_assets: {
-            primary: "/images/mystery-character.png",
+            primary: "/images/benny-of-shadows.jpg",
             alt: "Benny of Shadows leafy guardian"
         }
     },

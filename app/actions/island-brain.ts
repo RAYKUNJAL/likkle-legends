@@ -42,8 +42,11 @@ async function verifyUser(token: string) {
  * Global Admin Client for restricted operations
  */
 async function getAdminClient() {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !serviceKey || url === 'false') {
+        throw new Error("Supabase internal config missing or disabled");
+    }
     const { createClient } = await import('@supabase/supabase-js');
     return createClient(url, serviceKey, {
         auth: { persistSession: false }

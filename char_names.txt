@@ -1,0 +1,25 @@
+(node:8752) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/Banjo/.gemini/antigravity/scratch/likkle-legends/scripts/db-query.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\Banjo\.gemini\antigravity\scratch\likkle-legends\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[dotenv@17.2.4] injecting env (10) from .env -- tip: ΓÜÖ∩╕Å  override existing env vars with { override: true }
+[
+  {
+    "name": "R.O.T.I."
+  },
+  {
+    "name": "Tanty Spice"
+  },
+  {
+    "name": "Dilly Doubles"
+  },
+  {
+    "name": "Mango Moko"
+  },
+  {
+    "name": "Benny of Shadows"
+  },
+  {
+    "name": "Steelpan Sam"
+  }
+]

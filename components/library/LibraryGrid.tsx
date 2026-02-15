@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Sparkles, Star, Mic, BookOpen, Music, Video } from 'lucide-react';
 import Image from 'next/image';
@@ -44,7 +44,11 @@ const STORIES = [
     }
 ];
 
-export default function LibraryGrid() {
+interface LibraryGridProps {
+    isLandingPage?: boolean;
+}
+
+export default function LibraryGrid({ isLandingPage = false }: LibraryGridProps) {
     const [selectedStory, setSelectedStory] = useState<any>(null);
     const [filter, setFilter] = useState<'all' | 'tanty' | 'roti'>('all');
     const [stories, setStories] = useState<any[]>([]);
@@ -56,68 +60,75 @@ export default function LibraryGrid() {
                 const response = await fetch('/api/library/stories');
                 const data = await response.json();
 
-                if (data.stories) {
+                if (data.stories && data.stories.length > 0) {
                     const formattedDetails = data.stories.map((s: any) => {
-                        // DB schema mapping
                         const content = typeof s.content_json === 'string' ? JSON.parse(s.content_json) : s.content_json;
                         return {
                             id: s.id,
                             title: s.title,
-                            author: "You!", // User Generated
+                            author: isLandingPage ? "Mini Legend" : "You!",
                             cover: s.cover_image_url || "https://images.unsplash.com/photo-1629248457635-7798c89c898c?q=80&w=800",
                             summary: s.summary,
                             tags: [s.island_theme, s.age_track],
                             level: s.difficulty_level <= 3 ? "Beginner" : "Legend",
                             duration: `${s.reading_time_minutes || 5} min`,
-                            character: 'roti', // Default for now
-                            pages: content.pages // Pass pages for reader
+                            character: 'roti',
+                            pages: content.pages
                         };
                     });
                     setStories(formattedDetails);
+                } else {
+                    // Fallback to mock data for landing page or if empty
+                    setStories(STORIES.map(s => ({ ...s, author: isLandingPage ? "Mini Legend" : s.author })));
                 }
             } catch (e) {
                 console.error("Failed to load library", e);
+                setStories(STORIES); // Emergency fallback
             } finally {
                 setIsLoading(false);
             }
         }
         fetchLibrary();
-    }, []);
+    }, [isLandingPage]);
 
     const filteredStories = stories.filter(s =>
         filter === 'all' ? true : s.character === filter
     );
 
     return (
-        <section className="bg-[#FFFBF5] min-h-screen py-8 pb-32">
+        <section className={`${isLandingPage ? 'bg-white' : 'bg-[#FFFBF5]'} min-h-[60vh] py-24`}>
             <div className="container mx-auto px-4 lg:px-8">
 
                 {/* ═══ Header ═══ */}
-                <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
-                    <div>
-                        <h1 className="text-4xl lg:text-5xl font-black text-orange-950 tracking-tight mb-2">
-                            My Creations 🎨
-                        </h1>
-                        <p className="text-lg text-orange-800/60 font-medium">
-                            {stories.length} Legendary Stories Crafted
+                <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-6">
+                    <div className={isLandingPage ? 'text-center md:text-left' : ''}>
+                        <h2 className="text-4xl lg:text-5xl font-black text-orange-950 tracking-tight mb-4">
+                            {isLandingPage ? 'The Likkle Library 📚' : 'My Creations 🎨'}
+                        </h2>
+                        <p className="text-xl text-orange-800/60 font-medium max-w-xl">
+                            {isLandingPage
+                                ? "Explore original stories imagined by kids and brought to life with our AI Story Studio."
+                                : `${stories.length} Legendary Stories Crafted`}
                         </p>
                     </div>
 
                     {/* Filter Pills */}
-                    <div className="flex bg-white p-1.5 rounded-full shadow-sm border border-orange-100">
-                        {['all', 'tanty', 'roti'].map((f) => (
-                            <button
-                                key={f}
-                                onClick={() => setFilter(f as any)}
-                                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${filter === f
-                                    ? 'bg-orange-500 text-white shadow-md transform scale-105'
-                                    : 'text-orange-400 hover:bg-orange-50 hover:text-orange-600'
-                                    }`}
-                            >
-                                {f === 'all' ? 'All Stories' : f === 'tanty' ? '👵🏽 Tanty Spice' : '🤖 R.O.T.I.'}
-                            </button>
-                        ))}
-                    </div>
+                    {!isLandingPage && (
+                        <div className="flex bg-white p-1.5 rounded-full shadow-sm border border-orange-100">
+                            {['all', 'tanty', 'roti'].map((f) => (
+                                <button
+                                    key={f}
+                                    onClick={() => setFilter(f as any)}
+                                    className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all ${filter === f
+                                        ? 'bg-orange-500 text-white shadow-md transform scale-105'
+                                        : 'text-orange-400 hover:bg-orange-50 hover:text-orange-600'
+                                        }`}
+                                >
+                                    {f === 'all' ? 'All Stories' : f === 'tanty' ? '👵🏽 Tanty Spice' : '🤖 R.O.T.I.'}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {isLoading ? (

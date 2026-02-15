@@ -1,0 +1,6 @@
+[dotenv@17.2.4] injecting env (7) from .env -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }
+≡ƒÜÇ Connecting to Supabase Postgres (Direct)...
+Γ£à Connected!
+≡ƒôä Executing migration SQL...
+
+Γ£à Migration successful!

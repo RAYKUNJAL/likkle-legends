@@ -1,6 +1,9 @@
 
 import { supabase } from '@/lib/storage';
 import { getChild, updateChild } from './children';
+import { getContentItems } from './content';
+
+// Missions are handled in content service to avoid circular dependency
 
 export async function logActivity(
     profileId: string,

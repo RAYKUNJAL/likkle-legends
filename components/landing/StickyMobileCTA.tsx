@@ -1,41 +1,53 @@
 'use client';
 
+import { useGeo } from '../GeoContext';
+import { trackEvent } from '@/lib/analytics';
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function StickyMobileCTA() {
-    const [isVisible, setIsVisible] = useState(false);
+    const { variant, isLoading } = useGeo();
+    const [show, setShow] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
-            // Show after scrolling past hero (approximately 500px)
-            setIsVisible(window.scrollY > 500);
+            if (window.scrollY > 420) setShow(true);
+            else setShow(false);
         };
-
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    if (!isVisible) return null;
+    if (isLoading) return null;
+
+    const isUSA = variant === 'USA_MAIL_FIRST';
+    const label = isUSA ? "Get $10 Intro Envelope" : "Start Free Forever";
+    const action = isUSA ? '#offer' : '/signup?flow=FREE_ONBOARDING';
+
+    const handleClick = () => {
+        trackEvent('ll_cta_click', { cta_id: 'STICKY_MOBILE_CTA', variant });
+        window.location.href = action;
+    };
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/95 backdrop-blur-lg border-t border-zinc-200 p-3 shadow-2xl animate-in slide-in-from-bottom duration-300">
-            <div className="flex gap-2">
-                <Link
-                    href="/get-started"
-                    className="flex-1 flex items-center justify-center gap-1 bg-primary text-white py-3 px-4 rounded-xl font-bold text-sm shadow-lg"
+        <AnimatePresence>
+            {show && (
+                <motion.div
+                    initial={{ y: 100 }}
+                    animate={{ y: 0 }}
+                    exit={{ y: 100 }}
+                    className="fixed bottom-0 left-0 right-0 z-50 p-4 lg:hidden pointer-events-none"
                 >
-                    Try $10 Intro
-                    <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                    href="/get-started"
-                    className="flex items-center justify-center gap-1 bg-zinc-100 text-deep py-3 px-4 rounded-xl font-bold text-sm"
-                >
-                    Free Trial
-                </Link>
-            </div>
-        </div>
+                    <div className="max-w-md mx-auto pointer-events-auto">
+                        <button
+                            onClick={handleClick}
+                            className="w-full py-4 bg-emerald-500 text-white font-black rounded-2xl shadow-2xl shadow-emerald-500/40 border border-white/20 active:scale-95 transition-all text-lg"
+                        >
+                            {label}
+                        </button>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 }

@@ -27,6 +27,7 @@ const quicksand = Quicksand({
 import { siteContent } from '@/lib/content';
 import { getMergedSiteContent } from '@/lib/services/cms';
 import NotificationBar from '@/components/landing/NotificationBar';
+import { GeoProvider } from '@/components/GeoContext';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'),
@@ -89,8 +90,10 @@ export default async function RootLayout({
         <CookieConsentBanner />
         <Toaster position="top-right" />
         <UserProvider>
-          {children}
-          {/* Tanty chatbot removed per user request */}
+          <GeoProvider>
+            {children}
+            {/* Tanty chatbot removed per user request */}
+          </GeoProvider>
         </UserProvider>
       </body>
     </html>

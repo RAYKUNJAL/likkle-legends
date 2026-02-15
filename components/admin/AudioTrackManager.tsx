@@ -72,13 +72,12 @@ export const AudioTrackManager: React.FC = () => {
         if (!file || !title || !artist) return;
 
         setIsUploading(true);
-        setUploadProgress(10);
+        setUploadProgress(0);
 
         try {
-            // In the original, uploadFile took a 4th param callback for progress.
-            // My storageService.ts uploadFile doesn't have that yet, let's check.
-            // Wait, let's keep it consistent.
-            const url = await uploadFile(file, PATHS.RADIO);
+            const url = await uploadFile(file, PATHS.RADIO, (percent) => {
+                setUploadProgress(percent);
+            });
 
             const newTrack: Track = {
                 id: `custom_${Date.now()}`,

@@ -16,12 +16,12 @@ export const SUBSCRIPTION_PLANS = {
         price: 9.99,
         priceYearly: 99.00,
         interval: 'month',
-        description: 'Character Letter, Coloring Postcard, Flashcard, Stickers + VR Portal',
+        description: 'Character Letter, Coloring Postcard, Flashcard, Stickers',
         features: [
             'Personalized character letter monthly',
             'Coloring postcard & sticker sheet',
             'Alphabet flashcard',
-            'QR-triggered 360° Island VR Portal',
+            'Digital Island Experience',
         ],
         margin: 0.78,
     },
@@ -60,23 +60,6 @@ export const SUBSCRIPTION_PLANS = {
             'Printable Family Tree Kit',
         ],
         margin: 0.56,
-    },
-    trial_access: {
-        id: 'trial_access',
-        name: '7-Day Free Pass',
-        paypalPlanId: 'TRIAL',
-        paypalPlanIdYearly: 'TRIAL',
-        price: 0.00,
-        priceYearly: 0.00,
-        interval: 'month',
-        description: 'Full access to Digital Portal & AI Studio for 7 days',
-        features: [
-            'Unlimited AI Story Studio',
-            'Interactive Child Portal',
-            'Digital "Postcard" Access',
-            'No credit card required',
-        ],
-        margin: 0,
     },
 };
 

@@ -11,8 +11,8 @@ import { createClient } from '@supabase/supabase-js';
  * - Folder organization by content type
  */
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 // Allowed MIME types for security
 const ALLOWED_TYPES: Record<string, string[]> = {
@@ -89,9 +89,9 @@ function organizeByDateFolder(): string {
 
 export async function POST(request: NextRequest) {
     try {
-        // Validate service key
-        if (!serviceRoleKey) {
-            console.error('[Upload API] Missing SUPABASE_SERVICE_ROLE_KEY');
+        // Validate service key and URL
+        if (!serviceRoleKey || !supabaseUrl || supabaseUrl === 'false') {
+            console.error('[Upload API] Missing Supabase configuration');
             return NextResponse.json(
                 { error: 'Server configuration error' },
                 { status: 500 }

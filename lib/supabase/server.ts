@@ -3,11 +3,29 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export const createClient = () => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    // Build-time safety: return a mock/placeholder client if keys are missing
+    if (!url || !key || url === 'false' || key === 'false') {
+        console.warn('⚠️ Supabase credentials missing during server-side client creation. Using placeholders.');
+        return createServerClient(
+            'https://placeholder.supabase.co',
+            'placeholder',
+            {
+                cookies: {
+                    getAll() { return [] },
+                    setAll() { }
+                }
+            }
+        );
+    }
+
     const cookieStore = cookies()
 
     return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        url,
+        key,
         {
             cookies: {
                 getAll() {

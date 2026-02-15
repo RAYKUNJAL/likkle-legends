@@ -1,0 +1,397 @@
+
+> likkle-legends-mail-club@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.35
+  - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  WARNING: No Gemini API key found in environment variables
+   Please set GEMINI_API_KEY in your .env.local file
+[dotenv@17.2.4] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }
+ΓÜá∩╕Å ElevenLabs API Key missing. Voice generation will fail.
+   Generating static pages (0/118) ...
+API Request: /api/story-data
+URL available: false
+Service Key available: false
+Missing Supabase credentials
+Error fetching posts: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND placeholder.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND placeholder.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)',
+  hint: '',
+  code: ''
+}
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+Error fetching posts: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND placeholder.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND placeholder.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)',
+  hint: '',
+  code: ''
+}
+   Generating static pages (29/118) 
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+ΓÜá∩╕Å  Supabase credentials missing. URL: false, AnonKey: false. Using placeholder.
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+   Generating static pages (58/118) 
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+   Generating static pages (88/118) 
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+≡ƒôÜ Fetching stories for library...
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+Supabase Error: {
+  message: 'TypeError: fetch failed',
+  details: 'TypeError: fetch failed\n' +
+    '\n' +
+    'Caused by: Error: getaddrinfo ENOTFOUND placeholder.supabase.co (ENOTFOUND)\n' +
+    'Error: getaddrinfo ENOTFOUND placeholder.supabase.co\n' +
+    '    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:122:26)',
+  hint: '',
+  code: ''
+}
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+ΓÜá∩╕Å Supabase credentials missing during server-side client creation. Using placeholders.
+ΓÜá∩╕Å Supabase credentials missing during server-side client creation. Using placeholders.
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+CMS Fetch Warning: TypeError: fetch failed
+ΓÜá∩╕Å  WARNING: No Gemini API key found in environment variables
+   Please set GEMINI_API_KEY in your .env.local file
+ΓÜá∩╕Å ElevenLabs API Key missing. Voice generation will fail.
+[dotenv@17.2.4] injecting env (0) from .env -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }
+ Γ£ô Generating static pages (118/118)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                  Size     First Load JS
+Γöî Γùï /                                        21.5 kB         238 kB
+Γö£ Γùï /_not-found                              150 B          88.4 kB
+Γö£ Γùï /about                                   2.73 kB         211 kB
+Γö£ Γùï /account                                 8.05 kB         161 kB
+Γö£ ╞Æ /account/children/[id]                   8.48 kB         164 kB
+Γö£ Γùï /admin                                   150 B          88.4 kB
+Γö£ Γùï /admin/affiliates                        3.61 kB         114 kB
+Γö£ Γùï /admin/ai-review                         7.75 kB         221 kB
+Γö£ Γùï /admin/analytics                         2.55 kB         108 kB
+Γö£ Γùï /admin/announcements                     3.92 kB         109 kB
+Γö£ Γùï /admin/approval                          2.53 kB         118 kB
+Γö£ Γùï /admin/assets                            11.6 kB         182 kB
+Γö£ Γùï /admin/auto-content                      7.14 kB         164 kB
+Γö£ Γùï /admin/blog                              6.74 kB         164 kB
+Γö£ Γùï /admin/central                           19.6 kB         338 kB
+Γö£ Γùï /admin/characters                        6.18 kB         168 kB
+Γö£ Γùï /admin/client-debug                      1.81 kB        95.9 kB
+Γö£ Γùï /admin/cms                               2.53 kB         108 kB
+Γö£ Γùï /admin/content                           2.24 kB         108 kB
+Γö£ Γùï /admin/content/printables                4.29 kB         161 kB
+Γö£ Γùï /admin/contests                          2.38 kB         113 kB
+Γö£ Γùï /admin/custom-requests                   5.44 kB         172 kB
+Γö£ Γùï /admin/customers                         2.34 kB         108 kB
+Γö£ Γùï /admin/debug                             1.51 kB        89.8 kB
+Γö£ Γùï /admin/debug-ai                          1.91 kB         107 kB
+Γö£ Γùï /admin/email-engine                      3.42 kB         109 kB
+Γö£ Γùï /admin/games                             5.94 kB         116 kB
+Γö£ Γùï /admin/leads                             1.95 kB         107 kB
+Γö£ Γùï /admin/media                             6.79 kB         169 kB
+Γö£ Γùï /admin/messages                          5.91 kB         165 kB
+Γö£ Γùï /admin/orders                            2.83 kB         108 kB
+Γö£ Γùï /admin/personality                       4.18 kB         109 kB
+Γö£ Γùï /admin/pixels                            2.38 kB         108 kB
+Γö£ Γùï /admin/settings                          3.85 kB         114 kB
+Γö£ Γùï /admin/store-analytics                   6.67 kB         271 kB
+Γö£ Γùï /admin/studio                            3.51 kB         109 kB
+Γö£ Γùï /admin/verify                            4.22 kB         110 kB
+Γö£ Γùï /analytics                               8.12 kB         161 kB
+Γö£ ╞Æ /api/admin/blog/batch                    0 B                0 B
+Γö£ ╞Æ /api/admin/blog/generate                 0 B                0 B
+Γö£ ╞Æ /api/admin/seed-cms                      0 B                0 B
+Γö£ ╞Æ /api/auth/callback                       0 B                0 B
+Γö£ ╞Æ /api/cron/nurture                        0 B                0 B
+Γö£ ╞Æ /api/cron/process-emails                 0 B                0 B
+Γö£ ╞Æ /api/elevenlabs-tts                      0 B                0 B
+Γö£ ╞Æ /api/gamification/xp                     0 B                0 B
+Γö£ ╞Æ /api/health                              0 B                0 B
+Γö£ ╞Æ /api/island-brain/generate               0 B                0 B
+Γö£ ╞Æ /api/island-brain/monthly-drop/generate  0 B                0 B
+Γö£ ╞Æ /api/library/stories                     0 B                0 B
+Γö£ ╞Æ /api/messages                            0 B                0 B
+Γö£ ╞Æ /api/notifications                       0 B                0 B
+Γö£ ╞Æ /api/payments/paypal/capture-order       0 B                0 B
+Γö£ ╞Æ /api/payments/paypal/confirm             0 B                0 B
+Γö£ ╞Æ /api/payments/paypal/create-order        0 B                0 B
+Γö£ ╞Æ /api/payments/paypal/webhooks            0 B                0 B
+Γö£ ╞Æ /api/roti-chat                           0 B                0 B
+Γö£ ╞Æ /api/roti-voice                          0 B                0 B
+Γö£ ╞Æ /api/send-email                          0 B                0 B
+Γö£ ╞Æ /api/story-data                          0 B                0 B
+Γö£ ╞Æ /api/story/generate                      0 B                0 B
+Γö£ ╞Æ /api/tanty-spice                         0 B                0 B
+Γö£ ╞Æ /api/test-story                          0 B                0 B
+Γö£ ╞Æ /api/upload                              0 B                0 B
+Γö£ ╞Æ /api/voice/generate                      0 B                0 B
+Γö£ Γùï /blog                                    7.05 kB         161 kB
+Γö£ ╞Æ /blog/[slug]                             190 B           102 kB
+Γö£ Γùï /characters                              2.73 kB         211 kB
+Γö£ ╞Æ /characters/[slug]                       2.73 kB         211 kB
+Γö£ Γùï /checkout                                6.72 kB         170 kB
+Γö£ Γùï /contact                                 8.19 kB         219 kB
+Γö£ Γùï /dashboard                               497 B          88.7 kB
+Γö£ Γùï /dashboard/admin/pixels                  6.96 kB         152 kB
+Γö£ Γùï /dashboard/printables                    3.16 kB         215 kB
+Γö£ Γùï /dashboard/songs                         4.71 kB         216 kB
+Γö£ Γùï /dashboard/stories                       5.2 kB          217 kB
+Γö£ Γùï /educators                               6.33 kB         215 kB
+Γö£ Γùï /faq                                     3.83 kB         212 kB
+Γö£ Γùï /feed.xml                                0 B                0 B
+Γö£ Γùï /forgot-password                         3.3 kB          105 kB
+Γö£ Γùï /get-started                             6.91 kB         148 kB
+Γö£ Γùï /grandparent                             5.64 kB         103 kB
+Γö£ Γùï /grandparent/access                      2.58 kB        99.5 kB
+Γö£ ╞Æ /library/stories/[storyId]               33.5 kB         183 kB
+Γö£ Γùï /login                                   4.3 kB          106 kB
+Γö£ Γùï /manifest.webmanifest                    0 B                0 B
+Γö£ Γùï /messages                                5.88 kB         159 kB
+Γö£ Γùï /notifications                           3.63 kB         101 kB
+Γö£ Γùï /onboarding/child                        12 kB           203 kB
+Γö£ Γùï /onboarding/complete                     5.07 kB         197 kB
+Γö£ Γùï /onboarding/welcome                      4.03 kB         140 kB
+Γö£ Γùï /opengraph-image.png                     0 B                0 B
+Γö£ Γùï /parent                                  13.3 kB         224 kB
+Γö£ Γùï /portal                                  19.6 kB         287 kB
+Γö£ Γùï /portal/badges                           9.02 kB         164 kB
+Γö£ Γùï /portal/games                            8.74 kB         168 kB
+Γö£ ╞Æ /portal/games/[id]                       8.95 kB         164 kB
+Γö£ Γùï /portal/games/anansi-web                 8.06 kB         189 kB
+Γö£ Γùï /portal/games/color-match                10.9 kB         209 kB
+Γö£ Γùï /portal/games/mango-catch                11.8 kB         210 kB
+Γö£ Γùï /portal/lessons                          7.69 kB         166 kB
+Γö£ Γùï /portal/missions                         7.7 kB          161 kB
+Γö£ Γùï /portal/printables                       11.7 kB         206 kB
+Γö£ Γùï /portal/radio                            4.65 kB         213 kB
+Γö£ Γùï /portal/settings                         6.14 kB         160 kB
+Γö£ Γùï /portal/songs                            8.68 kB         167 kB
+Γö£ Γùï /portal/store                            14 kB           174 kB
+Γö£ Γùï /portal/stories                          13.2 kB         174 kB
+Γö£ ╞Æ /portal/stories/[id]                     13.7 kB         217 kB
+Γö£ Γùï /portal/story-studio                     13.3 kB         156 kB
+Γö£ Γùï /pricing                                 2.72 kB         211 kB
+Γö£ Γùï /privacy                                 2.72 kB         211 kB
+Γö£ Γùï /profile                                 9.11 kB         217 kB
+Γö£ Γùï /promoters                               7.45 kB         216 kB
+Γö£ Γùï /robots.txt                              0 B                0 B
+Γö£ Γùï /safety                                  2.72 kB         211 kB
+Γö£ Γùï /shipping                                2.72 kB         211 kB
+Γö£ Γùï /signup                                  4.32 kB         149 kB
+Γö£ Γùï /sitemap.xml                             0 B                0 B
+Γö£ Γùï /story-demo                              3.57 kB         130 kB
+Γö£ Γùï /terms                                   2.72 kB         211 kB
+Γöö Γùï /twitter-image.png                       0 B                0 B
++ First Load JS shared by all                88.2 kB
+  Γö£ chunks/2117-2d3c9c3e68c472db.js          31.9 kB
+  Γö£ chunks/fd9d1056-cfbf1180a1aea89f.js      53.6 kB
+  Γöö other shared chunks (total)              2.7 kB
+
+
+╞Æ Middleware                                 73.4 kB
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+
