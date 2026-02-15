@@ -586,4 +586,34 @@ export async function updateUserPlanAction(userId: string, newPlan: string) {
         console.error("Update Plan Error:", e);
         return { success: false };
     }
+
+// ==========================================
+// USER MANAGEMENT ACTIONS
+// ==========================================
+
+export async function getAllUsersAction() {
+  const { supabaseAdmin } = await import("@/lib/supabase-client");
+  const { error } = await supabaseAdmin
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
+  
+  if (error) throw error;
+  const { revalidatePath } = await import('next/cache');
+  revalidatePath('/admin');
+  return { success: true };
+}
+
+export async function updateUserPlanAction(userId: string, newPlan: string) {
+  const { supabaseAdmin } = await import("@/lib/supabase-client");
+  const { error } = await supabaseAdmin
+    .from('profiles')
+    .update({ subscription_tier: newPlan })
+    .eq('id', userId);
+  
+  if (error) throw error;
+  const { revalidatePath } = await import('next/cache');
+  revalidatePath('/admin');
+  return { success: true };
+}
 }
