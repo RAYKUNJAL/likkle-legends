@@ -140,7 +140,7 @@ export async function enterContest(contestSlug: string, email: string, referredB
     // 1. Get Contest ID
     const { data: contest } = await supabase
         .from('contests')
-        .select('id, settings, is_active')
+        .select('id, settings, is_active, slug')
         .eq('slug', contestSlug)
         .single();
 
@@ -164,13 +164,24 @@ export async function enterContest(contestSlug: string, email: string, referredB
         };
     }
 
-    // 3. Create Entry
+    // 3. Handle Referral from Cookie if not provided
+    let finalReferredBy = referredBy;
+    if (!finalReferredBy) {
+        const cookieStore = cookies();
+        finalReferredBy = cookieStore.get('likkle_ref')?.value;
+    }
+
+    // 4. Create Entry
+    const uniqueSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const linkCode = `${email.split('@')[0].replace(/[^a-zA-Z]/g, '').substring(0, 4)}-${uniqueSuffix}`;
+
     const { data: newEntry, error } = await supabase
         .from('contest_entries')
         .insert({
             contest_id: contest.id,
             email: email,
-            referred_by_code: referredBy || null,
+            referred_by_code: finalReferredBy || null,
+            referral_link_code: linkCode,
             total_points: contest.settings?.points_signup || 10
         })
         .select()
@@ -178,11 +189,60 @@ export async function enterContest(contestSlug: string, email: string, referredB
 
     if (error) throw error;
 
+    // 5. If referred, award points to the referrer
+    if (finalReferredBy) {
+        // Find referrer entry for THIS contest
+        const { data: referrer } = await supabase
+            .from('contest_entries')
+            .select('id, total_points, referral_count')
+            .eq('contest_id', contest.id)
+            .eq('referral_link_code', finalReferredBy) // We need to ensure entries have their own link codes
+            .single();
+
+        if (referrer) {
+            await supabase
+                .from('contest_entries')
+                .update({
+                    total_points: referrer.total_points + (contest.settings?.points_per_referral || 50),
+                    referral_count: (referrer.referral_count || 0) + 1
+                })
+                .eq('id', referrer.id);
+        }
+    }
+
     return {
         success: true,
         entry: newEntry,
         message: "You're in! Share to win more."
     };
+}
+
+/**
+ * Award points for manual actions (like social sharing)
+ */
+export async function awardActionPoints(entryId: string, actionSlug: string) {
+    const supabase = createClient();
+
+    const { data: entry } = await supabase
+        .from('contest_entries')
+        .select('*, contests(settings)')
+        .eq('id', entryId)
+        .single();
+
+    if (!entry) throw new Error("Entry not found");
+
+    const points = entry.contests?.settings?.action_points?.[actionSlug] || 5;
+
+    const { error } = await supabase
+        .from('contest_entries')
+        .update({
+            total_points: entry.total_points + points
+        })
+        .eq('id', entryId);
+
+    if (error) throw error;
+
+    return { success: true, pointsAdded: points };
 }
 
 /**
