@@ -18,14 +18,34 @@ export async function generateStudioContentAction(
     islandId: string,
     topic: string,
     contentType: 'song_video_script' | 'story' | 'activity_pack' = 'song_video_script'
-): Promise<ContentPackage> {
+): Promise<ContentPackage | { error: string, code: string }> {
+    // 0. Verify Auth & Credits
+    const { createClient } = await import("@/lib/supabase/server");
+    const supabaseClient = createClient();
+    const { data: { user } } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+        throw new Error("You must be logged in to use the Legend Studio.");
+    }
+
+    const { checkAIUsage, logAIUsage } = await import("./ai-usage");
+    const usage = await checkAIUsage(user.id);
+
+    if (!usage.allowed) {
+        return {
+            error: `Monthly AI limit reached (${usage.limit} stories). Upgrade your plan for more!`,
+            code: "LIMIT_REACHED"
+        } as any;
+    }
+
     const genAI = getGenAI();
     // Use the model defined in your config or a default fast one
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     // Note: User might want to use specific models from config if they exist, but for now we hardcode a good one.
 
     const generatedContent: AIStudioAgentOutput = {};
 
+    // ... (rest of the logic for Module Master, Lyricist, etc.)
     // 1. Module Master (Lesson Plan)
     if (LEGEND_STUDIO_CONFIG.agents.module_master) {
         const prompt = `
@@ -139,6 +159,9 @@ export async function generateStudioContentAction(
         }
     }
 
+    // Log successful usage
+    await logAIUsage(user.id, `studio_${contentType}`, { title, topic });
+
     // Assemble final package
     const pkg: ContentPackage = {
         content_id: crypto.randomUUID(),
@@ -179,8 +202,32 @@ export async function generateInteractiveStoryAction(params: {
     guide: 'tanty' | 'roti';
     topic?: string;
 }) {
+    // 0. Verify Auth & Credits
+    const { createClient } = await import("@/lib/supabase/server");
+    const supabaseClient = createClient();
+    const { data: { user } } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+        throw new Error("You must be logged in to create a story.");
+    }
+
+    const { checkAIUsage, logAIUsage } = await import("./ai-usage");
+    const usage = await checkAIUsage(user.id);
+
+    if (!usage.allowed) {
+        return {
+            success: false,
+            error: `Monthly AI limit reached (${usage.limit} stories). Upgrade your plan for more!`,
+            code: "LIMIT_REACHED"
+        };
+    }
+
     try {
         const story = await storyAgent.createInterativeStory(params);
+
+        // Log successful usage
+        await logAIUsage(user.id, 'interactive_story', { ...params });
+
         return { success: true, story };
     } catch (error: any) {
         console.error("Interactive Story generation failed:", error);

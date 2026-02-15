@@ -25,11 +25,19 @@ export class StoryAgent {
         island: string;
         guide: 'tanty' | 'roti';
         topic?: string;
+        dialectLevel?: 'standard' | 'local';
     }): Promise<StoryBook> {
-        console.log(`🤖 [StoryAgent] Designing story for ${params.childName}...`);
+        const { getCharacterContext } = await import('../../registries/characters');
+        const dialectLevel = params.dialectLevel || 'standard';
+
+        console.log(`🤖 [StoryAgent] Designing ${dialectLevel} ${params.island} story for ${params.childName}...`);
 
         // 1. Generate Story Text via Gemini
-        const storyData = await this.generateStoryStructure(params);
+        const storyData = await this.generateStoryStructure({
+            ...params,
+            dialectLevel,
+            characterContext: getCharacterContext(params.guide, params.island, dialectLevel)
+        });
 
         // 2. Synthesize Voice for each page
         const pagesWithAudio = await Promise.all(storyData.pages.map(async (page: any, index: number) => {
@@ -135,9 +143,15 @@ export class StoryAgent {
     }
 
     private async generateStoryStructure(params: any): Promise<any> {
-        const systemInstruction = `You are a Caribbean Storyteller. Generate a 5-page children's story.
-        Include ${params.childName} as a character. Use island terms matching ${params.island}.
-        Return JSON.`;
+        const systemInstruction = `
+        ${params.characterContext}
+        
+        TASK: You are a Caribbean Storyteller. Generate a 5-page children's story for ${params.childName}.
+        LOCATION: ${params.island}.
+        DIALECT LEVEL: ${params.dialectLevel}.
+        
+        Return strictly valid JSON matching the schema.
+        `;
 
         const schema = {
             type: "object",

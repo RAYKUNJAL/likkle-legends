@@ -60,6 +60,7 @@ import AnalyticsLoader from '@/components/AnalyticsLoader';
 import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import { UserProvider } from '@/components/UserContext';
 import StructuredData from '@/components/StructuredData';
+import ReferralTracker from '@/components/ReferralTracker';
 // TantySpiceWidget removed - R.O.T.I. is the primary chat interface
 
 import { Toaster } from 'react-hot-toast';
@@ -87,6 +88,7 @@ export default async function RootLayout({
       >
         <NotificationBar content={content} />
         <AnalyticsLoader />
+        <ReferralTracker />
         <CookieConsentBanner />
         <Toaster position="top-right" />
         <UserProvider>

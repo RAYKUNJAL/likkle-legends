@@ -19,6 +19,11 @@ export interface CharacterProfile {
     role_title: string;
     feature_ownership: string[];
     voice_bible: CharacterVoiceBible;
+    dialects?: Record<string, {
+        label: string;
+        island_code: string;
+        dialect_voice: string; // Specific phrases or rules for this dialect
+    }>;
     ui_surfaces: string[];
     image_assets: {
         primary: string;
@@ -103,6 +108,23 @@ export const CHARACTER_REGISTRY: Record<string, CharacterProfile> = {
         image_assets: {
             primary: "/images/tanty_spice.png",
             alt: "Tanty Spice warm island elder"
+        },
+        dialects: {
+            "TT": {
+                label: "Trini",
+                island_code: "TT",
+                dialect_voice: "Use phrases like 'Do so eh!', 'Look at you nah!', and call the child 'Sweet fella' or 'Sweetness'. Keep the rhythm of a Trinidadian auntie."
+            },
+            "JM": {
+                label: "Patois",
+                island_code: "JM",
+                dialect_voice: "Use phrases like 'Wah gwan', 'Likkle more', 'Big tings!', and 'Nuh true?'. Lean into the melodic flow of Jamaican Patois."
+            },
+            "BB": {
+                label: "Bajan",
+                island_code: "BB",
+                dialect_voice: "Use phrases like 'Wuh you saying?', 'Cheese on bread!', and 'Evah so!'. Use the distinctive Bajan lilt."
+            }
         }
     },
     dilly_doubles: {
@@ -295,15 +317,23 @@ export const CHARACTER_REGISTRY: Record<string, CharacterProfile> = {
     }
 };
 
-export function getCharacterContext(id: string): string {
+export function getCharacterContext(id: string, islandCode?: string, dialectLevel: 'standard' | 'local' = 'standard'): string {
     const char = CHARACTER_REGISTRY[id];
     if (!char) return "";
 
-    return `
+    let context = `
     ROLE: You are mimicking ${char.display_name}.
     TONE: ${char.voice_bible.tone}.
     STYLE: ${char.voice_bible.sentence_style}.
     NEVER SAY: ${char.voice_bible.never_says.join(", ")}.
     SIGNATURE MOVES: ${char.voice_bible.signature_moves.join(", ")}.
     `;
+
+    if (dialectLevel === 'local' && islandCode && char.dialects?.[islandCode]) {
+        context += `
+    DIALECT (${char.dialects[islandCode].label}): ${char.dialects[islandCode].dialect_voice}
+    `;
+    }
+
+    return context;
 }

@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Wand2, Sparkles, BookOpen, Mic, Music, Palette, CheckCircle2, ChevronRight, Loader2, Laugh, Compass, Moon, Heart, Search, PawPrint, Star } from 'lucide-react';
+import { DialectDial } from './DialectDial';
 import { siteContent } from '@/lib/content';
 
 const STYLE_ICONS: Record<string, any> = {
@@ -52,7 +53,9 @@ export default function StoryStudioWizard() {
         heroName: '',
         heroType: '',
         style: 'friendship_kindness',
-        narrator: 'roti'
+        narrator: 'roti',
+        island: 'TT',
+        dialectLevel: 'standard' as 'standard' | 'local'
     });
     const [storyId, setStoryId] = useState<string | null>(null);
 
@@ -87,7 +90,10 @@ export default function StoryStudioWizard() {
             const response = await fetch('/api/story/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    ...formData,
+                    childName: formData.heroName // Map heroName to childName for the agent
+                })
             });
 
             const data = await response.json();
@@ -233,7 +239,7 @@ export default function StoryStudioWizard() {
                             <p className="text-lg text-orange-900/60 mb-10">How should your story feel today?</p>
 
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                                {v2Content.vibes.map((vibe) => {
+                                {v2Content.vibes.map((vibe: any) => {
                                     const Icon = STYLE_ICONS[vibe.icon] || Star;
                                     return (
                                         <button
@@ -277,7 +283,7 @@ export default function StoryStudioWizard() {
                             <h2 className="text-4xl md:text-5xl font-black mb-4 text-orange-950">Who's telling it?</h2>
                             <p className="text-lg text-orange-900/60 mb-10">Pick your favorite island narrator!</p>
 
-                            <div className="grid grid-cols-2 gap-8 max-w-2xl mx-auto">
+                            <div className="grid grid-cols-2 gap-8 max-w-2xl mx-auto mb-12">
                                 <button
                                     onClick={() => setFormData({ ...formData, narrator: 'roti' })}
                                     className={`relative group p-6 rounded-[2rem] border-4 transition-all hover:scale-105 active:scale-95 text-center flex flex-col items-center ${formData.narrator === 'roti'
@@ -317,6 +323,15 @@ export default function StoryStudioWizard() {
                                         </div>
                                     )}
                                 </button>
+                            </div>
+
+                            <div className="max-w-md mx-auto">
+                                <DialectDial
+                                    selectedIsland={formData.island}
+                                    dialectLevel={formData.dialectLevel}
+                                    onIslandChange={(island) => setFormData({ ...formData, island })}
+                                    onLevelChange={(dialectLevel) => setFormData({ ...formData, dialectLevel })}
+                                />
                             </div>
                         </motion.div>
                     )}
@@ -382,7 +397,7 @@ export default function StoryStudioWizard() {
                                         {v2Content.loading_steps[loadingStep].label.replace("R.O.T.I.’s", (formData.narrator === 'tanty_spice' ? "Tanty Spice's" : "R.O.T.I.'s"))}
                                     </h2>
                                     <div className="flex justify-center gap-2">
-                                        {v2Content.loading_steps.map((_, i) => (
+                                        {v2Content.loading_steps.map((_: any, i: number) => (
                                             <div
                                                 key={i}
                                                 className={`h-2 rounded-full transition-all duration-500 ${i <= loadingStep ? 'w-8 bg-orange-500' : 'w-2 bg-orange-200'}`}

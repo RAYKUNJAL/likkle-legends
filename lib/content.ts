@@ -283,6 +283,58 @@ export const siteContent = {
     ai_story_studio: {
         title: "Build your custom legend story",
         subtitle: "Personalize an adventure where your child is the hero. Join the club for full books and saved stories.",
+        v2: {
+            loading_steps: [
+                { id: 'spark', label: "Adding island sparkles..." },
+                { id: 'character', label: "R.O.T.I.’s building the hero..." },
+                { id: 'lyrics', label: "Mixing up the island rhythm..." },
+                { id: 'final', label: "Almost ready for adventure!" }
+            ],
+            fun_facts: [
+                "The hummingbird is the national bird of Jamaica!",
+                "Trinidad is home to the largest pitch lake in the world.",
+                "Barbados was once home to the first grapefruit!",
+                "Steelpan is the only acoustic musical instrument invented in the 20th century."
+            ],
+            vibes: [
+                {
+                    id: "silly_funny",
+                    label: "Silly & Funny",
+                    kid_prompt: "Make it goofy and fun with jokes kids understand.",
+                    icon: "laugh",
+                    color_hint: "bright",
+                    audio_tone: "playful",
+                    emoji: "😂"
+                },
+                {
+                    id: "brave_adventure",
+                    label: "Brave Adventure",
+                    kid_prompt: "A hero moment with exploring and a happy ending.",
+                    icon: "compass",
+                    color_hint: "bold",
+                    audio_tone: "excited",
+                    emoji: "🧭"
+                },
+                {
+                    id: "bedtime_calm",
+                    label: "Bedtime Calm",
+                    kid_prompt: "Soft, calm story for bedtime with gentle words.",
+                    icon: "moon",
+                    color_hint: "soft",
+                    audio_tone: "calm",
+                    emoji: "🌙"
+                },
+                {
+                    id: "friendship_kindness",
+                    label: "Friendship & Kindness",
+                    kid_prompt: "A story about helping, sharing, and being kind.",
+                    icon: "heart",
+                    color_hint: "warm",
+                    audio_tone: "warm",
+                    emoji: "❤️"
+                }
+            ]
+        },
         form: {
             fields: [
                 {
