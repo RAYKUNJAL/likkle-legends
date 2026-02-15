@@ -66,7 +66,7 @@ function MediaManagerContent() {
         loadMedia();
     }, [loadMedia]);
 
-    const handleFileUpload = async (file: File, type: 'main' | 'thumbnail') => {
+    const handleFileUpload = async (file: File, type: 'main' | 'thumbnail', onProgress?: (p: number) => void) => {
         let bucket: any = BUCKETS.SONGS;
         if (activeTab === 'songs') bucket = BUCKETS.SONGS;
         else if (activeTab === 'videos') bucket = BUCKETS.VIDEOS;
@@ -79,23 +79,13 @@ function MediaManagerContent() {
             else if (type === 'thumbnail') bucket = BUCKETS.AVATARS;
         }
 
-        // Use the new server-side upload API
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('bucket', bucket);
-
         try {
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData
+            const result = await uploadFile(bucket, file, undefined, {
+                onProgress
             });
 
-            const result = await response.json();
-
-            if (!response.ok) {
-                console.error('Upload failed:', result.error);
-                alert(`Upload failed: ${result.error || 'Unknown error'}`);
-                return;
+            if (!result) {
+                throw new Error("Upload failed to return a result");
             }
 
             setFormData((prev: any) => {
@@ -116,9 +106,9 @@ function MediaManagerContent() {
                 }
                 return updates;
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Upload error:', error);
-            alert("Upload failed. Please check your connection and file size.");
+            alert(`Upload failed: ${error.message || "Unknown error"}`);
         }
     };
 

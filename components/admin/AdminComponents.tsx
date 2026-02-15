@@ -309,7 +309,7 @@ export function SearchBar({ value, onChange, placeholder = 'Search...', onRefres
 interface FileUploadProps {
     accept: string;
     maxSize?: number; // in MB
-    onUpload: (file: File) => Promise<void>;
+    onUpload: (file: File, onProgress: (p: number) => void) => Promise<void>;
     label: string;
     description?: string;
 }
@@ -342,13 +342,8 @@ export function FileUpload({ accept, maxSize = 100, onUpload, label, description
 
         setIsUploading(true);
 
-        // Simulated progress for better UX
-        const interval = setInterval(() => {
-            setProgress(prev => (prev < 90 ? prev + 10 : prev));
-        }, 100);
-
         try {
-            await onUpload(file);
+            await onUpload(file, (p) => setProgress(p));
             setProgress(100);
             setIsSuccess(true);
             setTimeout(() => {
@@ -358,7 +353,6 @@ export function FileUpload({ accept, maxSize = 100, onUpload, label, description
         } catch (err: any) {
             setError(err.message || 'Upload failed. Please try again.');
         } finally {
-            clearInterval(interval);
             setIsUploading(false);
         }
     };

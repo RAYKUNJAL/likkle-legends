@@ -20,6 +20,7 @@ export const AudioTrackManager: React.FC = () => {
     const [songs, setSongs] = useState<Song[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     // Form State
     const [title, setTitle] = useState('');
@@ -82,52 +83,50 @@ export const AudioTrackManager: React.FC = () => {
         if (!audioFile || !title) return;
 
         setIsUploading(true);
+        setUploadProgress(0);
 
         try {
+            const { uploadFile } = await import('@/lib/storage');
+
             // 1. Upload Cover Art (if selected)
             let coverUrl = '';
             if (coverFile) {
-                const coverFormData = new FormData();
-                coverFormData.append('file', coverFile);
-                coverFormData.append('bucket', 'songs'); // or images if preferred, but API seems to handle per-bucket
-                coverFormData.append('saveToDb', 'false'); // We'll save URL manually
-
-                const coverRes = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: coverFormData
+                const coverResult = await uploadFile('songs', coverFile, undefined, {
+                    upsert: true
                 });
-                const coverData = await coverRes.json();
-                if (coverData.success) {
-                    coverUrl = coverData.url;
+                if (coverResult) {
+                    coverUrl = coverResult.url;
                 }
             }
 
-            // 2. Upload Audio & Create Record
-            const audioFormData = new FormData();
-            audioFormData.append('file', audioFile);
-            audioFormData.append('bucket', 'songs');
-            audioFormData.append('saveToDb', 'true');
-
-            // Metadata for the DB record
-            const metadata = {
-                title,
-                category,
-                island_origin: island,
-                tier_required: 'free', // Default to free for uploaded songs
-                is_active: true
-            };
-            audioFormData.append('metadata', JSON.stringify(metadata));
-            audioFormData.append('artist', artist);
-            if (coverUrl) audioFormData.append('thumbnail_url', coverUrl);
-
-            const res = await fetch('/api/upload', {
-                method: 'POST',
-                body: audioFormData
+            // 2. Upload Audio & Create Record using the API via uploadFile
+            // This will use the XHR proxy because we are in the browser
+            const result = await uploadFile('songs', audioFile, undefined, {
+                onProgress: (p) => setUploadProgress(p),
+                upsert: true
             });
 
-            const data = await res.json();
+            if (result) {
+                // Wait, uploadFile returns the public URL and path. 
+                // We still need to create the DB record if the API didn't do it.
+                // Our uploadFile utility doesn't support 'saveToDb' parameter directly, 
+                // but we can call the API manually if we want the 'saveToDb' feature, 
+                // OR we can just use the supabase client to insert the record here.
 
-            if (data.success) {
+                // Let's use the supabase client for better control since we already have it.
+                const { error: dbError } = await supabase.from('songs').insert({
+                    title,
+                    artist,
+                    category,
+                    island_origin: island,
+                    audio_url: result.url,
+                    cover_image_url: coverUrl,
+                    tier_required: 'free',
+                    is_active: true
+                });
+
+                if (dbError) throw dbError;
+
                 // Refresh list
                 await loadSongs();
 
@@ -136,12 +135,13 @@ export const AudioTrackManager: React.FC = () => {
                 setArtist('Likkle Legends');
                 setAudioFile(null);
                 setCoverFile(null);
+                setUploadProgress(0);
                 if (audioInputRef.current) audioInputRef.current.value = '';
                 if (coverInputRef.current) coverInputRef.current.value = '';
 
                 alert('Song uploaded successfully!');
             } else {
-                alert(`Upload failed: ${data.error}`);
+                alert('Upload failed: No result returned');
             }
 
         } catch (e: any) {
@@ -281,10 +281,16 @@ export const AudioTrackManager: React.FC = () => {
                         <button
                             onClick={handleUpload}
                             disabled={isUploading || !audioFile || !title}
-                            className="w-full py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black text-lg uppercase shadow-lg shadow-blue-500/30 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3"
+                            className="w-full py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black text-lg uppercase shadow-lg shadow-blue-500/30 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-3 relative overflow-hidden"
                         >
+                            {isUploading && (
+                                <div
+                                    className="absolute bottom-0 left-0 h-1 bg-white/30 transition-all duration-300"
+                                    style={{ width: `${uploadProgress}%` }}
+                                />
+                            )}
                             {isUploading ? <Loader2 className="animate-spin" /> : <Upload />}
-                            <span>{isUploading ? 'Uploading to Cloud...' : 'Save to Library'}</span>
+                            <span>{isUploading ? `Uploading ${uploadProgress}%...` : 'Save to Library'}</span>
                         </button>
                     </div>
                 </div>

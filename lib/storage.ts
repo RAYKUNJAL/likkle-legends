@@ -58,7 +58,7 @@ export async function uploadFile(
         onProgress?: (percent: number) => void
     } = {}
 ): Promise<{ url: string; path: string; name: string } | null> {
-    const { useAdmin = false, customClient, upsert = true } = options;
+    const { useAdmin = false, customClient, upsert = true, onProgress } = options;
     const client = customClient || (useAdmin ? getSupabaseAdmin() : getSupabase());
 
     // Extract name safely
@@ -68,6 +68,45 @@ export async function uploadFile(
 
     // Generate clean filename
     const fileName = path || `${baseName}-${Date.now()}.${extension}`;
+
+    // If onProgress is provided and we're in a browser environment, use XHR proxy for progress tracking
+    if (onProgress && typeof window !== 'undefined' && file instanceof File) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('bucket', bucket);
+            formData.append('upsert', upsert.toString());
+
+            xhr.upload.addEventListener('progress', (event) => {
+                if (event.lengthComputable) {
+                    const percent = Math.round((event.loaded / event.total) * 100);
+                    onProgress(percent);
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    try {
+                        const result = JSON.parse(xhr.responseText);
+                        resolve({
+                            url: result.url,
+                            path: result.path,
+                            name: result.fileName
+                        });
+                    } catch (e) {
+                        reject(new Error('Failed to parse upload response'));
+                    }
+                } else {
+                    reject(new Error(`Upload failed with status ${xhr.status}`));
+                }
+            });
+
+            xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
+            xhr.open('POST', '/api/upload');
+            xhr.send(formData);
+        });
+    }
 
     try {
         const { data, error } = await client.storage
