@@ -9,7 +9,7 @@ import {
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
     Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap, Send,
-    Database, Smartphone, Accessibility, Lock, Star, Info, Target
+    Database, Smartphone, Accessibility, Lock, Star, Info, Target, Trophy
 } from 'lucide-react';
 
 export {
@@ -19,7 +19,7 @@ export {
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
     Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap, Send,
-    Database, Smartphone, Accessibility, Lock, Star, Info, Target
+    Database, Smartphone, Accessibility, Lock, Star, Info, Target, Trophy
 };
 
 // ==========================================
