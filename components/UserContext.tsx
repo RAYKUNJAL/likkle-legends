@@ -189,7 +189,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       const { data } = await supabase
         .from('children')
         .select('*')
-        .eq('parent_id', userId)
+        .eq('primary_user_id', userId)
         .order('created_at', { ascending: true });
 
       if (data) {
