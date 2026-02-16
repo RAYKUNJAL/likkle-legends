@@ -8,6 +8,8 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase-client';
 import { sendMagicLinkAction, signInAction } from '@/app/actions/auth-actions';
+import WhatsAppOtpForm from '@/components/auth/WhatsAppOtpForm';
+import { MessageSquare } from 'lucide-react';
 
 function LoginForm() {
     const router = useRouter();
@@ -16,7 +18,7 @@ function LoginForm() {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
-    const [loginMethod, setLoginMethod] = useState<'password' | 'magiclink'>('password');
+    const [loginMethod, setLoginMethod] = useState<'password' | 'magiclink' | 'whatsapp'>('password');
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -126,65 +128,75 @@ function LoginForm() {
                         onClick={() => setLoginMethod('magiclink')}
                         className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${loginMethod === 'magiclink' ? 'bg-white shadow-sm text-primary' : 'text-deep/40 hover:text-deep/60'}`}
                     >
-                        Magic Link
+                        Magic
+                    </button>
+                    <button
+                        onClick={() => setLoginMethod('whatsapp')}
+                        className={`flex-1 py-1 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 ${loginMethod === 'whatsapp' ? 'bg-white shadow-sm text-emerald-600' : 'text-deep/40 hover:text-deep/60'}`}
+                    >
+                        <MessageSquare size={14} fill={loginMethod === 'whatsapp' ? "currentColor" : "none"} /> WhatsApp
                     </button>
                 </div>
 
-                <form className="space-y-6" onSubmit={loginMethod === 'password' ? handlePasswordLogin : handleMagicLinkLogin}>
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-deep/60 ml-4 uppercase tracking-widest">Email Address</label>
-                        <div className="relative">
-                            <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-deep/30" size={20} />
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="legend@island.com"
-                                className="w-full bg-zinc-50 border-2 border-border focus:border-primary rounded-3xl py-4 pl-14 pr-6 text-sm focus:outline-none transition-all"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    {loginMethod === 'password' && (
+                {loginMethod === 'whatsapp' ? (
+                    <WhatsAppOtpForm />
+                ) : (
+                    <form className="space-y-6" onSubmit={loginMethod === 'password' ? handlePasswordLogin : handleMagicLinkLogin}>
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-deep/60 ml-4 uppercase tracking-widest">Password</label>
+                            <label className="text-sm font-bold text-deep/60 ml-4 uppercase tracking-widest">Email Address</label>
                             <div className="relative">
-                                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-deep/30" size={20} />
+                                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-deep/30" size={20} />
                                 <input
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    className="w-full bg-zinc-50 border-2 border-border focus:border-primary rounded-3xl py-4 pl-14 pr-12 text-sm focus:outline-none transition-all"
-                                    required={loginMethod === 'password'}
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="legend@island.com"
+                                    className="w-full bg-zinc-50 border-2 border-border focus:border-primary rounded-3xl py-4 pl-14 pr-6 text-sm focus:outline-none transition-all"
+                                    required
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-5 top-1/2 -translate-y-1/2 text-deep/30 hover:text-primary transition-colors focus:outline-none"
-                                >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
                             </div>
                         </div>
-                    )}
 
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="btn btn-primary w-full py-5 text-lg group flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isLoading ? (
-                            <Loader2 className="animate-spin" />
-                        ) : (
-                            <>
-                                {loginMethod === 'password' ? 'Login to Universe' : 'Send Magic Link'}
-                                {loginMethod === 'password' ? <ArrowRight className="group-hover:translate-x-1 transition-transform" /> : <Sparkles className="group-hover:scale-110 transition-transform" />}
-                            </>
+                        {loginMethod === 'password' && (
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-deep/60 ml-4 uppercase tracking-widest">Password</label>
+                                <div className="relative">
+                                    <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-deep/30" size={20} />
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="••••••••"
+                                        className="w-full bg-zinc-50 border-2 border-border focus:border-primary rounded-3xl py-4 pl-14 pr-12 text-sm focus:outline-none transition-all"
+                                        required={loginMethod === 'password'}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-5 top-1/2 -translate-y-1/2 text-deep/30 hover:text-primary transition-colors focus:outline-none"
+                                    >
+                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
+                                </div>
+                            </div>
                         )}
-                    </button>
-                </form>
+
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="btn btn-primary w-full py-5 text-lg group flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? (
+                                <Loader2 className="animate-spin" />
+                            ) : (
+                                <>
+                                    {loginMethod === 'password' ? 'Login to Universe' : 'Send Magic Link'}
+                                    {loginMethod === 'password' ? <ArrowRight className="group-hover:translate-x-1 transition-transform" /> : <Sparkles className="group-hover:scale-110 transition-transform" />}
+                                </>
+                            )}
+                        </button>
+                    </form>
+                )}
 
                 <div className="text-center space-y-4 pt-4">
                     {loginMethod === 'password' && (

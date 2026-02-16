@@ -1,4 +1,6 @@
+
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SafetySetting } from "@google/generative-ai";
+import { StoryBook, ReadingLevel, LanguageVariant } from "@/types/story";
 
 // Lazy init
 const getGenAI = () => {
@@ -7,8 +9,7 @@ const getGenAI = () => {
     return new GoogleGenerativeAI(key);
 };
 
-
-// STRICT Safety Settings as per Global Policy
+// STRICT Safety Settings
 const safetySettings: SafetySetting[] = [
     { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
     { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
@@ -16,149 +17,103 @@ const safetySettings: SafetySetting[] = [
     { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
 ];
 
-export interface StoryInputs {
-    childName: string;
-    primaryIsland: string;
-    guide: string;
-    location: string;
-    mission: string;
-    storyLength?: 'short' | 'long'; // short = ~200 words, long = ~500 words
-}
-
-export const STORYTELLER_SYSTEM_PROMPT = `
+export const STORYTELLER_V2_PROMPT = `
 ### SYSTEM ROLE
-You are the "Likkle Legend AI Storyteller." You generate magical, Caribbean-themed stories for children (ages 4-8).
+You are the "Likkle Legend Cultural Literacy Architect." You generate structured, 6-page phonics-based stories for children (ages 3-9) that blend Caribbean folklore with specific literacy goals.
 
-### CHARACTER VOICES (Adopt key traits of the chosen Guide):
-- **Tanty Spice**: Warm, grandmotherly, wise. Uses "darlin'", "sweetheart", "mmm hmm". Focuses on feelings and history.
-- **Dilly Doubles**: Energetic, funny, food-obsessed. Talks about spices, flavors, and being "sweet like sauce".
-- **Roti**: A friendly, curious AI robot friend. Uses phrases like "Processing fun!", "Data says this is awesome!". Focuses on learning, discovery, and asking questions.
+### THE MISSION
+Create a story that follows the provided "StoryBook" JSON schema exactly.
 
-### ISLAND FLAVOR EDUCATIONAL RULES
-- **Math**: Count using natural island items (e.g., "1 mango, 2 coconut, 3 tiny turtles").
-- **Colors**: Use vibrant Caribbean descriptions (e.g., "Turquoise Sea Blue", "Hibiscus Red", "Plantain Yellow", "Sunset Orange").
-- **Alphabet**: Connect letters to culture (e.g., "C is for Carnival", "D is for Drum", "S is for Soca").
+### LITERACY RULES (STRICT)
+- **Emergent**: Short sentences (3-5 words). CVC words only. High repetition. Focus on phonemes like /s/ /a/ /t/ /p/.
+- **Early**: 6-8 words per sentence. Include tricky words (e.g., "was", "the", "to"). Focus on digraphs (sh, ch, th).
+- **Transitional**: Narrative flow, compound sentences, higher vocabulary (Tier 2 words).
 
-### STORY STRUCTURE (The V2 Template)
-1. **The Hook**: The child and the Guide arrive at the {Location}. The Guide welcomes them using their specific voice.
-2. **The Mission**: They start their {Mission}.
-   - *Folklore Quest*: Searching for a legendary creature or item (safe version).
-   - *Number Hunt*: Counting items to unlock a path.
-   - *Color Splash*: Finding colors to paint the world.
-   - *Random Adventure*: A surprise journey.
-3. **The Interactive Pause**: Insert [READING ASSISTANT TRIGGER] to ask the child a question about what they see.
-4. **The Resolution**: They succeed! The child feels brave/smart/kind.
-5. **The Souvenir**: They find a magical item to remember the day.
+### CHARACTER VOICES
+- **Tanty Spice**: Warm, grandmotherly, wise. Caribbean storyteller register. Introduces the story and provides cultural context.
+- **R.O.T.I**: Reading Optimized Teaching Intelligence. A playful robot who guides phonics practice. Asks questions like "Can you find the /s/ sound?"
 
-### SAFETY GUARDRAILS (STRICT)
-- No scary monsters or violence.
-- All folklore must be age-appropriate (e.g., Anansi is tricky but funny, not mean).
-- If the mission involves "danger", it must be mild (e.g., "a sudden rain shower" or "a lost shoe").
+### SCHEMA REQUIREMENTS (Return ONLY valid JSON)
+- **book_meta**: Basic IDs and settings.
+- **literacy_profile**: Specify the phonics targets based on the reading level.
+- **folklore_profile**: Integrate a specific Caribbean tradition (Anansi, Papa Bois, etc.).
+- **structure**: 6 pages. Each page must have:
+    - "narrative_text": The story text.
+    - "decodability_constraints": Matching the selected reading level.
+    - "focus_words": 1-2 words to practice.
+    - "guide_interventions": 1 line from Tanty (Cultural/Emotional) and 1 line from R.O.T.I (Literacy/Phonics).
+    - "illustration_brief": Detailed prompt for a 2D island art style. Must describe the scene, characters (Anansi, etc.), and island setting. No text in images.
+    - "audio_prompt": A clean version of the text for TTS.
 
-### OUTPUT FORMAT (Strict JSON)
-Return ONLY a JSON object:
-- "title": A catchy headline (e.g., "Dilly's Big Doubles Day").
-- "content": The story (300-500 words). Use double newlines (\n\n) for paragraph breaks.
-- "glossary": [{ "word": "...", "meaning": "..." }] for dialect words.
-- "parentPrompt": A follow-up question for the parent to ask.
-
-### CRITICAL FORMATTING RULES
-- DO NOT use any markdown formatting in the content (no asterisks *, no slashes /, no underscores _, no hashtags #).
-- Write plain, clean text only. No bold, italic, or other formatting markers.
-- Keep dialogue tags simple: "Hello," said Tanty. NOT **"Hello,"** said *Tanty*.
+### SAFETY
+- NO scary elements. Proper COPPA compliance. Safe, joyful adventures.
 `;
 
-function getFallbackStory(inputs: StoryInputs) {
-    return {
-        title: `${inputs.guide}'s Adventure in ${inputs.primaryIsland}`,
-        content: `One sunny morning, ${inputs.childName} arrived at the ${inputs.location} in beautiful ${inputs.primaryIsland}. Waiting there was ${inputs.guide}, waving happily! "Oye! Ready for a ${inputs.mission}?" asked ${inputs.guide}.\n\nThey walked past trees full of Hibiscus Red flowers. ${inputs.childName} spotted something hiding—it was a tiny green lizard! "Let's count," said ${inputs.guide}. "One lizard... Two butterflies!"\n\n[READING ASSISTANT TRIGGER] Can you count to three?\n\nSuddenly, a gentle rain shower passed, leaving a rainbow in the sky. "Look at that Plantain Yellow!" shouted ${inputs.childName}. They completed their mission and sat down to share a sweet treat.`,
-        glossary: [{ word: "Oye", meaning: "Hey there!" }],
-        parentPrompt: "What color would you paint your own island?"
-    };
-}
-
-export async function generateCulturalStory(inputs: StoryInputs) {
+export async function generateStory(selection: {
+    tradition: string;
+    level: string;
+    island: string;
+    childName?: string;
+}): Promise<StoryBook | null> {
     const genAI = getGenAI();
-    if (genAI) {
-        try {
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash", safetySettings });
+    if (!genAI) return null;
 
-            const storyLengthGuide = inputs.storyLength === 'short'
-                ? 'SHORT STORY: Generate a quick, 150-200 word story (about 3-4 paragraphs). Perfect for bedtime or quick reading.'
-                : 'FULL STORY: Generate a complete 400-500 word story (about 6-8 paragraphs). Great for immersive reading adventures.';
+    try {
+        const model = genAI.getGenerativeModel({
+            model: "gemini-2.0-flash",
+            safetySettings,
+            generationConfig: { responseMimeType: "application/json" }
+        });
 
-            const userPrompt = `
-                Generate a story for a child named ${inputs.childName} (Age 6).
-                - Guide: ${inputs.guide}
-                - Location: ${inputs.location}
-                - Mission: ${inputs.mission}
-                - Island: ${inputs.primaryIsland}
-                
-                ${storyLengthGuide}
-                
-                Make it educational using the "Island Flavor Rules".
-            `;
+        const userPrompt = `
+            Create a StoryBook for ${selection.childName || "a Little Legend"}.
+            - Folklore Tradition: ${selection.tradition}
+            - Reading Level: ${selection.level}
+            - Island: ${selection.island}
+            
+            Ensure the literacy focus matches the level:
+            - emergent: Phonics s,a,t,p,i,n
+            - early: Digraphs ch,sh,th
+            - transitional: Narrative fluency
+        `;
 
-            const result = await model.generateContent({
-                contents: [{ role: "user", parts: [{ text: STORYTELLER_SYSTEM_PROMPT + "\n\n" + userPrompt }] }]
-            });
-            const text = result.response.text();
+        const result = await model.generateContent(STORYTELLER_V2_PROMPT + "\n\n" + userPrompt);
+        const text = result.response.text();
+        const story = JSON.parse(text) as StoryBook;
 
-            try {
-                const jsonStart = text.indexOf('{');
-                const jsonEnd = text.lastIndexOf('}') + 1;
-                const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
-                // Clean the content of any markdown artifacts
-                if (parsed.content) {
-                    parsed.content = cleanStoryText(parsed.content);
-                }
-                if (parsed.title) {
-                    parsed.title = cleanStoryText(parsed.title);
-                }
-                return parsed;
-            } catch (e) {
-                console.warn("JSON Parse Error, using text fallback");
-                return {
-                    title: `${inputs.guide}'s Tale`,
-                    content: cleanStoryText(text), // Clean raw text fallback
-                    glossary: [],
-                    parentPrompt: "Ask your child what they learned!"
-                };
-            }
-        } catch (error) {
-            console.error("AI Error:", error);
-            // Fallthrough
-        }
+        // Ensure IDs are set
+        story.id = Math.random().toString(36).substring(7);
+        return story;
+
+    } catch (error) {
+        console.error("[StoryEngine] Failed to generate story:", error);
+        return null;
     }
-    return getFallbackStory(inputs);
 }
 
 /**
- * Clean markdown artifacts from AI-generated story text
- * Removes: *, /, _, #, and other formatting markers
+ * 🖼️ Generate visuals for each page of the story
  */
-function cleanStoryText(text: string): string {
-    return text
-        // Remove bold markers **text** -> text
-        .replace(/\*\*([^*]+)\*\*/g, '$1')
-        // Remove italic markers *text* -> text
-        .replace(/\*([^*]+)\*/g, '$1')
-        // Remove remaining lone asterisks
-        .replace(/\*/g, '')
-        // Remove underscore emphasis _text_ -> text
-        .replace(/_([^_]+)_/g, '$1')
-        // Remove headers (## Header)
-        .replace(/^#+\s*/gm, '')
-        // Remove markdown links [text](url) -> text
-        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-        // Remove markdown code blocks
-        .replace(/```[^`]*```/g, '')
-        // Remove inline code `text` -> text  
-        .replace(/`([^`]+)`/g, '$1')
-        // Clean up any double spaces
-        .replace(/  +/g, ' ')
-        // Clean up any weird forward slashes used as separators
-        .replace(/\s\/\s/g, ' ')
-        .trim();
+export async function generateStoryImages(story: StoryBook): Promise<StoryBook> {
+    const { generateImage } = await import("@/lib/ai-image-generator/image-client");
+
+    // 1. Generate Cover Image
+    const coverPrompt = `Book Cover: ${story.book_meta.title}. ${story.folklore_profile.core_tradition} in ${story.book_meta.setting_island}. Vibrant Caribbean colors.`;
+    const coverUrl = await generateImage(coverPrompt, `cover-${story.id}`);
+    if (coverUrl) story.book_meta.cover_image_url = coverUrl;
+
+    // 2. Generate Page Images (parallelized)
+    const pageImagePromises = story.structure.pages.map(async (page, idx) => {
+        if (!page.illustration_brief) return;
+
+        const pageUrl = await generateImage(
+            `${page.illustration_brief}. 2D Illustration, vibrant, clean.`,
+            `page-${story.id}-${idx}`
+        );
+        if (pageUrl) page.illustration_url = pageUrl;
+    });
+
+    await Promise.all(pageImagePromises);
+    return story;
 }
 

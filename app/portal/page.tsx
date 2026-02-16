@@ -21,6 +21,9 @@ import IslandVillageMap from '@/components/IslandVillageMap';
 import PremiumVideoPlayer from '@/components/PremiumVideoPlayer';
 import PremiumMusicPlayer from '@/components/PremiumMusicPlayer';
 import BadgeUnlockModal from '@/components/gamification/BadgeUnlockModal';
+import DialectDial from '@/components/portal/DialectDial';
+import { BadgeCheck } from 'lucide-react';
+import CoppaConsentModal from '@/components/auth/CoppaConsentModal';
 
 interface Song {
     id: string;
@@ -76,6 +79,8 @@ export default function ChildPortalPage() {
     // Media States
     const [activeVideo, setActiveVideo] = useState<Video | null>(null);
     const [activeSong, setActiveSong] = useState<Song | null>(null);
+    const [isCoppaModalOpen, setIsCoppaModalOpen] = useState(false);
+    const [pendingRoute, setPendingRoute] = useState<string | null>(null);
 
     const loadPortalData = useCallback(async () => {
         setIsLoading(true);
@@ -126,7 +131,6 @@ export default function ChildPortalPage() {
     if (!user) {
         return null;
     }
-
     const handleActivityLog = async (type: string, id: string, title?: string, xp?: number) => {
         if (!user || !activeChild) return;
         try {
@@ -213,6 +217,39 @@ export default function ChildPortalPage() {
                         </div>
                     </div>
                 )}
+            </header>
+
+            {/* Top Desktop Header - Overlay Style */}
+            <header className="fixed top-0 left-0 lg:left-[280px] right-0 z-40 h-24 bg-white/40 backdrop-blur-xl border-b border-white/20 px-8 hidden lg:flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                    <div className="bg-white/50 px-6 py-2 rounded-2xl border border-white/50 shadow-sm">
+                        <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">
+                            {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)} Channel
+                        </h2>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                    {/* Dialect Dial */}
+                    <DialectDial />
+
+                    {/* Teacher VIP Indicator */}
+                    {(user?.role === 'teacher' || user?.is_admin) && (
+                        <div className="flex items-center gap-2 bg-amber-50 text-amber-600 px-4 py-2.5 rounded-2xl border border-amber-100 font-black text-xs uppercase tracking-widest animate-pulse">
+                            <BadgeCheck size={18} /> Teacher VIP
+                        </div>
+                    )}
+
+                    <div className="flex items-center gap-3 bg-white/80 p-1.5 pr-6 rounded-[1.5rem] border border-white/50 shadow-md">
+                        <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center text-lg font-black shadow-lg">
+                            {activeChild?.first_name?.charAt(0) || 'L'}
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1">XP Level</span>
+                            <span className="text-sm font-black text-slate-900 leading-none">{activeChild?.total_xp.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
             </header>
 
             <div className="flex h-screen overflow-hidden">
@@ -336,7 +373,13 @@ export default function ChildPortalPage() {
                                 <IslandVillageMap
                                     onNavigate={(section) => {
                                         if (section === 'story-studio') {
-                                            router.push('/portal/story-studio');
+                                            // Restricted feature - check COPPA
+                                            if (user?.age_verified_at || activeChild?.age_verified) {
+                                                router.push('/portal/story-studio');
+                                            } else {
+                                                setPendingRoute('/portal/story-studio');
+                                                setIsCoppaModalOpen(true);
+                                            }
                                         } else {
                                             setActiveSection(section as PortalSection);
                                         }
@@ -625,6 +668,21 @@ export default function ChildPortalPage() {
             <BadgeUnlockModal
                 badge={unlockedBadge}
                 onClose={() => clearUnlockedBadge()}
+            />
+
+            <CoppaConsentModal
+                isOpen={isCoppaModalOpen}
+                onClose={() => setIsCoppaModalOpen(false)}
+                onSuccess={async () => {
+                    const success = await verifyAge();
+                    if (success) {
+                        setIsCoppaModalOpen(false);
+                        if (pendingRoute) {
+                            router.push(pendingRoute);
+                            setPendingRoute(null);
+                        }
+                    }
+                }}
             />
         </div>
     );

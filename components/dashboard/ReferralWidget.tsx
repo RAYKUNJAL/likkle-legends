@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Gift, Copy, Check, Users, ArrowRight } from 'lucide-react';
+import { Gift, Copy, Check, Users, ArrowRight, MessageSquare } from 'lucide-react';
 import { getParentReferralCode, getReferralCredits } from '@/app/actions/growth';
 import { motion } from 'framer-motion';
 
@@ -31,10 +31,15 @@ export default function ReferralWidget() {
     };
 
     const copyLink = () => {
-        const link = `https://likklelegends.com/?ref=${refCode}`;
+        const link = `https://likklelegends.com/signup?referral=${refCode}`;
         navigator.clipboard.writeText(link);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const shareWhatsApp = () => {
+        const text = `🌴 I'm using Likkle Legends to keep our culture alive! Use my link to get $10 off: https://likklelegends.com/signup?referral=${refCode}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
     };
 
     if (isLoading) return <div className="animate-pulse h-48 bg-gray-100 rounded-3xl" />;
@@ -74,14 +79,23 @@ export default function ReferralWidget() {
                 {/* Action */}
                 <div className="bg-white p-2 rounded-2xl flex items-center justify-between pl-4 shadow-lg">
                     <code className="text-indigo-900 font-bold text-sm tracking-wide">
-                        likkle.link/{refCode}
+                        {refCode?.slice(0, 8)}...
                     </code>
-                    <button
-                        onClick={copyLink}
-                        className={`p-3 rounded-xl transition-all font-bold text-xs flex items-center gap-2 ${copied ? 'bg-green-500 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
-                    >
-                        {copied ? 'Copied!' : 'Copy'}
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={shareWhatsApp}
+                            className="bg-emerald-500 p-3 rounded-xl hover:bg-emerald-600 transition-all text-white shadow-md"
+                            title="Share on WhatsApp"
+                        >
+                            <MessageSquare fill="white" size={16} />
+                        </button>
+                        <button
+                            onClick={copyLink}
+                            className={`px-4 py-3 rounded-xl transition-all font-bold text-xs flex items-center gap-2 ${copied ? 'bg-green-500 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                        >
+                            {copied ? 'Copied!' : 'Copy'}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

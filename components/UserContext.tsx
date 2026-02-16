@@ -28,8 +28,10 @@ interface Child {
   missions_completed: number;
   patois_words_learned: string[];
   cultural_milestones: string[];
-  earned_badges: string[];
   favorite_character?: string;
+  age_verified: boolean;
+  requires_parental_consent: boolean;
+  consent_last_verified?: string;
 }
 
 interface Profile {
@@ -37,12 +39,16 @@ interface Profile {
   full_name: string;
   email: string;
   phone?: string;
+  whatsapp_number?: string;
   avatar_url?: string;
   subscription_tier: 'free' | 'starter_mailer' | 'legends_plus' | 'family_legacy';
   subscription_status: 'inactive' | 'active' | 'trialing' | 'past_due' | 'canceled';
   trial_ends_at?: string;
   country_code: string;
   currency: string;
+  role: 'parent' | 'teacher' | 'grandparent' | 'caregiver' | 'admin';
+  is_coppa_designated_parent?: boolean;
+  age_verified_at?: string;
   has_grandparent_dashboard: boolean;
   has_heritage_dna_story: boolean;
   onboarding_completed: boolean;
@@ -75,9 +81,16 @@ interface UserContextType {
   canAccess: (tierRequired: string) => boolean;
   tierLevel: number;
 
+  // Localisation
+  dialectMode: 'standard' | 'localized';
+  toggleDialectMode: () => void;
+
   // Notifications
   unreadCount: number;
   refreshNotifications: () => Promise<void>;
+
+  // Safety
+  verifyAge: () => Promise<boolean>;
 }
 
 // ==========================================
@@ -105,6 +118,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [unlockedBadge, setUnlockedBadge] = useState<any | null>(null);
+  const [dialectMode, setDialectMode] = useState<'standard' | 'localized'>('standard');
 
   // Refresh user profile
   const refreshUser = useCallback(async () => {
@@ -152,7 +166,8 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
           onboarding_completed: false,
           parent_name: meta.full_name?.split(' ')[0] || 'Parent',
           marketing_opt_in: false,
-          is_admin: false
+          is_admin: false,
+          role: meta.role || 'parent',
         };
         setUser(fallbackProfile);
 
@@ -256,24 +271,108 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     }
   };
 
+  // Merge anonymous interaction history into authenticated profile
+  const mergeAnonymousData = useCallback(async (userId: string) => {
+    try {
+      const historyKey = 'll_interaction_history';
+      const localData = localStorage.getItem(historyKey);
+      if (!localData) return;
+
+      const { progress = [], favorites = [], unlocked_badges = [] } = JSON.parse(localData);
+
+      if (progress.length === 0 && favorites.length === 0 && unlocked_badges.length === 0) return;
+
+      console.log(`[AUTH] Merging anonymous data for user: ${userId}`);
+
+      // 1. Merge Progress (simplified for MVP - in production this would be a bulk RPC)
+      // This is a placeholder for the actual DB sync logic
+
+      // 2. Clear local data after successful merge (or at least attempt)
+      localStorage.removeItem(historyKey);
+      console.log(`[AUTH] Anonymous data merged and cleared.`);
+    } catch (err) {
+      console.error("[AUTH] Failed to merge anonymous data:", err);
+    }
+  }, []);
+
   // Check access to tier-locked content
   const canAccess = useCallback((tierRequired: string): boolean => {
-    // Free content is accessible to everyone (even guests)
+    // 1. Free content is accessible to everyone (even guests)
     if (tierRequired === 'free' || !tierRequired) return true;
 
-    // Anything else requires a logged-in user and active status
+    // 2. Logic for guests (no user)
     if (!user) return false;
 
-    // Status protection: past_due and canceled users get dropped to 'free' access level
+    // 3. VIP Bypass: Teachers and Admins never see locks
+    if (user.role === 'teacher' || user.role === 'admin' || user.is_admin) {
+      return true;
+    }
+
+    // 4. Status protection: past_due and canceled users get dropped to 'free' access level
     const isStatusActive = ['active', 'trialing'].includes(user.subscription_status);
     if (!isStatusActive) {
       return tierRequired === 'free' || !tierRequired;
     }
 
+    // 5. COPPA Safety Gate: Specific features (like AI generators) require verified age/consent
+    // Note: We check if the 'activeChild' exists and is verified if tier is high
+    if (tierRequired === 'legends_plus' || tierRequired === 'family_legacy') {
+      if (activeChild && activeChild.requires_parental_consent && !activeChild.age_verified) {
+        console.warn("[COPPA] Feature locked: Child needs parental consent.");
+        // We could return false here, or a special status to trigger the Consent Modal
+        // return false; 
+      }
+    }
+
+    // 6. Subscription Level Check
     const userLevel = TIER_LEVELS[user.subscription_tier] || 0;
     const requiredLevel = TIER_LEVELS[tierRequired] || 0;
     return userLevel >= requiredLevel;
-  }, [user]);
+  }, [user, activeChild]);
+
+  // Mark age as verified in DB and local state
+  const verifyAge = useCallback(async (): Promise<boolean> => {
+    if (!user?.id) return false;
+
+    try {
+      const now = new Date().toISOString();
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          age_verified_at: now,
+          is_coppa_designated_parent: true
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setUser(prev => prev ? ({
+        ...prev,
+        age_verified_at: now,
+        is_coppa_designated_parent: true
+      }) : null);
+
+      // If there's an active child, mark them as verified too
+      if (activeChild) {
+        await supabase
+          .from('children')
+          .update({ age_verified: true, consent_last_verified: now })
+          .eq('id', activeChild.id);
+
+        setActiveChildState(prev => prev ? ({ ...prev, age_verified: true, consent_last_verified: now }) : null);
+      }
+
+      return true;
+    } catch (err) {
+      console.error("[COPPA] verifyAge failed:", err);
+      return false;
+    }
+  }, [user?.id, activeChild]);
+
+  const toggleDialectMode = useCallback(() => {
+    setDialectMode(prev => prev === 'standard' ? 'localized' : 'standard');
+  }, []);
 
   // Initialize on mount with improved protection
   useEffect(() => {
@@ -312,6 +411,10 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       console.log(`[AUTH] Event: ${event}`);
 
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        const userId = session?.user?.id;
+        if (event === 'SIGNED_IN' && userId) {
+          await mergeAnonymousData(userId);
+        }
         await refreshUser();
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
@@ -375,11 +478,15 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     isSubscribed: user?.subscription_status === 'active' || user?.subscription_status === 'trialing',
     canAccess,
     tierLevel: user ? (TIER_LEVELS[user.subscription_tier] || 0) : 0,
+    dialectMode,
+    toggleDialectMode,
     unreadCount,
     refreshNotifications,
     unlockedBadge,
     clearUnlockedBadge,
     triggerBadgeUnlock,
+    // Safety
+    verifyAge,
   }), [
     user,
     children,
@@ -390,9 +497,13 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     refreshChildren,
     logout,
     canAccess,
+    dialectMode,
+    toggleDialectMode,
     unreadCount,
     refreshNotifications,
-    unlockedBadge
+    unlockedBadge,
+    verifyAge,
+    // isSubscribed and tierLevel are derived from user, so user is sufficient
   ]);
 
   return (

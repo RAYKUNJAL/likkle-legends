@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase-client';
 import { useState, useEffect, Suspense } from 'react';
 import { signupAction } from '@/app/actions/auth-actions';
 import { trackEvent } from '@/lib/analytics';
+import { MessageSquare } from 'lucide-react';
+import WhatsAppOtpForm from '@/components/auth/WhatsAppOtpForm';
 
 // Signup Form Component
 function SignupForm() {
@@ -34,6 +36,7 @@ function SignupForm() {
     const [error, setError] = useState<string | null>(null);
     const [debugMsg, setDebugMsg] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+    const [signupMethod, setSignupMethod] = useState<'email' | 'whatsapp'>('email');
 
     const [formData, setFormData] = useState({
         childName: getParam('childName', ''),
@@ -175,115 +178,127 @@ function SignupForm() {
 
             <div className="mt-12 sm:mx-auto sm:w-full sm:max-w-[480px] relative z-10 px-4">
                 <div className="bg-white py-12 px-10 shadow-2xl shadow-zinc-200/50 rounded-[3.5rem] border border-zinc-100 relative overflow-hidden">
-                    {error && (
-                        <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-bold text-center flex flex-col items-center gap-2">
-                            <div className="flex items-center gap-2">
-                                <AlertCircle size={20} />
-                                <span>{error}</span>
-                            </div>
-                            {debugMsg && process.env.NODE_ENV !== 'production' && (
-                                <details className="text-xs text-left w-full mt-2 opacity-70">
-                                    <summary>Debug Details</summary>
-                                    <pre className="whitespace-pre-wrap mt-1">{debugMsg}</pre>
-                                </details>
-                            )}
-                        </div>
-                    )}
-
-                    <form className="space-y-8" onSubmit={handleSignup}>
-                        <div>
-                            <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Child's Name</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
-                                    <User size={20} />
-                                </div>
-                                <input
-                                    type="text"
-                                    name="childName"
-                                    value={formData.childName}
-                                    onChange={handleChange}
-                                    placeholder="Kai..."
-                                    className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Email Address</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
-                                    <Mail size={20} />
-                                </div>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    placeholder="you@heritage.com"
-                                    className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Create Password</label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
-                                    <Lock size={20} />
-                                </div>
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder="••••••••"
-                                    className="block w-full pl-14 pr-12 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
-                                    required
-                                    minLength={6}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-5 flex items-center text-zinc-400 hover:text-primary transition-colors focus:outline-none"
-                                >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="flex items-start gap-3 px-1">
-                            <input
-                                type="checkbox"
-                                name="agreed"
-                                id="coppa-consent"
-                                checked={formData.agreed}
-                                onChange={handleChange}
-                                className="mt-1 w-5 h-5 rounded border-zinc-200 text-primary focus:ring-primary/20"
-                                required
-                            />
-                            <label htmlFor="coppa-consent" className="text-sm text-deep/50 leading-tight">
-                                I confirm I am a parent or legal guardian and agree to the{' '}
-                                <Link href="/terms" className="text-primary hover:underline">Terms</Link> and{' '}
-                                <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
-                            </label>
-                        </div>
-
+                    <div className="flex p-1 bg-zinc-100 rounded-2xl mb-8">
                         <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full flex justify-center py-6 px-10 border border-transparent rounded-[2rem] shadow-xl shadow-primary/20 text-xl font-black text-white bg-primary hover:scale-[1.02] active:scale-95 transition-all focus:outline-none ring-offset-4 focus:ring-4 focus:ring-primary/40 group disabled:opacity-70 disabled:cursor-not-allowed"
+                            onClick={() => setSignupMethod('email')}
+                            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${signupMethod === 'email' ? 'bg-white shadow-sm text-primary' : 'text-deep/40'}`}
                         >
-                            {isLoading ? (
-                                <Loader2 className="animate-spin" size={24} />
-                            ) : (
-                                <>
-                                    Start Adventure <Sparkles size={24} className="ml-3 group-hover:rotate-12 transition-transform" />
-                                </>
-                            )}
+                            Email & Password
                         </button>
-                    </form>
+                        <button
+                            onClick={() => setSignupMethod('whatsapp')}
+                            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${signupMethod === 'whatsapp' ? 'bg-white shadow-sm text-emerald-600' : 'text-deep/40'}`}
+                        >
+                            <MessageSquare size={16} fill={signupMethod === 'whatsapp' ? 'currentColor' : 'none'} />
+                            WhatsApp OTP
+                        </button>
+                    </div>
+
+                    {signupMethod === 'whatsapp' ? (
+                        <WhatsAppOtpForm
+                            isSignup
+                            initialData={{
+                                childName: formData.childName,
+                                plan: plan,
+                                referral: referral
+                            }}
+                        />
+                    ) : (
+                        <form className="space-y-8" onSubmit={handleSignup}>
+                            <div>
+                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Child's Name</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
+                                        <User size={20} />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        name="childName"
+                                        value={formData.childName}
+                                        onChange={handleChange}
+                                        placeholder="Kai..."
+                                        className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Email Address</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
+                                        <Mail size={20} />
+                                    </div>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        placeholder="you@heritage.com"
+                                        className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Create Password</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
+                                        <Lock size={20} />
+                                    </div>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        placeholder="••••••••"
+                                        className="block w-full pl-14 pr-12 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
+                                        required
+                                        minLength={6}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-5 flex items-center text-zinc-400 hover:text-primary transition-colors focus:outline-none"
+                                    >
+                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3 px-1">
+                                <input
+                                    type="checkbox"
+                                    name="agreed"
+                                    id="coppa-consent"
+                                    checked={formData.agreed}
+                                    onChange={handleChange}
+                                    className="mt-1 w-5 h-5 rounded border-zinc-200 text-primary focus:ring-primary/20"
+                                    required
+                                />
+                                <label htmlFor="coppa-consent" className="text-sm text-deep/50 leading-tight">
+                                    I confirm I am a parent or legal guardian and agree to the{' '}
+                                    <Link href="/terms" className="text-primary hover:underline">Terms</Link> and{' '}
+                                    <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+                                </label>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isLoading}
+                                className="w-full flex justify-center py-6 px-10 border border-transparent rounded-[2rem] shadow-xl shadow-primary/20 text-xl font-black text-white bg-primary hover:scale-[1.02] active:scale-95 transition-all focus:outline-none ring-offset-4 focus:ring-4 focus:ring-primary/40 group disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {isLoading ? (
+                                    <Loader2 className="animate-spin" size={24} />
+                                ) : (
+                                    <>
+                                        Start Adventure <Sparkles size={24} className="ml-3 group-hover:rotate-12 transition-transform" />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+                    )}
 
                     <div className="mt-10 pt-10 border-t border-zinc-50">
                         <p className="text-center text-deep/40 font-bold">

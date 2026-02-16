@@ -120,6 +120,19 @@ export async function getReferralCredits() {
     return { earned_months: earned, pending };
 }
 
+/**
+ * Generate a personal referral link for any user (Parent/Member)
+ */
+export async function generatePersonalReferralAction() {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return null;
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com';
+    return `${baseUrl}/signup?referral=${user.id}`;
+}
+
 // ==============================================================================
 // 3. VIRAL CONTEST ACTIONS (The "UpViral" Clone)
 // ==============================================================================
