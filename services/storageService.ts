@@ -39,8 +39,7 @@ export const uploadFile = async (
         }
 
         const result = await unifiedUpload(bucket, file, folder, {
-            onProgress,
-            useProxy: true // Use proxy for service-role bypass and easier progress via XHR
+            onProgress
         });
 
         if (result) return result.url;

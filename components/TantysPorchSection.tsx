@@ -12,6 +12,7 @@ type Message = {
 
 import IslandVoice from '@/components/IslandVoice';
 import { askTantySpice } from '@/app/actions/tanty';
+import { useUser } from '@/components/UserContext';
 
 export default function TantysPorchSection() {
     const [isLiveMode, setIsLiveMode] = useState(false);
@@ -88,6 +89,8 @@ export default function TantysPorchSection() {
         }
     }, []);
 
+    const { activeChild } = useUser();
+
     const processMessage = useCallback(async (text: string) => {
         // Prevent double-submissions
         if (isLoading) return;
@@ -111,8 +114,8 @@ export default function TantysPorchSection() {
         setIsLoading(true);
 
         try {
-            // Use Server Action instead of API Route
-            const content = await askTantySpice(messages, text);
+            // Use Server Action instead of API Route - passing age track
+            const content = await askTantySpice(messages, text, activeChild?.age_track || "6-8");
 
             if (content) {
                 setMessages((prev) => [...prev, { role: "assistant", content }]);

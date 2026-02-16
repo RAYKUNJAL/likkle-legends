@@ -1,0 +1,39 @@
+[dotenv@17.2.4] injecting env (10) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+TABLE: children
+  - id (uuid)
+  - primary_user_id (uuid)
+  - first_name (text)
+  - age (integer)
+  - age_track (text)
+  - avatar_id (text)
+  - avatar_url (text)
+  - primary_island (text)
+  - secondary_island (text)
+  - total_xp (integer)
+  - current_level (integer)
+  - current_streak (integer)
+  - longest_streak (integer)
+  - stories_completed (integer)
+  - songs_listened (integer)
+  - missions_completed (integer)
+  - patois_words_learned (ARRAY)
+  - cultural_milestones (ARRAY)
+  - earned_badges (ARRAY)
+  - favorite_character (text)
+  - last_activity_date (timestamp with time zone)
+  - created_at (timestamp with time zone)
+  - updated_at (timestamp with time zone)
+
+TABLE: family_members
+  - family_group_id (uuid)
+  - user_id (uuid)
+  - role_in_family (USER-DEFINED)
+  - policy_permissions (jsonb)
+  - created_at (timestamp with time zone)
+
+TABLE: family_groups
+  - id (uuid)
+  - owner_user_id (uuid)
+  - name (text)
+  - created_at (timestamp with time zone)

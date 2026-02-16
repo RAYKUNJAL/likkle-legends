@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Fredoka, Quicksand } from "next/font/google";
 import "./globals.css";
@@ -88,7 +89,9 @@ export default async function RootLayout({
       >
         <NotificationBar content={content} />
         <AnalyticsLoader />
-        <ReferralTracker />
+        <Suspense fallback={null}>
+          <ReferralTracker />
+        </Suspense>
         <CookieConsentBanner />
         <Toaster position="top-right" />
         <UserProvider>

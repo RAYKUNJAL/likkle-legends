@@ -11,9 +11,14 @@ export async function GET(request: Request) {
 
     if (code) {
         const cookieStore = cookies()
+        const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MTY0MDMyMjUsImV4cCI6MTkzMTk3OTIyNX0.placeholder';
+        const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+        const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+        const supabaseUrl = (rawUrl && rawUrl.startsWith('https://') && rawUrl.length > 15) ? rawUrl : 'https://placeholder.supabase.co';
+        const supabaseKey = (rawKey && rawKey.length > 20 && rawKey !== 'false') ? rawKey : PLACEHOLDER_KEY;
         const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            supabaseUrl,
+            supabaseKey,
             {
                 cookies: {
                     getAll() {

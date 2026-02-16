@@ -7,12 +7,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getTantyVoice } from "@/app/actions/voice";
 import { askTantySpice } from "@/app/actions/tanty";
 
+import { useUser } from "@/components/UserContext";
+
 type Message = {
     role: "user" | "assistant";
     content: string;
 };
 
 export default function TantySpiceWidget() {
+    const { activeChild } = useUser();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -49,7 +52,7 @@ export default function TantySpiceWidget() {
         setVoiceError(false);
 
         try {
-            // Try server-side TTS (Google Cloud TTS)
+            // Try server-side TTS (Google Cloud TTS) - uses activeChild for settings eventually
             const res = await getTantyVoice(text);
 
             if (res.success && res.audio) {
@@ -126,7 +129,7 @@ export default function TantySpiceWidget() {
         setIsLoading(true);
 
         try {
-            const responseText = await askTantySpice(currentHistory, text);
+            const responseText = await askTantySpice(currentHistory, text, activeChild?.age_track || "6-8");
 
             if (responseText) {
                 setMessages(prev => [...prev, { role: "assistant", content: responseText }]);

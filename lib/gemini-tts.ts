@@ -8,8 +8,8 @@ export interface GeminiTTSOptions {
 
 const VOICE_PROFILES = {
     tanty: {
-        voiceName: "Kore",
-        direction: "Tone: Warm Caribbean Grandmother. Emotion: Joyful. Accent: Caribbean."
+        voiceName: TANTY_ISLAND_ENGINE.vocal_blueprint.gemini_voice_name, // "Kore"
+        direction: "Tone: Warm Caribbean Grandmother. Emotion: Joyful. Accent: Deeply Caribbean and melodic. Pacing: Gentle and rhythmic."
     },
     roti: {
         voiceName: "Puck",
@@ -50,13 +50,13 @@ export async function generateGeminiSpeech(
             }],
             config: {
                 responseModalities: [Modality.AUDIO],
-                /* speechConfig: {
+                speechConfig: {
                     voiceConfig: {
                         prebuiltVoiceConfig: {
                             voiceName: voiceName
                         }
                     },
-                }, */
+                },
             },
         });
 

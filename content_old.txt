@@ -283,6 +283,58 @@ export const siteContent = {
     ai_story_studio: {
         title: "Build your custom legend story",
         subtitle: "Personalize an adventure where your child is the hero. Join the club for full books and saved stories.",
+        v2: {
+            loading_steps: [
+                { id: 'spark', label: "Adding island sparkles..." },
+                { id: 'character', label: "R.O.T.I.’s building the hero..." },
+                { id: 'lyrics', label: "Mixing up the island rhythm..." },
+                { id: 'final', label: "Almost ready for adventure!" }
+            ],
+            fun_facts: [
+                "The hummingbird is the national bird of Jamaica!",
+                "Trinidad is home to the largest pitch lake in the world.",
+                "Barbados was once home to the first grapefruit!",
+                "Steelpan is the only acoustic musical instrument invented in the 20th century."
+            ],
+            vibes: [
+                {
+                    id: "silly_funny",
+                    label: "Silly & Funny",
+                    kid_prompt: "Make it goofy and fun with jokes kids understand.",
+                    icon: "laugh",
+                    color_hint: "bright",
+                    audio_tone: "playful",
+                    emoji: "😂"
+                },
+                {
+                    id: "brave_adventure",
+                    label: "Brave Adventure",
+                    kid_prompt: "A hero moment with exploring and a happy ending.",
+                    icon: "compass",
+                    color_hint: "bold",
+                    audio_tone: "excited",
+                    emoji: "🧭"
+                },
+                {
+                    id: "bedtime_calm",
+                    label: "Bedtime Calm",
+                    kid_prompt: "Soft, calm story for bedtime with gentle words.",
+                    icon: "moon",
+                    color_hint: "soft",
+                    audio_tone: "calm",
+                    emoji: "🌙"
+                },
+                {
+                    id: "friendship_kindness",
+                    label: "Friendship & Kindness",
+                    kid_prompt: "A story about helping, sharing, and being kind.",
+                    icon: "heart",
+                    color_hint: "warm",
+                    audio_tone: "warm",
+                    emoji: "❤️"
+                }
+            ]
+        },
         form: {
             fields: [
                 {
@@ -335,93 +387,62 @@ export const siteContent = {
                 require_api_key: false
             }
         },
-        v2: {
-            vibes: [
-                {
-                    id: "silly_funny",
-                    label: "Silly & Funny",
-                    kid_prompt: "Make it goofy and fun with jokes kids understand.",
-                    icon: "laugh",
-                    color_hint: "bright",
-                    audio_tone: "playful",
-                    emoji: "😂"
-                },
-                {
-                    id: "brave_adventure",
-                    label: "Brave Adventure",
-                    kid_prompt: "A heroic journey focused on courage and discovery.",
-                    icon: "shield",
-                    color_hint: "strong",
-                    audio_tone: "epic",
-                    emoji: "🛡️"
-                },
-                {
-                    id: "mystery_solving",
-                    label: "Mystery Solving",
-                    kid_prompt: "Solve a fun island mystery with clues and thinking.",
-                    icon: "magnifier",
-                    color_hint: "cool",
-                    audio_tone: "curious",
-                    emoji: "🔍"
-                },
-                {
-                    id: "carnival_party",
-                    label: "Carnival Party",
-                    kid_prompt: "Music, dancing, colorful costumes, big joy.",
-                    icon: "music",
-                    color_hint: "vibrant",
-                    audio_tone: "energetic",
-                    emoji: "🎭"
-                },
-                {
-                    id: "animal_helpers",
-                    label: "Animal Helpers",
-                    kid_prompt: "Friendly animals help solve a simple problem.",
-                    icon: "paw",
-                    color_hint: "natural",
-                    audio_tone: "friendly",
-                    emoji: "🐾"
-                },
-                {
-                    id: "super_helpers",
-                    label: "Super Helpers",
-                    kid_prompt: "A kid helps like a hero—simple powers, big heart.",
-                    icon: "star",
-                    color_hint: "heroic",
-                    audio_tone: "confident",
-                    emoji: "⭐"
-                }
-            ],
-            loading_steps: [
-                { id: "step_story", label: "Writing your story…" },
-                { id: "step_art", label: "Drawing pictures…" },
-                { id: "step_voice", label: "Recording R.O.T.I.’s voice…" },
-                { id: "step_build", label: "Putting your book together…" }
-            ],
-            fun_facts: [
-                "Did you know? Mangos can be sweet or tangy!",
-                "Anansi the spider is the most famous trickster in the Caribbean.",
-                "Steel pans were originally made from empty oil drums!",
-                "Hummingbirds are the smallest birds in the world!",
-                "The Caribbean Sea is home to over 700 islands!",
-                "Cocoa beans from the Caribbean are used to make some of the world's best chocolate!"
-            ]
-        },
-        upsell_note: "Members can save stories, turn them into printable mini-books, and unlock audio read-aloud with island accents."
-    },
-    roti_voice: {
-        v2: {
-            default_voice: "roti_friendly_male",
-            speech_rate: 0.88,
-            pause_rules: {
-                period_ms: 180,
-                comma_ms: 120
+        vibes: [
+            {
+                id: "silly_funny",
+                label: "Silly & Funny",
+                kid_prompt: "Make it goofy and fun with jokes kids understand.",
+                icon: "laugh",
+                color_hint: "bright",
+                audio_tone: "playful",
+                emoji: "😂"
             },
-            sync: {
-                word_highlighting_enabled: true,
-                fallback: "sentence_highlighting"
+            {
+                id: "brave_adventure",
+                label: "Brave Adventure",
+                kid_prompt: "A hero moment with exploring and a happy ending.",
+                icon: "compass",
+                color_hint: "bold",
+                audio_tone: "excited",
+                emoji: "🧭"
+            },
+            {
+                id: "bedtime_calm",
+                label: "Bedtime Calm",
+                kid_prompt: "Soft, calm story for bedtime with gentle words.",
+                icon: "moon",
+                color_hint: "soft",
+                audio_tone: "calm",
+                emoji: "🌙"
+            },
+            {
+                id: "friendship_kindness",
+                label: "Friendship & Kindness",
+                kid_prompt: "A story about helping, sharing, and being kind.",
+                icon: "heart",
+                color_hint: "warm",
+                audio_tone: "warm",
+                emoji: "❤️"
+            },
+            {
+                id: "mystery_not_scary",
+                label: "Mystery (Not Scary)",
+                kid_prompt: "A little mystery with no scary parts.",
+                icon: "magnifier",
+                color_hint: "cool",
+                audio_tone: "curious",
+                emoji: "🔍"
+            },
+            {
+                id: "carnival_party",
+                label: "Carnival Party",
+                kid_prompt: "Music, dancing, colorful costumes, big joy.",
+                icon: "music",
+                color_hint: "vibrant",
+                audio_tone: "energetic",
+                emoji: "🎭"
             }
-        }
+        ]
     },
     founders_section: {
         title: "Created by Caribbean parents and educators",
@@ -430,7 +451,7 @@ export const siteContent = {
             "Guided by social-emotional learning principles used in classrooms around the world.",
             "Stories and songs inspired by real Caribbean foods, festivals, and everyday family life."
         ],
-        image: "/images/parent-child-smiling.png"
+        image: "/images/child_reading.png"
     },
     pricing: {
         id: "pricing",
@@ -515,98 +536,8 @@ export const siteContent = {
         title: "Likkle Legends for Schools",
         description: "Bring Caribbean culture and SEL into your classroom with our institutional plans.",
         cta: {
-            label: "Explore School Plans",
-            href: "/schools"
+            label: "Contact Sales",
+            href: "/contact/educators"
         }
-    },
-    testimonials: {
-        id: "testimonials",
-        title: "What our legends say",
-        subtitle: "Real stories from families on their cultural journey.",
-        featured_rating: "4.9/5 from parents worldwide",
-        items: [
-            {
-                quote: "My daughter literally waits by the mailbox for her Likkle Legends letter. She’s finally learning about her Trinidadian roots in a way that’s fun and meaningful.",
-                headline: "She waits by the mailbox every month.",
-                name: "Sarah J.",
-                meta: "Mom of a 6-year-old · New York, USA"
-            },
-            {
-                quote: "The emotional literacy component is what sold me. My son is learning how to talk about his feelings while celebrating his culture. It’s beautiful.",
-                headline: "Culture and feelings in one place.",
-                name: "David R.",
-                meta: "Dad of a 7-year-old · London, UK"
-            }
-        ]
-    },
-    cta_banner: {
-        headline: "Ready to start your child’s Caribbean adventure?",
-        subheadline: "Join 500+ families building identity, emotional literacy, and joyful memories each month.",
-        primary_cta: {
-            label: "Start Mail Club for $10/month",
-            href: "/get-started"
-        },
-        secondary_cta: {
-            label: "See what’s inside a letter",
-            href: "#sample-letter"
-        }
-    },
-    faq: {
-        title: "Frequently Asked Questions",
-        subtitle: "Everything you need to know about the adventure.",
-        items: [
-            {
-                question: "How does the physical mail work?",
-                answer: "Every month, your child receives a personalized envelope addressed directly to them. Inside, they’ll find a letter from a Likkle Legend, a cultural flashcard, and a physical coloring sheet. Subscriptions ship by the 15th of every month."
-            },
-            {
-                question: "Is it suitable for children outside the Caribbean?",
-                answer: "Absolutely. Likkle Legends is designed for children everywhere. For those with Caribbean roots, it’s a way to stay connected. For others, it’s a beautiful way to learn about a vibrant culture, emotional literacy, and island pride."
-            },
-            {
-                question: "What age groups are supported?",
-                answer: "We have two main tracks: Mini Legends (ages 4–5), which focuses on simple cultural concepts and early SEL, and Big Legends (ages 6–8), which includes more advanced stories and emotional literacy activities."
-            },
-            {
-                question: "How do the digital storybooks work?",
-                answer: "Legends Plus and Annual members get access to our digital portal. Each month, new interactive storybooks are unlocked. Kids can read on any tablet or computer and enjoy AI-powered character interactions."
-            },
-            {
-                question: "Can I cancel my subscription?",
-                answer: "Yes. You can cancel your monthly subscription at any time through your parent dashboard. Annual plans are billed once and renew every year."
-            },
-            {
-                question: "What if my child is not Caribbean?",
-                answer: "Cultural celebration is for everyone! Likkle Legends teaches universal values like kindness, courage, and family through the specific, vibrant lens of the Caribbean. It’s a great way to build global perspective."
-            }
-        ]
-    },
-    footer: {
-        brand_line: "Bringing Caribbean culture, pride, and emotional literacy to children everywhere through personalized mail and interactive AI learning.",
-        columns: [
-            {
-                title: "Platform",
-                links: [
-                    { label: "How It Works", href: "/#how-it-works" },
-                    { label: "Pricing", href: "/pricing" },
-                    { label: "Blog", href: "/blog" },
-                    { label: "Child Portal", href: "/portal" },
-                    { label: "Parent Dashboard", href: "/parent" }
-                ]
-            },
-            {
-                title: "Company",
-                links: [
-                    { label: "About Us", href: "/about" },
-                    { label: "Contact", href: "/contact" },
-                    { label: "Shipping & Returns", href: "/shipping" },
-                    { label: "FAQ", href: "/faq" },
-                    { label: "Privacy Policy", href: "/privacy" },
-                    { label: "Terms of Use", href: "/terms" },
-                    { label: "Kids' Safety Policy", href: "/safety" }
-                ]
-            }
-        ],
-        copyright: "© 2026 Island Flavors Universe – Likkle Legends Mail Club. All rights reserved."
     }
 };

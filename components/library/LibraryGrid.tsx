@@ -46,7 +46,11 @@ const STORIES = [
     }
 ];
 
-export default function LibraryGrid() {
+interface LibraryGridProps {
+    isLandingPage?: boolean;
+}
+
+export default function LibraryGrid({ isLandingPage = false }: LibraryGridProps) {
     const [selectedStory, setSelectedStory] = useState<any>(null);
     const [filter, setFilter] = useState<'all' | 'tanty' | 'roti'>('all');
     const [stories, setStories] = useState<any[]>([]);

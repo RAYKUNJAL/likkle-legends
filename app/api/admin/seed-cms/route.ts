@@ -1,24 +1,20 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createAdminClient } from '@/lib/admin';
-import { siteContent } from '@/lib/content';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
-    // 1. Verify Authentication
     const authHeader = request.headers.get('Authorization');
     if (!authHeader) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const admin = createAdminClient();
-
-    // Verify the user token manually since we are using admin client
-    // Actually, createAdminClient uses the Service Role, so it bypasses auth. 
-    // We must verify the user *before* doing operations.
-    // For this seed script, let's just check a secret or assume dev env usage.
-    // Ideally use supabase.auth.getUser() with the header token.
-
     try {
+        // Lazy imports to prevent Supabase initialization at build time
+        const { createAdminClient } = await import('@/lib/admin');
+        const { siteContent } = await import('@/lib/content');
+
+        const admin = createAdminClient();
         const keys = Object.keys(siteContent);
         const updates = keys.map(key => ({
             key,

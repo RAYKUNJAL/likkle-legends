@@ -1,0 +1,27 @@
+[dotenv@17.2.4] injecting env (10) from .env -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }
+≡ƒÜÇ Connecting to Supabase Postgres...
+Γ£à Connected!
+
+≡ƒôè Checking Tables:
+Γ£à promoters           : Exists (0 rows)
+Γ£à contests            : Exists (0 rows)
+Γ£à contest_entries     : Exists (0 rows)
+Γ£à referral_clicks     : Exists (0 rows)
+Γ£à leads               : Exists (0 rows)
+Γ£à support_messages    : Exists (0 rows)
+Γ£à storybooks          : Exists (0 rows)
+Γ£à songs               : Exists (0 rows)
+Γ£à videos              : Exists (0 rows)
+Γ£à games               : Exists (0 rows)
+Γ£à printables          : Exists (0 rows)
+Γ£à characters          : Exists (6 rows)
+Γ£à generated_content   : Exists (0 rows)
+Γ£à purchased_content   : Exists (0 rows)
+Γ£à site_settings       : Exists (2 rows)
+Γ£à announcements       : Exists (0 rows)
+Γ£à custom_song_requests: Exists (0 rows)
+
+≡ƒÆÄ Checking Enums:
+Γ£à admin_role          : [admin, editor, super_admin]
+Γ£à affiliate_status    : [pending_approval, approved, suspended]
+Γ£à contest_status      : [live, scheduled, paused, ended, draft]

@@ -29,10 +29,16 @@ class SupabaseClientManager {
         const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
-        // Validation
-        if (!url || !anonKey) {
-            console.warn(`⚠️  Supabase credentials missing. URL: ${!!url}, AnonKey: ${!!anonKey}. Using placeholder.`);
-            return createClient('https://placeholder.supabase.co', 'placeholder');
+        // Validation — env vars can be "false", empty, or missing
+        const isValidUrl = url && url.startsWith('https://') && url.length > 15;
+        const isValidKey = anonKey && anonKey.length > 20 && anonKey !== 'false';
+
+        if (!isValidUrl || !isValidKey) {
+            console.warn(`⚠️  Supabase credentials missing or invalid. URL valid: ${!!isValidUrl}, Key valid: ${!!isValidKey}. Using safe placeholder.`);
+            return createClient(
+                'https://placeholder.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MTY0MDMyMjUsImV4cCI6MTkzMTk3OTIyNX0.placeholder'
+            );
         }
 
         if (useServiceRole) {

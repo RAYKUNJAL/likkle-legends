@@ -17,3 +17,4 @@ export { default as WhoItIsFor } from './WhoItIsFor';
 export { default as EducatorBlock } from './EducatorBlock';
 export { default as StoryStudioLeadMagnet } from './StoryStudioLeadMagnet';
 export { default as FeatureShowcase } from './FeatureShowcase';
+export { default as TrustBar } from './TrustBar';

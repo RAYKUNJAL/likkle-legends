@@ -157,6 +157,25 @@ export async function getAllProfilesAdmin(token: string, limit = 100, offset = 0
     return { profiles: data || [], total: count || 0 };
 }
 
+/**
+ * Compatibility alias for UserManagement component
+ */
+export async function getAllUsersAction() {
+    // Get token from cookies server-side if not passed
+    const { cookies } = await import('next/headers');
+    const cookieStore = cookies();
+    const token = cookieStore.get('sb-access-token')?.value || '';
+
+    const admin = await verifyAdmin(token);
+    const { data, error } = await admin
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+}
+
 export async function getAllOrdersAdmin(token: string, status?: string, limit = 100, offset = 0) {
     const admin = await verifyAdmin(token);
     let query = admin

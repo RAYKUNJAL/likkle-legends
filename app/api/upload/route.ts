@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Commercial-Grade Media Upload API
  * Features:
@@ -11,8 +13,11 @@ import { createClient } from '@supabase/supabase-js';
  * - Folder organization by content type
  */
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+function getSupabaseConfig() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() || '';
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || '';
+    return { url, key };
+}
 
 // Allowed MIME types for security
 const ALLOWED_TYPES: Record<string, string[]> = {
@@ -90,8 +95,9 @@ function organizeByDateFolder(): string {
 export async function POST(request: NextRequest) {
     try {
         // Validate service key
-        if (!serviceRoleKey) {
-            console.error('[Upload API] Missing SUPABASE_SERVICE_ROLE_KEY');
+        const { url: supabaseUrl, key: serviceRoleKey } = getSupabaseConfig();
+        if (!serviceRoleKey || !supabaseUrl) {
+            console.error('[Upload API] Missing SUPABASE_SERVICE_ROLE_KEY or URL');
             return NextResponse.json(
                 { error: 'Server configuration error' },
                 { status: 500 }
@@ -281,7 +287,8 @@ export async function POST(request: NextRequest) {
 // DELETE endpoint for removing files
 export async function DELETE(request: NextRequest) {
     try {
-        if (!serviceRoleKey) {
+        const { url: supabaseUrl, key: serviceRoleKey } = getSupabaseConfig();
+        if (!serviceRoleKey || !supabaseUrl) {
             return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
         }
 

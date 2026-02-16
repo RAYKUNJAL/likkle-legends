@@ -6,7 +6,7 @@ export const siteContent = {
         og_image: "/images/logo.png"
     },
     notification_bar: {
-        enabled: true,
+        enabled: false,
         text: "Limited Time: Get 15% OFF your first month with code LEGEND15",
         subtext: "Ends soon. New members only.",
         countdown: {
@@ -349,16 +349,34 @@ export const siteContent = {
                 {
                     id: "brave_adventure",
                     label: "Brave Adventure",
-                    kid_prompt: "A heroic journey focused on courage and discovery.",
-                    icon: "shield",
-                    color_hint: "strong",
-                    audio_tone: "epic",
-                    emoji: "🛡️"
+                    kid_prompt: "A hero moment with exploring and a happy ending.",
+                    icon: "compass",
+                    color_hint: "bold",
+                    audio_tone: "excited",
+                    emoji: "🧭"
                 },
                 {
-                    id: "mystery_solving",
-                    label: "Mystery Solving",
-                    kid_prompt: "Solve a fun island mystery with clues and thinking.",
+                    id: "bedtime_calm",
+                    label: "Bedtime Calm",
+                    kid_prompt: "Soft, calm story for bedtime with gentle words.",
+                    icon: "moon",
+                    color_hint: "soft",
+                    audio_tone: "calm",
+                    emoji: "🌙"
+                },
+                {
+                    id: "friendship_kindness",
+                    label: "Friendship & Kindness",
+                    kid_prompt: "A story about helping, sharing, and being kind.",
+                    icon: "heart",
+                    color_hint: "warm",
+                    audio_tone: "warm",
+                    emoji: "❤️"
+                },
+                {
+                    id: "mystery_not_scary",
+                    label: "Mystery (Not Scary)",
+                    kid_prompt: "A little mystery with no scary parts.",
                     icon: "magnifier",
                     color_hint: "cool",
                     audio_tone: "curious",
@@ -430,93 +448,176 @@ export const siteContent = {
             "Guided by social-emotional learning principles used in classrooms around the world.",
             "Stories and songs inspired by real Caribbean foods, festivals, and everyday family life."
         ],
-        image: "/images/parent-child-smiling.png"
+        image: "/images/child_reading.png"
     },
     pricing: {
         id: "pricing",
-        title: "Start Your Culture Journey",
-        subtitle: "Try the Intro Experience for just $10. Most families start here, then upgrade as their legends grow.",
+        title: "Start free. Upgrade when you’re ready.",
+        subtitle: "Kid-safe Caribbean learning for ages 4–8. Mail Club ships in the USA (Canada & UK coming soon).",
+        global_rules: {
+            shipping: {
+                supported_countries_now: ["US"],
+                coming_soon_countries: ["CA", "UK"],
+                copy: {
+                    supported_now_short: "Ships in the USA",
+                    coming_soon_short: "Canada & UK coming soon",
+                    checkout_notice: "Mail Club currently ships within the United States only. Canada and the UK are coming soon."
+                }
+            },
+            ai_story_studio: {
+                unit_name: "story_builds",
+                reset_period: "monthly",
+                hard_enforced: true,
+                copy_note: "AI Story Studio uses reset monthly. Upgrade for more builds."
+            },
+            plans_visibility: {
+                show_annual_toggle: false,
+                default_billing_period: "monthly"
+            }
+        },
         tabs: [
-            { id: "mail", label: "Mail Club", description: "Identity in their hands" },
-            { id: "digital", label: "Digital Only", description: "Learning everywhere" }
+            { id: "digital", label: "Digital", description: "Works worldwide" },
+            { id: "mail", label: "Mail Club", description: "Ships in the USA" }
         ],
         plans: [
             {
-                id: "starter_mailer",
+                id: "plan_free_forever",
+                tab: "digital",
+                name: "Free Forever (Digital)",
+                price_display: "$0 / forever",
+                best_for: "Trying the platform, quick daily learning, and families outside shipping regions.",
+                features: [
+                    "Rotating library of island stories + activities",
+                    "Island Radio (kid-safe audio)",
+                    "1 child profile",
+                    "Basic progress badges + streaks",
+                    "Limited monthly downloads"
+                ],
+                limits: {
+                    downloads_per_month: 10,
+                    child_profiles: 1,
+                    ai_story_studio_builds_per_month: 2
+                },
+                cta: {
+                    label: "Start Free (No Card)",
+                    href: "/get-started?plan=free_forever"
+                }
+            },
+            {
+                id: "plan_digital_legends",
+                tab: "digital",
+                name: "Digital Legends",
+                price_display: "$4.99 / month",
+                badge: "Best for worldwide access",
+                best_for: "Diaspora families who want full digital access without shipping.",
+                features: [
+                    "Full digital library (stories, music, missions)",
+                    "Unlimited progress saving",
+                    "More printables + learning packs",
+                    "Parent controls + Island Routine guide"
+                ],
+                limits: {
+                    downloads_per_month: 60,
+                    child_profiles: 2,
+                    ai_story_studio_builds_per_month: 20
+                },
+                cta: {
+                    label: "Go Digital — $4.99/mo",
+                    href: "/checkout?plan=digital_legends_monthly"
+                }
+            },
+            {
+                id: "plan_starter_mailer",
                 tab: "mail",
                 name: "Starter Mailer",
-                best_for: "New families wanting the physical connection of monthly letters.",
-                price_display: "$10/mo",
+                price_display: "$9.99 / month",
+                badge: "Mail Club",
+                best_for: "The monthly mail moment — kids run to the mailbox for this.",
                 features: [
-                    "1 Personalized Physical Letter",
-                    "1 Cultural Flashcard & Sticker Pack",
-                    "Full Portal Digital Access",
-                    "Interactive Island Radio",
-                    "Earn Badges & Streaks"
+                    "Personalized monthly letter",
+                    "Coloring postcard + sticker sheet",
+                    "Cultural flashcard (foods, festivals)",
+                    "QR portal access (stories + music)"
                 ],
-                badge: "Intro Experience",
-                cta: { label: "Get Started", href: "/signup?plan=starter_mailer" }
+                limits: {
+                    child_profiles: 1,
+                    ai_story_studio_builds_per_month: 10
+                },
+                cta: {
+                    label: "Start Starter Mailer",
+                    href: "/checkout?plan=starter_mailer_monthly"
+                },
+                notice: "Ships in the USA • Canada & UK coming soon"
             },
             {
-                id: "legends_plus",
+                id: "plan_legends_plus",
                 tab: "mail",
                 name: "Legends Plus",
-                best_for: "Families looking for integrated cultural learning and SEL support.",
-                price_display: "$24/mo",
+                price_display: "$19.99 / month",
+                badge: "Best Value",
+                best_for: "Premium physical + stronger guided support for reading.",
                 features: [
                     "Everything in Starter Mailer",
-                    "3 Unlimited AI Story Studio Builds",
-                    "Premium Voice & Island Accents",
-                    "Monthly Educator Content Drop",
-                    "Parent Co-Pilot Dashboard"
+                    "Premium storybook-style insert",
+                    "AR overlay activities",
+                    "Parent Guided Chat prompts"
                 ],
-                badge: "Best Value",
-                cta: { label: "Choose Plus", href: "/signup?plan=legends_plus" }
+                limits: {
+                    child_profiles: 2,
+                    ai_story_studio_builds_per_month: 60
+                },
+                cta: {
+                    label: "Upgrade to Legends Plus",
+                    href: "/checkout?plan=legends_plus_monthly"
+                },
+                notice: "Ships in the USA • Canada & UK coming soon"
             },
             {
-                id: "family_legacy",
+                id: "plan_family_legacy",
                 tab: "mail",
                 name: "Family Legacy",
-                best_for: "The ultimate cultural experience for up to 3 children.",
-                price_display: "$45/mo",
+                price_display: "$34.99 / month",
+                badge: "Best for families",
+                best_for: "Multi-child households + heritage building.",
                 features: [
                     "Everything in Legends Plus",
-                    "Personalized Letters for 3 Kids",
-                    "Unlimited AI Story Builds",
-                    "Direct Support for Custom Topics",
-                    "Exclusive Seasonal Gift Box"
+                    "Up to 3 child profiles",
+                    "Family Circle access",
+                    "Quarterly Heritage Box",
+                    "Quarterly ancestry activity kit"
                 ],
-                cta: { label: "Choose Legacy", href: "/signup?plan=family_legacy" }
-            },
-            {
-                id: "digital_explorer",
-                tab: "digital",
-                name: "Digital Explorer",
-                best_for: "Simple digital-only access for quick learning.",
-                price_display: "$9/mo",
-                features: [
-                    "Full Digital Portal Access",
-                    "Interactive Island Radio",
-                    "Basic Progress Tracking",
-                    "Weekly Digital Missions"
-                ],
-                cta: { label: "Start Digital", href: "/signup?plan=digital_explorer" }
+                limits: {
+                    child_profiles: 3,
+                    family_circle_members: 2,
+                    ai_story_studio_builds_per_month: 120
+                },
+                cta: {
+                    label: "Join Family Legacy",
+                    href: "/checkout?plan=family_legacy_monthly"
+                },
+                notice: "Ships in the USA • Canada & UK coming soon"
             }
         ],
         comparison_table: [
-            { label: "Physical Monthly Mail", values: ["Yes", "Yes", "Yes", "No"] },
-            { label: "Digital Portal Access", values: ["Yes", "Yes", "Yes", "Yes"] },
-            { label: "AI Story Studio", values: ["Basic", "Unlimited", "Unlimited", "Basic"] },
-            { label: "Island Radio", values: ["Yes", "Yes", "Yes", "Yes"] },
-            { label: "Multiple Child Profiles", values: ["1", "2", "3", "1"] }
+            { label: "Kid-safe, ad-free portal", values: ["Yes", "Yes", "Yes", "Yes", "Yes"] },
+            { label: "Mail delivery (USA)", values: ["No", "No", "Yes", "Yes", "Yes"] },
+            { label: "Child profiles", values: ["1", "2", "1", "2", "3"] },
+            { label: "AI Story Studio builds", values: ["2", "20", "10", "60", "120"] }
+        ],
+        faq: [
+            { q: "Do you ship to Canada or the UK?", a: "Mail Club currently ships within the United States only. Canada and the UK are coming soon." },
+            { q: "Is the Free plan really free?", a: "Yes. Free Forever includes a rotating library and kid-safe portal access. No card required." },
+            { q: "How does AI Story Studio work?", a: "Each plan includes a monthly number of builds that reset every 30 days." }
         ]
     },
     educator_block: {
-        title: "Likkle Legends for Schools",
-        description: "Bring Caribbean culture and SEL into your classroom with our institutional plans.",
+        title: "Schools & Educators",
+        tagline: "FOR CLASSROOMS",
+        description: "Bring Caribbean cultural education to your classroom with our special educator pricing and curriculum resources.",
+        price_hint: "Custom licensing available for schools and libraries.",
         cta: {
-            label: "Explore School Plans",
-            href: "/schools"
+            label: "Explore Educator Plans",
+            href: "/educators"
         }
     },
     testimonials: {
@@ -577,9 +678,40 @@ export const siteContent = {
             },
             {
                 question: "What if my child is not Caribbean?",
-                answer: "Cultural celebration is for everyone! Likkle Legends teaches universal values like kindness, courage, and family through the specific, vibrant lens of the Caribbean. It’s a great way to build global perspective."
+                answer: "Many of our families are multicultural or simply curious about the Caribbean. We focus on universal values like pride, empathy, and joy through a Caribbean lens, so all children feel welcome."
+            },
+            {
+                question: "When will we receive our first letter?",
+                answer: "Orders placed before the 10th of the month ship in the current cycle. Most families receive their first letter within 5–10 business days, depending on location."
             }
         ]
+    },
+    tanty_spice_chat: {
+        enabled: true,
+        name: "Tanty Spice",
+        status_text: "Online & listening",
+        welcome_message: "Bless up! I'm Tanty Spice. Ask me about our plans or tell me how you're feeling today!",
+        input_placeholder: "Type a message...",
+        button_label: "Send message",
+        states: {
+            idle: {},
+            loading: {
+                message: "Tanty is thinking..."
+            },
+            error: {
+                message: "Oye! My magic connection is a bit weak right now, darlin'. Please try again soon."
+            }
+        },
+        modes: {
+            child_mode: {
+                description: "Reflective feelings coach for children. No advice on safety or medical issues.",
+                safety_ruleset_id: "child-safe"
+            },
+            parent_mode: {
+                description: "Parent co-pilot that gives conversation prompts and activity ideas based on what your child shares.",
+                safety_ruleset_id: "parent-support"
+            }
+        }
     },
     footer: {
         brand_line: "Bringing Caribbean culture, pride, and emotional literacy to children everywhere through personalized mail and interactive AI learning.",
@@ -599,8 +731,8 @@ export const siteContent = {
                 links: [
                     { label: "About Us", href: "/about" },
                     { label: "Contact", href: "/contact" },
-                    { label: "Shipping & Returns", href: "/shipping" },
-                    { label: "FAQ", href: "/faq" },
+                    { label: "Shipping & Returns", href: "/shipping" }, // Added
+                    { label: "FAQ", href: "/faq" }, // Added
                     { label: "Privacy Policy", href: "/privacy" },
                     { label: "Terms of Use", href: "/terms" },
                     { label: "Kids' Safety Policy", href: "/safety" }

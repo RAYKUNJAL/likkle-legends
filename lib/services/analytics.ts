@@ -71,14 +71,4 @@ export async function getChildActivities(childId: string, limit = 10) {
     return data || [];
 }
 
-export async function getChildBadges(childId: string) {
-    if (!isSupabaseConfigured()) return [];
-    const { data, error } = await supabase
-        .from('badge_earnings')
-        .select('*')
-        .eq('child_id', childId)
-        .order('earned_at', { ascending: false });
 
-    if (error) throw error;
-    return data || [];
-}

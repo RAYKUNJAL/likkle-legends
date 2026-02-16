@@ -2,12 +2,25 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
+const PLACEHOLDER_URL = 'https://placeholder.supabase.co';
+const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MTY0MDMyMjUsImV4cCI6MTkzMTk3OTIyNX0.placeholder';
+
+function getValidUrl(): string {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+    return (url && url.startsWith('https://') && url.length > 15) ? url : PLACEHOLDER_URL;
+}
+
+function getValidKey(): string {
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+    return (key && key.length > 20 && key !== 'false') ? key : PLACEHOLDER_KEY;
+}
+
 export const createClient = () => {
     const cookieStore = cookies()
 
     return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        getValidUrl(),
+        getValidKey(),
         {
             cookieOptions: {
                 name: 'sb-likkle-auth',
