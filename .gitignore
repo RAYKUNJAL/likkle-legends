@@ -55,3 +55,4 @@ likkle-legends-second/
 temp_plex/
 temp_plex_2/
 voice-server/
+.env*.local
