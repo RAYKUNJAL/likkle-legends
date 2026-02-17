@@ -58,7 +58,7 @@ export const FooterV2 = () => {
                                 <ul className="space-y-3 sm:space-y-6">
                                     {[
                                         { name: 'Waitlist', href: '/waitlist' },
-                                        { name: 'Affiliates', href: '#' },
+                                        { name: 'Affiliates', href: '/promoters' },
                                         { name: 'Heritage Blog', href: '/blog' },
                                         { name: 'Educators', href: '/educators' }
                                     ].map(item => (

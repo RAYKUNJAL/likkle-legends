@@ -65,15 +65,18 @@ export const InteractivePassportHero = () => {
                                 src="/images/hero_landing.png"
                                 alt="Likkle Legends Hero"
                                 fill
-                                className="object-cover opacity-80"
+                                className="object-cover"
                                 priority
                             />
+                            {/* Dark Overlay for Text Readability */}
+                            <div className="absolute inset-0 bg-black/40 z-10"></div>
                         </div>
-                        {/* 
+                        {/*
                            Note: To enable video, uncomment below and ensure video file exists in public/videos/
-                           <video autoPlay loop muted playsInline className="w-full h-full object-cover opacity-80">
+                           <video autoPlay loop muted playsInline className="w-full h-full object-cover">
                                <source src="/videos/hero-background.mp4" type="video/mp4" />
                            </video>
+                           <div className="absolute inset-0 bg-black/40 z-10"></div>
                         */}
                     </div>
                 </div>

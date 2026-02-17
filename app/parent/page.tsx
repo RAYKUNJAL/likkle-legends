@@ -366,8 +366,18 @@ export default function ParentDashboard() {
                                     <p className="text-white/60 font-bold leading-relaxed mb-8">
                                         Get a detailed PDF report of your child's phonics mastery and cultural learnings to share with teachers.
                                     </p>
-                                    <button className="flex items-center justify-center gap-3 px-10 py-5 bg-primary text-white rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-xl shadow-primary/20">
-                                        <Download size={24} /> Generate PDF
+                                    <button
+                                        onClick={() => {
+                                            const originalText = document.getElementById('pdf-btn-text');
+                                            if (originalText) originalText.innerText = "Generating...";
+                                            setTimeout(() => {
+                                                window.print();
+                                                if (originalText) originalText.innerText = "Generate PDF";
+                                            }, 1000);
+                                        }}
+                                        className="flex items-center justify-center gap-3 px-10 py-5 bg-primary text-white rounded-2xl font-black text-lg hover:scale-105 transition-all shadow-xl shadow-primary/20"
+                                    >
+                                        <Download size={24} /> <span id="pdf-btn-text">Generate PDF</span>
                                     </button>
                                 </div>
                                 <div className="w-64 h-64 bg-white/5 rounded-full flex items-center justify-center border border-white/10 group overflow-hidden relative">
