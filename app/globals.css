@@ -6,11 +6,13 @@
   --background: #FFFDF7;
   --foreground: #023047;
   /* v3 Design System Tokens */
-  --primary: #FF6B35;
-  --secondary: #00B4D8;
+  --primary: #FF6B00;
+  /* Rebuilt V2 Primary */
+  --secondary: #2D5A27;
+  /* Rebuilt V2 Secondary */
   --accent: #FF3FB4;
-  --success: #00FF94;
-  --warning: #FFCB47;
+  --success: #00B48B;
+  --warning: #FFBB00;
   --error: #FF4747;
   --deep: #023047;
 
@@ -20,12 +22,12 @@
   --popover-foreground: #023047;
   --border: #E2E8F0;
   --input: #E2E8F0;
-  --ring: #FF6B35;
-  --radius: 1.5rem;
+  --ring: #FF6B00;
+  --radius: 2rem;
   --glass: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(255, 255, 255, 0.1);
   --text-muted: rgba(2, 48, 71, 0.6);
-  --shadow-premium: 0 20px 40px -10px rgba(2, 48, 71, 0.1);
+  --shadow-premium: 0 30px 60px -15px rgba(2, 48, 71, 0.15);
 }
 
 @layer base {

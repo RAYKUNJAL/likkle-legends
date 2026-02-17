@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Fredoka, Quicksand } from "next/font/google";
+import { Inter, JetBrains_Mono, Fredoka, Quicksand, Montserrat } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Inter({
@@ -23,6 +23,12 @@ const quicksand = Quicksand({
   variable: "--font-quicksand",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+});
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 import { siteContent } from '@/lib/content';
@@ -84,7 +90,7 @@ export default async function RootLayout({
         <StructuredData />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${quicksand.variable} font-quicksand antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${quicksand.variable} ${montserrat.variable} font-montserrat antialiased`}
         suppressHydrationWarning
       >
         <NotificationBar content={content} />
