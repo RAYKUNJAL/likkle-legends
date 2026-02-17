@@ -432,21 +432,50 @@ export default function CheckoutPage() {
                                         </div>
 
                                         <div className="bg-white rounded-2xl border border-zinc-100 p-6 space-y-6 shadow-sm">
-                                            <PayPalButtons
-                                                style={{ layout: "vertical", shape: "rect", borderRadius: 12, height: 48 }}
-                                                createSubscription={(data, actions) => {
-                                                    return actions.subscription.create({
-                                                        plan_id: "P-3RX00000XX000000XXXXXX" // Replace with real Plan ID from PayPal dashboard
-                                                    });
-                                                }}
-                                                onApprove={async (data, actions) => {
-                                                    // Handle success
-                                                    setIsComplete(true);
-                                                }}
-                                            />
+                                            {/* Demo Payment Form for User Testing */}
+                                            <div className="space-y-4">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-deep/30">Card Number</label>
+                                                    <div className="relative">
+                                                        <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-deep/20" size={18} />
+                                                        <input
+                                                            type="text"
+                                                            placeholder="0000 0000 0000 0000"
+                                                            className="w-full pl-12 pr-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl font-bold text-deep focus:outline-none focus:border-primary/30"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-deep/30">Expiry</label>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="MM/YY"
+                                                            className="w-full px-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl font-bold text-deep focus:outline-none focus:border-primary/30"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-black uppercase tracking-widest text-deep/30">CVC</label>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="123"
+                                                            className="w-full px-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl font-bold text-deep focus:outline-none focus:border-primary/30"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsComplete(true)}
+                                                className="w-full py-4 bg-primary text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                            >
+                                                Pay ${calculateTotal()}
+                                                <ArrowRight size={16} />
+                                            </button>
 
                                             <p className="text-[9px] text-deep/30 font-medium leading-relaxed text-center">
-                                                Payments are processed securely by PayPal. You can use your PayPal balance or pay directly with a Debit/Credit Card.
+                                                Secure payment processing. This is a secure demo environment.
                                             </p>
                                         </div>
                                     </motion.div>
