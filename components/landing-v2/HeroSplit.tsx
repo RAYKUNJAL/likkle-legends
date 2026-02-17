@@ -114,8 +114,8 @@ export const HeroSplit = ({ content }: HeroSplitProps) => {
                         >
                             {/* In a real scenario, this would be the photo described in visual_note */}
                             <img
-                                src="https://images.unsplash.com/photo-1544333346-601e3b5e9333?q=80&w=2670&auto=format&fit=crop"
-                                alt="Child holding Legend Envelope"
+                                src="/images/child_reading.png"
+                                alt="Child reading Legend Letter"
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-deep/40 via-transparent to-transparent"></div>

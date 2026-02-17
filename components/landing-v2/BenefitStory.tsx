@@ -31,8 +31,8 @@ export const BenefitStory = ({ title, content }: BenefitStoryProps) => {
                                 className="relative rounded-[5rem] overflow-hidden shadow-[0_60px_120px_-20px_rgba(255,107,0,0.2)] aspect-[4/5] border-[12px] border-white bg-zinc-50"
                             >
                                 <img
-                                    src="https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=2670&auto=format&fit=crop"
-                                    alt="Legend Envelope Close-up"
+                                    src="/images/mailing-club-lifestyle.jpg"
+                                    alt="Legend Envelope Flatlay"
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-deep/90 via-transparent to-transparent"></div>
