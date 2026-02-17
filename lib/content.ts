@@ -455,7 +455,7 @@ export const siteContent = {
                     "Earn Badges & Streaks"
                 ],
                 badge: "Intro Experience",
-                cta: { label: "Get Started", href: "/signup?plan=starter_mailer" }
+                cta: { label: "Get Started", href: "/checkout?plan=starter_mailer" }
             },
             {
                 id: "legends_plus",
@@ -471,7 +471,7 @@ export const siteContent = {
                     "Parent Co-Pilot Dashboard"
                 ],
                 badge: "Best Value",
-                cta: { label: "Choose Plus", href: "/signup?plan=legends_plus" }
+                cta: { label: "Choose Plus", href: "/checkout?plan=legends_plus" }
             },
             {
                 id: "family_legacy",
@@ -486,7 +486,7 @@ export const siteContent = {
                     "Direct Support for Custom Topics",
                     "Exclusive Seasonal Gift Box"
                 ],
-                cta: { label: "Choose Legacy", href: "/signup?plan=family_legacy" }
+                cta: { label: "Choose Legacy", href: "/checkout?plan=family_legacy" }
             },
             {
                 id: "digital_explorer",
@@ -500,7 +500,7 @@ export const siteContent = {
                     "Basic Progress Tracking",
                     "Weekly Digital Missions"
                 ],
-                cta: { label: "Start Digital", href: "/signup?plan=digital_explorer" }
+                cta: { label: "Start Digital", href: "/checkout?plan=digital_explorer" }
             }
         ],
         comparison_table: [

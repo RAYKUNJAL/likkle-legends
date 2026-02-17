@@ -29,17 +29,17 @@ export const PhysicalDigitalBridge = () => {
                                     src="/images/letter-preview.png"
                                     alt="Legend Envelope unboxing experience"
                                     fill
-                                    className="object-cover"
+                                    className="object-contain"
                                     sizes="(max-width: 768px) 100vw, 50vw"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-deep/20 via-transparent to-transparent"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-deep/5 via-transparent to-transparent pointer-events-none"></div>
                             </div>
 
                             {/* Key Badge */}
                             <motion.div
                                 animate={{ y: [0, -10, 0] }}
                                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                                className="absolute -bottom-6 -right-4 lg:-right-8 bg-white p-5 rounded-2xl shadow-premium border border-zinc-100 flex items-center gap-3"
+                                className="absolute -bottom-6 -right-4 lg:-right-8 bg-white p-5 rounded-2xl shadow-premium border border-zinc-100 flex items-center gap-3 z-20"
                             >
                                 <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
                                     <Key size={24} />
@@ -54,7 +54,7 @@ export const PhysicalDigitalBridge = () => {
                             <motion.div
                                 animate={{ y: [0, -8, 0] }}
                                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                                className="absolute -top-4 -left-4 lg:-left-8 bg-white p-4 rounded-2xl shadow-premium border border-zinc-100 flex items-center gap-2.5"
+                                className="absolute -top-4 -left-4 lg:-left-8 bg-white p-4 rounded-2xl shadow-premium border border-zinc-100 flex items-center gap-2.5 z-20"
                             >
                                 <Globe size={18} className="text-secondary" />
                                 <div>
@@ -78,7 +78,7 @@ export const PhysicalDigitalBridge = () => {
                             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Physical + Digital</span>
                         </div>
 
-                        <h2 className="text-2xl sm:text-4xl lg:text-5xl xl:text-[3.5rem] font-black text-deep tracking-tighter leading-tight sm:leading-[0.95]">
+                        <h2 className="text-2xl sm:text-4xl lg:text-5xl xl:text-[3.5rem] font-black text-deep tracking-tighter leading-tight py-2">
                             The Legend Envelope—<br />
                             <span className="text-gradient italic">Play Now, Then Feel</span><br />
                             It in the Mail.
@@ -117,10 +117,10 @@ export const PhysicalDigitalBridge = () => {
 
                         {/* CTAs */}
                         <div className="flex flex-wrap gap-3">
-                            <button className="group flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-xl font-black text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                            <Link href="/checkout" className="group flex items-center gap-3 px-8 py-4 bg-primary text-white rounded-xl font-black text-sm shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                                 Get the $10 Pass
                                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                            </button>
+                            </Link>
                             <Link
                                 href="/waitlist"
                                 className="flex items-center gap-2 px-6 py-4 bg-white text-deep border border-zinc-200 rounded-xl font-bold text-sm hover:border-primary/30 transition-all"
