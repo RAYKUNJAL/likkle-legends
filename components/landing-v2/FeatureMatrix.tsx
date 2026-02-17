@@ -143,20 +143,20 @@ export const FeatureMatrix = () => {
                             )}
 
                             {/* Feature Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4">
                                 {cat.features.map(feat => (
                                     <div
                                         key={feat.name}
-                                        className="bg-white/[0.08] rounded-2xl p-4 sm:p-5 border border-white/[0.1] hover:bg-white/[0.12] transition-all"
+                                        className="bg-white/[0.08] rounded-2xl p-5 sm:p-5 border border-white/[0.1] hover:bg-white/[0.12] transition-all"
                                     >
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg"
+                                        <div className="flex items-center gap-4 mb-3">
+                                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg"
                                                 style={{ backgroundColor: cat.color + '30' }}>
-                                                <feat.icon size={20} style={{ color: cat.color }} />
+                                                <feat.icon size={24} style={{ color: cat.color }} />
                                             </div>
-                                            <h4 className="font-black text-white text-base sm:text-sm tracking-tight">{feat.name}</h4>
+                                            <h4 className="font-extrabold text-white text-lg sm:text-base tracking-tight leading-tight">{feat.name}</h4>
                                         </div>
-                                        <p className="text-sm sm:text-xs text-white/70 leading-relaxed font-medium pl-[3.25rem] sm:pl-0">{feat.desc}</p>
+                                        <p className="text-base sm:text-sm text-white/90 leading-relaxed font-medium">{feat.desc}</p>
                                     </div>
                                 ))}
                             </div>
@@ -171,10 +171,11 @@ export const FeatureMatrix = () => {
                     viewport={{ once: true }}
                     className="text-center mt-16"
                 >
-                    <button className="group inline-flex items-center gap-3 px-10 py-5 bg-primary text-white rounded-2xl font-black text-base shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    {/* Replaced Button with Link */}
+                    <a href="/checkout" className="group inline-flex items-center gap-3 px-10 py-5 bg-primary text-white rounded-2xl font-black text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                         Unlock Full Portal for $10
-                        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                    </button>
+                        <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                    </a>
                 </motion.div>
             </div>
         </section>
