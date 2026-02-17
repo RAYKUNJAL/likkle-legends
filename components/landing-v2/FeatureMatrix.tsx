@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Bot, Radio, Music, Map, Leaf, Gamepad2, BookOpen, Calculator, Mic, Palette, CookingPot, Scissors, Headphones, BookOpenText, Baby, Sparkles, ArrowRight, Compass, BookMarked, Globe, Cherry, Lightbulb, Drum } from "lucide-react";
 import TantyRadio from "@/components/TantyRadio";
+import Image from "next/image";
 
 const categories = [
     {
@@ -119,8 +120,8 @@ export const FeatureMatrix = () => {
                         >
                             {/* Category Header */}
                             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-5 sm:mb-8">
-                                <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-white/10 flex-shrink-0">
-                                    <img src={cat.leadImage} alt={cat.lead} className="w-full h-full object-cover" />
+                                <div className="w-14 h-14 rounded-xl overflow-hidden border-2 border-white/10 flex-shrink-0 relative">
+                                    <Image src={cat.leadImage} alt={cat.lead} fill className="object-cover" sizes="56px" />
                                 </div>
                                 <div>
                                     <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-white tracking-tight leading-none">{cat.name}</h3>

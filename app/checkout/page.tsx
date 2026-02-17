@@ -27,7 +27,8 @@ export default function CheckoutPage() {
         email: "",
         childName: "",
         heritage: "",
-        plan: "Legend Pass" // Default
+        plan: "Legend Pass", // Default
+        hasUpsell: false
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isComplete, setIsComplete] = useState(false);
@@ -153,9 +154,15 @@ export default function CheckoutPage() {
                                     <span>Legend Envelope (US)</span>
                                     <span className="text-success">Free Shipping</span>
                                 </div>
+                                {formData.hasUpsell && (
+                                    <div className="flex justify-between text-[11px] font-bold text-deep/40 uppercase tracking-widest animate-pulse">
+                                        <span>+ Digital Activity Pack</span>
+                                        <span>$5.00</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between text-lg font-black text-deep pt-2">
                                     <span>Total Today</span>
-                                    <span>$10.00</span>
+                                    <span>${formData.hasUpsell ? "15.00" : "10.00"}</span>
                                 </div>
                             </div>
                         </div>
@@ -180,7 +187,7 @@ export default function CheckoutPage() {
                         {[1, 2, 3, 4, 5].map(i => <Star key={i} size={12} className="fill-yellow-400 text-yellow-400" />)}
                     </div>
                     <p className="text-sm font-medium text-deep/40 italic leading-relaxed">
-                        "The only app that actually makes my son excited to learn about his Trini roots. The physical envelope is the highlight of our month!"
+                        &quot;The only app that actually makes my son excited to learn about his Trini roots. The physical envelope is the highlight of our month!&quot;
                     </p>
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-deep/20 mt-4">— Sarah M., NY</p>
                 </div>
@@ -198,8 +205,10 @@ export default function CheckoutPage() {
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${step >= 2 ? 'bg-primary text-white' : 'bg-zinc-200 text-zinc-400'}`}>2</div>
                                 <div className={`w-8 h-[2px] rounded-full ${step >= 3 ? 'bg-primary' : 'bg-zinc-200'}`}></div>
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${step >= 3 ? 'bg-primary text-white' : 'bg-zinc-200 text-zinc-400'}`}>3</div>
+                                <div className={`w-8 h-[2px] rounded-full ${step >= 4 ? 'bg-primary' : 'bg-zinc-200'}`}></div>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${step >= 4 ? 'bg-primary text-white' : 'bg-zinc-200 text-zinc-400'}`}>4</div>
                             </div>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-deep/25 italic">Step {step} of 3</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-deep/25 italic">Step {step} of 4</span>
                         </div>
 
                         <AnimatePresence mode="wait">
@@ -212,7 +221,7 @@ export default function CheckoutPage() {
                                     className="space-y-8"
                                 >
                                     <div className="space-y-2">
-                                        <h3 className="text-2xl font-black text-deep tracking-tight">Let's create your account.</h3>
+                                        <h3 className="text-2xl font-black text-deep tracking-tight">Let&apos;s create your account.</h3>
                                         <p className="text-deep/40 text-sm font-medium">Use your primary email for portal access.</p>
                                     </div>
                                     <div className="space-y-2">
@@ -256,7 +265,7 @@ export default function CheckoutPage() {
 
                                     <div className="space-y-6">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-deep/30 px-6">Child's First Name</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-deep/30 px-6">Child&apos;s First Name</label>
                                             <div className="relative">
                                                 <User className="absolute left-6 top-1/2 -translate-y-1/2 text-deep/20" size={20} />
                                                 <input
@@ -326,6 +335,64 @@ export default function CheckoutPage() {
                                     className="space-y-8"
                                 >
                                     <div className="space-y-2">
+                                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-[10px] font-black uppercase tracking-widest mb-2">
+                                            <Sparkles size={12} /> Special Offer
+                                        </div>
+                                        <h3 className="text-2xl font-black text-deep tracking-tight">One-Time Offer!</h3>
+                                        <p className="text-deep/50 text-sm font-medium">Add the <strong>Digital Activity Super-Pack</strong> for just $5?</p>
+                                    </div>
+
+                                    <div className="bg-zinc-50 border-2 border-dashed border-primary/20 rounded-2xl p-6 space-y-4">
+                                        <div className="flex gap-4">
+                                            <div className="w-20 h-20 bg-white rounded-xl shadow-sm border border-zinc-100 flex items-center justify-center text-4xl shrink-0">
+                                                🎨
+                                            </div>
+                                            <div>
+                                                <h4 className="font-black text-deep text-lg">50+ Printable Activities</h4>
+                                                <p className="text-xs text-deep/50 font-medium leading-relaxed mt-1">
+                                                    Instant download of coloring pages, mazes, and word searches for your selected island.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2 pt-2">
+                                            <span className="text-2xl font-black text-primary">$5.00</span>
+                                            <span className="text-sm font-bold text-deep/30 line-through">$15.00</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest bg-success/10 text-success px-2 py-1 rounded-md">Save 66%</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setFormData({ ...formData, hasUpsell: true });
+                                                handleNext();
+                                            }}
+                                            className="w-full py-5 bg-warning text-deep rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-warning/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                                        >
+                                            Yes! Add to my order
+                                            <CheckCircle2 size={18} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleNext}
+                                            className="w-full py-3 text-[10px] font-bold uppercase tracking-widest text-deep/30 hover:text-deep/50 transition-colors"
+                                        >
+                                            No thanks, I&apos;ll pass for now
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {step === 4 && (
+                                <motion.div
+                                    key="step4"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-8"
+                                >
+                                    <div className="space-y-2">
                                         <h3 className="text-2xl font-black text-deep tracking-tight">Secure Payment.</h3>
                                         <p className="text-deep/40 text-sm font-medium">Start your 30-day risk-free trial today.</p>
                                     </div>
@@ -359,7 +426,7 @@ export default function CheckoutPage() {
                                         </div>
 
                                         <p className="text-[9px] text-deep/30 font-medium leading-relaxed">
-                                            By clicking "Start Adventure", you agree to be charged $10.00 today and monthly thereafter. Cancel anytime with one click in your dashboard.
+                                            By clicking &quot;Start Adventure&quot;, you agree to be charged ${formData.hasUpsell ? "15.00" : "10.00"} today and $19.99 monthly thereafter. Cancel anytime with one click in your dashboard.
                                         </p>
                                     </div>
 

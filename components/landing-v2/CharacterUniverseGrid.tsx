@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Bot, Radio, Music, Map, ArrowRight, Sparkles, Gamepad2, Leaf, Mic2, Play, Volume2 } from "lucide-react";
 import { narrateText, kickstartMobileAudio } from "@/services/geminiService";
 import { useState } from "react";
+import Image from "next/image";
 
 const characters = [
     {
@@ -140,7 +141,7 @@ export const CharacterUniverseGrid = () => {
                 </div>
 
                 {/* 3x2 Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
                     {characters.map((char, i) => (
                         <motion.div
                             key={char.name}
@@ -152,18 +153,22 @@ export const CharacterUniverseGrid = () => {
                         >
                             {/* Image */}
                             <div className="relative aspect-square overflow-hidden flex items-end justify-center pt-8" style={{ backgroundColor: char.color + '05' }}>
-                                <img
-                                    src={char.image}
-                                    alt={char.name}
-                                    className="w-[90%] h-[90%] object-contain object-bottom group-hover:scale-105 transition-transform duration-1000 z-10"
-                                />
+                                <div className="absolute inset-0 z-10">
+                                    <Image
+                                        src={char.image}
+                                        alt={char.name}
+                                        fill
+                                        className="object-contain object-bottom group-hover:scale-105 transition-transform duration-1000"
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                    />
+                                </div>
                                 {/* Background Decorative Circle */}
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-3xl opacity-20"
                                     style={{ backgroundColor: char.color }}></div>
                                 {/* Overlay removed to fix visibility issue */}
 
                                 {/* Role Badge */}
-                                <div className="absolute top-2 left-2 sm:top-4 sm:left-4 flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-white/90 backdrop-blur-sm rounded-md sm:rounded-lg shadow-sm">
+                                <div className="absolute top-2 left-2 sm:top-4 sm:left-4 flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-white/90 backdrop-blur-sm rounded-md sm:rounded-lg shadow-sm z-20">
                                     <char.icon size={10} style={{ color: char.color }} />
                                     <span className="text-[6px] sm:text-[8px] font-black uppercase tracking-[0.1em] text-deep/50">{char.role}</span>
                                 </div>

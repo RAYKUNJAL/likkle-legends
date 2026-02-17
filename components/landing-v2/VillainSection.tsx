@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Flame, Shield, Star, Zap, Swords, ArrowRight, Sparkles } from "lucide-react";
+import Image from "next/image";
 
 export const VillainSection = () => {
     return (
@@ -28,10 +29,12 @@ export const VillainSection = () => {
                         <div className="relative bg-gradient-to-br from-zinc-900 to-zinc-950 rounded-[2.5rem] sm:rounded-[3.5rem] border border-red-500/10 overflow-hidden">
                             {/* Villain Image */}
                             <div className="relative aspect-[3/4] overflow-hidden group">
-                                <img
+                                <Image
                                     src="/images/scorcha_pepper.jpg"
                                     alt="Scorcha Pepper — the mischievous villain"
-                                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-1000"
+                                    fill
+                                    className="object-cover object-center group-hover:scale-105 transition-transform duration-1000"
+                                    sizes="(max-width: 640px) 100vw, 33vw"
                                 />
                                 {/* Fiery gradient overlay */}
                                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-red-900/20 pointer-events-none"></div>

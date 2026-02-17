@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Mail, Key, Sparkles, ArrowRight, Package, Globe, Bell, CheckCircle2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export const PhysicalDigitalBridge = () => {
     return (
@@ -24,10 +25,12 @@ export const PhysicalDigitalBridge = () => {
                             <div className="absolute -inset-8 bg-primary/5 rounded-[5rem] blur-3xl"></div>
 
                             <div className="relative rounded-[2.5rem] sm:rounded-[4rem] overflow-hidden shadow-premium-xl border-[8px] sm:border-[12px] border-white bg-zinc-50 aspect-[4/3]">
-                                <img
+                                <Image
                                     src="/images/letter-preview.png"
                                     alt="Legend Envelope unboxing experience"
-                                    className="w-full h-full object-cover"
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 768px) 100vw, 50vw"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-deep/20 via-transparent to-transparent"></div>
                             </div>

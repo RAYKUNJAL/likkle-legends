@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Globe, MapPin, Languages, User, ShieldCheck, Mail, Star, ChevronDown, Clock, X, Bell, Zap } from "lucide-react";
+import { ArrowRight, Sparkles, Globe, MapPin, Languages, User, ShieldCheck, Mail, Star, ChevronDown, Clock, X, Bell, Zap, Play } from "lucide-react";
+import Image from "next/image";
 
 const islands = [
     "Jamaica", "Trinidad & Tobago", "Barbados", "The Bahamas", "Guyana",
@@ -52,10 +53,21 @@ export const InteractivePassportHero = () => {
     return (
         <>
             <section className="relative min-h-[100dvh] lg:min-h-screen flex items-center overflow-hidden bg-[#FFFDF7]" id="hero">
-                {/* Background */}
-                <div className="absolute inset-0 pointer-events-none">
-                    <div className="absolute top-0 right-0 w-[1200px] h-[1200px] bg-primary/[0.04] rounded-full blur-[200px] -mr-[400px] -mt-[400px]"></div>
-                    <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-secondary/[0.04] rounded-full blur-[200px] -ml-[400px] -mb-[400px]"></div>
+                {/* Video Background / Placeholder */}
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/50 to-white/80 z-10"></div>
+                    {/* Replace with actual video component or next-video */}
+                    <div className="w-full h-full bg-zinc-100 flex items-center justify-center">
+                        <span className="text-deep/20 font-bold uppercase tracking-widest flex items-center gap-2">
+                            <Play size={16} /> Video Background Area
+                        </span>
+                    </div>
+                </div>
+
+                {/* Background Blobs */}
+                <div className="absolute inset-0 pointer-events-none z-0">
+                    <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/[0.04] rounded-full blur-[150px] -mr-[400px] -mt-[400px]"></div>
+                    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/[0.04] rounded-full blur-[150px] -ml-[300px] -mb-[300px]"></div>
                 </div>
 
                 <div className="container mx-auto px-4 sm:px-6 py-20 lg:py-0 relative z-10">
@@ -138,8 +150,8 @@ export const InteractivePassportHero = () => {
                                         { src: "/images/mango_moko.png", alt: "Mango Moko" },
                                         { src: "/images/benny-of-shadows.jpg", alt: "Benny" },
                                     ].map((char) => (
-                                        <div key={char.alt} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 sm:border-[3px] border-white overflow-hidden shadow-sm bg-zinc-100">
-                                            <img src={char.src} alt={char.alt} className="w-full h-full object-cover" />
+                                        <div key={char.alt} className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 sm:border-[3px] border-white overflow-hidden shadow-sm bg-zinc-100">
+                                            <Image src={char.src} alt={char.alt} fill className="object-cover" sizes="40px" />
                                         </div>
                                     ))}
                                 </div>
@@ -261,7 +273,7 @@ export const InteractivePassportHero = () => {
                                                         disabled={!d.available}
                                                     >
                                                         {d.label}
-                                                        {!d.available && <span className="absolute -top-1.5 -right-1.5 text-[7px] font-black uppercase bg-zinc-200 text-deep/30 px-1.5 py-0.5 rounded-full">Soon</span>}
+                                                        {/* {!d.available && <span className="absolute -top-1.5 -right-1.5 text-[7px] font-black uppercase bg-zinc-200 text-deep/30 px-1.5 py-0.5 rounded-full">Soon</span>} */}
                                                     </button>
                                                 ))}
                                             </div>

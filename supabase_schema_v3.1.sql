@@ -171,6 +171,52 @@ CREATE TABLE IF NOT EXISTS data_retention_policies (
     last_enforced_at TIMESTAMPTZ
 );
 
+-- Additional Support Tables (Required for Seeds)
+CREATE TABLE IF NOT EXISTS interests_catalog (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    slug TEXT UNIQUE NOT NULL,
+    label TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id),
+    event_type TEXT NOT NULL,
+    payload JSONB,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sender_id UUID REFERENCES users(id),
+    recipient_id UUID REFERENCES users(id),
+    content TEXT,
+    channel message_channel,
+    status message_status DEFAULT 'queued',
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS age_verification_attempts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id),
+    method consent_method,
+    status verification_status,
+    evidence_path TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS ai_usage (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id),
+    child_id UUID REFERENCES children(id),
+    job_type job_type,
+    tokens_input INT,
+    tokens_output INT,
+    provider TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- 4. RPCs & Logic
 
 -- Consent Verification RPC

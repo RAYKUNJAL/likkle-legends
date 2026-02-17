@@ -39,7 +39,7 @@
 
   --glass: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
-  --text-muted: rgba(2, 48, 71, 0.6);
+  --text-muted: rgba(2, 48, 71, 0.8);
   --shadow-premium: 0 30px 60px -15px rgba(2, 48, 71, 0.1);
   --shadow-premium-xl: 0 50px 100px -20px rgba(2, 48, 71, 0.15);
   --shadow-gold: 0 20px 40px -10px rgba(255, 187, 0, 0.3);
