@@ -2,6 +2,19 @@
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SafetySetting } from "@google/generative-ai";
 import { StoryBook, ReadingLevel, LanguageVariant } from "@/types/story";
 
+export interface StoryInputs {
+    tradition?: string;
+    level?: string;
+    island?: string;
+    childName?: string;
+    primaryIsland?: string;
+    guide?: string;
+    location?: string;
+    mission?: string;
+    storyLength?: string;
+}
+
+
 // Lazy init
 const getGenAI = () => {
     const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
@@ -49,12 +62,7 @@ Create a story that follows the provided "StoryBook" JSON schema exactly.
 - NO scary elements. Proper COPPA compliance. Safe, joyful adventures.
 `;
 
-export async function generateStory(selection: {
-    tradition: string;
-    level: string;
-    island: string;
-    childName?: string;
-}): Promise<StoryBook | null> {
+export async function generateStory(selection: StoryInputs): Promise<StoryBook | null> {
     const genAI = getGenAI();
     if (!genAI) return null;
 
@@ -67,9 +75,9 @@ export async function generateStory(selection: {
 
         const userPrompt = `
             Create a StoryBook for ${selection.childName || "a Little Legend"}.
-            - Folklore Tradition: ${selection.tradition}
-            - Reading Level: ${selection.level}
-            - Island: ${selection.island}
+            - Folklore Tradition: ${selection.tradition || selection.mission || "Island Adventure"}
+            - Reading Level: ${selection.level || (selection.storyLength === 'short' ? 'emergent' : 'early')}
+            - Island: ${selection.island || selection.primaryIsland || "Trinidad"}
             
             Ensure the literacy focus matches the level:
             - emergent: Phonics s,a,t,p,i,n
@@ -90,6 +98,9 @@ export async function generateStory(selection: {
         return null;
     }
 }
+
+export const generateCulturalStory = generateStory;
+
 
 /**
  * 🖼️ Generate visuals for each page of the story

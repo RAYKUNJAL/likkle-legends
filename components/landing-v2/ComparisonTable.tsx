@@ -1,16 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, X, Sparkles, Star, Zap } from "lucide-react";
-import Link from "next/link";
+import { Check, ArrowRight, ShieldCheck, Zap, Sparkles, CreditCard } from "lucide-react";
 
 interface Tier {
     name: string;
     price: string;
-    billing: string;
+    billing?: string;
     features: string[];
     cta: string;
-    highlight: boolean;
+    highlight?: boolean;
     ribbon?: string;
 }
 
@@ -20,101 +19,114 @@ interface ComparisonTableProps {
 
 export const ComparisonTable = ({ tiers }: ComparisonTableProps) => {
     return (
-        <section id="pricing" className="py-32 bg-[#F8F9FA] relative">
+        <section id="pricing" className="py-64 bg-zinc-50 relative overflow-hidden">
             {/* Background pattern */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#FF6B00 2px, transparent 2px)', backgroundSize: '40px 40px' }}></div>
+            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#023047 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
 
             <div className="container mx-auto px-6 relative z-10">
-                <div className="text-center max-w-3xl mx-auto mb-20 space-y-6">
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        className="text-4xl md:text-7xl font-black text-deep tracking-tighter leading-tight"
+                <div className="text-center max-w-4xl mx-auto mb-32 space-y-8">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        className="inline-flex items-center gap-4 px-6 py-2 bg-primary/10 text-primary rounded-full text-xs font-black uppercase tracking-[0.4em]"
                     >
-                        Pick Your Path <br /> to the <span className="text-primary tracking-normal italic">Islands</span>.
+                        <CreditCard size={16} /> Heritage Pricing
+                    </motion.div>
+                    <motion.h2
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        className="text-6xl md:text-[6.5rem] font-black text-deep tracking-tighter leading-[0.9]"
+                    >
+                        Start Your Child's <br /><span className="text-gradient italic">Adventure</span> today.
                     </motion.h2>
-                    <p className="text-xl text-deep/50 font-medium">Whether digital or physical, your legend starts here.</p>
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        className="text-2xl text-deep/40 font-medium"
+                    >
+                        Choose the path that fits your family's pace.
+                    </motion.p>
                 </div>
 
-                <div className="grid lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                <div className="grid lg:grid-cols-3 gap-12 lg:gap-16 max-w-7xl mx-auto items-center">
                     {tiers.map((tier, i) => (
                         <motion.div
                             key={tier.name}
-                            initial={{ opacity: 0, y: 30 }}
+                            initial={{ opacity: 0, y: 40 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                            className={`relative flex flex-col p-10 lg:p-12 rounded-[3.5rem] transition-all duration-500 overflow-hidden ${tier.highlight
-                                    ? 'bg-deep text-white shadow-3xl scale-105 z-20 border-4 border-primary'
-                                    : 'bg-white text-deep shadow-xl border border-zinc-100 hover:shadow-2xl z-10'
-                                }`}
+                            viewport={{ once: true }}
+                            transition={{ delay: i * 0.2, duration: 0.8 }}
+                            className={`relative group ${tier.highlight ? 'z-20 scale-105 lg:scale-110' : 'z-10 bg-white shadow-premium'}`}
                         >
+                            {/* Featured Ribbon / Highlight Effects */}
                             {tier.highlight && (
-                                <div className="absolute top-8 right-[-50px] rotate-[35deg] bg-primary text-white py-2 px-16 font-black text-[10px] uppercase tracking-[0.2em] shadow-lg animate-pulse">
-                                    {tier.ribbon}
-                                </div>
-                            )}
-
-                            <div className="mb-10">
-                                <h3 className={`text-xl font-black uppercase tracking-[0.2em] mb-4 ${tier.highlight ? 'text-primary' : 'text-primary/60'}`}>
-                                    {tier.name}
-                                </h3>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-6xl font-black tracking-tighter">{tier.price}</span>
-                                    <span className={`text-sm font-bold uppercase tracking-widest ${tier.highlight ? 'text-white/40' : 'text-deep/30'}`}>
-                                        {tier.billing}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className="flex-1 space-y-6 mb-12">
-                                <p className={`text-xs font-black uppercase tracking-[0.2em] pt-4 border-t ${tier.highlight ? 'border-white/10 text-white/40' : 'border-zinc-100 text-deep/30'}`}>
-                                    What's Included
-                                </p>
-                                {tier.features.map((feature, idx) => (
-                                    <div key={idx} className="flex items-center gap-4">
-                                        <div className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${tier.highlight ? 'bg-primary/20 text-primary' : 'bg-secondary/10 text-secondary'}`}>
-                                            <Check size={14} strokeWidth={4} />
-                                        </div>
-                                        <span className={`font-bold transition-all ${tier.highlight ? 'text-white/80' : 'text-deep/70'}`}>
-                                            {feature}
-                                        </span>
+                                <>
+                                    <div className="absolute -inset-1 bg-primary-gradient rounded-[4.2rem] blur-xl opacity-20 group-hover:opacity-40 transition-opacity animate-neural-halo"></div>
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-8 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-full shadow-xl shadow-primary/30 flex items-center gap-2 border-4 border-white">
+                                        <Sparkles size={14} /> {tier.ribbon || "Most Popular Choice"}
                                     </div>
-                                ))}
-                            </div>
-
-                            <Link
-                                href="#"
-                                className={`group flex items-center justify-center gap-3 py-6 px-8 rounded-2xl font-black text-lg transition-all active:scale-95 ${tier.highlight
-                                        ? 'bg-primary text-white shadow-xl shadow-primary/20 hover:scale-105'
-                                        : 'bg-zinc-900 text-white hover:bg-deep'
-                                    }`}
-                            >
-                                {tier.cta}
-                                {tier.highlight ? <Star size={20} className="fill-white" /> : <Zap size={20} className="fill-white" />}
-                            </Link>
-
-                            {tier.highlight && (
-                                <p className="mt-4 text-center text-[10px] font-bold text-white/30 uppercase tracking-[0.3em]">
-                                    One-time payment • Instant Access
-                                </p>
+                                </>
                             )}
+
+                            <div className={`p-16 rounded-[4.1rem] border h-full transition-all duration-700 flex flex-col ${tier.highlight
+                                    ? 'bg-white border-primary shadow-premium-xl'
+                                    : 'bg-white border-zinc-100 hover:border-primary/20'
+                                }`}>
+                                <div className="mb-12">
+                                    <h3 className="text-2xl font-black text-deep uppercase tracking-[0.2em] mb-4 opacity-40">{tier.name}</h3>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-7xl font-black text-deep tracking-tighter">{tier.price}</span>
+                                        <span className="text-lg font-bold text-deep/30">{tier.billing}</span>
+                                    </div>
+                                </div>
+
+                                <ul className="space-y-6 mb-16 flex-grow">
+                                    {tier.features.map((feature, idx) => (
+                                        <li key={idx} className="flex items-start gap-4 group/item">
+                                            <div className={`mt-1 w-6 h-6 rounded-lg flex items-center justify-center transition-all ${tier.highlight ? 'bg-primary text-white' : 'bg-zinc-100 text-deep/30 group-hover/item:bg-primary/10 group-hover/item:text-primary'
+                                                }`}>
+                                                <Check size={14} strokeWidth={3} />
+                                            </div>
+                                            <span className="text-lg font-bold text-deep/70">{feature}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <button className={`w-full py-8 rounded-[2.5rem] font-black text-xl uppercase tracking-widest transition-all overflow-hidden relative group/btn ${tier.highlight
+                                        ? 'bg-primary text-white shadow-2xl shadow-primary/40 hover:scale-105 active:scale-95'
+                                        : 'bg-zinc-100 text-deep/40 hover:bg-deep hover:text-white'
+                                    }`}>
+                                    <span className="relative z-10">{tier.cta}</span>
+                                    {tier.highlight && (
+                                        <div className="absolute inset-0 bg-primary-gradient opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
+                                    )}
+                                </button>
+
+                                <p className="mt-8 text-center text-[10px] font-black uppercase tracking-[0.2em] text-deep/20">Secure Checkout Guarantee</p>
+                            </div>
                         </motion.div>
                     ))}
                 </div>
 
-                {/* Money Back Guarantee */}
-                <div className="mt-20 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 opacity-40 grayscale group hover:grayscale-0 hover:opacity-100 transition-all duration-700">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full border-2 border-deep flex items-center justify-center font-black">30</div>
-                        <p className="text-xs font-black uppercase tracking-widest leading-tight">Day Mailbox <br /> Satisfaction</p>
+                {/* Trust Signals Footer */}
+                <div className="mt-40 flex flex-col md:flex-row items-center justify-center gap-16 border-t border-zinc-200 pt-32">
+                    <div className="flex items-center gap-6">
+                        <div className="w-20 h-20 bg-white shadow-premium rounded-[2rem] flex items-center justify-center text-primary border border-zinc-50">
+                            <ShieldCheck size={40} />
+                        </div>
+                        <div>
+                            <p className="text-xl font-black text-deep italic leading-none">Safe Storage</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-deep/30 mt-2">Closed-loop AI Systems</p>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <Star className="w-8 h-8 text-primary fill-primary" />
-                        <p className="text-xs font-black uppercase tracking-widest leading-tight">Trustpilot <br /> Excellent</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <Zap className="w-8 h-8 text-secondary fill-secondary" />
-                        <p className="text-xs font-black uppercase tracking-widest leading-tight">Secure <br /> Checkout</p>
+                    <div className="flex items-center gap-6">
+                        <div className="w-20 h-20 bg-white shadow-premium rounded-[2rem] flex items-center justify-center text-success border border-zinc-50">
+                            <Zap size={40} />
+                        </div>
+                        <div>
+                            <p className="text-xl font-black text-deep italic leading-none">Instant Access</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-deep/30 mt-2">Unlocks Portal upon Purchase</p>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -10,7 +10,9 @@ import { createStoryAction } from '@/app/actions/story';
 import { siteContent } from '@/lib/content';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface GeneratedStory {
+import { StoryBook } from '@/types/story';
+
+interface GeneratedStory extends Partial<StoryBook> {
     title: string;
     content: string;
     glossary?: { word: string; meaning: string }[];
@@ -93,9 +95,16 @@ export default function StoryGenerator() {
         setIsSaved(false);
 
         try {
-            const res = await createStoryAction(formData);
+            const res = await createStoryAction(formData as any);
             if (res.success && res.story) {
-                setResult(res.story);
+                // Adapt StoryBook to GeneratedStory if necessary
+                const story = res.story as any;
+                const adaptedStory: GeneratedStory = {
+                    ...story,
+                    title: story.book_meta?.title || story.title || "Untitled Story",
+                    content: story.structure?.pages?.map((p: any) => p.narrative_text).join('\n\n') || story.content || "",
+                };
+                setResult(adaptedStory);
             } else {
                 setError(form.states.error_message || "Oye! The magic is sleeping.");
             }
@@ -438,8 +447,8 @@ export default function StoryGenerator() {
                                     <button
                                         onClick={() => setFormData({ ...formData, storyLength: 'short' })}
                                         className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${formData.storyLength === 'short'
-                                                ? 'bg-white text-primary shadow-sm'
-                                                : 'text-deep/40 hover:text-deep/60'
+                                            ? 'bg-white text-primary shadow-sm'
+                                            : 'text-deep/40 hover:text-deep/60'
                                             }`}
                                     >
                                         <Clock size={16} />
@@ -448,8 +457,8 @@ export default function StoryGenerator() {
                                     <button
                                         onClick={() => setFormData({ ...formData, storyLength: 'long' })}
                                         className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${formData.storyLength === 'long'
-                                                ? 'bg-white text-primary shadow-sm'
-                                                : 'text-deep/40 hover:text-deep/60'
+                                            ? 'bg-white text-primary shadow-sm'
+                                            : 'text-deep/40 hover:text-deep/60'
                                             }`}
                                     >
                                         <BookMarked size={16} />
@@ -645,8 +654,8 @@ export default function StoryGenerator() {
                                                         onClick={prevPage}
                                                         disabled={currentPage === 0}
                                                         className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${currentPage === 0
-                                                                ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                                                                : 'bg-white/10 text-white hover:bg-white/20'
+                                                            ? 'bg-white/5 text-white/20 cursor-not-allowed'
+                                                            : 'bg-white/10 text-white hover:bg-white/20'
                                                             }`}
                                                         title="Previous Page"
                                                         aria-label="Previous Page"
@@ -659,8 +668,8 @@ export default function StoryGenerator() {
                                                         onClick={handlePlayAudio}
                                                         disabled={audioState.loading}
                                                         className={`w-20 h-20 rounded-full flex items-center justify-center transition-all shadow-xl ${audioState.playing
-                                                                ? 'bg-red-500 text-white shadow-red-500/30'
-                                                                : 'bg-primary text-white shadow-primary/30'
+                                                            ? 'bg-red-500 text-white shadow-red-500/30'
+                                                            : 'bg-primary text-white shadow-primary/30'
                                                             } hover:scale-105 active:scale-95`}
                                                         title={audioState.playing ? "Pause" : "Play with Tanty Spice's Voice"}
                                                         aria-label={audioState.playing ? "Pause" : "Play"}
@@ -679,8 +688,8 @@ export default function StoryGenerator() {
                                                         onClick={nextPage}
                                                         disabled={currentPage === pages.length - 1}
                                                         className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${currentPage === pages.length - 1
-                                                                ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                                                                : 'bg-white/10 text-white hover:bg-white/20'
+                                                            ? 'bg-white/5 text-white/20 cursor-not-allowed'
+                                                            : 'bg-white/10 text-white hover:bg-white/20'
                                                             }`}
                                                         title="Next Page"
                                                         aria-label="Next Page"
@@ -699,10 +708,10 @@ export default function StoryGenerator() {
                                                                 setCurrentPage(i);
                                                             }}
                                                             className={`h-2 rounded-full transition-all ${i === currentPage
-                                                                    ? 'w-8 bg-primary'
-                                                                    : i < currentPage
-                                                                        ? 'w-2 bg-primary/40'
-                                                                        : 'w-2 bg-white/20'
+                                                                ? 'w-8 bg-primary'
+                                                                : i < currentPage
+                                                                    ? 'w-2 bg-primary/40'
+                                                                    : 'w-2 bg-white/20'
                                                                 }`}
                                                             title={`Go to page ${i + 1}`}
                                                             aria-label={`Go to page ${i + 1}`}
@@ -748,8 +757,8 @@ export default function StoryGenerator() {
                                                     onClick={handleSaveStory}
                                                     disabled={isSaving || isSaved}
                                                     className={`flex-1 py-3 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${isSaved
-                                                            ? 'bg-green-500/20 text-green-400'
-                                                            : 'bg-white/10 text-white hover:bg-white/20'
+                                                        ? 'bg-green-500/20 text-green-400'
+                                                        : 'bg-white/10 text-white hover:bg-white/20'
                                                         }`}
                                                 >
                                                     {isSaving ? (

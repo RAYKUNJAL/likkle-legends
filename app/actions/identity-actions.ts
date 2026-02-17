@@ -167,3 +167,31 @@ export async function verifyWhatsAppOtpAction(
         return { success: false, error: err.message };
     }
 }
+
+/**
+ * Adds a user to the waitlist.
+ */
+export async function joinWaitlistAction(email: string, metadata?: any) {
+    try {
+        const { error } = await supabaseAdmin
+            .from('waitlist')
+            .insert({
+                email,
+                metadata: metadata || {},
+                created_at: new Date().toISOString()
+            });
+
+        if (error) {
+            // Handle unique constraint if they are already on it
+            if (error.code === '23505') {
+                return { success: true, alreadyExists: true };
+            }
+            throw error;
+        }
+
+        return { success: true };
+    } catch (err: any) {
+        console.error("[Waitlist] joinWaitlistAction failed:", err);
+        return { success: false, error: err.message };
+    }
+}

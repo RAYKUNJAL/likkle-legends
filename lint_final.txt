@@ -1,8 +1,0 @@
-
-./components/CheckoutFlow.tsx
-131:5  Error: Definition for rule '@typescript-eslint/no-explicit-any' was not found.  @typescript-eslint/no-explicit-any
-
-./lib/rotiConfig.ts
-179:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export
-
-info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules

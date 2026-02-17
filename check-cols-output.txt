@@ -1,5 +1,0 @@
-[dotenv@17.2.4] injecting env (7) from .env -- tip: ΓÜÖ∩╕Å  enable debug logging with { debug: true }
-≡ƒôè Column Check for "contests":
- - id: uuid
- - name: text
- - status: text

@@ -32,6 +32,9 @@ interface Child {
   age_verified: boolean;
   requires_parental_consent: boolean;
   consent_last_verified?: string;
+  parent_id: string;
+  primary_user_id?: string;
+  last_activity_date?: string;
 }
 
 interface Profile {
@@ -383,19 +386,15 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       setIsLoading(true);
 
       try {
-        // Increased timeout to 10s for slow island connections
-        const timeoutPromise = new Promise(resolve => setTimeout(resolve, 10000));
+        // Initial session check is fast
+        const { data: { session } } = await supabase.auth.getSession();
 
-        // Wait for profile and initial children check
-        await Promise.race([
-          refreshUser(),
-          timeoutPromise
-        ]);
-
-        if (mounted) {
-          // If we have a user, try to load children before showing the UI
-          // This prevents the "no kids" redirect loop
-          await refreshChildren();
+        if (session?.user && mounted) {
+          // Parallelize profile and children fetch for speed
+          await Promise.allSettled([
+            refreshUser(),
+            refreshChildren()
+          ]);
         }
       } catch (err) {
         console.error("Auth initialization failed:", err);

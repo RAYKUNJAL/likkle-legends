@@ -262,6 +262,7 @@ export const TANTY_ISLAND_ENGINE = {
         dialect_base: "Pan-Caribbean Rhythmic Blend"
     },
     vocal_blueprint: {
+        provider: "Gemini", // Set to "ElevenLabs" if using custom voice
         elevenlabs_voice_name: "Tanty Spice (Custom)",
         gemini_voice_name: "Kore", // Best "Warm Female" prebuilt for Gemini Live
         speaking_rate: 0.88,

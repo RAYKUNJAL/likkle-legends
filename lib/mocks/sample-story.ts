@@ -2,6 +2,7 @@
 import { StoryBook } from '@/types/story';
 
 export const SAMPLE_ANANSI_STORY: StoryBook = {
+    id: "anansi-yam-hill-001",
     book_meta: {
         id: "anansi-yam-hill-001",
         title: "Anansi and the Big Yam",

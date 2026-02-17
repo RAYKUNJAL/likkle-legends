@@ -60,6 +60,15 @@ export const CHARACTERS: AdminCharacter[] = [
         traits: ["Musician", "Rhythmic", "Creative"]
     },
     {
+        name: "Scorcha Pepper",
+        role: "Spicy Adventurer",
+        tagline: "“Bring de heat, little legend!”",
+        description: "The brave scout of the islands—Scorcha helps kids face challenges with confidence and a little extra energy.",
+        color: "bg-red-50",
+        image: "/images/scorcha_pepper.jpg",
+        traits: ["Brave", "Scout", "Energetic"]
+    },
+    {
         name: "Locked Legend",
         role: "Mystery Hero",
         tagline: "“Coming soon to de village...”",
@@ -101,6 +110,13 @@ export const RADIO_TRACKS: Track[] = [
         artist: 'Mango Moko',
         url: 'https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-loop-1196.mp3',
         channel: 'calm'
+    },
+    {
+        id: 'track-v1',
+        title: 'Island Tour',
+        artist: 'Likkle Legends',
+        url: 'https://assets.mixkit.co/video/preview/mixkit-beautiful-aerial-shot-of-a-tropical-beach-and-sea-1101-large.mp4',
+        channel: 'culture'
     }
 ];
 

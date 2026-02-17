@@ -5,16 +5,27 @@
 :root {
   --background: #FFFDF7;
   --foreground: #023047;
-  /* v3 Design System Tokens */
+  /* v3 Design System Tokens - World Class CRO Edition */
   --primary: #FF6B00;
-  /* Rebuilt V2 Primary */
+  --primary-dark: #E65A00;
+  --primary-light: #FF8F40;
   --secondary: #2D5A27;
-  /* Rebuilt V2 Secondary */
+  --secondary-dark: #1F421B;
   --accent: #FF3FB4;
+  --accent-light: #FF6BC5;
   --success: #00B48B;
   --warning: #FFBB00;
   --error: #FF4747;
   --deep: #023047;
+  --deep-light: #0D4763;
+
+  --background: #FFFDF7;
+  --foreground: #023047;
+
+  --primary-gradient: linear-gradient(135deg, #FF6B00 0%, #FF3FB4 100%);
+  --secondary-gradient: linear-gradient(135deg, #2D5A27 0%, #00B48B 100%);
+  --deep-gradient: linear-gradient(135deg, #023047 0%, #0D4763 100%);
+  --gold-gradient: linear-gradient(135deg, #FFBB00 0%, #FFE5A3 100%);
 
   --card: #FFFFFF;
   --card-foreground: #023047;
@@ -24,10 +35,14 @@
   --input: #E2E8F0;
   --ring: #FF6B00;
   --radius: 2rem;
-  --glass: rgba(255, 255, 255, 0.03);
+  --radius-xl: 4rem;
+
+  --glass: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   --text-muted: rgba(2, 48, 71, 0.6);
-  --shadow-premium: 0 30px 60px -15px rgba(2, 48, 71, 0.15);
+  --shadow-premium: 0 30px 60px -15px rgba(2, 48, 71, 0.1);
+  --shadow-premium-xl: 0 50px 100px -20px rgba(2, 48, 71, 0.15);
+  --shadow-gold: 0 20px 40px -10px rgba(255, 187, 0, 0.3);
 }
 
 @layer base {
@@ -169,6 +184,24 @@
   border: 4px solid var(--background);
 }
 
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 107, 0, 0.1);
+  border-radius: 20px;
+  border: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 107, 0, 0.2);
+}
+
 @keyframes neural-halo {
 
   0%,
@@ -207,6 +240,66 @@
 
 .animate-neural-aura {
   animation: neural-aura 3s ease-out infinite;
+}
+
+.bg-primary-gradient {
+  background: var(--primary-gradient);
+}
+
+.bg-secondary-gradient {
+  background: var(--secondary-gradient);
+}
+
+.bg-deep-gradient {
+  background: var(--deep-gradient);
+}
+
+.bg-gold-gradient {
+  background: var(--gold-gradient);
+}
+
+.text-gradient {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.premium-card {
+  background: white;
+  border-radius: 4rem;
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgb(250 250 249);
+  transition: all 0.7s ease;
+}
+
+.premium-card:hover {
+  box-shadow: var(--shadow-premium-xl);
+  transform: translateY(-0.5rem);
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes float-slow {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+
+  50% {
+    transform: translateY(-30px) rotate(2deg);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
 }
 
 .glassmorphism-tanty {

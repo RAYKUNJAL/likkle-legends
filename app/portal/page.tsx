@@ -66,12 +66,18 @@ type PortalSection = 'home' | 'stories' | 'songs' | 'missions' | 'games' | 'less
 
 export default function ChildPortalPage() {
     const router = useRouter();
-    const { user, activeChild, canAccess, isSubscribed, isLoading: userLoading, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge } = useUser();
+    const { user, activeChild, canAccess, isSubscribed, isLoading: userLoading, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge, verifyAge } = useUser();
     const [songs, setSongs] = useState<Song[]>([]);
     const [stories, setStories] = useState<Storybook[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
     const [videos, setVideos] = useState<Video[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [loadingStates, setLoadingStates] = useState({
+        songs: true,
+        stories: true,
+        missions: true,
+        videos: true
+    });
     const [activeSection, setActiveSection] = useState<PortalSection>('home');
     const [viewMode, setViewMode] = useState<'map' | 'grid'>('map');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -83,23 +89,55 @@ export default function ChildPortalPage() {
     const [pendingRoute, setPendingRoute] = useState<string | null>(null);
 
     const loadPortalData = useCallback(async () => {
+        // Individual fetchers to avoid Promise.all bottleneck
+        const fetchSongs = async () => {
+            try {
+                const data = await getSongs();
+                setSongs(data as Song[]);
+            } finally {
+                setLoadingStates(prev => ({ ...prev, songs: false }));
+            }
+        };
+
+        const fetchStories = async () => {
+            try {
+                const data = await getStorybooks();
+                setStories(data as Storybook[]);
+            } finally {
+                setLoadingStates(prev => ({ ...prev, stories: false }));
+            }
+        };
+
+        const fetchMissions = async () => {
+            try {
+                const data = await getMissions(activeChild?.age_track);
+                setMissions(data as Mission[]);
+            } finally {
+                setLoadingStates(prev => ({ ...prev, missions: false }));
+            }
+        };
+
+        const fetchVideos = async () => {
+            try {
+                const data = await getVideos();
+                setVideos(data as Video[]);
+            } finally {
+                setLoadingStates(prev => ({ ...prev, videos: false }));
+            }
+        };
+
         setIsLoading(true);
-        try {
-            const [songsData, storiesData, missionsData, videosData] = await Promise.all([
-                getSongs(),
-                getStorybooks(),
-                getMissions(activeChild?.age_track),
-                getVideos(),
-            ]);
-            setSongs(songsData as Song[]);
-            setStories(storiesData as Storybook[]);
-            setMissions(missionsData as Mission[]);
-            setVideos(videosData as Video[]);
-        } catch (error) {
-            console.error('Failed to load portal:', error);
-        } finally {
+        setLoadingStates({ songs: true, stories: true, missions: true, videos: true });
+
+        // Fire all but don't await all together
+        Promise.allSettled([
+            fetchSongs(),
+            fetchStories(),
+            fetchMissions(),
+            fetchVideos()
+        ]).finally(() => {
             setIsLoading(false);
-        }
+        });
     }, [activeChild?.age_track]);
 
     // Redirect to login if not authenticated
@@ -404,7 +442,9 @@ export default function ChildPortalPage() {
                                         </div>
                                     </div>
 
-                                    {stories.length === 0 ? (
+                                    {loadingStates.stories ? (
+                                        <GridSkeleton count={4} type="card" />
+                                    ) : stories.length === 0 ? (
                                         <div className="col-span-full">
                                             <EmptyState
                                                 icon="📖"
@@ -467,7 +507,9 @@ export default function ChildPortalPage() {
                                         </div>
                                     </div>
 
-                                    {videos.length === 0 ? (
+                                    {loadingStates.videos ? (
+                                        <GridSkeleton count={3} type="card" />
+                                    ) : videos.length === 0 ? (
                                         <div className="col-span-full">
                                             <EmptyState
                                                 icon="🎥"
@@ -541,7 +583,9 @@ export default function ChildPortalPage() {
                                         </div>
                                     </div>
 
-                                    {songs.length === 0 ? (
+                                    {loadingStates.songs ? (
+                                        <GridSkeleton count={4} type="circle" />
+                                    ) : songs.length === 0 ? (
                                         <div className="col-span-full">
                                             <EmptyState
                                                 icon="🎵"
@@ -684,6 +728,25 @@ export default function ChildPortalPage() {
                     }
                 }}
             />
+        </div>
+    );
+}
+
+// Skeleton component for grid items
+function GridSkeleton({ count = 4, type = 'card' }: { count?: number, type?: 'card' | 'circle' }) {
+    return (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
+            {Array.from({ length: count }).map((_, i) => (
+                <div key={i} className="bg-white rounded-[2rem] sm:rounded-[3rem] p-4 sm:p-6 shadow-md animate-pulse border-2 border-transparent">
+                    {type === 'card' ? (
+                        <div className="aspect-[3/4] bg-gray-100 rounded-[1.5rem] sm:rounded-[2.5rem] mb-4"></div>
+                    ) : (
+                        <div className="aspect-square bg-gray-100 rounded-full mb-4 sm:mb-6"></div>
+                    )}
+                    <div className="h-6 bg-gray-100 rounded-full w-3/4 mx-auto mb-2"></div>
+                    <div className="h-4 bg-gray-50 rounded-full w-1/2 mx-auto"></div>
+                </div>
+            ))}
         </div>
     );
 }

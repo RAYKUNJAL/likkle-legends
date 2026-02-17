@@ -16,11 +16,18 @@ const config: Config = {
                 accent: "var(--accent)",
                 deep: "var(--deep)",
                 border: "var(--border)",
+                success: "var(--success)",
+            },
+            boxShadow: {
+                'premium': '0 30px 60px -15px rgba(2, 48, 71, 0.1)',
+                'premium-xl': '0 50px 100px -20px rgba(2, 48, 71, 0.15)',
+                'gold': '0 20px 40px -10px rgba(255, 187, 0, 0.3)',
             },
             fontFamily: {
                 sans: ["var(--font-quicksand)", "system-ui", "sans-serif"],
                 mono: ["var(--font-geist-mono)"],
                 heading: ["var(--font-fredoka)", "sans-serif"],
+                montserrat: ["var(--font-montserrat)", "system-ui", "sans-serif"],
             },
             animation: {
                 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',

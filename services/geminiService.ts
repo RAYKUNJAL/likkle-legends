@@ -201,7 +201,7 @@ export async function generateBirthdaySong(childName: string, guide: string = "T
             config: {
                 responseModalities: [Modality.AUDIO],
                 speechConfig: {
-                    voiceConfig: { prebuiltVoiceConfig: { voiceName: TANTY_ISLAND_ENGINE.vocal_blueprint.voice_name } },
+                    voiceConfig: { prebuiltVoiceConfig: { voiceName: TANTY_ISLAND_ENGINE.vocal_blueprint.gemini_voice_name } },
                 }
             }
         });
