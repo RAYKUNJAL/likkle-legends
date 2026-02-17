@@ -59,7 +59,7 @@ export const VillainSection = () => {
                                     </div>
                                 </div>
                                 <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tighter">Scorcha Pepper</h3>
-                                <p className="text-sm sm:text-base text-white/40 font-medium leading-relaxed">
+                                <p className="text-lg sm:text-base text-white/90 font-medium leading-relaxed">
                                     The mischievous pepper villain who turns up the heat across the islands. Only your child&apos;s knowledge can cool him down!
                                 </p>
                             </div>
@@ -82,7 +82,7 @@ export const VillainSection = () => {
                             Defeat<br /><span className="text-red-400 italic">Scorcha Pepper!</span>
                         </h2>
 
-                        <p className="text-base sm:text-xl text-white/40 leading-relaxed font-medium max-w-lg">
+                        <p className="text-lg sm:text-xl text-white/80 leading-relaxed font-medium max-w-lg">
                             Scorcha is turning up the heat! Your child uses their reading and math skills to &apos;cool him down&apos; and win digital badges, unlocking new islands and adventures.
                         </p>
 
@@ -106,8 +106,8 @@ export const VillainSection = () => {
                                         <item.icon size={22} className="text-red-400" />
                                     </div>
                                     <div>
-                                        <p className="font-black text-white text-sm tracking-tight">{item.label}</p>
-                                        <p className="text-[11px] text-white/30 font-medium">{item.desc}</p>
+                                        <p className="font-black text-white text-base sm:text-sm tracking-tight">{item.label}</p>
+                                        <p className="text-sm text-white/70 font-medium">{item.desc}</p>
                                     </div>
                                 </motion.div>
                             ))}

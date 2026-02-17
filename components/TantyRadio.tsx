@@ -135,9 +135,9 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false }) => {
             }
 
             const gradient = ctx.createLinearGradient(0, height, 0, 0);
-            gradient.addColorStop(0, '#00B4D8');
-            gradient.addColorStop(0.5, '#FFD60A');
-            gradient.addColorStop(1, '#FB8500');
+            gradient.addColorStop(0, '#00B48B'); // Teal
+            gradient.addColorStop(0.5, '#FFBB00'); // Gold
+            gradient.addColorStop(1, '#FF6B00'); // Orange
 
             ctx.fillStyle = gradient;
 
@@ -315,10 +315,11 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false }) => {
                 </div>
             )}
 
-            <div className={`bg-blue-950 rounded-[3rem] md:rounded-[4rem] flex flex-col md:flex-row items-center relative overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)] ${isLite ? 'p-6 sm:p-8 gap-6' : 'p-10 md:p-16 gap-10'}`}>
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+            <div className={`bg-deep rounded-[3rem] md:rounded-[4rem] flex flex-col md:flex-row items-center relative overflow-hidden shadow-premium-xl border-4 border-white/5 ${isLite ? 'p-6 sm:p-8 gap-6' : 'p-10 md:p-16 gap-10'}`}>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 pointer-events-none"></div>
 
-                <div className={`${isLite ? 'w-full md:w-[280px]' : 'w-full md:w-1/2'} aspect-video bg-black rounded-[2rem] border-4 border-white/20 relative overflow-hidden shadow-inner group cursor-pointer active:scale-[0.98] transition-transform`}>
+                <div className={`${isLite ? 'w-full md:w-[280px]' : 'w-full md:w-1/2'} aspect-video bg-zinc-950 rounded-[2rem] border-4 border-white/10 relative overflow-hidden shadow-2xl group cursor-pointer active:scale-[0.98] transition-transform`}>
                     {isVideo ? (
                         <video
                             ref={videoRef}
@@ -344,31 +345,31 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false }) => {
 
                     {!isVideo && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center p-6 pointer-events-none">
-                            <span className={`text-6xl ${isPlaying ? 'animate-float' : ''}`} role="img" aria-hidden="true">
+                            <span className={`text-6xl ${isPlaying ? 'animate-bounce' : ''}`} role="img" aria-hidden="true">
                                 {isLite ? "📻" : RADIO_CHANNELS.find(c => c.id === activeChannel)?.icon}
                             </span>
                             {isLite && !isPlaying && (
-                                <p className="text-[8px] font-black text-white/40 uppercase tracking-[0.2em]">Sample Tanty Radio</p>
+                                <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm">Tap for Island Vibes</p>
                             )}
                         </div>
                     )}
 
                     <div className={`absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md p-4 rounded-2xl border border-white/10 transition-opacity duration-300 ${isPlaying && isVideo ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>
-                        <h3 className={`${isLite ? 'text-sm' : 'text-xl'} font-heading font-black text-yellow-400 uppercase tracking-tighter truncate`}>{currentTrack?.title || "Station Offline"}</h3>
+                        <h3 className={`${isLite ? 'text-sm' : 'text-xl'} font-quicksand font-black text-primary-light uppercase tracking-tighter truncate`}>{currentTrack?.title || "Station Offline"}</h3>
                         <p className="text-[10px] font-black text-white/60 uppercase tracking-[0.3em]">{currentTrack?.artist || (currentTrack ? "Unknown Artist" : "No Tracks Available")}</p>
                     </div>
 
                     {(isNarrating || isLoading || hasError) && (
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 text-white p-6 pointer-events-auto">
+                        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4 text-white p-6 pointer-events-auto">
                             {hasError ? (
                                 <button onClick={handleNextTrack} className="flex flex-col items-center gap-2 hover:scale-105 transition-transform">
                                     <div className="text-4xl">⚠️</div>
-                                    <p className="text-xs font-black uppercase tracking-widest text-red-400">Media Error - Tap to Skip</p>
+                                    <p className="text-xs font-black uppercase tracking-widest text-error">Media Error - Tap to Skip</p>
                                 </button>
                             ) : (
                                 <>
-                                    <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                                    <p className="text-xs font-black uppercase tracking-widest">{loadingStatus || 'Buffering...'}</p>
+                                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                                    <p className="text-xs font-black uppercase tracking-widest text-primary-light">{loadingStatus || 'Buffering...'}</p>
                                 </>
                             )}
                         </div>
@@ -377,24 +378,16 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false }) => {
 
                 <div className={`${isLite ? 'flex-grow items-start' : 'w-full md:w-1/2 items-center'} flex flex-col gap-6 relative z-10`}>
                     <div className="flex items-center gap-6">
-                        <button onClick={handlePrevTrack} disabled={!currentTrack} className="text-white text-xl opacity-60 hover:opacity-100 transition-opacity disabled:opacity-20" aria-label="Previous Track">⏮️</button>
+                        <button onClick={handlePrevTrack} disabled={!currentTrack} className="text-white/60 text-xl hover:text-white transition-colors disabled:opacity-20" aria-label="Previous Track">⏮️</button>
                         <button
                             onClick={togglePlay}
                             disabled={isLoading || !currentTrack}
-                            className={`${isLite ? 'w-16 h-16 text-2xl' : 'w-24 h-24 text-4xl'} bg-yellow-400 text-blue-950 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(255,193,7,0.4)] hover:scale-110 active:scale-90 transition-all border-b-8 border-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed`}
+                            className={`${isLite ? 'w-16 h-16 text-2xl' : 'w-24 h-24 text-4xl'} bg-gradient-to-br from-primary to-primary-dark text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-110 active:scale-90 transition-all border-4 border-white/10 disabled:opacity-50 disabled:cursor-not-allowed`}
                             aria-label={isPlaying ? "Pause" : "Play"}
                         >
                             {isPlaying ? '⏸️' : '▶️'}
                         </button>
-                        <button onClick={handleNextTrack} disabled={!currentTrack} className="text-white text-xl opacity-60 hover:opacity-100 transition-opacity disabled:opacity-20" aria-label="Next Track">⏭️</button>
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1" aria-live="polite">
-                            {isPlaying ? (isVideo ? "Playing Video" : "Live Audio") : hasError ? "Try another track" : !currentTrack ? "No Signal (Empty)" : "Signal Standby..."}
-                        </p>
-                        {isLite && (
-                            <p className="text-[8px] font-medium text-white/30 uppercase tracking-[0.2em]">Sample de island rhythms</p>
-                        )}
+                        <button onClick={handleNextTrack} disabled={!currentTrack} className="text-white/60 text-xl hover:text-white transition-colors disabled:opacity-20" aria-label="Next Track">⏭️</button>
                     </div>
                 </div>
             </div>

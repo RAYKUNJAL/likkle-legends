@@ -55,7 +55,7 @@ export const InteractivePassportHero = () => {
             <section className="relative min-h-[100dvh] lg:min-h-screen flex items-center overflow-hidden bg-[#FFFDF7]" id="hero">
                 {/* Video Background / Placeholder */}
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/50 to-white/80 z-10"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-white/10 to-white/40 z-10"></div>
                     {/* Replace with actual video component or next-video */}
                     <div className="w-full h-full bg-zinc-100 flex items-center justify-center">
                         <span className="text-deep/20 font-bold uppercase tracking-widest flex items-center gap-2">

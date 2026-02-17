@@ -1,0 +1,25 @@
+[dotenv@17.2.4] injecting env (18) from .env.local -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }
+[dotenv@17.2.4] injecting env (7) from .env -- tip: ≡ƒöÉ prevent building .env in docker: https://dotenvx.com/prebuild
+Γ£à Environment variables loaded successfully
+=== STEP 1: Env Check ===
+GEMINI_API_KEY: SET (AIzaSyATS8...)
+ELEVENLABS_API_KEY: SET
+ELEVENLABS_TANTY_VOICE_ID: JfiM1myzVx7xU2MZOAJS
+ELEVENLABS_ROTI_VOICE_ID: eppqEXVumQ3CfdndcIBd
+SUPABASE_URL: SET
+SUPABASE_ANON_KEY: SET
+SUPABASE_SERVICE_ROLE_KEY: SET
+
+=== STEP 2: ElevenLabs TTS (Tanty Spice) ===
+[ElevenLabs] Generating for voice: JfiM1myzVx7xU2MZOAJS with Key: sk_a6...
+TANTY OK - Audio URL length: 109311
+TANTY OK - Word count: 13
+TANTY OK - First 3 words: "Come" @0.00s, "likkle" @0.50s, "one," @1.20s
+
+=== STEP 3: ElevenLabs TTS (R.O.T.I.) ===
+[ElevenLabs] Generating for voice: eppqEXVumQ3CfdndcIBd with Key: sk_a6...
+ROTI OK - Audio URL length: 103735
+ROTI OK - Word count: 11
+ROTI OK - First 3 words: "Did" @0.00s, "you" @0.40s, "know?" @0.80s
+
+=== VERIFICATION COMPLETE ===

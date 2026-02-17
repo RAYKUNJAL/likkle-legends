@@ -47,7 +47,7 @@
 
 @layer base {
   body {
-    @apply bg-[var(--background)] text-[var(--foreground)] antialiased;
+    @apply bg-[var(--background)] text-[var(--foreground)] antialiased text-[17px] leading-relaxed;
   }
 }
 

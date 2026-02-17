@@ -1,0 +1,23 @@
+[dotenv@17.2.4] injecting env (18) from .env.local -- tip: ≡ƒæÑ sync secrets across teammates & machines: https://dotenvx.com/ops
+[dotenv@17.2.4] injecting env (7) from .env -- tip: ≡ƒöÉ prevent committing .env to code: https://dotenvx.com/precommit
+Γ£à Environment variables loaded successfully
+=== STEP 1: Env Check ===
+GEMINI_API_KEY: SET (AIzaSyATS8...)
+ELEVENLABS_API_KEY: SET
+ELEVENLABS_TANTY_VOICE_ID: JfiM1myzVx7xU2MZOAJS
+ELEVENLABS_ROTI_VOICE_ID: eppqEXVumQ3CfdndcIB
+SUPABASE_URL: SET
+SUPABASE_ANON_KEY: SET
+SUPABASE_SERVICE_ROLE_KEY: SET
+
+=== STEP 2: ElevenLabs TTS (Tanty Spice) ===
+[ElevenLabs] Generating for voice: JfiM1myzVx7xU2MZOAJS with Key: sk_a6...
+TANTY OK - Audio URL length: 109311
+TANTY OK - Word count: 13
+TANTY OK - First 3 words: "Come" @0.00s, "likkle" @0.50s, "one," @1.20s
+
+=== STEP 3: ElevenLabs TTS (R.O.T.I.) ===
+[ElevenLabs] Generating for voice: eppqEXVumQ3CfdndcIB with Key: sk_a6...
+ROTI FAIL - null result
+
+=== VERIFICATION COMPLETE ===

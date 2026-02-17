@@ -86,15 +86,14 @@ export async function signupAction(formData: {
             return { success: false, error: "Account created, but auto-login failed. Please log in manually." };
         }
 
-        // 4. Send Welcome Email (Fire and Forget logic, or await)
-        console.log("[AUTH] Sending welcome email...");
-        // internal fire-and-forget approach or await to ensure delivery?
-        // Let's await to be safe for this scale.
-        await sendEmail({
+        // 4. Send Welcome Email (Fire and Forget to avoid lag)
+        console.log("[AUTH] Sending welcome email (background)...");
+        // Do not await to ensure instant UI feedback
+        sendEmail({
             to: formData.email,
             subject: "Welcome to Likkle Legends! 🌴",
             html: WELCOME_EMAIL_TEMPLATE(formData.childName || "Legend Family")
-        });
+        }).catch(err => console.error("[AUTH] Welcome email failed:", err));
 
         // 5. Success - emailSent: false signals the frontend to Redirect directly
         return { success: true, emailSent: false, userId };
