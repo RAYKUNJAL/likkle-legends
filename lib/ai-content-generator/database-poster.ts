@@ -283,6 +283,84 @@ export class EnhancedDatabasePoster {
     }
 
     /**
+     * Save generated blog post to database
+     */
+    async postBlogPost(post: any): Promise<{ success: boolean; id?: string; error?: string; offline?: boolean }> {
+        try {
+            console.log(`📝 Posting blog: "${post.metadata.title}"...`);
+
+            const isOnline = await this.testConnection();
+            if (!isOnline) {
+                console.warn('⚠️  Database offline - local saving skipped for build compatibility');
+                return { success: false, offline: true, error: 'Database offline' };
+            }
+
+            // Generate thumbnail if none provided
+            let featuredImage = `https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&q=80&w=800`;
+            try {
+                const { generateImage } = await import('@/lib/ai-image-generator/image-client');
+                const genUrl = await generateImage(
+                    `${post.metadata.title} blog header image, caribbean culture style, warm`,
+                    `blog-${post.metadata.slug}`
+                );
+                if (genUrl) featuredImage = genUrl;
+            } catch (ignored) { }
+
+            // Find or create category
+            let categoryId = null;
+            const { data: catData } = await supabase
+                .from('blog_categories')
+                .select('id')
+                .ilike('name', `%${post.metadata.category}%`)
+                .single();
+
+            if (catData) {
+                categoryId = catData.id;
+            } else {
+                // Default to 'Culture & Heritage' or first available
+                const { data: defaultCat } = await supabase
+                    .from('blog_categories')
+                    .select('id')
+                    .limit(1)
+                    .single();
+                categoryId = defaultCat?.id;
+            }
+
+            const { data, error } = await supabaseAdmin
+                .from('blog_posts')
+                .insert({
+                    title: post.metadata.title,
+                    slug: post.metadata.slug + '-' + Date.now().toString().slice(-4), // Ensure uniqueness
+                    excerpt: post.metadata.excerpt,
+                    content: post.content,
+                    featured_image_url: featuredImage,
+                    category: categoryId,
+                    author_name: post.metadata.author || 'Likkle Legends Team',
+                    status: 'published',
+                    published_at: new Date().toISOString(),
+                    read_time_minutes: post.metadata.readTime || 5,
+                    meta_title: post.metadata.seo.title,
+                    meta_description: post.metadata.seo.description,
+                    keywords: post.metadata.seo.keywords,
+                    ai_generated: true,
+                    ai_prompt: 'SEO Blog Generator',
+                    view_count: 0
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+            const result = data;
+
+            console.log(`✅ Blog post published! ID: ${result.id}`);
+            return { success: true, id: result.id };
+        } catch (error: any) {
+            console.error('❌ Failed to post blog:', error.message);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
      * Save printable to local JSON file
      */
     private async savePrintableLocally(printable: any): Promise<{ success: boolean; offline: true; error?: string }> {

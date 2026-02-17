@@ -43,15 +43,15 @@ export default function Pricing({ content }: PricingProps) {
         </div>
 
         {/* Category Tabs */}
-        <div className="flex justify-center mb-16">
+        <div className="flex justify-center mb-16 relative z-20">
           <div className="glass-card p-1.5 border border-slate-100 shadow-premium inline-flex" style={{ borderRadius: '1.5rem' }}>
             {pricing.tabs.map((tab: any) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`px-8 py-3 rounded-xl font-black text-sm transition-all flex flex-col items-center ${activeTab === tab.id
+                className={`px-8 py-3 rounded-xl font-black text-sm transition-all flex flex-col items-center select-none cursor-pointer active:scale-95 ${activeTab === tab.id
                   ? 'bg-deep text-white shadow-lg'
-                  : 'text-slate-400 hover:text-deep'
+                  : 'text-slate-400 hover:text-deep hover:bg-slate-50'
                   }`}
               >
                 <span>{tab.label}</span>

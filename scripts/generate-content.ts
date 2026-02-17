@@ -18,7 +18,7 @@ import { songGenerator } from '../lib/ai-content-generator/generators/song-gener
 import { databasePoster } from '../lib/ai-content-generator/database-poster';
 
 interface CLIOptions {
-    type?: 'story' | 'song' | 'all';
+    type?: 'story' | 'song' | 'blog' | 'all';
     count?: number;
     batch?: boolean;
     island?: string;
@@ -43,8 +43,8 @@ async function parseArgs(): Promise<CLIOptions> {
         switch (arg) {
             case '--type':
             case '-t':
-                if (next && ['story', 'song', 'all'].includes(next)) {
-                    options.type = next as 'story' | 'song' | 'all';
+                if (next && ['story', 'song', 'blog', 'all'].includes(next)) {
+                    options.type = next as 'story' | 'song' | 'blog' | 'all';
                     i++;
                 }
                 break;
@@ -183,6 +183,37 @@ async function generateSongs(options: CLIOptions) {
     }
 }
 
+async function generateBlogPosts(options: CLIOptions) {
+    const { blogGenerator } = await import('../lib/ai-content-generator/generators/blog-generator');
+    console.log(`\n📝 Generating ${options.count} blog ${options.count === 1 ? 'post' : 'posts'}...`);
+
+    const posts = await blogGenerator.generateBatch(options.count || 1);
+
+    console.log(`\n✅ Generated ${posts.length} ${posts.length === 1 ? 'post' : 'posts'}:`);
+    posts.forEach((post, i) => {
+        console.log(`  ${i + 1}. "${post.metadata.title}" (${post.metadata.category})`);
+    });
+
+    if (options.autoPost && !options.dryRun) {
+        console.log('\n📤 Posting to database...');
+        let successful = 0;
+        let failed = 0;
+
+        for (const post of posts) {
+            const result = await databasePoster.postBlogPost(post);
+            if (result.success) successful++;
+            else failed++;
+        }
+
+        console.log(`✅ Successfully posted: ${successful}`);
+        if (failed > 0) console.log(`❌ Failed: ${failed}`);
+    } else if (options.dryRun) {
+        console.log('\n🔍 DRY RUN - Not posting to database');
+        console.log('Sample blog content:');
+        console.log(JSON.stringify(posts[0], null, 2));
+    }
+}
+
 async function generateBatch() {
     console.log('\n🚀 Running daily content batch generation...\n');
 
@@ -231,6 +262,8 @@ async function main() {
         } else if (options.type === 'all') {
             await generateStories({ ...options, count: Math.ceil((options.count || 1) / 2) });
             await generateSongs({ ...options, count: Math.ceil((options.count || 1) / 2) });
+        } else if (options.type === 'blog') {
+            await generateBlogPosts(options);
         }
 
         console.log('\n✨ All done!\n');
