@@ -54,37 +54,11 @@ export const InteractivePassportHero = () => {
         <>
             <section className="relative min-h-[100dvh] lg:min-h-screen flex items-center overflow-hidden bg-[#FFFDF7]" id="hero">
                 {/* Video Background / Placeholder */}
-                {/* Video Background / Placeholder */}
-                <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-white/10 to-white/40 z-10"></div>
-                    {/* Hero Video / Image Background */}
-                    <div className="w-full h-full relative">
-                        <div className="absolute inset-0 bg-zinc-100 flex items-center justify-center">
-                            {/* Fallback Image if video fails or loads late */}
-                            <Image
-                                src="/images/hero_landing.png"
-                                alt="Likkle Legends Hero"
-                                fill
-                                className="object-cover"
-                                priority
-                            />
-                            {/* Dark Overlay for Text Readability */}
-                            <div className="absolute inset-0 bg-black/40 z-10"></div>
-                        </div>
-                        {/*
-                           Note: To enable video, uncomment below and ensure video file exists in public/videos/
-                           <video autoPlay loop muted playsInline className="w-full h-full object-cover">
-                               <source src="/videos/hero-background.mp4" type="video/mp4" />
-                           </video>
-                           <div className="absolute inset-0 bg-black/40 z-10"></div>
-                        */}
-                    </div>
-                </div>
-
-                {/* Background Blobs */}
-                <div className="absolute inset-0 pointer-events-none z-0">
-                    <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary/[0.04] rounded-full blur-[150px] -mr-[400px] -mt-[400px]"></div>
-                    <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/[0.04] rounded-full blur-[150px] -ml-[300px] -mb-[300px]"></div>
+                {/* Background Blobs - Enhanced for No Image */}
+                <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+                    <div className="absolute top-0 right-0 w-[500px] sm:w-[800px] h-[500px] sm:h-[800px] bg-primary/[0.08] rounded-full blur-[100px] sm:blur-[150px] -mr-[200px] sm:-mr-[400px] -mt-[200px] sm:-mt-[400px]"></div>
+                    <div className="absolute bottom-0 left-0 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-secondary/[0.08] rounded-full blur-[100px] sm:blur-[150px] -ml-[150px] sm:-ml-[300px] -mb-[150px] sm:-mb-[300px]"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] sm:w-[1000px] h-[600px] sm:h-[1000px] bg-white rounded-full blur-[80px] sm:blur-[120px] opacity-60"></div>
                 </div>
 
                 <div className="container mx-auto px-4 sm:px-6 py-20 lg:py-0 relative z-10">
