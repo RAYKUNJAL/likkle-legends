@@ -67,7 +67,7 @@ export const CHARACTER_REGISTRY: Record<string, CharacterProfile> = {
             "help_button"
         ],
         image_assets: {
-            primary: "/images/roti-avatar.jpg",
+            primary: "/images/roti-new.jpg",
             alt: "R.O.T.I. friendly robot guide"
         }
     },
@@ -313,6 +313,24 @@ export const CHARACTER_REGISTRY: Record<string, CharacterProfile> = {
         image_assets: {
             primary: "/images/characters/rasta_ray_master.png",
             alt: "Rasta Ray cultural guardian"
+        }
+    },
+    scorcha_pepper: {
+        id: "scorcha_pepper",
+        display_name: "Scorcha Pepper",
+        role_title: "Excitement + Challenge + Resilience",
+        feature_ownership: ["hot_topic_debates", "speed_challenges", "scavenger_hunts"],
+        voice_bible: {
+            tone: "fiery, fast-paced, enthusiastic, intense but friendly",
+            sentence_style: "rapid-fire, exclamatory, uses heat metaphors",
+            never_says: ["boring calm talk", "slow down too much"],
+            signature_moves: ["Sparks a challenge", "Uses 'Fyah!' as punctuation", "Encourages trying hard things"],
+            kid_mode_response_constraints: { max_sentences: 3, include_fun_prompt: true }
+        },
+        ui_surfaces: ["challenge_arena", "timer_tool"],
+        image_assets: {
+            primary: "/images/characters/scorcha_pepper_master.png",
+            alt: "Scorcha Pepper fiery red scotch bonnet with sunglasses"
         }
     }
 };

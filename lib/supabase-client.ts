@@ -47,11 +47,14 @@ class SupabaseClientManager {
                     auth: { persistSession: false, autoRefreshToken: false }
                 });
             } else {
-                // Revert to non-throwing behavior to prevent app-wide crash
-                // but keep the error logged for debugging
-                console.error('❌ Supabase Service Role Key is MISSING. Admin operations will fail.');
+                console.warn('❌ Supabase Service Role Key is MISSING. Admin operations will fail, falling back to Anon key for basic connectivity check.');
+                // Fallback to anon key so we have *something* to return, preventing crash
+                return createClient(url, anonKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
             }
         }
+
 
         const isServer = typeof window === 'undefined';
 

@@ -71,3 +71,60 @@ export async function saveStoryToLibraryAction(story: StoryBook, childId: string
         return { success: false, error: "Tanty's bookshelf is full right now! Try again later." };
     }
 }
+
+/**
+ * 🗑️ Erase a story from your personal library
+ */
+export async function deleteStorybookAction(storyId: string) {
+    try {
+        const { error } = await supabase
+            .from('storybooks')
+            .delete()
+            .eq('id', storyId);
+
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error("[DeleteStoryAction] Error:", error);
+        return { success: false, error: "Could not sweep this story away. Please try again." };
+    }
+}
+/**
+ * 💾 Save a manually generated/simple story to the library
+ */
+export async function saveManualStoryAction(title: string, pages: any[], island: string) {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+
+        // Convert simple pages to a standard storybook format
+        const storyData = {
+            metadata: { title, language: "en", age_range: "all", target_reading_level: "mixed", estimated_page_count: pages.length, created_at_iso: new Date().toISOString() },
+            pages: pages.map((p, i) => ({
+                page_number: i + 1,
+                story_text: p.text,
+                illustration_prompt: { short_prompt: "Illustration", detailed_prompt: "Illustration", style: "vibrant", safety_and_constraints: [] }
+            }))
+        };
+
+        const { data, error } = await supabase
+            .from('storybooks')
+            .insert({
+                title,
+                summary: pages[0]?.text?.substring(0, 100) + '...',
+                content_json: storyData,
+                cover_image_url: pages[0]?.imageUrl || null,
+                island_theme: island,
+                user_id: user.id,
+                is_active: false
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+        return { success: true, id: data.id };
+    } catch (error) {
+        console.error("[SaveManualStoryAction] Error:", error);
+        return { success: false, error: "Failed to pin this story to the village board." };
+    }
+}

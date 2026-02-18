@@ -16,7 +16,7 @@ export default function StructuredData() {
         "@context": "https://schema.org",
         "@type": "Product",
         "name": "Likkle Legends Mail Club Subscription",
-        "image": "https://www.likklelegends.com/images/hero.png",
+        "image": "https://www.likklelegends.com/images/roti-new.jpg",
         "description": "Monthly adventure boxes including character letters, Caribbean nursery songs, and interactive digital stories.",
         "brand": {
             "@type": "Brand",

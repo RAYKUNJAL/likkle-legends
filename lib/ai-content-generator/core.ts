@@ -26,10 +26,11 @@ export interface GenerationOptions {
     temperature?: number;
     maxTokens?: number;
     systemInstruction?: string;
+    responseMimeType?: string; // New!
 }
 
 export class ContentGenerator {
-    // COMMERCIAL UPGRADE: Using Gemini 2.0 Flash as primary for best balance of speed and quality
+    // COMMERCIAL UPGRADE: Using Gemini 2.0 Flash as primary
     private defaultModel = 'gemini-2.0-flash';
 
     /**
@@ -45,8 +46,7 @@ export class ContentGenerator {
 
             const modelsToTry = [
                 options?.model || this.defaultModel,
-                'gemini-1.5-flash', // Fallback 1
-                'gemini-2.0-flash-exp', // Fallback 2 (Experimental if available)
+                'gemini-2.0-flash-exp', // Fallback
             ];
 
             let lastError = null;
@@ -61,6 +61,7 @@ export class ContentGenerator {
                             temperature: options?.temperature || 0.9,
                             // Increased token limit for complex content 
                             maxOutputTokens: options?.maxTokens || 8192,
+                            responseMimeType: options?.responseMimeType || 'text/plain', // Use configured MIME type
                         }
                     });
 
@@ -105,10 +106,15 @@ export class ContentGenerator {
      * Generate JSON content with schema validation
      */
     async generateJSON<T>(prompt: string, schema: any, options?: GenerationOptions): Promise<T> {
+        let text = '';
         try {
-            const fullPrompt = `${prompt}\n\nIMPORTANT: Return ONLY valid JSON matching this schema. No markdown, no explanations, just raw JSON. Ensure all strings are properly escaped, especially newlines (use \\n). \n\nSchema: ${JSON.stringify(schema, null, 2)}`;
+            // Updated prompt to be less aggressive since we use MIME type now, but keep schema reference
+            const fullPrompt = `${prompt}\n\nPlease output valid JSON matching this schema:\n${JSON.stringify(schema, null, 2)}`;
 
-            const text = await this.generateText(fullPrompt, options);
+            text = await this.generateText(fullPrompt, {
+                ...options,
+                responseMimeType: 'application/json' // FORCE JSON MODE
+            });
             console.log("--- RAW GEMINI RESPONSE START ---");
             console.log(text);
             console.log("--- RAW GEMINI RESPONSE END ---");
@@ -128,7 +134,7 @@ export class ContentGenerator {
             try {
                 const parsed = JSON.parse(cleanedText);
                 return parsed as T;
-            } catch (parseError) {
+            } catch (parseError: any) {
                 console.warn('⚠️  Initial JSON parse failed. Attempting logic fix...');
                 // Attempt to fix common "control character" errors by escaping unescaped newlines in JSON strings
                 // This is a naive attempt but might save some cases
@@ -138,14 +144,14 @@ export class ContentGenerator {
                     const parsed = JSON.parse(fixedText);
                     return parsed as T;
                 } catch (retryError) {
-                    console.error('❌ JSON Parse Error:', parseError);
+                    console.error('❌ JSON Parse Error:', parseError.message);
                     console.error('Raw content that failed:', cleanedText);
                     throw parseError;
                 }
             }
-        } catch (error) {
-            console.error('Error generating JSON:', error);
-            throw new Error('Failed to generate valid JSON content');
+        } catch (error: any) {
+            console.error('Error generating JSON:', error.message);
+            throw new Error(`Failed to generate valid JSON content: ${error.message} (Raw: ${text.substring(0, 200)}...)`);
         }
     }
 

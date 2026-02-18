@@ -28,7 +28,7 @@ export const CHARACTERS: AdminCharacter[] = [
         tagline: "“Beep boop! Ready to learn?”",
         description: "A friendly guide who helps children learn step by step through stories, games, and gentle encouragement.",
         color: "bg-blue-50",
-        image: "/images/roti-avatar.jpg",
+        image: "/images/roti-new.jpg",
         traits: ["Guided", "Friendly", "Curriculum"],
         model_3d_url: "https://modelviewer.dev/shared-assets/models/RobotExpressive.glb"
     },

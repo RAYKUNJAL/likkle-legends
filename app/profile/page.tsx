@@ -54,7 +54,7 @@ export default function ProfilePage() {
                         className="bg-white p-2 rounded-[2.5rem] shadow-xl border-4 border-orange-100 relative shrink-0"
                     >
                         <div className="w-40 h-40 md:w-52 md:h-52 rounded-[2rem] overflow-hidden relative">
-                            <Image src="/images/roti-avatar.jpg" alt="Profile" fill className="object-cover" />
+                            <Image src="/images/roti-new.jpg" alt="Profile" fill className="object-cover" />
                         </div>
                         <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 border-4 border-white px-4 py-1 rounded-full font-black text-sm uppercase tracking-wider whitespace-nowrap shadow-lg flex items-center gap-1.5">
                             <Zap size={14} fill="currentColor" /> Level {profile.level}

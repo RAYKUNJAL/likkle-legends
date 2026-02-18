@@ -226,7 +226,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                                     </h1>
                                     <div className="flex items-center gap-4 p-4 bg-white/50 backdrop-blur-sm rounded-[2rem] border border-white w-fit">
                                         <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
-                                            <Image src="/images/tanty_spice_avatar.png" alt="Tanty Spice" fill className="object-cover" />
+                                            <Image src="/images/tanty_spice_avatar.jpg" alt="Tanty Spice" fill className="object-cover" />
                                         </div>
                                         <p className="text-xl text-deep/60 font-bold italic">
                                             By <span className="text-deep font-black">Tanty Spice</span>
@@ -279,7 +279,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                                 <div className={`absolute bottom-12 left-12 right-12 transition-all duration-500 ${activeSpeaker === 'tanty' ? 'scale-105' : 'opacity-80'}`}>
                                     <div className="bg-white/90 backdrop-blur-xl p-8 rounded-[3rem] border-4 border-white shadow-2xl relative">
                                         <div className="absolute -top-12 -left-6 w-24 h-24 rounded-full border-8 border-white shadow-xl overflow-hidden animate-bounce-slow">
-                                            <Image src="/images/tanty_spice_avatar.png" alt="Tanty Spice" fill className="object-cover" />
+                                            <Image src="/images/tanty_spice_avatar.jpg" alt="Tanty Spice" fill className="object-cover" />
                                         </div>
                                         <div className="pl-16 space-y-2">
                                             <div className="flex items-center justify-between">
@@ -320,7 +320,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                                                 className={`w-full group rounded-[3rem] p-8 transition-all text-left flex items-start gap-6 border-4 ${activeSpeaker === 'roti' ? 'bg-blue-600 border-blue-400 text-white shadow-2xl scale-[1.02]' : 'bg-blue-50 border-blue-100 text-blue-900 hover:bg-blue-100'}`}
                                             >
                                                 <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center overflow-hidden shadow-lg transition-transform group-hover:rotate-12 ${activeSpeaker === 'roti' ? 'bg-white' : 'bg-blue-500'}`}>
-                                                    <Image src="/images/roti-avatar.jpg" alt="R.O.T.I" fill className="object-cover" />
+                                                    <Image src="/images/roti-new.jpg" alt="R.O.T.I" fill className="object-cover" />
                                                 </div>
                                                 <div className="flex-1 space-y-2">
                                                     <div className="flex items-center justify-between">

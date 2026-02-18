@@ -244,7 +244,7 @@ const ROTIChat: React.FC<ROTIChatProps> = ({
                 <div className="flex items-center gap-4 md:gap-6">
                     <div className="relative">
                         <div className={`w-14 h-14 md:w-20 md:h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-emerald-100 ${isSpeaking ? 'animate-pulse ring-4 ring-amber-400' : ''}`}>
-                            <Image src="/images/roti-avatar.jpg" alt="R.O.T.I." fill className="object-cover" />
+                            <Image src="/images/roti-new.jpg" alt="R.O.T.I." fill className="object-cover" />
                         </div>
                         {isSpeaking && (
                             <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-amber-400 rounded-full flex items-center justify-center text-xs border-2 border-white">

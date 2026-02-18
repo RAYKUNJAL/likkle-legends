@@ -5,12 +5,68 @@ import { supabase, supabaseAdmin, supabaseManager } from '@/lib/supabase-client'
 import { GeneratedStory } from './generators/story-generator';
 import { GeneratedSong } from './generators/song-generator';
 import { contentGenerator } from './core';
+import { CaribbeanKidsStorybook, GeneratedImage } from './agents/schemas';
 // import { writeFile, mkdir } from 'fs/promises';
 // import { join } from 'path';
 
 export class EnhancedDatabasePoster {
     private offline = false;
     private offlineCache: any[] = [];
+
+    /**
+     * Save the new AGENT-generated storybook to database
+     */
+    async postCaribbeanStory(
+        story: CaribbeanKidsStorybook,
+        images: GeneratedImage[],
+        userId?: string
+    ): Promise<{ success: boolean; id?: string; error?: string }> {
+        try {
+            console.log(`📝 Posting Agent Story: "${story.metadata.title}"...`);
+
+            const isOnline = await this.testConnection();
+            if (!isOnline) return { success: false, error: 'Database offline' };
+
+            // Map strict schema to DB columns
+            // We store the FULL rich object in content_json for future-proofing
+
+            // Get cover image from the images array (usually page 0 or the first one)
+            const coverImage = images.find(img => img.page_number === 1)?.image_url
+                || 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=800';
+
+            const result = await supabaseManager.executeWithRetry(async (client) => {
+                const { data, error } = await client
+                    .from('storybooks')
+                    .insert({
+                        title: story.metadata.title,
+                        summary: story.island_context.setting_description.substring(0, 200) + '...',
+                        content_json: story, // Store the WHOLE new schema here!
+                        cover_image_url: coverImage,
+                        age_track: story.metadata.age_range.includes('3') ? 'mini' : 'big', // heuristic
+                        tier_required: 'free', // Default to free for now
+                        island_theme: story.island_context.island_name,
+                        reading_time_minutes: 5, // Estimate
+                        word_count: story.pages.reduce((acc, p) => acc + p.story_text.split(' ').length, 0),
+                        difficulty_level: 1,
+                        is_active: false,
+                        user_id: userId
+                    })
+                    .select()
+                    .single();
+
+                if (error) throw error;
+                return data;
+            }, true);
+
+            console.log(`✅ Agent Story posted! ID: ${result.id}`);
+            return { success: true, id: result.id };
+
+        } catch (error: any) {
+            console.error('❌ Failed to post Agent Story:', error.message);
+            return { success: false, error: error.message };
+        }
+    }
+
 
     /**
      * Save generated story to database with retry logic

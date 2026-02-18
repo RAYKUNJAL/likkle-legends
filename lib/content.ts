@@ -61,7 +61,7 @@ export const siteContent = {
         },
         hero_media: {
             type: "image",
-            src: "/images/hero_landing.png",
+            src: "/images/roti-new.jpg",
             alt: "Child reading a Likkle Legends letter"
         },
         new_mission_chip: {

@@ -344,7 +344,7 @@ export default function InteractiveReader({ title, pages, guide, onClose, storyI
 
     const guideInfo = guide === 'tanty'
         ? { name: 'Tanty Spice', avatar: '/images/tanty_spice_avatar.jpg', color: 'bg-orange-500' }
-        : { name: 'R.O.T.I.', avatar: '/images/roti-avatar.jpg', color: 'bg-blue-500' };
+        : { name: 'R.O.T.I.', avatar: '/images/roti-new.jpg', color: 'bg-blue-500' };
 
     if (!pages || pages.length === 0) return null;
 

@@ -21,7 +21,7 @@ export default function AboutPage() {
                     <h1 className="text-5xl lg:text-7xl font-black text-deep text-center mb-12">Building a Bridge to the Islands</h1>
 
                     <div className="aspect-video rounded-[3rem] overflow-hidden mb-16 shadow-2xl border-8 border-white relative">
-                        <Image src="/images/hero.png" alt="Children playing" fill className="object-cover grayscale opacity-80" />
+                        <Image src="/images/roti-new.jpg" alt="Children playing" fill className="object-cover grayscale opacity-80" />
                     </div>
 
                     <div className="prose prose-xl max-w-none text-deep/70 space-y-8 leading-relaxed">

@@ -10,13 +10,34 @@ interface StoryReaderProps {
     title: string;
     pages: StoryPage[];
     onClose: () => void;
+    onSave?: () => Promise<{ success: boolean; id?: string }>;
 }
 
-export default function StoryReader({ title, pages, onClose }: StoryReaderProps) {
+export default function StoryReader({ title, pages, onClose, onSave }: StoryReaderProps) {
     const [currentPage, setCurrentPage] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
     const [isLoadingAudio, setIsLoadingAudio] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isSaved, setIsSaved] = useState(false);
+
+    const handleSave = async () => {
+        if (!onSave || isSaving || isSaved) return;
+        setIsSaving(true);
+        try {
+            const res = await onSave();
+            if (res.success) {
+                setIsSaved(true);
+                toast.success("Story tucked away in your library! 📚");
+            } else {
+                toast.error("Bookshelf is a bit wobbly... try again!");
+            }
+        } catch (err) {
+            toast.error("Island magic failed to save.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     const nextPage = () => {
         if (currentPage < pages.length - 1) {
@@ -133,7 +154,17 @@ export default function StoryReader({ title, pages, onClose }: StoryReaderProps)
                                 {isLoadingAudio ? <Loader2 className="animate-spin" /> : <Volume2 size={32} />}
                             </button>
 
-                            <div className="flex-1"></div>
+                            <div className="flex-1 flex gap-4 overflow-hidden">
+                                {onSave && (
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={isSaving || isSaved}
+                                        className={`px-6 py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all shadow-md flex items-center gap-2 ${isSaved ? 'bg-green-100 text-green-600 cursor-default' : 'bg-primary text-white hover:scale-105 active:scale-95'}`}
+                                    >
+                                        {isSaving ? <Loader2 className="animate-spin" size={16} /> : isSaved ? '✓ Saved' : 'Save to Library'}
+                                    </button>
+                                )}
+                            </div>
 
                             <button
                                 onClick={prevPage}

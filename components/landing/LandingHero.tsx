@@ -68,7 +68,7 @@ export default function LandingHero({ content }: { content: any }) {
                         {/* Main image container */}
                         <div className="relative rounded-[3.5rem] overflow-hidden border-[12px] border-white shadow-premium aspect-[4/5] bg-slate-50 group">
                             <Image
-                                src={hero.hero_media?.src || "/images/hero_landing.png"}
+                                src={hero.hero_media?.src || "/images/roti-new.jpg"}
                                 alt={hero.hero_media?.alt || "Caribbean children enjoying learning activities"}
                                 fill
                                 className="object-cover group-hover:scale-105 transition-transform duration-700"

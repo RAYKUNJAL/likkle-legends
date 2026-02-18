@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Wand2, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
 import { generateAdventureAction } from '@/app/actions/adventure';
+import { saveManualStoryAction } from '@/app/actions/story-actions';
 import { StoryParams, StoryPage } from '@/lib/types';
 import StoryReader from './StoryReader';
 import { useUser } from './UserContext';
@@ -153,6 +154,7 @@ export default function AdventureCreator() {
                     title={`${params.character}'s ${params.island} Quest`}
                     pages={generatedPages}
                     onClose={() => setShowReader(false)}
+                    onSave={() => saveManualStoryAction(`${params.character}'s ${params.island} Quest`, generatedPages, params.island)}
                 />
             )}
         </div>

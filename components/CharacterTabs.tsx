@@ -15,7 +15,7 @@ interface Character {
 }
 
 const CHARACTERS: Character[] = [
-    { name: "R.O.T.I.", role: "Island Learning Buddy", tagline: "Brains on—sunshine mode!", description: "Your friendly Caribbean robot who helps you learn reading, math, and island culture!", color: "bg-emerald-500", image: "/images/roti-avatar.jpg", traits: ["Learning", "Curiosity", "Fun"] },
+    { name: "R.O.T.I.", role: "Island Learning Buddy", tagline: "Brains on—sunshine mode!", description: "Your friendly Caribbean robot who helps you learn reading, math, and island culture!", color: "bg-emerald-500", image: "/images/roti-new.jpg", traits: ["Learning", "Curiosity", "Fun"] },
     { name: "Dilly Doubles", role: "Food & Traditions Expert", tagline: "Hot, sweet, and ready for adventure!", description: "The flavor adventurer! Dilly proves that mixing different things creates magic.", color: "bg-yellow-400", image: "/images/dilly-doubles.jpg", traits: ["Inclusivity", "Tradition", "Flavor"] },
     { name: "Scorcha Scorpion", role: "Fire & Focus Guide", tagline: "Turn your heat into light!", description: "A fiery scotch bonnet who teaches kids to manage anger and see different views.", color: "bg-red-500", image: "https://695c018d554772846284df2a.imgix.net/E98FDED5-E718-467C-86C2-0AEAA0A3356A.png?auto=format,compress&q=75", traits: ["Perspective", "Self-Control", "Pride"] },
     { name: "Benny of Shadows", role: "Forest & Harmony Guide", tagline: "Listen to de leaves whisper, me darlin.", description: "Benny is de village forest guide. He teaches children how to find quiet moments and observe de secret wonders of nature.", color: "bg-emerald-600", image: "https://695c018d554772846284df2a.imgix.net/46EB4217-AC69-4518-90A2-0946825B4A01.png?auto=format,compress&q=75", traits: ["Observation", "Harmony", "Patience"] },
@@ -73,10 +73,10 @@ const CharacterTabs: React.FC<CharacterTabsProps> = ({ onCharacterSelect }) => {
                         key={char.name}
                         onClick={() => scrollToCharacter(idx)}
                         className={`w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-300 ${idx === activeIndex
-                                ? 'bg-emerald-500 scale-125 shadow-lg'
-                                : char.isMystery
-                                    ? 'bg-indigo-300 hover:bg-indigo-400'
-                                    : 'bg-gray-300 hover:bg-gray-400'
+                            ? 'bg-emerald-500 scale-125 shadow-lg'
+                            : char.isMystery
+                                ? 'bg-indigo-300 hover:bg-indigo-400'
+                                : 'bg-gray-300 hover:bg-gray-400'
                             }`}
                         aria-label={`Go to ${char.name}`}
                     />
@@ -106,8 +106,8 @@ const CharacterTabs: React.FC<CharacterTabsProps> = ({ onCharacterSelect }) => {
                             key={character.name}
                             onClick={() => scrollToCharacter(idx)}
                             className={`flex-shrink-0 w-64 md:w-72 rounded-[2rem] overflow-hidden transition-all duration-500 cursor-pointer ${idx === activeIndex
-                                    ? 'scale-105 shadow-2xl ring-4 ring-emerald-400'
-                                    : 'scale-95 opacity-70 hover:opacity-90'
+                                ? 'scale-105 shadow-2xl ring-4 ring-emerald-400'
+                                : 'scale-95 opacity-70 hover:opacity-90'
                                 } ${character.isMystery ? 'bg-gradient-to-b from-indigo-900 to-indigo-950' : 'bg-white'}`}
                             style={{ scrollSnapAlign: 'center' }}
                         >
@@ -130,8 +130,8 @@ const CharacterTabs: React.FC<CharacterTabsProps> = ({ onCharacterSelect }) => {
                                         <span
                                             key={i}
                                             className={`text-[10px] font-bold px-2 py-1 rounded-full ${character.isMystery
-                                                    ? 'bg-indigo-700/80 text-indigo-200'
-                                                    : 'bg-white/90 text-deep'
+                                                ? 'bg-indigo-700/80 text-indigo-200'
+                                                : 'bg-white/90 text-deep'
                                                 }`}
                                         >
                                             {trait}

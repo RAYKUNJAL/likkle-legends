@@ -59,7 +59,7 @@ export default function DigitalMagic() {
                         <h3 className="text-3xl font-heading font-black mb-4 text-blue-950">Magic Books</h3>
                         <p className="text-blue-900/60 font-medium mb-8 leading-relaxed">Personalized AI adventures where YOUR child becomes de hero. Read by Tanty Spice with custom illustrations for every page.</p>
                         <div className="relative aspect-video rounded-[2rem] overflow-hidden shadow-2xl ring-4 ring-purple-50">
-                            <Image src="/images/hero.png" alt="Magic Book" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+                            <Image src="/images/roti-new.jpg" alt="Magic Book" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-5">
                                 <p className="text-[10px] font-black text-purple-300 uppercase tracking-widest">Featured Story</p>
                                 <p className="text-white font-heading font-bold">The Coconut Secret</p>

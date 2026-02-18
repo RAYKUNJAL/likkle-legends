@@ -127,7 +127,7 @@ export default function ChildOnboardingPage() {
                         className="w-40 h-40 rounded-full border-8 border-white shadow-2xl overflow-hidden bg-primary relative z-10"
                     >
                         <Image
-                            src="/images/tanty_spice_avatar.png"
+                            src="/images/tanty_spice_avatar.jpg"
                             alt="Tanty Spice"
                             fill
                             className="object-cover"

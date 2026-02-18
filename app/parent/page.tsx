@@ -18,12 +18,13 @@ import Image from 'next/image';
 import ContentReviewFeed from '@/components/island-brain/ContentReviewFeed';
 import ReferralWidget from '@/components/dashboard/ReferralWidget';
 import { AssessmentDashboard } from '@/components/portal/AssessmentDashboard';
+import { LibraryDashboard } from '@/components/dashboard/LibraryDashboard';
 
 export default function ParentDashboard() {
     const { user, children, activeChild, isLoading, isSubscribed } = useUser();
     const [activities, setActivities] = useState<any[]>([]);
     const [missions, setMissions] = useState<any[]>([]);
-    const [activeTab, setActiveTab] = useState<'overview' | 'assessment'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'assessment' | 'library'>('overview');
     const [isDataLoading, setIsDataLoading] = useState(false);
 
     useEffect(() => {
@@ -155,6 +156,13 @@ export default function ParentDashboard() {
                     >
                         Assessment
                         {activeTab === 'assessment' && <motion.div layoutId="activeTab" className="absolute bottom-[-2px] left-0 right-0 h-1 bg-primary" />}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('library')}
+                        className={`pb-6 text-xl font-black transition-all relative ${activeTab === 'library' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                    >
+                        My Library
+                        {activeTab === 'library' && <motion.div layoutId="activeTab" className="absolute bottom-[-2px] left-0 right-0 h-1 bg-primary" />}
                     </button>
                 </div>
 
@@ -332,7 +340,7 @@ export default function ParentDashboard() {
                                 </div>
                             </div>
                         </motion.div>
-                    ) : (
+                    ) : activeTab === 'assessment' ? (
                         <motion.div
                             key="assessment"
                             initial={{ opacity: 0, y: 20 }}
@@ -385,6 +393,23 @@ export default function ParentDashboard() {
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent" />
                                 </div>
                             </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="library"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            className="bg-white p-12 rounded-[4rem] shadow-2xl border border-slate-100"
+                        >
+                            <div className="flex items-center justify-between mb-12">
+                                <div>
+                                    <h2 className="text-4xl font-black text-slate-900 tracking-tight">My Library</h2>
+                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Personal Caribbean Collection</p>
+                                </div>
+                            </div>
+
+                            <LibraryDashboard user={user} />
                         </motion.div>
                     )}
                 </AnimatePresence>

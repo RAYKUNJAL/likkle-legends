@@ -24,7 +24,7 @@ const SLIDES = [
         icon: Users,
         color: 'from-amber-400 to-amber-600',
         content: "Your Personal Guide",
-        image: '/images/roti-expressions.jpg'
+        image: '/images/roti-new.jpg'
     },
     {
         id: 'choices',

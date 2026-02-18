@@ -24,7 +24,7 @@ const CHARACTER_MODELS = {
     roti: {
         name: "R.O.T.I.",
         model: "https://modelviewer.dev/shared-assets/models/RobotExpressive.glb",
-        poster: "/images/roti-avatar.jpg",
+        poster: "/images/roti-new.jpg",
         color: "from-blue-400 to-indigo-500"
     }
 };

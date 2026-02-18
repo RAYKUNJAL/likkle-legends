@@ -280,7 +280,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                 <div className="absolute top-10 right-10 flex items-center gap-3">
                                     <div className={`relative w-16 h-16 rounded-full border-4 ${isPlaying ? 'border-green-400 animate-pulse' : 'border-blue-100'}`}>
                                         <Image
-                                            src="/images/tanty_spice_avatar.png"
+                                            src="/images/tanty_spice_avatar.jpg"
                                             alt="Tanty Spice"
                                             fill
                                             className="rounded-full object-cover"
