@@ -141,11 +141,12 @@ export default function ChildPortalPage() {
     }, [activeChild?.age_track]);
 
     // Redirect to login if not authenticated
-    useEffect(() => {
-        if (!userLoading && !user) {
-            router.push('/login');
-        }
-    }, [user, userLoading, router]);
+    // FIXED: Removed auto-redirect to prevent loops with middleware
+    // useEffect(() => {
+    //     if (!userLoading && !user) {
+    //         router.push('/login');
+    //     }
+    // }, [user, userLoading, router]);
 
     useEffect(() => {
         if (user) {
@@ -165,9 +166,35 @@ export default function ChildPortalPage() {
         );
     }
 
-    // Don't render if not authenticated (will redirect)
+    // Don't render content if not authenticated (show error UI instead of redirect loop)
     if (!user) {
-        return null;
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-100 via-purple-50 to-pink-100 p-6">
+                <div className="max-w-md w-full bg-white p-10 rounded-[2.5rem] shadow-2xl text-center border-4 border-white">
+                    <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl animate-pulse">
+                        🥥
+                    </div>
+                    <h2 className="text-2xl font-black text-slate-800 mb-2">Connecting to Island...</h2>
+                    <p className="text-slate-500 font-bold mb-8 leading-relaxed">
+                        We're having a little trouble syncing your journey. Give it a refresh!
+                    </p>
+                    <div className="space-y-3">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="w-full bg-[#3ABEF9] text-white px-6 py-4 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-blue-200"
+                        >
+                            Refresh Portal
+                        </button>
+                        <button
+                            onClick={() => router.push('/login')}
+                            className="w-full bg-slate-100 text-slate-400 px-6 py-4 rounded-2xl font-black text-lg hover:bg-slate-200 hover:text-slate-600 transition-all"
+                        >
+                            Back to Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
     }
     const handleActivityLog = async (type: string, id: string, title?: string, xp?: number) => {
         if (!user || !activeChild) return;

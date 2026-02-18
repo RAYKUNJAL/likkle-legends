@@ -87,11 +87,21 @@ export async function generateStory(selection: StoryInputs): Promise<StoryBook |
 
         const result = await model.generateContent(STORYTELLER_V2_PROMPT + "\n\n" + userPrompt);
         const text = result.response.text();
-        const story = JSON.parse(text) as StoryBook;
+        let story = JSON.parse(text) as any;
+
+        // Handle common JSON wrapping issues from Gemini
+        if (story.StoryBook) {
+            story = story.StoryBook;
+        }
+
+        // Handle structure mismatch (Gemini sometimes returns array instead of object with pages)
+        if (Array.isArray(story.structure)) {
+            story.structure = { pages: story.structure };
+        }
 
         // Ensure IDs are set
         story.id = Math.random().toString(36).substring(7);
-        return story;
+        return story as StoryBook;
 
     } catch (error) {
         console.error("[StoryEngine] Failed to generate story:", error);
