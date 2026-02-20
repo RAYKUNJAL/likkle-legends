@@ -1,23 +1,43 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { fetchGlobalSettings, updateGlobalSetting } from '../../services/supabase/databaseService';
+import { getSiteSettings, saveSiteSettings } from '@/app/actions/admin';
+import { supabase } from '@/lib/supabase';
 
 export const SettingsView: React.FC = () => {
     const [settings, setSettings] = useState<any>({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchGlobalSettings().then(data => {
-            setSettings(data);
-            setLoading(false);
-        });
+        const load = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session?.access_token) return;
+
+                const data = await getSiteSettings(session.access_token, 'system_config');
+                setSettings(data || {});
+            } catch (err) {
+                console.error("Settings load failed:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        load();
     }, []);
 
     const handleToggle = async (key: string) => {
         const newVal = !settings[key];
-        setSettings({ ...settings, [key]: newVal });
-        await updateGlobalSetting(key, newVal);
+        const updated = { ...settings, [key]: newVal };
+        setSettings(updated);
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.access_token) {
+                await saveSiteSettings(session.access_token, 'system_config', updated);
+            }
+        } catch (err) {
+            console.error("Settings save failed:", err);
+        }
     };
 
     const Toggle = ({ label, keyName }: { label: string, keyName: string }) => (

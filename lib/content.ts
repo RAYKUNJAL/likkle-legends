@@ -446,7 +446,7 @@ export const siteContent = {
                 tab: "mail",
                 name: "Starter Mailer",
                 best_for: "New families wanting the physical connection of monthly letters.",
-                price_display: "$10/mo",
+                price_display: "$9.99/mo",
                 features: [
                     "1 Personalized Physical Letter",
                     "1 Cultural Flashcard & Sticker Pack",
@@ -462,7 +462,7 @@ export const siteContent = {
                 tab: "mail",
                 name: "Legends Plus",
                 best_for: "Families looking for integrated cultural learning and SEL support.",
-                price_display: "$24/mo",
+                price_display: "$19.99/mo",
                 features: [
                     "Everything in Starter Mailer",
                     "3 Unlimited AI Story Studio Builds",
@@ -478,7 +478,7 @@ export const siteContent = {
                 tab: "mail",
                 name: "Family Legacy",
                 best_for: "The ultimate cultural experience for up to 3 children.",
-                price_display: "$45/mo",
+                price_display: "$34.99/mo",
                 features: [
                     "Everything in Legends Plus",
                     "Personalized Letters for 3 Kids",
@@ -493,7 +493,7 @@ export const siteContent = {
                 tab: "digital",
                 name: "Digital Explorer",
                 best_for: "Simple digital-only access for quick learning.",
-                price_display: "$9/mo",
+                price_display: "$4.99/mo",
                 features: [
                     "Full Digital Portal Access",
                     "Interactive Island Radio",

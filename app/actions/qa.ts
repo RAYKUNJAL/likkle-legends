@@ -115,13 +115,28 @@ export async function seedTestData(token: string) {
 export async function runLaunchChecks(token: string) {
     try {
         const admin = await verifyAdmin(token);
-        // 1. Database Check
-        const { count, error: dbError } = await admin.from('profiles').select('*', { count: 'exact', head: true });
-        if (dbError) throw dbError;
+
+        // 1. Database Inventory
+        const [profiles, orders, songs, videos, siteSettings] = await Promise.all([
+            admin.from('profiles').select('*', { count: 'exact', head: true }),
+            admin.from('orders').select('*', { count: 'exact', head: true }),
+            admin.from('songs').select('*', { count: 'exact', head: true }),
+            admin.from('videos').select('*', { count: 'exact', head: true }),
+            admin.from('site_settings').select('*', { count: 'exact', head: true }),
+        ]);
+
+        const hasConfig = (siteSettings.count || 0) > 0;
 
         return {
             success: true,
-            database: { status: 'success', message: `Connected. Found ${count} profiles.` },
+            database: {
+                status: 'success',
+                message: `Connected. Found ${profiles.count} profiles, ${orders.count} orders, ${songs.count} songs, ${videos.count} videos.`
+            },
+            config: {
+                status: hasConfig ? 'success' : 'warning',
+                message: hasConfig ? 'System configuration found in database.' : 'No site_settings found. Run seed-cms.'
+            },
             rls: { status: 'success', message: 'Policies audited & verified.' },
         };
     } catch (e: any) {

@@ -79,7 +79,7 @@ export async function sendEmail({ to, subject, html }: EmailPayload) {
 // --- TEMPLATES ---
 
 // 1. WELCOME EMAIL
-export const WELCOME_EMAIL_TEMPLATE = (userName: string) => `
+export const WELCOME_EMAIL_TEMPLATE = (userName: string, tierName?: string) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -96,7 +96,7 @@ export const WELCOME_EMAIL_TEMPLATE = (userName: string) => `
             <h1 style="margin:0; font-size: 32px; font-weight: 900;">Welcome to de Village, ${userName}! 🌴</h1>
         </div>
         <div style="padding: 50px 40px;">
-            <p style="font-size: 18px; font-weight: 800; color: #0f172a;">Your journey into Caribbean excellence starts today.</p>
+            <p style="font-size: 18px; font-weight: 800; color: #0f172a;">Your ${tierName || 'Likkle Legends'} journey starts today.</p>
             <p>At Likkle Legends, we don't just teach—we celebrate culture. Your child is now part of a global village where stories come alive and heritage is a superpower.</p>
 
             ${VALUE_PIN_PATOIS}

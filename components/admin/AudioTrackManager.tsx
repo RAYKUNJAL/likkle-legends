@@ -27,6 +27,7 @@ export const AudioTrackManager: React.FC = () => {
     const [artist, setArtist] = useState('Likkle Legends');
     const [category, setCategory] = useState('story');
     const [island, setIsland] = useState('Jamaica');
+    const [tier, setTier] = useState('plan_free_forever');
     const [audioFile, setAudioFile] = useState<File | null>(null);
     const [coverFile, setCoverFile] = useState<File | null>(null);
 
@@ -36,6 +37,14 @@ export const AudioTrackManager: React.FC = () => {
 
     const audioInputRef = useRef<HTMLInputElement>(null);
     const coverInputRef = useRef<HTMLInputElement>(null);
+
+    const TIERS = [
+        { id: 'plan_free_forever', label: 'Free Forever' },
+        { id: 'plan_digital_legends', label: 'Digital Legends' },
+        { id: 'plan_mail_intro', label: 'Legend Mail Intro' },
+        { id: 'plan_legends_plus', label: 'Legends Plus' },
+        { id: 'plan_family_legacy', label: 'Family Legacy' }
+    ];
 
     useEffect(() => {
         loadSongs();
@@ -121,7 +130,7 @@ export const AudioTrackManager: React.FC = () => {
                     island_origin: island,
                     audio_url: result.url,
                     cover_image_url: coverUrl,
-                    tier_required: 'free',
+                    tier_required: tier,
                     is_active: true
                 });
 
@@ -225,6 +234,16 @@ export const AudioTrackManager: React.FC = () => {
                                     <option value="General">General Caribbean</option>
                                 </select>
                             </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-black uppercase text-blue-300 ml-2">Access Tier</label>
+                            <select
+                                value={tier}
+                                onChange={e => setTier(e.target.value)}
+                                className="w-full p-4 bg-blue-50 rounded-2xl font-bold text-blue-950 outline-none"
+                            >
+                                {TIERS.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                            </select>
                         </div>
                     </div>
 

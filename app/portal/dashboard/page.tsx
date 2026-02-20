@@ -1,13 +1,12 @@
-
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Sparkles, BookOpen, User, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-export default function PortalDashboard() {
+function DashboardContent() {
     const searchParams = useSearchParams();
     const [childName, setChildName] = useState<string>('Legend');
     const [hasUpsell, setHasUpsell] = useState<boolean>(false);
@@ -202,8 +201,8 @@ function ChatInterface({ childName }: { childName: string }) {
                 {messages.map((m, i) => (
                     <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[80%] px-5 py-3 rounded-2xl text-sm font-medium ${m.role === 'user'
-                                ? 'bg-primary text-white rounded-tr-none'
-                                : 'bg-zinc-100 text-deep rounded-tl-none'
+                            ? 'bg-primary text-white rounded-tr-none'
+                            : 'bg-zinc-100 text-deep rounded-tl-none'
                             }`}>
                             {m.content}
                         </div>
@@ -231,5 +230,13 @@ function ChatInterface({ childName }: { childName: string }) {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function PortalDashboard() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#FFFDF7]"><Sparkles className="animate-pulse text-primary" size={48} /></div>}>
+            <DashboardContent />
+        </Suspense>
     );
 }

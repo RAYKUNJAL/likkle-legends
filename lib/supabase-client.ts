@@ -63,7 +63,8 @@ class SupabaseClientManager {
                 persistSession: !isServer,
                 autoRefreshToken: !isServer,
                 detectSessionInUrl: !isServer,
-                flowType: 'pkce'
+                flowType: 'pkce',
+                storageKey: 'sb-likkle-auth'
             }
         });
     }
@@ -214,15 +215,23 @@ class SupabaseClientManager {
     }
 }
 
-// Singleton instance
-const manager = new SupabaseClientManager();
+// Use a global variable to preserve the client across HMR reloads in development
+const globalForSupabase = globalThis as unknown as {
+    supabase: SupabaseClient;
+    supabaseAdmin: SupabaseClient;
+    manager: SupabaseClientManager;
+};
 
-// Export clients directly - bypassing Proxy to ensure stability
-export const supabase = manager.getClient();
-export const supabaseAdmin = manager.getServiceClient();
+// Singleton instance retrieval
+export const supabaseManager = globalForSupabase.manager || new SupabaseClientManager();
+export const supabase = globalForSupabase.supabase || supabaseManager.getClient();
+export const supabaseAdmin = globalForSupabase.supabaseAdmin || supabaseManager.getServiceClient();
 
-// Export manager for advanced usage
-export const supabaseManager = manager;
+if (process.env.NODE_ENV !== 'production') {
+    globalForSupabase.manager = supabaseManager;
+    globalForSupabase.supabase = supabase;
+    globalForSupabase.supabaseAdmin = supabaseAdmin;
+}
 
 // Export utility functions
 export function isSupabaseConfigured(): boolean {
@@ -230,21 +239,21 @@ export function isSupabaseConfigured(): boolean {
 }
 
 export function getSupabase(): SupabaseClient {
-    return manager.getClient();
+    return supabaseManager.getClient();
 }
 
 export function getSupabaseAdmin(): SupabaseClient {
-    return manager.getServiceClient();
+    return supabaseManager.getServiceClient();
 }
 
 export async function testSupabaseConnection() {
-    return manager.testConnection();
+    return supabaseManager.testConnection();
 }
 
 export async function getSupabaseHealth() {
-    return manager.healthCheck();
+    return supabaseManager.healthCheck();
 }
 
 export function resetSupabaseConnection() {
-    manager.resetConnection();
+    supabaseManager.resetConnection();
 }

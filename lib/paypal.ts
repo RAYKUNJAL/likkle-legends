@@ -31,8 +31,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_digital_legends: {
         id: 'plan_digital_legends',
         name: 'Digital Legends',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL || 'P-DIGITAL_LEGENDS_ID',
-        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL_YEARLY || 'P-DIGITAL_LEGENDS_YEARLY_ID',
+        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL || 'P-4W703714E9171780MNFLN65Y',
+        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL_YEARLY || 'P-0YY72736T56573355NFLOZZQ',
         price: 4.99,
         priceYearly: 49.90, // Approx 2 months free
         interval: 'month',
@@ -51,8 +51,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_mail_intro: {
         id: 'plan_mail_intro',
         name: 'Legend Mail Intro',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_MAIL || 'P-MAIL_INTRO_ID',
-        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_MAIL_YEARLY || 'P-MAIL_INTRO_YEARLY_ID',
+        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_MAIL || 'P-1R150232CG183332XNFLNNBQ',
+        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_MAIL_YEARLY || 'P-0YY72736T56573355NFLOZZQ',
         price: 9.99,
         priceYearly: 99.00,
         interval: 'month',
@@ -70,8 +70,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_legends_plus: {
         id: 'plan_legends_plus',
         name: 'Legends Plus',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_PLUS || 'P-LEGENDS_PLUS_ID',
-        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_PLUS_YEARLY || 'P-LEGENDS_PLUS_YEARLY_ID',
+        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_PLUS || 'P-45M32159VV6033601NFLOOYI',
+        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_PLUS_YEARLY || 'P-2503312149524980NNFLO34Y',
         price: 19.99,
         priceYearly: 199.00,
         interval: 'month',
@@ -90,8 +90,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_family_legacy: {
         id: 'plan_family_legacy',
         name: 'Family Legacy',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY || 'P-FAMILY_LEGACY_ID',
-        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY_YEARLY || 'P-FAMILY_LEGACY_YEARLY_ID',
+        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY || 'P-4G842008M1421443UNFLO3MY',
+        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY_YEARLY || 'P-5U054702T9664311ANFLO53',
         price: 34.99,
         priceYearly: 349.00,
         interval: 'month',

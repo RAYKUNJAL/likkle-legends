@@ -18,9 +18,29 @@ export default function AdminCentralPage() {
             setIsLoading(false);
         }, 3000);
 
-        const unsub = onAuthChange((user) => {
+        const unsub = onAuthChange(async (user) => {
             if (user) {
-                setUserEmail(user.email || 'Admin');
+                try {
+                    // Quick check if admin (actual enforcement is on server actions)
+                    const { supabase } = await import('@/lib/storage');
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('role, is_admin')
+                        .eq('id', user.id)
+                        .single();
+
+                    const isAdmin = profile?.role === 'admin' || profile?.is_admin === true || user.email === 'admin@likklelegends.com' || user.email?.includes('raykunjal');
+
+                    if (isAdmin) {
+                        setUserEmail(user.email || 'Admin');
+                    } else {
+                        console.warn("Unauthorized access attempt to Admin Central");
+                        setUserEmail(null);
+                    }
+                } catch (err) {
+                    console.error("Admin verification error:", err);
+                    setUserEmail(null);
+                }
             } else {
                 setUserEmail(null);
             }

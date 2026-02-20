@@ -5,6 +5,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Users, Activity, DollarSign, Smartphone, AlertTriangle, Clock } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
+import { getAdminAnalytics } from '@/app/actions/admin';
+
 const data = [
     { name: 'Mon', usage: 4000, cost: 24 },
     { name: 'Tue', usage: 3000, cost: 18 },
@@ -41,15 +43,23 @@ export const AnalyticsDashboard = () => {
 
     useEffect(() => {
         const fetchStats = async () => {
-            const { data: kpis } = await supabase.from('v_admin_kpis_today').select('*').single();
-            if (kpis) {
-                setStats({
-                    total_users: kpis.total_users.toLocaleString(),
-                    events_24h: kpis.events_24h.toLocaleString(),
-                    active_subscriptions: kpis.active_subscriptions.toLocaleString(),
-                    ai_cost_24h: `$${Number(kpis.ai_cost_24h || 0).toFixed(2)}`,
-                    failed_jobs: kpis.failed_jobs.toString()
-                });
+            try {
+                // Get token from supabase auth
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session?.access_token) return;
+
+                const kpis = await getAdminAnalytics(session.access_token);
+                if (kpis) {
+                    setStats({
+                        total_users: kpis.totalSubscribers.toLocaleString(),
+                        events_24h: kpis.newSignups.toLocaleString(), // Using newSignups as a proxy for activity if events view missing
+                        active_subscriptions: kpis.activeSubscribers.toLocaleString(),
+                        ai_cost_24h: `$${Number(kpis.monthlyRevenue || 0).toFixed(2)}`,
+                        failed_jobs: kpis.pendingOrders.toString() // Using pendingOrders as a proxy for attention needed
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching analytics:", error);
             }
         };
         fetchStats();

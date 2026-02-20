@@ -19,19 +19,34 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import toast from 'react-hot-toast';
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { ISLAND_REGISTRY } from "@/lib/registries/islands";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { SUBSCRIPTION_PLANS } from "@/lib/paypal";
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "sb";
 
-export default function CheckoutPage() {
+function CheckoutContent() {
+    const searchParams = useSearchParams();
     const [step, setStep] = useState(1);
+
+    // Helper to map URL param to Plan Object
+    const getInitialPlan = () => {
+        const planParam = searchParams.get('plan');
+        if (planParam === 'starter_mailer' || planParam === 'plan_mail_intro') return 'plan_mail_intro';
+        if (planParam === 'legends_plus') return 'plan_legends_plus';
+        if (planParam === 'family_legacy') return 'plan_family_legacy';
+        if (planParam === 'digital_explorer' || planParam === 'plan_digital_legends') return 'plan_digital_legends';
+        return 'plan_mail_intro'; // Default
+    };
+
     const [formData, setFormData] = useState({
         email: "",
         childName: "",
         heritage: "",
-        plan: "Legend Pass", // Default
+        planKey: getInitialPlan(), // Store the key of SUBSCRIPTION_PLANS
         hasUpsell: false,
         hasHeritageStory: false
     });
@@ -77,7 +92,8 @@ export default function CheckoutPage() {
     const handleNext = () => setStep(s => s + 1);
 
     const calculateTotal = () => {
-        let total = 10.00;
+        const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
+        let total = selectedPlan?.price || 10.00;
         if (formData.hasUpsell) total += 5.00;
         if (formData.hasHeritageStory) total += 14.99;
         return total.toFixed(2);
@@ -156,17 +172,21 @@ export default function CheckoutPage() {
                                             LP
                                         </div>
                                         <div>
-                                            <p className="text-sm font-black text-deep uppercase tracking-widest">The Legend Pass</p>
+                                            <p className="text-sm font-black text-deep uppercase tracking-widest">
+                                                {SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS]?.name || 'Legend Pass'}
+                                            </p>
                                             <p className="text-[10px] font-bold text-deep/30 uppercase tracking-widest leading-none mt-1">Monthly Subscription</p>
                                         </div>
                                     </div>
-                                    <p className="text-xl font-black text-deep">$10.00</p>
+                                    <p className="text-xl font-black text-deep">
+                                        ${SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS]?.price.toFixed(2)}
+                                    </p>
                                 </div>
 
                                 <div className="space-y-3 pt-4 border-t border-zinc-200/50">
                                     <div className="flex justify-between text-[11px] font-bold text-deep/40 uppercase tracking-widest">
                                         <span>Subtotal</span>
-                                        <span>$10.00</span>
+                                        <span>${SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS]?.price.toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-[11px] font-bold text-deep/40 uppercase tracking-widest">
                                         <span>Legend Envelope (US)</span>
@@ -443,14 +463,8 @@ export default function CheckoutPage() {
                                                 <PayPalButtons
                                                     style={{ layout: "vertical", shape: "rect", borderRadius: 12, height: 48 }}
                                                     createSubscription={(data, actions) => {
-                                                        // Determine the correct Plan ID based on selection
-                                                        // Default to Mail Intro ($10) if match fails
-                                                        let targetPlanId = SUBSCRIPTION_PLANS.plan_mail_intro.paypalPlanId;
-
-                                                        // Simple mapping logic based on form plan name
-                                                        if (formData.plan === "Legends Plus") targetPlanId = SUBSCRIPTION_PLANS.plan_legends_plus.paypalPlanId;
-                                                        if (formData.plan === "Family Legacy") targetPlanId = SUBSCRIPTION_PLANS.plan_family_legacy.paypalPlanId;
-                                                        if (formData.plan === "Digital Explorer") targetPlanId = SUBSCRIPTION_PLANS.plan_digital_legends.paypalPlanId;
+                                                        const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
+                                                        let targetPlanId = selectedPlan?.paypalPlanId || SUBSCRIPTION_PLANS.plan_mail_intro.paypalPlanId;
 
                                                         return actions.subscription.create({
                                                             plan_id: targetPlanId
@@ -463,10 +477,8 @@ export default function CheckoutPage() {
                                                     }}
                                                     onError={(err) => {
                                                         console.error("PayPal Error:", err);
-                                                        // Fallback for "sb" (sandbox) if plan is invalid or credentials fail
-                                                        // We allow them to proceed in dev mode to see the success screen
-                                                        alert("PayPal Sandbox Mode: Simulating success for verification.");
-                                                        setIsComplete(true);
+                                                        // Show a user-friendly error instead of an alert
+                                                        toast.error("Payment could not be initialized. Please try again or contact support.");
                                                     }}
                                                 />
                                             </div>
@@ -495,5 +507,13 @@ export default function CheckoutPage() {
                 </section>
             </main>
         </PayPalScriptProvider>
+    );
+}
+
+export default function CheckoutPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-[#FFFDF7]"><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>}>
+            <CheckoutContent />
+        </Suspense>
     );
 }

@@ -32,27 +32,34 @@ const setLocal = (key: string, data: any) => {
 // --- USERS ---
 
 export const getAdminStats = async () => {
+    // 1. Total Citizens
     const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+
+    // 2. Paid Citizens (Non-free tiers)
+    const { count: paidCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .not('subscription_tier', 'eq', 'plan_free_forever');
+
+    // 3. Total Videos
     const { count: videoCount } = await supabase.from('videos').select('*', { count: 'exact', head: true });
-    // Assuming activities or community_posts depending on what's available
-    const postCount = 0;
 
-    // Fetch a few users to estimate revenue mix
-    const { data: users } = await supabase.from('profiles').select('subscription_tier').limit(100);
+    // 4. Monthly Revenue (from orders table for current month)
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
 
-    let revenue = 0;
-    if (users && users.length > 0) {
-        // Simple projection
-        const paid = users.filter(u => u.subscription_tier !== 'free_explorer').length;
-        const ratio = paid / users.length;
-        const estimatedPaidTotal = (userCount || 0) * ratio;
-        revenue = estimatedPaidTotal * 12.99; // Avg ARPU
-    }
+    const { data: orders } = await supabase
+        .from('orders')
+        .select('amount_cents')
+        .gte('created_at', startOfMonth.toISOString());
+
+    const revenue = (orders?.reduce((acc, o) => acc + (o.amount_cents || 0), 0) || 0) / 100;
 
     return {
         totalUsers: userCount || 0,
+        paidUsers: paidCount || 0,
         totalVideos: videoCount || 0,
-        totalPosts: postCount || 0,
         revenue: Math.round(revenue)
     };
 };

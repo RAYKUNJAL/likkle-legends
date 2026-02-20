@@ -8,10 +8,11 @@ import { LazyImage } from './LazyImage';
 
 const CATEGORIES = ['Hero Trailer', 'Tanty Stories', 'Personal Messages', 'Field Trips', 'Educational'];
 const TIERS = [
-    { id: 'free_explorer', label: 'Free' },
-    { id: 'island_learner', label: 'Island Learner' },
-    { id: 'heritage_hero', label: 'Heritage Hero' },
-    { id: 'family_vip', label: 'Family VIP' }
+    { id: 'plan_free_forever', label: 'Free Forever' },
+    { id: 'plan_digital_legends', label: 'Digital Legends' },
+    { id: 'plan_mail_intro', label: 'Legend Mail Intro' },
+    { id: 'plan_legends_plus', label: 'Legends Plus' },
+    { id: 'plan_family_legacy', label: 'Family Legacy' }
 ];
 
 export const VideoManager: React.FC = () => {

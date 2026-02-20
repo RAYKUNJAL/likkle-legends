@@ -30,7 +30,7 @@ export const UserManagement: React.FC = () => {
         const result = await updateUserPlanAction(userId, newPlan);
         if (result.success) {
 
-            setUsers(prev => prev.map(u => u.id === userId ? { ...u, plan: newPlan } : u));
+            setUsers(prev => prev.map(u => u.id === userId ? { ...u, subscription_tier: newPlan } : u));
             setEditingUser(null);
         } else {
             alert("Failed to update plan.");
@@ -39,7 +39,7 @@ export const UserManagement: React.FC = () => {
 
     const filteredUsers = users.filter(u =>
         u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.details?.childName?.toLowerCase().includes(searchTerm.toLowerCase())
+        u.child_name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -100,7 +100,7 @@ export const UserManagement: React.FC = () => {
                                     {editingUser === user.id ? (
                                         <select
                                             className="p-3 bg-white border border-slate-200 rounded-xl text-xs font-black outline-none shadow-premium animate-in zoom-in-95 duration-200"
-                                            value={user.plan}
+                                            value={user.subscription_tier}
                                             onChange={(e) => handlePlanChange(user.id, e.target.value)}
                                             onBlur={() => setEditingUser(null)}
                                             autoFocus
@@ -108,20 +108,22 @@ export const UserManagement: React.FC = () => {
                                             {PRICING_TIERS.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                                         </select>
                                     ) : (
-                                        <span
-                                            onClick={() => setEditingUser(user.id)}
-                                            className={`cursor-pointer px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all hover:scale-105 active:scale-95 ${user.plan === 'annual_plus' ? 'bg-purple-50 text-purple-600 border-purple-100 shadow-sm' :
-                                                    user.plan === 'legends_plus' ? 'bg-orange-50 text-orange-600 border-orange-100 shadow-sm' :
-                                                        user.plan === 'mail_club' ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm' :
-                                                            'bg-slate-50 text-slate-500 border-slate-100'
-                                                }`}
-                                        >
-                                            {PRICING_TIERS.find(t => t.id === user.plan)?.name || user.plan} <span className="ml-2 text-[8px] opacity-40">✎</span>
-                                        </span>
+                                        <div className="flex flex-col gap-1">
+                                            <span
+                                                onClick={() => setEditingUser(user.id)}
+                                                className={`cursor-pointer w-fit px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all hover:scale-105 active:scale-95 ${user.subscription_tier === 'plan_legends_plus' ? 'bg-orange-50 text-orange-600 border-orange-100 shadow-sm' :
+                                                    user.subscription_tier === 'plan_family_legacy' ? 'bg-purple-50 text-purple-600 border-purple-100 shadow-sm' :
+                                                        'bg-slate-50 text-slate-500 border-slate-100'
+                                                    }`}
+                                            >
+                                                {PRICING_TIERS.find(t => t.id === user.subscription_tier)?.name || user.subscription_tier || 'Free Forever'} <span className="ml-2 text-[8px] opacity-40">✎</span>
+                                            </span>
+                                            {user.child_name && <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest ml-1">Kid: {user.child_name}</p>}
+                                        </div>
                                     )}
                                 </td>
                                 <td className="p-8 text-xs font-black text-slate-400 uppercase">
-                                    {user.joinedAt ? new Date(user.joinedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '---'}
+                                    {user.created_at ? new Date(user.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '---'}
                                 </td>
                                 <td className="p-8">
                                     <div className="flex items-center gap-3">
