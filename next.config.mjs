@@ -11,7 +11,7 @@ const nextConfig = {
               script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.paypal.com https://www.paypalobjects.com https://static.cloudflareinsights.com;
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
               font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai;
-              img-src 'self' blob: data: https://*.supabase.co https://www.paypalobjects.com https://api.dicebear.com https://ui-avatars.com https://modelviewer.dev images.unsplash.com;
+              img-src 'self' blob: data: https://*.supabase.co https://www.paypalobjects.com https://api.dicebear.com https://ui-avatars.com https://modelviewer.dev https://images.unsplash.com;
               connect-src 'self' https://*.supabase.co https://*.googleapis.com https://*.elevenlabs.io https://www.paypal.com https://api.elevenlabs.io https://generativelanguage.googleapis.com https://modelviewer.dev;
               media-src 'self' blob: data: https://*.supabase.co https://modelviewer.dev;
               worker-src 'self' blob:;
@@ -66,6 +66,7 @@ const nextConfig = {
         hostname: 'images.unsplash.com',
       },
     ],
+    unoptimized: true,
   },
   typescript: {
     ignoreBuildErrors: true,
