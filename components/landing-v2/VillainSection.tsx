@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Flame, Shield, Star, Zap, Swords, ArrowRight, Sparkles } from "lucide-react";
+import Link from "next/link";
 import Image from "next/image";
 
 export const VillainSection = () => {
@@ -73,12 +74,9 @@ export const VillainSection = () => {
                         viewport={{ once: true }}
                         className="flex-1 space-y-6 sm:space-y-10"
                     >
-                        <div className="inline-flex items-center gap-3 px-5 py-2 bg-red-500/10 rounded-full border border-red-500/10">
-                            <Swords size={14} className="text-red-400" />
-                            <span className="text-[9px] font-black uppercase tracking-[0.3em] text-red-400">Gamification Loop</span>
-                        </div>
 
-                        <h2 className="text-3xl sm:text-4xl lg:text-6xl font-black text-white tracking-tighter leading-[0.9]">
+
+                        <h2 className="text-3xl sm:text-4xl lg:text-6xl font-black text-white tracking-tighter leading-tight">
                             Defeat<br /><span className="text-red-400 italic">Scorcha Pepper!</span>
                         </h2>
 
@@ -113,10 +111,10 @@ export const VillainSection = () => {
                             ))}
                         </div>
 
-                        <button className="group flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-red-500 text-white rounded-xl sm:rounded-2xl font-black text-sm sm:text-base shadow-xl shadow-red-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                        <Link href="/checkout" className="group flex items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-red-500 text-white rounded-xl sm:rounded-2xl font-black text-sm sm:text-base shadow-xl shadow-red-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all">
                             Start the Adventure
                             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
+                        </Link>
                     </motion.div>
                 </div>
             </div>

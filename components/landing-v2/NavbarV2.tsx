@@ -17,9 +17,9 @@ export const NavbarV2 = () => {
     }, []);
 
     return (
-        <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ${scrolled ? 'py-2 sm:py-4' : 'py-4 sm:py-8'}`}>
+        <nav className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-700 ${scrolled ? 'py-2 sm:py-3' : 'py-3 sm:py-6'}`}>
             <div className="container mx-auto px-3 sm:px-6">
-                <div className={`transition-all duration-700 rounded-2xl sm:rounded-[2.5rem] px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between ${scrolled ? 'bg-white/80 backdrop-blur-2xl shadow-premium border border-white/50' : 'bg-transparent'}`}>
+                <div className={`transition-all duration-700 rounded-xl sm:rounded-[1.5rem] px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between ${scrolled ? 'bg-white/80 backdrop-blur-2xl shadow-premium border border-white/50' : 'bg-transparent'}`}>
                     <Link href="/" className="relative w-32 sm:w-48 h-10 sm:h-12 block group">
                         <Image
                             src="/images/logo.png"

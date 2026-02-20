@@ -111,8 +111,13 @@ export default function CheckoutPage() {
                         </p>
                     </div>
                     <Link
-                        href="/portal"
+                        href="/portal/dashboard"
                         className="flex items-center justify-center gap-3 w-full py-5 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        onClick={() => {
+                            if (typeof window !== 'undefined') {
+                                localStorage.setItem('likkle_legends_user', JSON.stringify(formData));
+                            }
+                        }}
                     >
                         Enter Your Portal
                         <ArrowRight size={18} />

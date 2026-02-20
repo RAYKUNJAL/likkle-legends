@@ -1,26 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #FFFDF7;
-  --foreground: #023047;
-  /* v3 Design System Tokens - World Class CRO Edition */
-  --primary: #FF6B00;
-  --primary-dark: #E65A00;
-  --primary-light: #FF8F40;
-  --secondary: #2D5A27;
-  --secondary-dark: #1F421B;
-  --accent: #FF3FB4;
-  --accent-light: #FF6BC5;
-  --success: #00B48B;
-  --warning: #FFBB00;
-  --error: #FF4747;
+  /* Caribbean Primary Colors (V3) */
+  --caribbean-sun: #FFB347;
+  --caribbean-ocean: #00C9FF;
+  --caribbean-mango: #FF8C42;
+  --caribbean-lime: #7ED321;
+  --caribbean-sunset: #FF6B6B;
+  --caribbean-sand: #F5DEB3;
+  --caribbean-palm: #2ECC71;
+  --caribbean-spice: #E74C3C;
+  --caribbean-sky: #87CEEB;
+  --caribbean-papaya: #FF9A76;
+  --caribbean-turquoise: #40E0D0;
+  --caribbean-coral: #FF7F50;
+
+  /* Character Colors */
+  --dilly-purple: #9B59B6;
+  --roti-yellow: #F1C40F;
+  --tanty-pink: #FF69B4;
+  --sam-steel: #3498DB;
+  --mango-green: #27AE60;
+  --benny-sage: #95A5A6;
+  --scorcha-red: #E74C3C;
+
+  /* Base Colors (V3 Overrides) */
+  --primary: #FF3366;
+  --primary-hover: #E62E5C;
+  --secondary: #7000FF;
+  --accent: #00F5FF;
+  --background: #FFFFFF;
+  --foreground: #0F172A;
+  --surface: #F8FAFC;
+  --surface-hover: #F1F5F9;
+  --border: rgba(0, 0, 0, 0.08);
+  --text: #0F172A;
+  --text-muted: #64748B;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 12px;
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.3);
+
+  /* Existing Main Vars (Preserved where not overridden) */
   --deep: #023047;
   --deep-light: #0D4763;
-
-  --background: #FFFDF7;
-  --foreground: #023047;
+  --primary-dark: #E65A00;
+  --primary-light: #FF8F40;
+  --accent-light: #FF6BC5;
+  --secondary-dark: #1F421B;
 
   --primary-gradient: linear-gradient(135deg, #FF6B00 0%, #FF3FB4 100%);
   --secondary-gradient: linear-gradient(135deg, #2D5A27 0%, #00B48B 100%);
@@ -31,15 +69,11 @@
   --card-foreground: #023047;
   --popover: #FFFFFF;
   --popover-foreground: #023047;
-  --border: #E2E8F0;
   --input: #E2E8F0;
   --ring: #FF6B00;
   --radius: 2rem;
   --radius-xl: 4rem;
 
-  --glass: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text-muted: rgba(2, 48, 71, 0.8);
   --shadow-premium: 0 30px 60px -15px rgba(2, 48, 71, 0.1);
   --shadow-premium-xl: 0 50px 100px -20px rgba(2, 48, 71, 0.15);
   --shadow-gold: 0 20px 40px -10px rgba(255, 187, 0, 0.3);
@@ -48,6 +82,15 @@
 @layer base {
   body {
     @apply bg-[var(--background)] text-[var(--foreground)] antialiased text-[17px] leading-relaxed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply leading-tight;
   }
 }
 
@@ -69,12 +112,20 @@
   }
 
   .glass-card {
-    background-color: rgba(255, 255, 255, 0.7);
-    -webkit-backdrop-filter: blur(24px);
-    backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
     @apply relative;
+  }
+
+  .glass-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-4px);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
   }
 
   .glass-nav {
@@ -302,17 +353,33 @@
   animation: float-slow 8s ease-in-out infinite;
 }
 
-.glassmorphism-tanty {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
 .font-fredoka {
   font-family: var(--font-fredoka), sans-serif;
 }
 
 .font-quicksand {
   font-family: var(--font-quicksand), sans-serif;
+}
+
+/* Glassmorphism Classes (V3) */
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+}
+
+.gradient-text-v3 {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, var(--primary), var(--secondary));
+}
+
+.character-image {
+  width: 8rem;
+  height: 8rem;
+  object-fit: contain;
+  filter: drop-shadow(0 25px 25px rgb(0 0 0 / 0.15));
 }

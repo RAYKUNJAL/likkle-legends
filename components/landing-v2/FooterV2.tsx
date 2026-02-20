@@ -45,8 +45,8 @@ export const FooterV2 = () => {
                                 <ul className="space-y-3 sm:space-y-6">
                                     {[
                                         { name: 'Digital Magic', href: '#features' },
-                                        { name: 'The Envelope', href: '#about' },
-                                        { name: 'Island Radio', href: '#' },
+                                        { name: 'The Envelope', href: '#envelope' },
+                                        { name: 'Island Radio', href: '#radio' },
                                         { name: 'Story Studio', href: '/portal' }
                                     ].map(item => (
                                         <li key={item.name}><Link href={item.href} className="text-white/40 hover:text-white font-bold transition-all text-sm uppercase tracking-widest">{item.name}</Link></li>
@@ -70,9 +70,9 @@ export const FooterV2 = () => {
                                 <h4 className="text-secondary font-black uppercase tracking-[0.3em] text-xs">Legals</h4>
                                 <ul className="space-y-3 sm:space-y-6">
                                     {[
-                                        { name: 'Guarantee', href: '/guarantee' },
-                                        { name: 'Privacy', href: '#' },
-                                        { name: 'Terms', href: '#' },
+                                        { name: 'Guarantee', href: '#guarantee' },
+                                        { name: 'Privacy', href: '/privacy' },
+                                        { name: 'Terms', href: '/terms' },
                                         { name: 'Contact', href: '/contact' }
                                     ].map(item => (
                                         <li key={item.name}><Link href={item.href} className="text-white/40 hover:text-white font-bold transition-all text-sm uppercase tracking-widest">{item.name}</Link></li>
@@ -114,16 +114,16 @@ export const FooterV2 = () => {
                         {/* Halo Effect */}
                         <div className="absolute inset-0 bg-primary-gradient rounded-full blur-[20px] opacity-40 group-hover:opacity-80 transition-opacity animate-neural-halo"></div>
 
-                        <Link href="#pricing" className="relative flex items-center gap-3 sm:gap-6 bg-white px-5 sm:px-10 py-3 sm:py-5 rounded-full shadow-premium-xl border-4 sm:border-[6px] border-primary">
-                            <div className="w-9 h-9 sm:w-12 sm:h-12 bg-primary rounded-full flex items-center justify-center text-white shadow-lg">
-                                <Sparkles size={18} className="group-hover:rotate-12 transition-transform" />
+                        <Link href="#pricing" className="relative flex items-center gap-2 sm:gap-4 bg-white px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-premium-xl border-2 sm:border-4 border-primary">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg">
+                                <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
                             </div>
-                            <div className="pr-6 sm:pr-12">
-                                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-primary leading-none mb-1">Limited Time</p>
-                                <p className="text-sm sm:text-xl font-black text-deep leading-none tracking-tighter uppercase italic">Get the $10 Legend Letter</p>
+                            <div className="pr-4 sm:pr-8">
+                                <p className="text-[7px] sm:text-[9px] font-black uppercase tracking-widest text-primary leading-none mb-1">Limited Time</p>
+                                <p className="text-xs sm:text-lg font-black text-deep leading-none tracking-tighter uppercase italic">Get the $10 Legend Letter</p>
                             </div>
-                            <div className="absolute right-2 sm:right-4 w-9 h-9 sm:w-12 sm:h-12 bg-deep rounded-full flex items-center justify-center text-white group-hover:translate-x-2 transition-transform shadow-xl">
-                                <ArrowRight size={20} />
+                            <div className="absolute right-1 sm:right-2 w-8 h-8 sm:w-10 sm:h-10 bg-deep rounded-full flex items-center justify-center text-white group-hover:translate-x-1 transition-transform shadow-xl">
+                                <ArrowRight size={16} />
                             </div>
                         </Link>
                     </motion.div>

@@ -1,0 +1,46 @@
+
+    Directory: C:\Users\Banjo\.gemini\antigravity\scratch\likkle-legends-main\lib
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----           2/19/2026 10:32 PM                ai-content-generator
+d----           2/19/2026 10:32 PM                ai-image-generator
+d----           2/19/2026 10:32 PM                decodable
+d----           2/19/2026 10:32 PM                mocks
+d----           2/19/2026 10:32 PM                registries
+d----           2/19/2026 10:32 PM                services
+d----           2/19/2026 10:32 PM                supabase
+d----           2/19/2026 10:32 PM                types
+-a---           2/19/2026 10:32 PM            219 admin.ts
+-a---           2/19/2026 10:32 PM           9059 agent-orchestrator.ts
+-a---           2/19/2026 10:32 PM           2332 analytics.ts
+-a---           2/19/2026 10:32 PM           5973 constants.ts
+-a---           2/19/2026 10:32 PM           2315 content-store.ts
+-a---           2/19/2026 10:32 PM          28860 content.ts
+-a---           2/19/2026 10:32 PM            506 database.ts
+-a---           2/19/2026 10:32 PM           5991 elevenlabs.ts
+-a---           2/19/2026 10:32 PM          19742 email.ts
+-a---           2/19/2026 10:32 PM          17028 game-generator.ts
+-a---           2/19/2026 10:32 PM           5778 gamification.ts
+-a---           2/19/2026 10:32 PM           4123 gemini-tts.ts
+-a---           2/19/2026 10:32 PM           6659 gemini.ts
+-a---           2/19/2026 10:32 PM           4619 geo-routing.ts
+-a---           2/19/2026 10:32 PM           5827 google-cloud-tts.ts
+-a---           2/19/2026 10:32 PM           1431 islands.ts
+-a---           2/19/2026 10:32 PM           1451 load-env.ts
+-a---           2/19/2026 10:32 PM           8748 messaging.ts
+-a---           2/19/2026 10:32 PM           6149 paypal.ts
+-a---           2/19/2026 10:32 PM           5292 prompt-templates.ts
+-a---           2/19/2026 10:32 PM           3944 quality-gates.ts
+-a---           2/19/2026 10:32 PM           3578 roti-voice-config.ts
+-a---           2/19/2026 10:32 PM           6644 roti-voice.ts
+-a---           2/19/2026 10:32 PM           7922 rotiConfig.ts
+-a---           2/19/2026 10:32 PM           6246 storage.ts
+-a---           2/19/2026 10:32 PM           6029 story-engine.ts
+-a---           2/19/2026 10:32 PM           3191 studio-config.ts
+-a---           2/19/2026 10:32 PM           8187 supabase-client.ts
+-a---           2/19/2026 10:32 PM           3340 supabase-image-upload.ts
+-a---           2/19/2026 10:32 PM             38 supabase.ts
+-a---           2/19/2026 10:32 PM           3966 tanty_spice_config.ts
+-a---           2/19/2026 10:32 PM           5221 types.ts
+

@@ -92,24 +92,31 @@ export const RADIO_CHANNELS = [
 export const RADIO_TRACKS: Track[] = [
     {
         id: 'track-1',
-        title: 'Anansi & The Magic Pot',
+        title: 'Welcome to Tanty Radio',
         artist: 'Tanty Spice',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-magical-twinkle-sound-2900.mp3',
+        url: 'https://assets.mixkit.co/sfx/preview/mixkit-magical-twinkle-sound-2900.mp3', // Placeholder: Replace with /audio/intro.mp3
         channel: 'story'
     },
     {
         id: 'track-2',
         title: 'Steelpan Serenade',
         artist: 'Steelpan Sam',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-game-level-completed-2059.mp3',
+        url: 'https://assets.mixkit.co/sfx/preview/mixkit-game-level-completed-2059.mp3', // Placeholder: Replace with /audio/steelpan.mp3
         channel: 'learning'
     },
     {
         id: 'track-3',
         title: 'Caribbean Waves',
         artist: 'Mango Moko',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-loop-1196.mp3',
+        url: 'https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-loop-1196.mp3', // Placeholder: Replace with /audio/waves.mp3
         channel: 'calm'
+    },
+    {
+        id: 'track-4',
+        title: 'Island Lullaby',
+        artist: 'Tanty Spice',
+        url: 'https://assets.mixkit.co/sfx/preview/mixkit-dreamy-magic-chimes-2792.mp3', // Placeholder: Replace with /audio/lullaby.mp3
+        channel: 'lullaby'
     },
     {
         id: 'track-v1',

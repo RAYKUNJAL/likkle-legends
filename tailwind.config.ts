@@ -5,6 +5,7 @@ const config: Config = {
         "./pages/**/*.{js,ts,jsx,tsx,mdx}",
         "./components/**/*.{js,ts,jsx,tsx,mdx}",
         "./app/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/**/*.{js,ts,jsx,tsx,mdx}", // Added src just in case
     ],
     theme: {
         extend: {
@@ -17,6 +18,20 @@ const config: Config = {
                 deep: "var(--deep)",
                 border: "var(--border)",
                 success: "var(--success)",
+
+                // V3 Caribbean Palette
+                'caribbean-sun': "var(--caribbean-sun)",
+                'caribbean-ocean': "var(--caribbean-ocean)",
+                'caribbean-mango': "var(--caribbean-mango)",
+                'caribbean-lime': "var(--caribbean-lime)",
+                'caribbean-sunset': "var(--caribbean-sunset)",
+                'caribbean-sand': "var(--caribbean-sand)",
+                'caribbean-palm': "var(--caribbean-palm)",
+                'caribbean-spice': "var(--caribbean-spice)",
+                'caribbean-sky': "var(--caribbean-sky)",
+                'caribbean-papaya': "var(--caribbean-papaya)",
+                'caribbean-turquoise': "var(--caribbean-turquoise)",
+                'caribbean-coral': "var(--caribbean-coral)",
             },
             boxShadow: {
                 'premium': '0 30px 60px -15px rgba(2, 48, 71, 0.1)',
@@ -28,6 +43,8 @@ const config: Config = {
                 mono: ["var(--font-geist-mono)"],
                 heading: ["var(--font-fredoka)", "sans-serif"],
                 montserrat: ["var(--font-montserrat)", "system-ui", "sans-serif"],
+                // V3 Font Tokens
+                main: ["var(--font-quicksand)", "sans-serif"],
             },
             animation: {
                 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -71,6 +88,6 @@ const config: Config = {
             },
         },
     },
-    plugins: [],
+    plugins: [require("tailwindcss-animate")],
 };
 export default config;

@@ -39,9 +39,10 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false }) => {
                 const customTracks = await getGlobalPlaylist();
                 // Strict check: if customTracks is not null (even if empty array), use it.
                 // Only use DEFAULT_TRACKS if customTracks is explicitly null (never configured).
-                if (customTracks !== null) {
+                if (customTracks && customTracks.length > 0) {
                     setAllTracks(customTracks);
                 } else {
+                    console.log("No custom tracks found, using defaults");
                     setAllTracks(DEFAULT_TRACKS);
                 }
             } catch (e) {
