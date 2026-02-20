@@ -208,8 +208,8 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
                             >
                                 <div className="absolute inset-0 bg-gradient-to-tr from-[var(--caribbean-sun)] to-[var(--caribbean-papaya)] rounded-[40px] blur-3xl opacity-20 animate-pulse" />
                                 <img
-                                    src="/images/child_reading.png"
-                                    alt="Likkle Legends Child Reading"
+                                    src="https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?q=80&w=1000&auto=format&fit=crop"
+                                    alt="Likkle Legends Family Celebration"
                                     fetchPriority="high"
                                     className="rounded-[40px] shadow-2xl relative z-10 w-full max-w-[500px] aspect-[4/5] object-cover border-8 border-white transform rotate-2 hover:rotate-0 transition-transform duration-500"
                                 />

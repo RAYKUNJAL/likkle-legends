@@ -35,7 +35,7 @@ export const GuaranteeBand = () => {
                     {/* Top Banner */}
                     <div className="bg-secondary py-4 px-8 flex items-center justify-center gap-3">
                         <ShieldCheck size={20} className="text-white" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">The Triple Promise Guarantee — 30 Days</span>
+                        <span className="text-sm sm:text-base font-black uppercase tracking-[0.3em] text-white text-center">The Triple Promise Guarantee — 30 Days</span>
                     </div>
 
                     {/* Promises Grid */}
@@ -53,8 +53,8 @@ export const GuaranteeBand = () => {
                                     <div className="w-14 h-14 bg-secondary/10 rounded-2xl flex items-center justify-center mx-auto">
                                         <p.icon size={28} className="text-secondary" />
                                     </div>
-                                    <h3 className="text-lg font-black text-deep tracking-tight">{p.title}</h3>
-                                    <p className="text-sm text-deep/40 leading-relaxed font-medium">{p.desc}</p>
+                                    <h3 className="text-xl font-black text-deep tracking-tight">{p.title}</h3>
+                                    <p className="text-base text-deep/40 leading-relaxed font-medium">{p.desc}</p>
                                 </motion.div>
                             ))}
                         </div>
@@ -70,7 +70,7 @@ export const GuaranteeBand = () => {
                             </Link>
                             <Link
                                 href="/guarantee"
-                                className="text-[10px] font-bold uppercase tracking-widest text-deep/25 hover:text-primary transition-colors underline underline-offset-4"
+                                className="text-sm font-bold uppercase tracking-widest text-deep/25 hover:text-primary transition-colors underline underline-offset-4"
                             >
                                 Read Full Guarantee Policy
                             </Link>

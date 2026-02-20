@@ -16,6 +16,18 @@ import { GuaranteeBand } from "@/components/landing-v2/GuaranteeBand";
 import { TripleTier } from "@/components/landing-v2/TripleTier";
 import { AccordionV2 } from "@/components/landing-v2/AccordionV2";
 import { FooterV2 } from "@/components/landing-v2/FooterV2";
+import { BenefitStory } from "@/components/landing-v2/BenefitStory";
+
+const benefitContent = [
+    {
+        header: "Physical Surprise",
+        body: "There’s no dopamine hit like actual mail. We bridge the gap between digital games and physical wonder with your child’s name on a real envelope."
+    },
+    {
+        header: "Cultural Confidence",
+        body: "We don't just teach reading; we teach heritage. Your child sees themselves reflected in every character and every mission."
+    }
+];
 
 const faqItems = [
     {
@@ -64,6 +76,9 @@ export default function LandingPage() {
 
                 {/* Social Proof (Preserved) */}
                 <SocialProofBar />
+
+                {/* The "Why it Matters" Story - Real People Images restored here */}
+                <BenefitStory title="The Legacy in the Mailbox." content={benefitContent} />
 
                 {/* V3 Character Section with Real Assets */}
                 <MeetTheLegends onOpenWaitlist={() => setIsWaitlistOpen(true)} />

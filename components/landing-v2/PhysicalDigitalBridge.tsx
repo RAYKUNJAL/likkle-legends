@@ -26,10 +26,10 @@ export const PhysicalDigitalBridge = () => {
 
                             <div className="relative rounded-[2.5rem] sm:rounded-[4rem] overflow-hidden shadow-premium-xl border-[8px] sm:border-[12px] border-white bg-zinc-50 aspect-[4/3]">
                                 <Image
-                                    src="/images/letter-preview.png"
-                                    alt="Legend Envelope unboxing experience"
+                                    src="https://images.unsplash.com/photo-1566367576585-051277d529da?q=80&w=1000&auto=format&fit=crop"
+                                    alt="Child receiving Legend Envelope"
                                     fill
-                                    className="object-contain"
+                                    className="object-cover"
                                     sizes="(max-width: 768px) 100vw, 50vw"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-deep/5 via-transparent to-transparent pointer-events-none"></div>

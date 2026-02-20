@@ -19,11 +19,11 @@ export const SocialProofBar = () => {
                     <div className="flex items-center gap-3">
                         <div className="flex gap-0.5">
                             {[1, 2, 3, 4, 5].map(i => (
-                                <Star key={i} size={14} className="text-yellow-400 fill-yellow-400" />
+                                <Star key={i} size={16} className="text-yellow-400 fill-yellow-400" />
                             ))}
                         </div>
-                        <span className="text-sm font-black text-deep tracking-tight">4.98/5.0</span>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-deep/30">from 512+ families</span>
+                        <span className="text-base font-black text-deep tracking-tight">4.98/5.0</span>
+                        <span className="text-xs font-bold uppercase tracking-widest text-deep/30">from 512+ families</span>
                     </div>
 
                     {/* Divider */}
@@ -33,8 +33,8 @@ export const SocialProofBar = () => {
                     <div className="flex flex-wrap items-center justify-center gap-5">
                         {badges.map(b => (
                             <div key={b.label} className="flex items-center gap-1.5">
-                                <b.icon size={14} className={b.color} />
-                                <span className="text-[9px] font-black uppercase tracking-[0.15em] text-deep/30">{b.label}</span>
+                                <b.icon size={16} className={b.color} />
+                                <span className="text-xs font-black uppercase tracking-[0.15em] text-deep/30">{b.label}</span>
                             </div>
                         ))}
                     </div>

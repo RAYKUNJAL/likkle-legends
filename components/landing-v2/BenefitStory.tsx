@@ -47,7 +47,7 @@ export const BenefitStory = ({ title, content }: BenefitStoryProps) => {
                                         </div>
                                         <div>
                                             <p className="text-2xl font-black text-deep leading-none tracking-tight italic">Genuine Mail</p>
-                                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mt-2">Personalized Arrival</p>
+                                            <p className="text-sm font-black uppercase tracking-[0.2em] text-primary mt-2">Personalized Arrival</p>
                                         </div>
                                     </div>
                                     <p className="text-deep/60 text-lg font-medium leading-relaxed">
@@ -63,7 +63,7 @@ export const BenefitStory = ({ title, content }: BenefitStoryProps) => {
                                 className="absolute -top-16 -right-16 w-48 h-48 bg-yellow-400 rounded-full shadow-gold border-[8px] border-white flex flex-col items-center justify-center text-center p-4 rotate-12"
                             >
                                 <Sparkles className="text-deep mb-2" size={32} />
-                                <p className="text-xs font-black uppercase tracking-[0.1em] text-deep leading-tight">Physical <br />Collector Items</p>
+                                <p className="text-base font-black uppercase tracking-[0.1em] text-deep leading-tight">Physical <br />Collector Items</p>
                             </motion.div>
                         </motion.div>
 
@@ -103,11 +103,11 @@ export const BenefitStory = ({ title, content }: BenefitStoryProps) => {
                                             {block.body}
                                         </p>
                                         <div className="flex items-center gap-6 pt-4">
-                                            <div className="flex items-center gap-2 px-6 py-3 bg-zinc-50 border border-zinc-100 rounded-full text-[10px] font-black uppercase tracking-widest text-deep/40 shadow-sm">
+                                            <div className="flex items-center gap-2 px-6 py-3 bg-zinc-50 border border-zinc-100 rounded-full text-base font-black uppercase tracking-widest text-deep/40 shadow-sm">
                                                 <CheckCircle2 size={16} className="text-primary" />
                                                 Verified Delivery
                                             </div>
-                                            <div className="hidden sm:flex items-center gap-2 px-6 py-3 bg-secondary/5 border border-secondary/10 rounded-full text-[10px] font-black uppercase tracking-widest text-secondary shadow-sm">
+                                            <div className="hidden sm:flex items-center gap-2 px-6 py-3 bg-secondary/5 border border-secondary/10 rounded-full text-base font-black uppercase tracking-widest text-secondary shadow-sm">
                                                 <MapPin size={16} />
                                                 Universal Mail Access
                                             </div>
@@ -126,7 +126,7 @@ export const BenefitStory = ({ title, content }: BenefitStoryProps) => {
                             <p className="text-2xl font-bold text-deep/80 leading-relaxed">
                                 "The magic isn't in what's in the box, it's what's in the message. We focus on the legacy, one letter at a time."
                             </p>
-                            <p className="mt-4 text-[10px] font-black uppercase tracking-widest text-primary">Likkle Legends Philosophy</p>
+                            <p className="mt-4 text-base font-black uppercase tracking-widest text-primary">Likkle Legends Philosophy</p>
                         </motion.div>
                     </div>
                 </div>
