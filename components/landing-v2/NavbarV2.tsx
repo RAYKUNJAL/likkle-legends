@@ -32,9 +32,9 @@ export const NavbarV2 = () => {
 
                     {/* Desktop Nav */}
                     <div className="hidden lg:flex items-center gap-10">
-                        <Link href="#features" className="text-deep/40 hover:text-primary font-black uppercase tracking-[0.2em] text-[10px] transition-all">Digital Magic</Link>
-                        <Link href="#envelope" className="text-deep/40 hover:text-primary font-black uppercase tracking-[0.2em] text-[10px] transition-all">The Envelope</Link>
-                        <Link href="#pricing" className="text-deep/40 hover:text-primary font-black uppercase tracking-[0.2em] text-[10px] transition-all">Pricing</Link>
+                        <Link href="#features" className="text-deep/40 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">Digital Magic</Link>
+                        <Link href="#envelope" className="text-deep/40 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">The Envelope</Link>
+                        <Link href="#pricing" className="text-deep/40 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">Pricing</Link>
 
                         <div className="flex items-center gap-6 ml-4 pl-4 border-l border-zinc-100">
                             <Link href="/login" className="p-3 bg-zinc-50 text-deep/60 rounded-2xl hover:bg-zinc-100 transition-all">

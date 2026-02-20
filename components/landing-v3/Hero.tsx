@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 import { Sparkles, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 interface PassportData {
     childName: string;
@@ -32,6 +33,8 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
 
     const [showPassportPreview, setShowPassportPreview] = useState(false);
 
+    const router = useRouter();
+
     const handlePassportSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -40,8 +43,21 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
             return;
         }
 
+        // 1. Show preview briefy for "Island Magic" effect
         setShowPassportPreview(true);
-        // In production, this would redirect to checkout
+
+        // 2. Build redirect URL
+        const params = new URLSearchParams({
+            childName: passportData.childName,
+            heritage: passportData.island.toUpperCase(),
+            ageBand: passportData.ageBand,
+            plan: 'plan_mail_intro'
+        });
+
+        // 3. Set a slight timeout so they see their passport before landing on checkout
+        setTimeout(() => {
+            router.push(`/checkout?${params.toString()}`);
+        }, 1200);
     };
 
     return (
@@ -60,11 +76,11 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
                             <span>Caribbean Magic for Kids 3-9</span>
                         </div>
 
-                        <h1 className="text-5xl md:text-7xl font-black text-slate-900 leading-[1.1] mb-6">
+                        <h1 className="text-5xl md:text-8xl font-black text-slate-900 leading-[1.0] mb-6">
                             Give Your Child Their <span className="text-[var(--caribbean-ocean)]">Digital Passport</span> to the Islands.
                         </h1>
 
-                        <p className="text-xl text-slate-600 mb-10 max-w-xl leading-relaxed">
+                        <p className="text-xl md:text-2xl text-slate-600 mb-10 max-w-xl leading-relaxed">
                             Step into a world where Caribbean culture comes to life. Personalized missions, physical mail kits, and 4 legendary friends waiting to meet your child.
                         </p>
 
@@ -91,36 +107,36 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
                                                 <SelectValue placeholder="Select Island" />
                                             </SelectTrigger>
                                             <SelectContent className="bg-white border-slate-200 max-h-[300px]">
-                                                <SelectItem value="anguilla">Anguilla 🇦🇮</SelectItem>
-                                                <SelectItem value="antigua">Antigua & Barbuda 🇦🇬</SelectItem>
-                                                <SelectItem value="aruba">Aruba 🇦🇼</SelectItem>
-                                                <SelectItem value="bahamas">Bahamas 🇧🇸</SelectItem>
-                                                <SelectItem value="barbados">Barbados 🇧🇧</SelectItem>
-                                                <SelectItem value="bermuda">Bermuda 🇧🇲</SelectItem>
-                                                <SelectItem value="bonaire">Bonaire 🇧🇶</SelectItem>
-                                                <SelectItem value="bvi">British Virgin Islands 🇻🇬</SelectItem>
-                                                <SelectItem value="cayman">Cayman Islands 🇰🇾</SelectItem>
-                                                <SelectItem value="cuba">Cuba 🇨🇺</SelectItem>
-                                                <SelectItem value="curacao">Curacao 🇨🇼</SelectItem>
-                                                <SelectItem value="dominica">Dominica 🇩🇲</SelectItem>
-                                                <SelectItem value="dr">Dominican Republic 🇩🇴</SelectItem>
-                                                <SelectItem value="grenada">Grenada 🇬🇩</SelectItem>
-                                                <SelectItem value="guadeloupe">Guadeloupe 🇬🇵</SelectItem>
-                                                <SelectItem value="guyana">Guyana 🇬🇾</SelectItem>
-                                                <SelectItem value="haiti">Haiti 🇭🇹</SelectItem>
-                                                <SelectItem value="jamaica">Jamaica 🇯🇲</SelectItem>
-                                                <SelectItem value="martinique">Martinique 🇲🇶</SelectItem>
-                                                <SelectItem value="montserrat">Montserrat 🇲🇸</SelectItem>
-                                                <SelectItem value="puerto-rico">Puerto Rico 🇵🇷</SelectItem>
-                                                <SelectItem value="st-kitts">Saint Kitts & Nevis 🇰🇳</SelectItem>
-                                                <SelectItem value="st-lucia">Saint Lucia 🇱🇨</SelectItem>
-                                                <SelectItem value="st-vincent">Saint Vincent & the Grenadines 🇻🇨</SelectItem>
-                                                <SelectItem value="st-martin">Saint Martin 🇲🇫</SelectItem>
-                                                <SelectItem value="suriname">Suriname 🇸🇷</SelectItem>
-                                                <SelectItem value="trinidad">Trinidad & Tobago 🇹🇹</SelectItem>
-                                                <SelectItem value="turks-caicos">Turks & Caicos Islands 🇹🇨</SelectItem>
-                                                <SelectItem value="usvi">US Virgin Islands 🇻🇮</SelectItem>
-                                                <SelectItem value="other">Other/Caribbean Roots</SelectItem>
+                                                <SelectItem value="AI">Anguilla 🇦🇮</SelectItem>
+                                                <SelectItem value="AG">Antigua & Barbuda 🇦🇬</SelectItem>
+                                                <SelectItem value="AW">Aruba 🇦🇼</SelectItem>
+                                                <SelectItem value="BS">Bahamas 🇧🇸</SelectItem>
+                                                <SelectItem value="BB">Barbados 🇧🇧</SelectItem>
+                                                <SelectItem value="BM">Bermuda 🇧🇲</SelectItem>
+                                                <SelectItem value="BQ">Bonaire 🇧🇶</SelectItem>
+                                                <SelectItem value="VG">British Virgin Islands 🇻🇬</SelectItem>
+                                                <SelectItem value="KY">Cayman Islands 🇰🇾</SelectItem>
+                                                <SelectItem value="CU">Cuba 🇨🇺</SelectItem>
+                                                <SelectItem value="CW">Curacao 🇨🇼</SelectItem>
+                                                <SelectItem value="DM">Dominica 🇩🇲</SelectItem>
+                                                <SelectItem value="DO">Dominican Republic 🇩🇴</SelectItem>
+                                                <SelectItem value="GD">Grenada 🇬🇩</SelectItem>
+                                                <SelectItem value="GP">Guadeloupe 🇬🇵</SelectItem>
+                                                <SelectItem value="GY">Guyana 🇬🇾</SelectItem>
+                                                <SelectItem value="HT">Haiti 🇭🇹</SelectItem>
+                                                <SelectItem value="JM">Jamaica 🇯🇲</SelectItem>
+                                                <SelectItem value="MQ">Martinique 🇲🇶</SelectItem>
+                                                <SelectItem value="MS">Montserrat 🇲🇸</SelectItem>
+                                                <SelectItem value="PR">Puerto Rico 🇵🇷</SelectItem>
+                                                <SelectItem value="KN">Saint Kitts & Nevis 🇰🇳</SelectItem>
+                                                <SelectItem value="LC">Saint Lucia 🇱🇨</SelectItem>
+                                                <SelectItem value="VC">Saint Vincent & the Grenadines 🇻🇨</SelectItem>
+                                                <SelectItem value="MF">Saint Martin 🇲🇫</SelectItem>
+                                                <SelectItem value="SR">Suriname 🇸🇷</SelectItem>
+                                                <SelectItem value="TT">Trinidad & Tobago 🇹🇹</SelectItem>
+                                                <SelectItem value="TC">Turks & Caicos Islands 🇹🇨</SelectItem>
+                                                <SelectItem value="VI">US Virgin Islands 🇻🇮</SelectItem>
+                                                <SelectItem value="OTHER">Other/Caribbean Roots</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -171,7 +187,7 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
                                     </Button>
                                 </div>
 
-                                <p className="text-center text-xs text-slate-400 font-medium">
+                                <p className="text-center text-sm text-slate-500 font-bold">
                                     Intro Pass includes first Legend Envelope (US only) + Full Portal Access.
                                 </p>
                             </form>

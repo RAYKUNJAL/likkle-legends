@@ -60,7 +60,7 @@ export const VillainSection = () => {
                                     </div>
                                 </div>
                                 <h3 className="text-2xl sm:text-4xl font-black text-white tracking-tighter">Scorcha Pepper</h3>
-                                <p className="text-lg sm:text-base text-white/90 font-medium leading-relaxed">
+                                <p className="text-lg text-white/90 font-medium leading-relaxed">
                                     The mischievous pepper villain who turns up the heat across the islands. Only your child&apos;s knowledge can cool him down!
                                 </p>
                             </div>
@@ -104,8 +104,8 @@ export const VillainSection = () => {
                                         <item.icon size={22} className="text-red-400" />
                                     </div>
                                     <div>
-                                        <p className="font-black text-white text-base sm:text-sm tracking-tight">{item.label}</p>
-                                        <p className="text-sm text-white/70 font-medium">{item.desc}</p>
+                                        <p className="font-black text-white text-lg tracking-tight">{item.label}</p>
+                                        <p className="text-base text-white/70 font-medium">{item.desc}</p>
                                     </div>
                                 </motion.div>
                             ))}

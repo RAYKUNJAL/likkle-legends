@@ -95,12 +95,12 @@ export function MeetTheLegends({ onOpenWaitlist }: MeetTheLegendsProps) {
                                             {char.role}
                                         </span>
                                     </div>
-                                    <char.icon className="absolute top-4 right-4 w-6 h-6 text-white/40" />
+                                    <char.icon className="absolute top-4 right-4 w-6 h-6 text-white" />
                                 </div>
                                 <CardContent className="p-6">
-                                    <h3 className="text-2xl font-black mb-1" style={{ color: char.color }}>{char.name}</h3>
+                                    <h3 className="text-3xl font-black mb-1" style={{ color: char.color }}>{char.name}</h3>
                                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">Mastery: {char.teaches.split(',')[0]}</p>
-                                    <p className="text-sm font-bold text-slate-600 mb-6 line-clamp-2 leading-relaxed">
+                                    <p className="text-base font-bold text-slate-600 mb-6 line-clamp-2 leading-relaxed">
                                         {char.personality}
                                     </p>
                                     <Button

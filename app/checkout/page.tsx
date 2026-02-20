@@ -44,8 +44,8 @@ function CheckoutContent() {
 
     const [formData, setFormData] = useState({
         email: "",
-        childName: "",
-        heritage: "",
+        childName: searchParams.get('childName') || "",
+        heritage: searchParams.get('heritage')?.toUpperCase() || "",
         planKey: getInitialPlan(), // Store the key of SUBSCRIPTION_PLANS
         hasUpsell: false,
         hasHeritageStory: false
@@ -460,27 +460,33 @@ function CheckoutContent() {
                                         <div className="bg-white rounded-2xl border border-zinc-100 p-6 space-y-6 shadow-sm">
                                             {/* PayPal Button Container */}
                                             <div className="relative min-h-[150px] flex flex-col justify-center">
-                                                <PayPalButtons
-                                                    style={{ layout: "vertical", shape: "rect", borderRadius: 12, height: 48 }}
-                                                    createSubscription={(data, actions) => {
-                                                        const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
-                                                        let targetPlanId = selectedPlan?.paypalPlanId || SUBSCRIPTION_PLANS.plan_mail_intro.paypalPlanId;
+                                                {formData.planKey === 'plan_free_forever' ? (
+                                                    <button
+                                                        onClick={() => setIsComplete(true)}
+                                                        className="w-full py-5 bg-[var(--caribbean-ocean)] text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                                    >
+                                                        Activate Free Account
+                                                    </button>
+                                                ) : (
+                                                    <PayPalButtons
+                                                        style={{ layout: "vertical", shape: "rect", borderRadius: 12, height: 48 }}
+                                                        createSubscription={(data, actions) => {
+                                                            const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
+                                                            let targetPlanId = selectedPlan?.paypalPlanId || SUBSCRIPTION_PLANS.plan_mail_intro.paypalPlanId;
 
-                                                        return actions.subscription.create({
-                                                            plan_id: targetPlanId
-                                                            // Note: In production you would add custom_id or other metadata here
-                                                        });
-                                                    }}
-                                                    onApprove={async (data, actions) => {
-                                                        // Successful PayPal capture
-                                                        setIsComplete(true);
-                                                    }}
-                                                    onError={(err) => {
-                                                        console.error("PayPal Error:", err);
-                                                        // Show a user-friendly error instead of an alert
-                                                        toast.error("Payment could not be initialized. Please try again or contact support.");
-                                                    }}
-                                                />
+                                                            return actions.subscription.create({
+                                                                plan_id: targetPlanId
+                                                            });
+                                                        }}
+                                                        onApprove={async (data, actions) => {
+                                                            setIsComplete(true);
+                                                        }}
+                                                        onError={(err) => {
+                                                            console.error("PayPal Error:", err);
+                                                            toast.error("Payment could not be initialized. Please try again or contact support.");
+                                                        }}
+                                                    />
+                                                )}
                                             </div>
 
                                             <p className="text-[9px] text-deep/30 font-medium leading-relaxed text-center">

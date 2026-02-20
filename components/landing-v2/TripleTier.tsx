@@ -10,7 +10,7 @@ const tiers = [
         price: "$0",
         billing: "Free forever",
         highlight: false,
-        cta: { label: "Sample the Vibe", href: "/checkout" },
+        cta: { label: "Sample the Vibe", href: "/checkout?plan=plan_free_forever" },
         icon: Star,
         features: [
             { text: "Limited portal preview", included: true },
@@ -27,7 +27,7 @@ const tiers = [
         billing: "One-time payment",
         highlight: true,
         ribbon: "BEST FOR NEW FAMILIES",
-        cta: { label: "Get the $10 Pass", href: "/checkout" },
+        cta: { label: "Get the $10 Pass", href: "/checkout?plan=plan_mail_intro" },
         icon: Zap,
         trustNotes: ["US mail only (CA/UK coming soon)", "30-Day Triple Promise"],
         features: [
@@ -44,7 +44,7 @@ const tiers = [
         price: "$19.99",
         billing: "per month",
         highlight: false,
-        cta: { label: "Join the Family", href: "/checkout" },
+        cta: { label: "Join the Family", href: "/checkout?plan=plan_legends_plus" },
         icon: Crown,
         mailNote: "Monthly mail is US-only to start",
         waitlistCta: { label: "Join Canada/UK Waitlist", href: "/waitlist" },
@@ -158,7 +158,7 @@ export const TripleTier = () => {
                                                     <X size={10} className="text-zinc-300" />
                                                 </div>
                                             )}
-                                            <span className={`text-sm font-medium ${feat.included
+                                            <span className={`text-lg font-medium ${feat.included
                                                 ? (tier.highlight ? 'text-white/80' : 'text-deep/60')
                                                 : 'text-deep/20 line-through'
                                                 }`}>
@@ -170,7 +170,7 @@ export const TripleTier = () => {
 
                                 {/* Mail Note */}
                                 {tier.mailNote && (
-                                    <p className="text-[9px] font-bold text-deep/20 mb-4 uppercase tracking-wider">{tier.mailNote} (CA/UK coming soon)</p>
+                                    <p className="text-sm font-extrabold text-deep/30 mb-4 uppercase tracking-widest">{tier.mailNote} (CA/UK coming soon)</p>
                                 )}
 
                                 {/* CTA */}

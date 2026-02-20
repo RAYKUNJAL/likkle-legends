@@ -10,7 +10,7 @@ const categories = [
         name: "The Scholar Suite",
         lead: "R.O.T.I.",
         leadImage: "/images/roti-new.jpg",
-        color: "#2D5A27",
+        color: "#89C741",
         icon: Bot,
         features: [
             { name: "Phonics", icon: Mic, desc: "Voice-friendly reading practice with R.O.T.I." },
@@ -154,9 +154,9 @@ export const FeatureMatrix = () => {
                                                 style={{ backgroundColor: cat.color + '30' }}>
                                                 <feat.icon size={24} style={{ color: cat.color }} />
                                             </div>
-                                            <h4 className="font-extrabold text-white text-lg sm:text-base tracking-tight leading-tight">{feat.name}</h4>
+                                            <h4 className="font-extrabold text-white text-xl sm:text-lg tracking-tight leading-tight">{feat.name}</h4>
                                         </div>
-                                        <p className="text-base sm:text-sm text-white/90 leading-relaxed font-medium">{feat.desc}</p>
+                                        <p className="text-lg leading-relaxed font-medium">{feat.desc}</p>
                                     </div>
                                 ))}
                             </div>
