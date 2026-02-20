@@ -15,76 +15,64 @@ interface BenefitStoryProps {
 
 export const BenefitStory = ({ title, content }: BenefitStoryProps) => {
     return (
-        <section className="py-48 bg-white relative overflow-hidden" id="about">
-            {/* Background Blob */}
-            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-secondary/5 rounded-full blur-[120px] -mr-96 -mt-48 opacity-50"></div>
-
+        <section className="py-24 sm:py-32 lg:py-40 bg-white relative overflow-hidden" id="about">
             <div className="container mx-auto px-6 relative z-10">
-                <div className="flex flex-col lg:flex-row items-center gap-24 lg:gap-40">
+                <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
                     {/* Visual Composite */}
                     <div className="flex-1 w-full order-2 lg:order-1 relative">
                         <motion.div
                             initial={{ opacity: 0, y: 40 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 1 }}
+                            transition={{ duration: 0.8 }}
                             className="relative"
                         >
                             {/* Main Lifestyle Shot */}
-                            <div className="relative rounded-[6rem] overflow-hidden shadow-premium-xl border-[16px] border-white bg-zinc-50 aspect-[4/5] lg:aspect-[3/4]">
+                            <div className="relative rounded-[3rem] sm:rounded-[5rem] overflow-hidden shadow-2xl border-[10px] sm:border-[16px] border-white bg-zinc-50 aspect-[4/5]">
                                 <img
                                     src="/images/mailing-club-lifestyle.jpg"
-                                    alt="Legend Envelope Physical Experience"
-                                    className="w-full h-full object-cover grayscale-[10%] group-hover:grayscale-0 transition-all duration-1000"
+                                    alt="Family enjoying Likkle Legends"
+                                    className="w-full h-full object-cover"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-deep/60 via-transparent to-transparent"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-deep/40 via-transparent to-transparent"></div>
 
-                                {/* Inner Floating Card */}
-                                <div className="absolute bottom-12 left-12 right-12 p-10 glass-morphism rounded-[3rem] border-white/40 shadow-2xl">
-                                    <div className="flex items-center gap-6 mb-6">
-                                        <div className="w-16 h-16 bg-primary-gradient rounded-2xl flex items-center justify-center text-white shadow-xl">
-                                            <Mail size={32} />
-                                        </div>
-                                        <div>
-                                            <p className="text-2xl font-black text-deep leading-none tracking-tight italic">Genuine Mail</p>
-                                            <p className="text-sm font-black uppercase tracking-[0.2em] text-primary mt-2">Personalized Arrival</p>
-                                        </div>
+                                {/* Inner Floating Card - Simplified */}
+                                <div className="absolute bottom-6 sm:bottom-10 left-6 sm:left-10 right-6 sm:right-10 p-6 sm:p-8 bg-white/90 backdrop-blur-md rounded-[2rem] border border-white shadow-xl">
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <Mail className="text-primary" size={24} />
+                                        <p className="text-xl font-black text-deep leading-none tracking-tight">Authentic Connection</p>
                                     </div>
-                                    <p className="text-deep/60 text-lg font-medium leading-relaxed">
-                                        Every letter is addressed by name, continuing their specific island adventure across the globe.
+                                    <p className="text-deep/60 text-sm sm:text-base font-medium leading-relaxed">
+                                        Personalized mail that brings a smile to your child's face.
                                     </p>
                                 </div>
                             </div>
 
-                            {/* Floating "Sticker" Asset */}
+                            {/* Floating Badge - Scaled and Positioned correctly */}
                             <motion.div
-                                animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.1, 1] }}
+                                animate={{ rotate: [0, 10, -10, 0], scale: [1, 1.05, 1] }}
                                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                                className="absolute -top-16 -right-16 w-48 h-48 bg-yellow-400 rounded-full shadow-gold border-[8px] border-white flex flex-col items-center justify-center text-center p-4 rotate-12"
+                                className="absolute -top-10 -right-10 w-32 h-32 sm:w-40 sm:h-40 bg-[var(--caribbean-sun)] rounded-full shadow-lg border-[6px] sm:border-[8px] border-white flex items-center justify-center text-center p-2 rotate-12 z-20"
                             >
-                                <Sparkles className="text-deep mb-2" size={32} />
-                                <p className="text-base font-black uppercase tracking-[0.1em] text-deep leading-tight">Physical <br />Collector Items</p>
+                                <p className="text-xs sm:text-sm font-black uppercase tracking-widest text-deep leading-tight">Physical <br />Collector <br />Items</p>
                             </motion.div>
                         </motion.div>
-
-                        {/* Background Parallax Shadow element */}
-                        <div className="absolute -inset-10 bg-secondary/5 -z-20 rounded-[8rem] blur-3xl"></div>
                     </div>
 
-                    {/* Content Block: Magazine Editorial */}
-                    <div className="flex-1 space-y-20 order-1 lg:order-2">
+                    {/* Content Block */}
+                    <div className="flex-1 space-y-12 lg:space-y-16 order-1 lg:order-2">
                         <motion.div
                             initial={{ opacity: 0, x: 30 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 1 }}
+                            transition={{ duration: 0.8 }}
                         >
-                            <h2 className="text-6xl md:text-7xl lg:text-[7rem] font-black text-deep leading-[0.85] tracking-tighter">
+                            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-deep leading-[1.1] tracking-tighter">
                                 {title}
                             </h2>
                         </motion.div>
 
-                        <div className="space-y-20">
+                        <div className="space-y-12 lg:space-y-16">
                             {content.map((block, i) => (
                                 <motion.div
                                     key={block.header}
@@ -92,24 +80,24 @@ export const BenefitStory = ({ title, content }: BenefitStoryProps) => {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: i * 0.2, duration: 0.8 }}
-                                    className="flex gap-12 group"
+                                    className="flex gap-6 sm:gap-10 group"
                                 >
-                                    <div className="flex-shrink-0 w-28 h-28 bg-zinc-50 rounded-[2.5rem] flex items-center justify-center text-deep group-hover:bg-primary group-hover:text-white transition-all duration-700 shadow-sm border border-zinc-100">
-                                        {i === 0 ? <Anchor size={44} strokeWidth={2.5} /> : <ShieldCheck size={44} strokeWidth={2.5} />}
+                                    <div className="flex-shrink-0 w-16 h-16 sm:w-24 sm:h-24 bg-zinc-50 rounded-3xl flex items-center justify-center text-deep group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm border border-zinc-100">
+                                        {i === 0 ? <Anchor size={32} strokeWidth={2.5} /> : <ShieldCheck size={32} strokeWidth={2.5} />}
                                     </div>
-                                    <div className="space-y-6">
-                                        <h3 className="text-4xl font-black text-deep tracking-tighter leading-none group-hover:text-primary transition-colors">{block.header}</h3>
-                                        <p className="text-2xl text-deep/50 leading-relaxed font-medium max-w-xl">
+                                    <div className="space-y-4 sm:space-y-6">
+                                        <h3 className="text-2xl sm:text-4xl font-black text-deep tracking-tighter leading-none">{block.header}</h3>
+                                        <p className="text-base sm:text-xl text-deep/60 leading-relaxed font-medium max-w-xl">
                                             {block.body}
                                         </p>
-                                        <div className="flex items-center gap-6 pt-4">
-                                            <div className="flex items-center gap-2 px-6 py-3 bg-zinc-50 border border-zinc-100 rounded-full text-base font-black uppercase tracking-widest text-deep/40 shadow-sm">
-                                                <CheckCircle2 size={16} className="text-primary" />
+                                        <div className="flex flex-wrap items-center gap-4 pt-2">
+                                            <div className="flex items-center gap-2 px-4 py-2 bg-zinc-50 border border-zinc-100 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest text-deep/40 shadow-sm">
+                                                <CheckCircle2 size={14} className="text-primary" />
                                                 Verified Delivery
                                             </div>
-                                            <div className="hidden sm:flex items-center gap-2 px-6 py-3 bg-secondary/5 border border-secondary/10 rounded-full text-base font-black uppercase tracking-widest text-secondary shadow-sm">
-                                                <MapPin size={16} />
-                                                Universal Mail Access
+                                            <div className="flex items-center gap-2 px-4 py-2 bg-secondary/5 border border-secondary/10 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-widest text-secondary shadow-sm">
+                                                <MapPin size={14} />
+                                                Universal Mail
                                             </div>
                                         </div>
                                     </div>
@@ -121,19 +109,15 @@ export const BenefitStory = ({ title, content }: BenefitStoryProps) => {
                         <motion.div
                             initial={{ opacity: 0 }}
                             whileInView={{ opacity: 1 }}
-                            className="p-12 border-l-8 border-primary bg-primary/5 rounded-r-[3rem] italic"
+                            className="p-8 sm:p-10 border-l-[6px] sm:border-l-[8px] border-primary bg-primary/5 rounded-r-3xl italic"
                         >
-                            <p className="text-2xl font-bold text-deep/80 leading-relaxed">
-                                "The magic isn't in what's in the box, it's what's in the message. We focus on the legacy, one letter at a time."
+                            <p className="text-lg sm:text-xl font-bold text-deep/80 leading-relaxed">
+                                "We don't just deliver mail, we deliver legacy. Every letter is a heartbeat from the islands."
                             </p>
-                            <p className="mt-4 text-base font-black uppercase tracking-widest text-primary">Likkle Legends Philosophy</p>
                         </motion.div>
                     </div>
                 </div>
             </div>
-
-            {/* Bottom Wave Transition */}
-            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-zinc-50 to-transparent"></div>
         </section>
     );
 };

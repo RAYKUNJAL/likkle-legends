@@ -25,12 +25,10 @@ export const PhysicalDigitalBridge = () => {
                             <div className="absolute -inset-8 bg-primary/5 rounded-[5rem] blur-3xl"></div>
 
                             <div className="relative rounded-[2.5rem] sm:rounded-[4rem] overflow-hidden shadow-premium-xl border-[8px] sm:border-[12px] border-white bg-zinc-50 aspect-[4/3]">
-                                <Image
-                                    src="https://images.unsplash.com/photo-1566367576585-051277d529da?q=80&w=1000&auto=format&fit=crop"
-                                    alt="Child receiving Legend Envelope"
-                                    fill
-                                    className="object-cover"
-                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                <img
+                                    src="/images/child_reading.png"
+                                    alt="Child enjoying a Likkle Legends letter"
+                                    className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-deep/5 via-transparent to-transparent pointer-events-none"></div>
                             </div>
@@ -78,9 +76,9 @@ export const PhysicalDigitalBridge = () => {
                             <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">Physical + Digital</span>
                         </div>
 
-                        <h2 className="text-2xl sm:text-4xl lg:text-5xl xl:text-[3.5rem] font-black text-deep tracking-tighter leading-tight py-2">
+                        <h2 className="text-4xl md:text-5xl lg:text-7xl font-black text-deep leading-[1.05] tracking-tight">
                             The Legend Envelope—<br />
-                            <span className="text-gradient italic">Play Now, Then Feel</span><br />
+                            <span className="text-primary italic">Play Now, Then Feel</span><br />
                             It in the Mail.
                         </h2>
 

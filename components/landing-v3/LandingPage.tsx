@@ -67,17 +67,14 @@ export default function LandingPage() {
         <div className="flex flex-col min-h-screen bg-white" itemScope itemType="https://schema.org/WebPage">
             <NavbarV2 />
 
-            <main className="flex-grow pt-0">
+            <main className="flex-grow pt-0 space-y-0">
                 {/* V3 Hero - Passport Builder */}
                 <Hero onOpenWaitlist={() => setIsWaitlistOpen(true)} />
-
-                {/* New Tanty Spice Radio Section - Immediately below Hero */}
-                <TantyRadioSection />
 
                 {/* Social Proof (Preserved) */}
                 <SocialProofBar />
 
-                {/* The "Why it Matters" Story - Real People Images restored here */}
+                {/* The "Why it Matters" Story - Primary Trust Section */}
                 <BenefitStory title="The Legacy in the Mailbox." content={benefitContent} />
 
                 {/* V3 Character Section with Real Assets */}

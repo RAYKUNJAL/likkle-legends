@@ -19,11 +19,11 @@ export const SocialProofBar = () => {
                     <div className="flex items-center gap-3">
                         <div className="flex gap-0.5">
                             {[1, 2, 3, 4, 5].map(i => (
-                                <Star key={i} size={16} className="text-yellow-400 fill-yellow-400" />
+                                <Star key={i} size={18} className="text-[var(--caribbean-sun)] fill-[var(--caribbean-sun)]" />
                             ))}
                         </div>
-                        <span className="text-base font-black text-deep tracking-tight">4.98/5.0</span>
-                        <span className="text-xs font-bold uppercase tracking-widest text-deep/30">from 512+ families</span>
+                        <span className="text-xl font-black text-deep tracking-tight">4.92/5.0</span>
+                        <span className="text-sm font-bold uppercase tracking-widest text-deep/40 ml-2">Trusted by 512+ Families</span>
                     </div>
 
                     {/* Divider */}

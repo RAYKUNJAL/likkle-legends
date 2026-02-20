@@ -75,7 +75,7 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false }) => {
     };
 
     const setupVisualizer = async () => {
-        if (!audioRef.current || isVideo) return;
+        if (!audioRef.current || isVideo || mediaSourceRef.current) return;
 
         try {
             const ctx = getGlobalAudioContext();
@@ -83,24 +83,24 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false }) => {
                 await ctx.resume();
             }
 
-            if (!mediaSourceRef.current) {
-                const analyzer = ctx.createAnalyser();
-                // NOTE: createMediaElementSource requires the audio to be CORS-accessible.
-                // If this fails due to CORS, we catch the error but allow playback to continue without visuals.
+            const analyzer = ctx.createAnalyser();
+            // Wrap in try/catch because some browsers (Safari) or HMR might still complain
+            try {
                 const source = ctx.createMediaElementSource(audioRef.current);
                 source.connect(analyzer);
                 analyzer.connect(ctx.destination);
-
-                analyzer.fftSize = 256;
-                analyzerRef.current = analyzer;
                 mediaSourceRef.current = source;
+            } catch (authErr) {
+                console.warn("Audio node connection already exists - ignoring", authErr);
             }
+
+            analyzer.fftSize = 256;
+            analyzerRef.current = analyzer;
 
             stopVisualizer();
             drawVisualizer();
         } catch (e) {
-            console.warn("[RADIO] Visualizer setup skipped (likely CORS):", e);
-            // Do not stop playback here; visualizer is optional
+            console.warn("Visualizer setup failed:", e);
         }
     };
 
