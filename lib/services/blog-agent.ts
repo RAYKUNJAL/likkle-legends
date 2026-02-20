@@ -1,7 +1,8 @@
 // AI Blog Agent - Generates SEO-optimized educational content
 // Uses Gemini to create Caribbean kids education articles
 
-import { createPost, generateSlug, calculateReadTime, BlogPost } from './blog';
+import { createPostAdmin as createPost, generateSlug, calculateReadTime, BlogPost } from './blog';
+import { generateImage } from '../ai-image-generator/image-client';
 
 export interface BlogGenerationRequest {
     topic: string;
@@ -33,6 +34,16 @@ const CATEGORY_CONTEXT: Record<string, string> = {
     patois: 'Jamaican Patois vocabulary, phrases for kids, language learning, and cultural linguistics'
 };
 
+const CATEGORY_MAP: Record<string, string> = {
+    culture: '28feadc5-5ec1-4171-9cfb-4e64e9a7e7ba',
+    parenting: 'b38012b5-b72c-48f6-87ca-cd6b198c4789',
+    education: '395df621-35fc-4bad-95f2-65bcb5de6f0d',
+    activities: '395df621-35fc-4bad-95f2-65bcb5de6f0d',
+    recipes: '28feadc5-5ec1-4171-9cfb-4e64e9a7e7ba',
+    stories: '28feadc5-5ec1-4171-9cfb-4e64e9a7e7ba',
+    patois: '28feadc5-5ec1-4171-9cfb-4e64e9a7e7ba'
+};
+
 const BLOG_SYSTEM_PROMPT = `You are an expert content writer for Likkle Legends, a Caribbean kids education platform. 
 Your goal is to create engaging, SEO-optimized blog articles that:
 
@@ -60,9 +71,11 @@ SEO Guidelines:
 - Suggest 5-7 relevant tags`;
 
 export async function generateBlogPost(request: BlogGenerationRequest): Promise<GeneratedBlogContent> {
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || '';
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+        process.env.GEMINI_API_KEY ||
+        process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
     if (!apiKey) {
-        throw new Error('Missing GOOGLE_GENERATIVE_AI_API_KEY');
+        throw new Error('Missing Gemini/Google AI API Key (check GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY)');
     }
 
     const categoryContext = CATEGORY_CONTEXT[request.category] || CATEGORY_CONTEXT.culture;
@@ -116,7 +129,10 @@ IMPORTANT:
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        response_mime_type: "application/json"
+                    }
                 }),
                 cache: 'no-store' // Critical for Next.js to avoid caching errors
             });
@@ -172,15 +188,28 @@ export async function generateAndSavePost(
 ): Promise<BlogPost> {
     const content = await generateBlogPost(request);
 
+    // Generate Featured Image
+    console.log(`🎨 [Blog Agent] Generating featured image for: ${content.title}`);
+    let featuredImageUrl = null;
+    try {
+        featuredImageUrl = await generateImage(
+            `Professional blog header image for an article titled "${content.title}". Caribbean theme, vibrant colors, educational and child-friendly.`,
+            `blog-${content.slug}`
+        );
+    } catch (err) {
+        console.warn(`⚠️ Failed to generate image for blog: ${content.title}`, err);
+    }
+
     const post = await createPost({
         title: content.title,
         slug: content.slug,
         excerpt: content.excerpt,
         content: content.content,
+        featured_image_url: featuredImageUrl,
         meta_description: content.meta_description,
         keywords: content.keywords,
         tags: content.tags,
-        category: request.category,
+        category: CATEGORY_MAP[request.category] || request.category,
         read_time_minutes: content.read_time_minutes,
         author_name: options.authorName || 'Likkle Legends Team',
         ai_generated: true,

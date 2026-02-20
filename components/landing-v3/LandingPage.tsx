@@ -5,6 +5,7 @@ import { NavbarV2 } from "@/components/landing-v2/NavbarV2";
 import { Hero } from "@/components/landing-v3/Hero";
 import { TantyRadioSection } from "@/components/landing-v3/TantyRadioSection";
 import { MeetTheLegends } from "@/components/landing-v3/MeetTheLegends";
+import { BlogPreview } from "@/components/landing-v3/BlogPreview";
 import { WaitlistModal } from "@/components/landing-v3/WaitlistModal";
 
 // Preserved V2 Components
@@ -74,6 +75,9 @@ export default function LandingPage() {
                 {/* Social Proof (Preserved) */}
                 <SocialProofBar />
 
+                {/* Tanty Radio Section - Audio Brand Personality */}
+                <TantyRadioSection />
+
                 {/* The "Why it Matters" Story - Primary Trust Section */}
                 <BenefitStory title="The Legacy in the Mailbox." content={benefitContent} />
 
@@ -91,6 +95,9 @@ export default function LandingPage() {
                 <GuaranteeBand />
 
                 <TripleTier />
+
+                {/* Latest from the Blog - SEO Scaling */}
+                <BlogPreview />
 
                 <AccordionV2 items={faqItems} />
             </main>

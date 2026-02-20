@@ -1,5 +1,5 @@
 // Blog Service - Database operations for blog posts
-import { supabase } from '@/lib/storage';
+import { supabase, supabaseAdmin } from '@/lib/supabase-client';
 import { isSupabaseConfigured } from '@/lib/supabase-client';
 
 export interface BlogPost {
@@ -157,6 +157,18 @@ export async function getRelatedPosts(currentSlug: string, category: string, lim
 // Admin: Create a new post
 export async function createPost(post: Partial<BlogPost>) {
     const { data, error } = await supabase
+        .from('blog_posts')
+        .insert(post)
+        .select()
+        .single();
+
+    if (error) throw error;
+    return data as BlogPost;
+}
+
+// System Admin: Create post without checking policies (uses service role)
+export async function createPostAdmin(post: Partial<BlogPost>) {
+    const { data, error } = await supabaseAdmin
         .from('blog_posts')
         .insert(post)
         .select()
