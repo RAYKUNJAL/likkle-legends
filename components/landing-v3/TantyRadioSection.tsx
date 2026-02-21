@@ -41,10 +41,31 @@ export function TantyRadioSection() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
-                        className="text-white/60 text-xl max-w-2xl mx-auto leading-relaxed"
+                        className="text-white/60 text-xl max-w-2xl mx-auto leading-relaxed mb-10"
                     >
                         A safe, ad-free listening space for kids. Nursery rhymes, island sounds, and learning songs curated by Tanty Spice herself.
                     </motion.p>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.3 }}
+                        className="flex flex-wrap justify-center gap-4"
+                    >
+                        <a
+                            href="/portal/music"
+                            className="px-8 py-4 bg-[var(--caribbean-sun)] text-slate-900 rounded-2xl font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-xl shadow-[var(--caribbean-sun)]/20 flex items-center gap-2"
+                        >
+                            Buy Tracks $0.99
+                        </a>
+                        <a
+                            href="/portal/music?tab=custom"
+                            className="px-8 py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-white/20 transition-all flex items-center gap-2"
+                        >
+                            Order Custom Song
+                        </a>
+                    </motion.div>
                 </div>
 
                 <motion.div

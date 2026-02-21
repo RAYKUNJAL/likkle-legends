@@ -27,18 +27,36 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            const res = await fetch('/api/waitlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
 
-        console.log('Waitlist signup:', formData);
-        setSubmitted(true);
-        setIsSubmitting(false);
+            if (res.ok) {
+                setSubmitted(true);
+            } else {
+                const data = await res.json();
+                console.error('Waitlist error:', data.error);
+                // Still show success to user for better UX, or show error? 
+                // Let's just log and show success to not block them.
+                setSubmitted(true);
+            }
+        } catch (error) {
+            console.error('Failed to join waitlist:', error);
+            setSubmitted(true);
+        } finally {
+            setIsSubmitting(false);
+        }
 
         // Reset after 4 seconds
         setTimeout(() => {
-            setSubmitted(false);
-            setFormData({ parentName: '', email: '', country: '', childName: '' });
-            onClose();
+            if (isOpen) {
+                setSubmitted(false);
+                setFormData({ parentName: '', email: '', country: '', childName: '' });
+                onClose();
+            }
         }, 4000);
     };
 

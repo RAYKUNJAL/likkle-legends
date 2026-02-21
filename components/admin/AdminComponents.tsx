@@ -9,7 +9,8 @@ import {
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
     Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap, Send,
-    Database, Smartphone, Accessibility, Lock, Star, Info, Target, Trophy
+    Database, Smartphone, Accessibility, Lock, Star, Info, Target, Trophy,
+    DollarSign, X
 } from 'lucide-react';
 
 export {
@@ -19,7 +20,8 @@ export {
     Globe, Palette, Megaphone, ShieldCheck, ChevronRight,
     Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap, Send,
-    Database, Smartphone, Accessibility, Lock, Star, Info, Target, Trophy
+    Database, Smartphone, Accessibility, Lock, Star, Info, Target, Trophy,
+    DollarSign, X
 };
 
 // ==========================================
@@ -76,6 +78,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
         { id: 'games', label: 'Game Builder', icon: Gamepad2, href: '/admin/games' },
         { id: 'voice', label: 'Voice AI Demo', icon: MessageSquare, href: '/voice-demo' },
         { id: 'blog', label: 'Blog Manager', icon: MessageSquare, href: '/admin/blog' },
+        { id: 'radio', label: 'Radio & Market', icon: Music, href: '/admin/radio' },
         { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/admin/messages' },
         { id: 'cms', label: 'Site CMS', icon: Globe, href: '/admin/cms' },
         { id: 'pixels', label: 'Launch Pixels', icon: Target, href: '/admin/pixels' },

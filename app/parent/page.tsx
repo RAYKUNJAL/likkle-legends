@@ -332,9 +332,20 @@ export default function ParentDashboard() {
                                     <ReferralWidget />
                                     <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-12 rounded-[4rem] shadow-2xl text-white relative overflow-hidden">
                                         <Gift className="w-12 h-12 text-indigo-300 mb-8" />
-                                        <h3 className="text-3xl font-black tracking-tighter mb-4 leading-tight">Unlock Premium Rewards.</h3>
-                                        <Link href="/pricing" className="block w-full py-5 bg-white text-indigo-700 rounded-2xl font-black text-center shadow-xl hover:scale-105 transition-all text-sm uppercase tracking-widest">
-                                            Explore Plans
+                                        <h3 className="text-3xl font-black tracking-tighter mb-4 leading-tight">Unlock Premium Music.</h3>
+                                        <p className="text-indigo-100/60 font-medium mb-8">Get exclusive tracks or order a custom song for your Legend.</p>
+                                        <Link href="/portal/music" className="block w-full py-5 bg-white text-indigo-700 rounded-2xl font-black text-center shadow-xl hover:scale-105 transition-all text-sm uppercase tracking-widest">
+                                            Visit Music Hub
+                                        </Link>
+                                    </div>
+                                    <div className="bg-white p-12 rounded-[4rem] shadow-2xl border border-slate-100 flex flex-col items-center text-center">
+                                        <div className="w-16 h-16 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mb-6">
+                                            <Star size={32} />
+                                        </div>
+                                        <h3 className="text-2xl font-black text-slate-900 mb-2">Heritage Radio</h3>
+                                        <p className="text-slate-400 text-sm mb-6">Streaming Caribbean culture 24/7.</p>
+                                        <Link href="/portal?sec=radio" className="text-primary font-black uppercase tracking-widest text-xs hover:underline">
+                                            Open Player
                                         </Link>
                                     </div>
                                 </div>

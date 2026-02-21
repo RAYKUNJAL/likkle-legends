@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
     Sparkles, BookOpen, Music, Palette, Target, Star, Play,
     Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video, Radio,
-    Map as MapIcon, Grid, Wand2, LogOut, Download, Menu, X
+    Map as MapIcon, Grid, Wand2, LogOut, Download, Menu, X, ShoppingBag
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { getSongs, getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
@@ -254,6 +254,7 @@ export default function ChildPortalPage() {
         { id: 'games', label: 'Games', icon: Palette, color: 'from-green-500 to-emerald-500' },
         { id: 'printables', label: 'Printables', icon: Download, color: 'from-amber-400 to-orange-500' },
         { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
+        { id: 'music-hub', label: 'Market', icon: ShoppingBag, color: 'from-indigo-600 to-purple-700' },
     ];
 
     return (
@@ -363,6 +364,8 @@ export default function ChildPortalPage() {
                                     onClick={() => {
                                         if (item.id === 'games') {
                                             router.push('/portal/games');
+                                        } else if (item.id === 'music-hub') {
+                                            router.push('/portal/music');
                                         } else {
                                             setActiveSection(item.id as PortalSection);
                                             setIsSidebarOpen(false); // Close on mobile
@@ -608,6 +611,12 @@ export default function ChildPortalPage() {
                                             <h2 className="text-4xl font-black text-blue-900 tracking-tight">Music Studio</h2>
                                             <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">rhythms of the caribbean</p>
                                         </div>
+                                        <button
+                                            onClick={() => router.push('/portal/music')}
+                                            className="ml-auto px-6 py-3 bg-pink-500 text-white rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                                        >
+                                            <ShoppingBag size={18} /> Get New Songs
+                                        </button>
                                     </div>
 
                                     {loadingStates.songs ? (

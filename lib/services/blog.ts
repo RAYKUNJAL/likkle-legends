@@ -25,6 +25,9 @@ export interface BlogPost {
     read_time_minutes: number;
     created_at: string;
     updated_at: string;
+    blog_categories?: {
+        name: string;
+    };
 }
 
 
@@ -52,7 +55,7 @@ export async function getPublishedPosts(options?: {
 
     let query = supabase
         .from('blog_posts')
-        .select('*')
+        .select('*, blog_categories(name)')
         .eq('status', 'published')
         .order('published_at', { ascending: false });
 
@@ -90,7 +93,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
 
     const { data, error } = await supabase
         .from('blog_posts')
-        .select('*')
+        .select('*, blog_categories(name)')
         .eq('slug', slug)
         .eq('status', 'published')
         .single();

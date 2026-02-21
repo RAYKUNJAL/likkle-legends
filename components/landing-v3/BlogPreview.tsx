@@ -97,7 +97,7 @@ export function BlogPreview() {
                                         />
                                         <div className="absolute top-4 left-4">
                                             <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm text-[10px] font-black uppercase tracking-widest text-deep shadow-sm">
-                                                {post.category}
+                                                {post.blog_categories?.name || 'Heritage'}
                                             </span>
                                         </div>
                                     </Link>

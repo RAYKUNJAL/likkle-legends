@@ -69,7 +69,7 @@ export default async function BlogPostPage({ params }: Props) {
             name: 'Likkle Legends',
             logo: {
                 '@type': 'ImageObject',
-                url: 'https://liklelegends.com/images/logo.png'
+                url: 'https://likklelegends.com/images/logo.png'
             }
         }
     };
@@ -177,7 +177,7 @@ export default async function BlogPostPage({ params }: Props) {
                         <div className="flex items-center gap-4 mb-10 pb-10 border-b border-zinc-200">
                             <span className="text-deep/40 font-bold text-sm uppercase tracking-widest">Share:</span>
                             <a
-                                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://liklelegends.com/blog/${post.slug}`)}`}
+                                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://likklelegends.com/blog/${post.slug}`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="w-10 h-10 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center hover:scale-110 transition-transform"
@@ -185,7 +185,7 @@ export default async function BlogPostPage({ params }: Props) {
                                 <Twitter size={18} />
                             </a>
                             <a
-                                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://liklelegends.com/blog/${post.slug}`)}`}
+                                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://likklelegends.com/blog/${post.slug}`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="w-10 h-10 rounded-full bg-[#4267B2] text-white flex items-center justify-center hover:scale-110 transition-transform"
