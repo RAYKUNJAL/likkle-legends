@@ -69,26 +69,59 @@ export async function POST(request: NextRequest) {
             const contentId = customId.contentId; // song uuid
 
             if (productId === 'custom_song_request') {
-                // Update Custom Request
+                // INSERT new custom song order (no pre-existing row)
                 await supabaseAdmin
-                    .from('custom_song_requests')
-                    .update({
+                    .from('custom_song_orders')
+                    .insert({
+                        user_id: user.id,
                         status: 'paid',
-                        payment_status: 'paid',
+                        event_type: customId.event_type || 'birthday',
+                        child_name: customId.child_name || null,
+                        special_instructions: customId.special_instructions || null,
+                        price_paid: parseFloat(transaction.amount.value),
+                        metadata: {
+                            paypal_order_id: orderID,
+                            paypal_transaction_id: transaction.id,
+                        }
+                    });
+            } else if (productId === 'track_bundle_5') {
+                // Insert one purchased_content row per selected song so each appears in the library
+                const selectedSongIds: string[] = customId.selectedSongIds || [];
+                const rows = selectedSongIds.map((songId: string) => ({
+                    user_id: user.id,
+                    content_type: 'song',
+                    content_id: songId,
+                    transaction_id: transaction.id,
+                    amount_paid: parseFloat(transaction.amount.value) / (selectedSongIds.length || 1),
+                    metadata: {
                         paypal_order_id: orderID,
-                        amount_paid: transaction.amount.value
-                    })
-                    .eq('id', contentId);
+                        product_id: productId,
+                        bundle: true,
+                    }
+                }));
+                if (rows.length > 0) {
+                    await supabaseAdmin.from('purchased_content').insert(rows);
+                } else {
+                    // No specific songs — record the bundle itself
+                    await supabaseAdmin.from('purchased_content').insert({
+                        user_id: user.id,
+                        content_type: 'bundle',
+                        content_id: null,
+                        transaction_id: transaction.id,
+                        amount_paid: parseFloat(transaction.amount.value),
+                        metadata: { paypal_order_id: orderID, product_id: productId }
+                    });
+                }
             } else {
-                // Insert Purchase Record
+                // Single track purchase
                 await supabaseAdmin
                     .from('purchased_content')
                     .insert({
                         user_id: user.id,
-                        content_type: productId.includes('bundle') ? 'bundle' : 'song',
+                        content_type: 'song',
                         content_id: contentId,
                         transaction_id: transaction.id,
-                        amount_paid: transaction.amount.value,
+                        amount_paid: parseFloat(transaction.amount.value),
                         metadata: {
                             paypal_order_id: orderID,
                             product_id: productId

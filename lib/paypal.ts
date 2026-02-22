@@ -142,7 +142,7 @@ export const MUSIC_STORE_PRODUCTS = {
     custom_song_request: {
         id: 'custom_song_request',
         name: 'Custom Song Request',
-        price: 49.99,
+        price: 24.99,
         type: 'one-time',
     },
 };

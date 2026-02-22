@@ -111,11 +111,23 @@ export default function PurchaseModal({
                         {contentTitle || product.name}
                     </h2>
 
-                    <p className="text-gray-500 mb-6 font-medium">
+                    <p className="text-gray-500 mb-4 font-medium">
                         {productKey === 'custom_song_request'
                             ? "Make their day magical with a song made just for them!"
                             : "Own this track forever. Download & listen offline."}
                     </p>
+
+                    {productKey === 'custom_song_request' && metadata && (
+                        <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 text-left mb-2">
+                            <p className="text-xs font-black uppercase tracking-widest text-orange-400 mb-2">Your Order Details</p>
+                            {metadata.child_name && (
+                                <p className="text-sm font-bold text-gray-800">For: <span className="text-orange-600">{metadata.child_name}</span></p>
+                            )}
+                            {metadata.event_type && (
+                                <p className="text-sm font-medium text-gray-500 capitalize mt-0.5">Occasion: {metadata.event_type.replace(/_/g, ' ')}</p>
+                            )}
+                        </div>
+                    )}
 
                     <div className="text-4xl font-black text-primary mb-8">
                         ${product.price}
