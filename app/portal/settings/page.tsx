@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { updateProfileSettings, deleteUserAccountAction } from '@/app/actions/user-actions';
+import InvitePanel from '@/components/portal/InvitePanel';
+import FamilyChallengesPanel from '@/components/portal/FamilyChallengesPanel';
 import Link from 'next/link';
 
 export default function SettingsPage() {
@@ -153,6 +155,16 @@ export default function SettingsPage() {
                                     aria-label="Opt-in to marketing emails"
                                 />
                             </div>
+                        </div>
+
+                        {/* Invite Friends */}
+                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5">
+                            <InvitePanel />
+                        </div>
+
+                        {/* Family Challenges */}
+                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5">
+                            <FamilyChallengesPanel />
                         </div>
 
                         {/* Security & Privacy */}

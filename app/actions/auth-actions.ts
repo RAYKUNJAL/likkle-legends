@@ -4,6 +4,7 @@
 import { supabaseAdmin } from "@/lib/supabase-client";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE, RESET_PASSWORD_EMAIL_TEMPLATE, WELCOME_EMAIL_TEMPLATE } from "@/lib/email";
+import { claimReferralReward } from "@/app/actions/referrals";
 // Note: we intentionally use the SSR createClient (not supabaseAdmin) for signup
 // so it works regardless of whether the service role key matches the project URL.
 
@@ -78,6 +79,13 @@ export async function signupAction(formData: {
             subject: "Welcome to Likkle Legends! 🌴",
             html: WELCOME_EMAIL_TEMPLATE(formData.childName || "Legend Family")
         }).catch(err => console.error("[AUTH] Welcome email failed:", err));
+
+        // 3. Referral reward (fire-and-forget — non-blocking)
+        const refCode = formData.referral;
+        if (refCode && refCode !== 'direct' && refCode.startsWith('LL')) {
+            claimReferralReward(refCode, userId)
+                .catch(err => console.error('[AUTH] Referral claim failed:', err));
+        }
 
         if (isAutoConfirmed) {
             console.log(`[AUTH] Auto-confirmed signup success for: ${formData.email}`);

@@ -59,6 +59,11 @@ export const BADGES = {
     ar_pioneer: { id: 'ar_pioneer', name: 'AR Pioneer', description: 'Used AR coloring overlay', icon: '📱', category: 'cultural', rarity: 'epic' },
     ai_storyteller: { id: 'ai_storyteller', name: 'AI Storyteller', description: 'Created an AI story', icon: '✨', category: 'stories', rarity: 'legendary' },
     family_legacy: { id: 'family_legacy', name: 'Family Legacy', description: 'Added family to heritage tree', icon: '🌳', category: 'cultural', rarity: 'epic' },
+
+    // Social / Referral Badges
+    social_butterfly: { id: 'social_butterfly', name: 'Social Butterfly', description: 'Invited 5 friends to Likkle Legends', icon: '🦋', category: 'social', rarity: 'epic' },
+    community_builder: { id: 'community_builder', name: 'Community Builder', description: 'Invited 10 friends to Likkle Legends', icon: '🌍', category: 'social', rarity: 'legendary' },
+
 };
 
 export type BadgeId = keyof typeof BADGES;
