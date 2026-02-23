@@ -44,7 +44,7 @@ const GAME_CATEGORIES = [
 // Featured games with premium styling
 const FEATURED_GAMES = [
     {
-        id: 'island-match',
+        id: 'island-memory',
         title: 'Island Memory Match',
         description: 'Match Caribbean fruits, animals, and landmarks!',
         emoji: '🧠',
@@ -57,7 +57,7 @@ const FEATURED_GAMES = [
         isPopular: true,
     },
     {
-        id: 'patois-puzzle',
+        id: 'patois-wizard',
         title: 'Patois Word Wizard',
         description: 'Learn Jamaican words and their meanings!',
         emoji: '🔤',
@@ -70,10 +70,10 @@ const FEATURED_GAMES = [
         isPopular: false,
     },
     {
-        id: 'ai-trivia',
-        title: 'AI Island Trivia',
+        id: 'island-trivia',
+        title: 'Island Trivia Quest',
         description: 'Answer fun questions about Caribbean culture!',
-        emoji: '✨',
+        emoji: '🎯',
         gradient: 'from-amber-400 via-orange-500 to-red-600',
         tier: 'free',
         category: 'trivia',

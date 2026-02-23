@@ -31,6 +31,8 @@ import UpgradeModal from '@/components/UpgradeModal';
 import { checkDailyLogin, getFreezeCount } from '@/app/actions/retention';
 import DoubleXPBanner from '@/components/portal/DoubleXPBanner';
 import MangoGiftModal from '@/components/portal/MangoGiftModal';
+import LeaderboardPanel from '@/components/portal/LeaderboardPanel';
+import FamilyChallengesPanel from '@/components/portal/FamilyChallengesPanel';
 import { getXPMultiplier } from '@/lib/services/gamification';
 
 interface Song {
@@ -70,7 +72,7 @@ interface Video {
     reward_xp?: number;
 }
 
-type PortalSection = 'home' | 'stories' | 'songs' | 'missions' | 'games' | 'lessons' | 'radio' | 'printables';
+type PortalSection = 'home' | 'stories' | 'songs' | 'missions' | 'games' | 'lessons' | 'radio' | 'printables' | 'leaderboard' | 'challenges';
 
 export default function ChildPortalPage() {
     const router = useRouter();
@@ -309,6 +311,8 @@ export default function ChildPortalPage() {
         { id: 'songs', label: 'Songs', icon: Music, color: 'from-purple-500 to-pink-500' },
         { id: 'missions', label: 'Missions', icon: Target, color: 'from-orange-500 to-red-500' },
         { id: 'games', label: 'Games', icon: Palette, color: 'from-green-500 to-emerald-500' },
+        { id: 'leaderboard', label: 'Legends', icon: Trophy, color: 'from-amber-500 to-yellow-500' },
+        { id: 'challenges', label: 'Challenges', icon: Crown, color: 'from-red-500 to-pink-500' },
         { id: 'printables', label: 'Printables', icon: Download, color: 'from-amber-400 to-orange-500' },
         { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
         { id: 'music-hub', label: 'Market', icon: ShoppingBag, color: 'from-indigo-600 to-purple-700' },
@@ -795,6 +799,32 @@ export default function ChildPortalPage() {
                                         completedIds={activeChild?.cultural_milestones || []}
                                         onComplete={handleMissionComplete}
                                     />
+                                </div>
+                            )}
+
+                            {(activeSection === 'leaderboard') && (
+                                <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-5">
+                                    <div className="flex items-center gap-5 mb-10">
+                                        <div className="w-16 h-16 bg-amber-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner">🏆</div>
+                                        <div>
+                                            <h2 className="text-4xl font-black text-blue-900 tracking-tight">Legends Leaderboard</h2>
+                                            <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">Climb to the top across the islands</p>
+                                        </div>
+                                    </div>
+                                    <LeaderboardPanel />
+                                </div>
+                            )}
+
+                            {(activeSection === 'challenges') && (
+                                <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-5">
+                                    <div className="flex items-center gap-5 mb-10">
+                                        <div className="w-16 h-16 bg-pink-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner">⚔️</div>
+                                        <div>
+                                            <h2 className="text-4xl font-black text-blue-900 tracking-tight">Family Challenges</h2>
+                                            <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">Team up and compete together</p>
+                                        </div>
+                                    </div>
+                                    <FamilyChallengesPanel />
                                 </div>
                             )}
 

@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Send, Volume2, RefreshCw, Trophy } from 'lucide-react';
 import { narrateText } from '@/services/geminiService'; // Use our new robust voice service
 
-export default function AnansiGame() {
+export default function AnansiGame({ onComplete }: { onComplete?: (score: number) => void }) {
     const [gameState, setGameState] = useState<AnansiGameState | null>(null);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +77,10 @@ export default function AnansiGame() {
                     setGameState(result.newState);
                     if (result.newState.isComplete) {
                         playSpeech("We reach the top! You are a Legend for true!");
+                        // Call completion callback with score
+                        if (onComplete) {
+                            onComplete(result.newState.score || 150);
+                        }
                     } else if (result.newState.currentRiddle) {
                         // Queue next riddle
                         setTimeout(() => {

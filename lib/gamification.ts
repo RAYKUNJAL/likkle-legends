@@ -7,6 +7,7 @@ export const XP_ACTIONS = {
     FLASHCARD_REVIEWED: 10,
     COLORING_COMPLETED: 30,
     MISSION_COMPLETED: 100,
+    GAME_COMPLETED: 200,
     DAILY_LOGIN: 15,
     PATOIS_WORD_LEARNED: 25,
     VR_PORTAL_VISITED: 40,
@@ -63,6 +64,9 @@ export const BADGES = {
     // Social / Referral Badges
     social_butterfly: { id: 'social_butterfly', name: 'Social Butterfly', description: 'Invited 5 friends to Likkle Legends', icon: '🦋', category: 'social', rarity: 'epic' },
     community_builder: { id: 'community_builder', name: 'Community Builder', description: 'Invited 10 friends to Likkle Legends', icon: '🌍', category: 'social', rarity: 'legendary' },
+
+    // Special Events
+    weekend_warrior: { id: 'weekend_warrior', name: 'Weekend Warrior', description: 'Earned >500 XP over a single weekend', icon: '⚡', category: 'special', rarity: 'epic' },
 
 };
 

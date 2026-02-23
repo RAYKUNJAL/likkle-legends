@@ -36,7 +36,7 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
 
         let pairsCount = 6;
         if (difficulty === 'medium') pairsCount = 8;
-        if (difficulty === 'hard') pairsCount = 12;
+        if (difficulty === 'hard') pairsCount = 8;
 
         // Choose random symbols
         const selectedSymbols = [...MEMORY_SYMBOLS].sort(() => Math.random() - 0.5).slice(0, pairsCount);

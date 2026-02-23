@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processEmailQueue } from '@/lib/services/email-processor';
+import { sendWeeklyDigests, sendStreakNudges } from '@/app/actions/digests';
 
 // This endpoint is designed to be called by Vercel Cron Jobs
-// Add to vercel.json: "crons": [{ "path": "/api/cron/process-emails", "schedule": "*/5 * * * *" }]
+// Add to vercel.json:
+// "crons": [
+//   { "path": "/api/cron/process-emails", "schedule": "0 9 * * 0" },  // Weekly digest: Sundays 9 AM
+//   { "path": "/api/cron/process-emails?type=nudge", "schedule": "0 18 * * *" }  // Daily nudge: 6 PM
+// ]
 
 export async function GET(request: NextRequest) {
     // Verify cron secret to prevent unauthorized access
@@ -15,12 +20,32 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const result = await processEmailQueue();
+        const url = new URL(request.url);
+        const type = url.searchParams.get('type');
+
+        if (type === 'nudge') {
+            // Send streak nudges (daily)
+            const result = await sendStreakNudges();
+            return NextResponse.json({
+                success: true,
+                job: 'streak_nudges',
+                count: result.count,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // Default: process email queue + send weekly digests (Sundays)
+        const [queueResult, digestResult] = await Promise.all([
+            processEmailQueue(),
+            sendWeeklyDigests()
+        ]);
 
         return NextResponse.json({
             success: true,
-            processed: result.processed,
-            errors: result.errors,
+            jobs: {
+                email_queue: { processed: queueResult.processed, errors: queueResult.errors },
+                weekly_digest: { count: digestResult.count }
+            },
             timestamp: new Date().toISOString()
         });
     } catch (error) {
