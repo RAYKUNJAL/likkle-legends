@@ -10,6 +10,7 @@ import { useUser } from '@/components/UserContext';
 import { updateProfileSettings, deleteUserAccountAction } from '@/app/actions/user-actions';
 import InvitePanel from '@/components/portal/InvitePanel';
 import FamilyChallengesPanel from '@/components/portal/FamilyChallengesPanel';
+import LeaderboardPanel from '@/components/portal/LeaderboardPanel';
 import Link from 'next/link';
 
 export default function SettingsPage() {
@@ -165,6 +166,11 @@ export default function SettingsPage() {
                         {/* Family Challenges */}
                         <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5">
                             <FamilyChallengesPanel />
+                        </div>
+
+                        {/* Leaderboard */}
+                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5">
+                            <LeaderboardPanel />
                         </div>
 
                         {/* Security & Privacy */}
