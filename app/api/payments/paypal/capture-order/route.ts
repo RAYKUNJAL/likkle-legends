@@ -65,10 +65,50 @@ export async function POST(request: NextRequest) {
 
         // 3. Fulfill Order (DB Insert)
         if (transaction.status === 'COMPLETED') {
-            const productId = customId.productId; // e.g. single_track
+            const productId = customId.productId; // e.g. single_track, streak_freeze
             const contentId = customId.contentId; // song uuid
+            const childId = customId.childId; // for gamification products
 
-            if (productId === 'custom_song_request') {
+            if (productId === 'streak_freeze') {
+                // Add one streak freeze to inventory
+                const { data: freezeRow } = await supabaseAdmin
+                    .from('streak_freezes')
+                    .select('id, freeze_count')
+                    .eq('child_id', childId)
+                    .maybeSingle();
+
+                if (freezeRow) {
+                    // Update existing row
+                    await supabaseAdmin.from('streak_freezes').update({
+                        freeze_count: (freezeRow.freeze_count || 0) + 1,
+                        updated_at: new Date().toISOString(),
+                    }).eq('id', freezeRow.id);
+                } else {
+                    // Create new row
+                    await supabaseAdmin.from('streak_freezes').insert({
+                        child_id: childId,
+                        freeze_count: 1,
+                    });
+                }
+
+                // Log transaction for record
+                try {
+                    await supabaseAdmin.from('purchases').insert({
+                        user_id: user.id,
+                        product_id: 'streak_freeze',
+                        transaction_id: transaction.id,
+                        amount_paid: parseFloat(transaction.amount.value),
+                        metadata: {
+                            paypal_order_id: orderID,
+                            paypal_transaction_id: transaction.id,
+                            child_id: childId,
+                        }
+                    });
+                } catch (e) {
+                    // purchases table might not exist, continue
+                    console.log('Note: purchases table not yet created');
+                }
+            } else if (productId === 'custom_song_request') {
                 // INSERT new custom song order (no pre-existing row)
                 await supabaseAdmin
                     .from('custom_song_orders')

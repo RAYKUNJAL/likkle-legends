@@ -147,9 +147,20 @@ export const MUSIC_STORE_PRODUCTS = {
     },
 };
 
+export const GAMIFICATION_PRODUCTS = {
+    streak_freeze: {
+        id: 'streak_freeze',
+        name: 'Streak Freeze (1x)',
+        price: 0.99,
+        type: 'one-time',
+        description: 'Protect your streak for one day',
+    },
+};
+
 export type SubscriptionTier = keyof typeof SUBSCRIPTION_PLANS;
 export type UpsellProduct = keyof typeof UPSELLS;
 export type MusicStoreProduct = keyof typeof MUSIC_STORE_PRODUCTS;
+export type GamificationProduct = keyof typeof GAMIFICATION_PRODUCTS;
 
 // Currency localization based on country
 export const CURRENCY_MAP: Record<string, { code: string; symbol: string; multiplier: number }> = {

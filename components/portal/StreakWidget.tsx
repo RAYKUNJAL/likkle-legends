@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from 'react';
-import { Flame, Snowflake, ChevronRight, Lock, Share2 } from 'lucide-react';
+import { Flame, Snowflake, ChevronRight, Lock, Share2, ShoppingCart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buyStreakFreeze } from '@/app/actions/retention';
+import { useUser } from '@/components/UserContext';
 import toast from 'react-hot-toast';
 
 interface StreakWidgetProps {
@@ -22,8 +23,11 @@ const MILESTONE_LABELS: Record<number, string> = {
 };
 
 export default function StreakWidget({ streakDay, freezeCount, childId, onFreezeUsed, onShare }: StreakWidgetProps) {
+    const { user } = useUser();
     const [currentFreezes, setCurrentFreezes] = useState(freezeCount);
     const [isFreezing, setIsFreezing] = useState(false);
+    const [showBuyModal, setShowBuyModal] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     // Find next milestone
     const nextMilestone = MILESTONE_DAYS.find(d => d > streakDay);
@@ -40,12 +44,60 @@ export default function StreakWidget({ streakDay, freezeCount, childId, onFreeze
                 toast.success('❄️ Streak Freeze used! Your streak is safe.');
                 onFreezeUsed?.();
             } else if (result.error === 'no_freezes_available') {
-                toast.error('No freezes left! Earn more by completing missions.', { icon: '🧊' });
+                // Show modal to buy freeze
+                setShowBuyModal(true);
             }
         } catch {
             toast.error('Something went wrong. Try again.');
         } finally {
             setIsFreezing(false);
+        }
+    };
+
+    const handleBuyStreakFreeze = async () => {
+        if (isProcessing || !user) return;
+        setIsProcessing(true);
+        try {
+            // Create PayPal order for streak freeze
+            const authToken = await user.getIdToken?.() || '';
+            const orderResponse = await fetch('/api/payments/paypal/create-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({
+                    productId: 'streak_freeze',
+                    metadata: { childId },
+                }),
+            });
+
+            if (!orderResponse.ok) {
+                throw new Error('Failed to create order');
+            }
+
+            const { id: orderId } = await orderResponse.json();
+
+            // Load PayPal SDK and open dialog (simplified — full implementation would use @paypal/checkout-server-sdk)
+            // For now, redirect to a checkout page that handles PayPal button
+            if (typeof window !== 'undefined' && (window as any).paypal) {
+                // Use PayPal Buttons if SDK is loaded
+                toast.success('Opening PayPal...');
+            } else {
+                // Fallback: open new window to PayPal sandbox
+                window.open(
+                    `https://www.sandbox.paypal.com/checkoutnow?token=${orderId}`,
+                    'paypal',
+                    'width=500,height=600'
+                );
+                setShowBuyModal(false);
+                toast.success('Complete the payment in the PayPal window to add a freeze!');
+            }
+        } catch (error) {
+            console.error('PayPal error:', error);
+            toast.error('Failed to start payment. Please try again.');
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -139,13 +191,90 @@ export default function StreakWidget({ streakDay, freezeCount, childId, onFreeze
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
-                        className="mt-3 flex items-center gap-2 bg-white/10 rounded-xl px-3 py-2"
+                        className="mt-3 flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-xl px-3 py-2 border border-blue-400/30"
                     >
-                        <Lock size={12} className="text-white/60" />
-                        <p className="text-white/70 text-[10px] font-bold">
-                            No freezes! Complete a mission to earn one free.
-                        </p>
-                        <ChevronRight size={12} className="text-white/40 ml-auto" />
+                        <Lock size={14} className="text-blue-300 flex-shrink-0" />
+                        <div className="flex-1">
+                            <p className="text-white/80 text-[10px] font-bold leading-tight">
+                                Protect your streak with a freeze!
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShowBuyModal(true)}
+                            className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 active:scale-95 transition-all rounded-lg px-2 py-1 text-white text-[9px] font-black whitespace-nowrap flex-shrink-0"
+                        >
+                            <ShoppingCart size={12} />
+                            $0.99
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Buy Freeze Modal */}
+            <AnimatePresence>
+                {showBuyModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/50 flex items-end z-50"
+                        onClick={() => setShowBuyModal(false)}
+                    >
+                        <motion.div
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-full bg-white rounded-t-3xl p-6 shadow-2xl"
+                        >
+                            <div className="max-w-md mx-auto space-y-4">
+                                <div className="text-center mb-6">
+                                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl mb-4">
+                                        <Snowflake size={32} className="text-blue-600" />
+                                    </div>
+                                    <h3 className="text-2xl font-black text-gray-900 mb-2">Add a Streak Freeze</h3>
+                                    <p className="text-gray-600 text-sm">
+                                        Protect your streak if you miss a day. One freeze = one protected day.
+                                    </p>
+                                </div>
+
+                                <div className="bg-blue-50 rounded-2xl p-4 space-y-3">
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-lg mt-1">❄️</span>
+                                        <div>
+                                            <p className="font-bold text-gray-900">How It Works</p>
+                                            <p className="text-sm text-gray-600">Miss a day? Your freeze keeps your streak alive.</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-lg mt-1">🔥</span>
+                                        <div>
+                                            <p className="font-bold text-gray-900">Keep Your Streak</p>
+                                            <p className="text-sm text-gray-600">Earn medals and unlocks by staying consistent.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleBuyStreakFreeze}
+                                    disabled={isProcessing}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl py-4 text-white font-black text-lg shadow-lg"
+                                >
+                                    {isProcessing ? 'Processing...' : 'Buy Freeze for $0.99'}
+                                </button>
+
+                                <button
+                                    onClick={() => setShowBuyModal(false)}
+                                    className="w-full bg-gray-200 hover:bg-gray-300 active:scale-95 transition-all rounded-2xl py-3 text-gray-900 font-bold"
+                                >
+                                    Maybe Later
+                                </button>
+
+                                <p className="text-center text-[10px] text-gray-500">
+                                    Secure payment via PayPal. Refund available within 30 days.
+                                </p>
+                            </div>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>

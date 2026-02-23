@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
-import { MUSIC_STORE_PRODUCTS } from '@/lib/paypal';
+import { MUSIC_STORE_PRODUCTS, GAMIFICATION_PRODUCTS } from '@/lib/paypal';
 
 const PAYPAL_API = process.env.NODE_ENV === 'production'
     ? 'https://api-m.paypal.com'
@@ -40,9 +40,9 @@ export async function POST(request: NextRequest) {
 
         if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        // 2. Lookup Price
+        // 2. Lookup Price (from music store or gamification products)
         // @ts-ignore
-        const product = MUSIC_STORE_PRODUCTS[productId];
+        let product = MUSIC_STORE_PRODUCTS[productId] || GAMIFICATION_PRODUCTS[productId];
         if (!product) return NextResponse.json({ error: 'Invalid Product' }, { status: 400 });
 
         // 3. Create Order
