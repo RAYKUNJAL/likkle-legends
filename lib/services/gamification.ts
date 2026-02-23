@@ -42,6 +42,15 @@ export async function logActivity(
     if (xpEarned > 0) {
         await addXP(childId, xpEarned, activityType);
     }
+
+    // Update family challenge progress (fire-and-forget, non-blocking)
+    try {
+        const { updateChallengeProgress } = await import('@/app/actions/challenges');
+        await updateChallengeProgress(childId, activityType);
+    } catch {
+        // Silently skip if challenges table doesn't exist yet
+    }
+
     // Check for badges
     const unlockedBadge = await checkBadgeUnlock(childId, activityType);
 

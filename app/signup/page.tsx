@@ -30,7 +30,8 @@ function SignupForm() {
     };
 
     const plan = getParam('plan', 'mail_club');
-    const referral = getParam('referral', 'direct');
+    // Support both ?ref= (from invite links) and ?referral= (legacy)
+    const referral = getParam('ref', '') || getParam('referral', 'direct');
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

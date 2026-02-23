@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Flame, Snowflake, ChevronRight, Lock } from 'lucide-react';
+import { Flame, Snowflake, ChevronRight, Lock, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { buyStreakFreeze } from '@/app/actions/retention';
 import toast from 'react-hot-toast';
@@ -11,6 +11,7 @@ interface StreakWidgetProps {
     freezeCount: number;
     childId: string;
     onFreezeUsed?: () => void;
+    onShare?: () => void;
 }
 
 const MILESTONE_DAYS = [1, 3, 7, 14, 30];
@@ -20,7 +21,7 @@ const MILESTONE_LABELS: Record<number, string> = {
     30: 'Island Legend 👑',
 };
 
-export default function StreakWidget({ streakDay, freezeCount, childId, onFreezeUsed }: StreakWidgetProps) {
+export default function StreakWidget({ streakDay, freezeCount, childId, onFreezeUsed, onShare }: StreakWidgetProps) {
     const [currentFreezes, setCurrentFreezes] = useState(freezeCount);
     const [isFreezing, setIsFreezing] = useState(false);
 
@@ -88,10 +89,10 @@ export default function StreakWidget({ streakDay, freezeCount, childId, onFreeze
                                 <div
                                     key={i}
                                     className={`w-4 h-4 rounded-full border-2 transition-all ${isToday
-                                            ? 'bg-yellow-300 border-yellow-100 scale-125 shadow-lg shadow-yellow-300/50'
-                                            : isActive
-                                                ? 'bg-white border-white'
-                                                : 'bg-white/20 border-white/30'
+                                        ? 'bg-yellow-300 border-yellow-100 scale-125 shadow-lg shadow-yellow-300/50'
+                                        : isActive
+                                            ? 'bg-white border-white'
+                                            : 'bg-white/20 border-white/30'
                                         }`}
                                 />
                             );
@@ -109,17 +110,27 @@ export default function StreakWidget({ streakDay, freezeCount, childId, onFreeze
                     )}
                 </div>
 
-                {/* Right: Freeze button */}
-                <button
-                    onClick={handleFreeze}
-                    disabled={isFreezing}
-                    className="flex flex-col items-center gap-1 bg-white/10 hover:bg-white/20 active:scale-95 transition-all rounded-2xl px-3 py-2.5 border border-white/20"
-                    title="Use a streak freeze to protect your streak"
-                >
-                    <Snowflake size={18} className="text-blue-200" />
-                    <span className="text-white font-black text-sm leading-none">{currentFreezes}</span>
-                    <span className="text-white/50 text-[8px] uppercase tracking-widest">Freeze</span>
-                </button>
+                {/* Right: Share + Freeze buttons */}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={onShare}
+                        className="flex flex-col items-center gap-1 bg-white/10 hover:bg-white/20 active:scale-95 transition-all rounded-2xl px-3 py-2.5 border border-white/20"
+                        title="Share your streak"
+                    >
+                        <Share2 size={18} className="text-yellow-200" />
+                        <span className="text-white/50 text-[8px] uppercase tracking-widest">Share</span>
+                    </button>
+                    <button
+                        onClick={handleFreeze}
+                        disabled={isFreezing}
+                        className="flex flex-col items-center gap-1 bg-white/10 hover:bg-white/20 active:scale-95 transition-all rounded-2xl px-3 py-2.5 border border-white/20"
+                        title="Use a streak freeze to protect your streak"
+                    >
+                        <Snowflake size={18} className="text-blue-200" />
+                        <span className="text-white font-black text-sm leading-none">{currentFreezes}</span>
+                        <span className="text-white/50 text-[8px] uppercase tracking-widest">Freeze</span>
+                    </button>
+                </div>
             </div>
 
             {/* Freeze count zero nudge */}

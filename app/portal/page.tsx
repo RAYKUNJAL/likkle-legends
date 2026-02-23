@@ -24,6 +24,7 @@ import BadgeUnlockModal from '@/components/gamification/BadgeUnlockModal';
 import DialectDial from '@/components/portal/DialectDial';
 import StreakWidget from '@/components/portal/StreakWidget';
 import DailyChestModal from '@/components/portal/DailyChestModal';
+import StreakShareCard from '@/components/portal/StreakShareCard';
 import { BadgeCheck } from 'lucide-react';
 import CoppaConsentModal from '@/components/auth/CoppaConsentModal';
 import UpgradeModal from '@/components/UpgradeModal';
@@ -98,6 +99,7 @@ export default function ChildPortalPage() {
     const [freezeCount, setFreezeCount] = useState(0);
     const [chestReady, setChestReady] = useState(false);
     const [chestModalOpen, setChestModalOpen] = useState(false);
+    const [shareCardOpen, setShareCardOpen] = useState(false);
 
     const loadPortalData = useCallback(async () => {
         // Individual fetchers to avoid Promise.all bottleneck
@@ -504,6 +506,7 @@ export default function ChildPortalPage() {
                                         freezeCount={freezeCount}
                                         childId={activeChild.id}
                                         onFreezeUsed={() => setFreezeCount(c => Math.max(0, c - 1))}
+                                        onShare={() => setShareCardOpen(true)}
                                     />
                                 </div>
                             )}
@@ -866,6 +869,15 @@ export default function ChildPortalPage() {
                             loadPortalData();
                         }
                     }}
+                />
+            )}
+
+            {/* Streak Share Card Modal */}
+            {shareCardOpen && activeChild && (
+                <StreakShareCard
+                    childId={activeChild.id}
+                    streakDay={streakDay}
+                    onClose={() => setShareCardOpen(false)}
                 />
             )}
         </div>
