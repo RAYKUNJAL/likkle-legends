@@ -414,3 +414,66 @@ export const ADMIN_NEW_ORDER_TEMPLATE = (parentName: string, tier: string, email
     <p><b>Tier:</b> ${tier}</p>
 </div>
 `;
+// 11. WEEKLY DIGEST (Phase 3 Retention)
+export const WEEKLY_DIGEST_TEMPLATE = (parentName: string, stats: any[]) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1e293b; background: #fffdf7; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 40px; overflow: hidden; border: 1px solid #f1f5f9; }
+        .header { background: linear-gradient(135deg, #10b981, #3b82f6); padding: 40px; text-align: center; color: white; }
+        .child-card { background: #f8fafc; border-radius: 24px; padding: 25px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .stat-badge { background: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 800; display: inline-block; }
+        .btn { display: inline-block; padding: 18px 36px; background: #FF6B35; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin:0; font-size: 28px; font-weight: 900;">Weekly Legend Wrap-up! 🌴✨</h1>
+            <p style="margin: 10px 0 0 0; opacity: 0.9;">Here's how de village grew dis week.</p>
+        </div>
+        
+        <div style="padding: 40px;">
+            <p style="font-size: 18px; font-weight: 800; color: #0f172a;">Hi ${parentName},</p>
+            <p>Your little legends had an amazing week of cultural discovery! Check out their progress below:</p>
+
+            ${stats.map(child => `
+                <div class="child-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin:0; color: #0f172a; font-size: 22px;">${child.firstName}</h2>
+                        <span class="stat-badge">${child.streakDay}-Day Streak 🔥</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="background: white; padding: 15px; border-radius: 16px; text-align: center; border: 1px solid #f1f5f9;">
+                            <span style="display:block; font-size: 20px; font-weight: 900; color: #10b981;">+${child.xpEarned}</span>
+                            <span style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">XP Earned</span>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 16px; text-align: center; border: 1px solid #f1f5f9;">
+                            <span style="display:block; font-size: 20px; font-weight: 900; color: #3b82f6;">${child.storiesRead + child.songsHeard}</span>
+                            <span style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Discoveries</span>
+                        </div>
+                    </div>
+
+                    ${child.streakDay < 7 ? `
+                        <p style="font-size: 13px; color: #64748b; margin-top: 20px; font-style: italic;">
+                            🎯 Only ${7 - child.streakDay} more days to earn de <b>Week Warrior</b> badge!
+                        </p>
+                    ` : ''}
+                </div>
+            `).join('')}
+
+            <center>
+                <a href="https://likklelegends.com/portal" class="btn">Visit de Village</a>
+            </center>
+
+            ${VALUE_PIN_PATOIS}
+            ${UPSELL_LEGENDS_PLUS}
+            ${SOCIAL_TRUST_FOOTER}
+        </div>
+    </div>
+</body>
+</html>
+`;
