@@ -140,7 +140,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
             if (result.success) {
                 setHasSaved(true);
                 // Log the save activity
-                logActivity(activeChild.primary_user_id || activeChild.parent_id, activeChild.id, 'save_story', result.id);
+                logActivity(activeChild.parent_id, activeChild.id, 'save_story', result.id);
             }
         } catch (err) {
             console.error("Save error:", err);
@@ -151,7 +151,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
 
     const handleFinish = async () => {
         if (activeChild) {
-            await logActivity(activeChild.primary_user_id || activeChild.parent_id, activeChild.id, 'read_story', story.id, 100, 300, {
+            await logActivity(activeChild.parent_id, activeChild.id, 'read_story', story.id, 100, 300, {
                 title: story.book_meta.title,
                 level: story.book_meta.reading_level
             });

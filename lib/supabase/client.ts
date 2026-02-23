@@ -14,13 +14,24 @@ function getValidKey(): string {
     return (key && key.length > 20 && key !== 'false') ? key : PLACEHOLDER_KEY;
 }
 
-export const createClient = () =>
-    createBrowserClient(
-        getValidUrl(),
-        getValidKey(),
-        {
-            cookieOptions: {
-                name: 'sb-likkle-auth',
+// Singleton client for browser
+let browserClient: any;
+
+export const createClient = () => {
+    if (typeof window === 'undefined') {
+        return createBrowserClient(getValidUrl(), getValidKey());
+    }
+
+    if (!browserClient) {
+        browserClient = createBrowserClient(
+            getValidUrl(),
+            getValidKey(),
+            {
+                cookieOptions: {
+                    name: 'sb-likkle-auth',
+                },
             }
-        }
-    )
+        );
+    }
+    return browserClient;
+}

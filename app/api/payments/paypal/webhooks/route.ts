@@ -21,18 +21,78 @@ if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER) PLAN_TO_TIER[process.env.NEXT_P
 if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS] = 'legends_plus';
 if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY] = 'family_legacy';
 
-// Verify PayPal webhook signature
+// Verify PayPal webhook signature via PayPal API
 async function verifyWebhookSignature(req: NextRequest, body: string): Promise<boolean> {
     const transmissionId = req.headers.get('paypal-transmission-id');
+    const transmissionTime = req.headers.get('paypal-transmission-time');
     const transmissionSig = req.headers.get('paypal-transmission-sig');
+    const certUrl = req.headers.get('paypal-cert-url');
+    const authAlgo = req.headers.get('paypal-auth-algo');
 
-    if (!transmissionId || !transmissionSig) {
-        console.warn('Missing PayPal headers');
+    if (!transmissionId || !transmissionSig || !transmissionTime || !certUrl || !authAlgo) {
+        console.warn('Missing PayPal webhook headers');
         return process.env.NODE_ENV === 'development';
     }
 
-    // For production, verify with PayPal API
-    return true;
+    if (!PAYPAL_WEBHOOK_ID) {
+        console.error('PAYPAL_WEBHOOK_ID is not configured — cannot verify webhook');
+        return false;
+    }
+
+    try {
+        const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+        const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+        if (!clientId || !clientSecret) {
+            console.error('PayPal credentials missing for webhook verification');
+            return false;
+        }
+
+        // Get OAuth token
+        const authResponse = await fetch('https://api-m.paypal.com/v1/oauth2/token', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Basic ' + Buffer.from(`${clientId}:${clientSecret}`).toString('base64'),
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'grant_type=client_credentials',
+        });
+        const authData = await authResponse.json();
+
+        if (!authData.access_token) {
+            console.error('Failed to get PayPal OAuth token for webhook verification');
+            return false;
+        }
+
+        // Verify signature
+        const verifyResponse = await fetch('https://api-m.paypal.com/v1/notifications/verify-webhook-signature', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authData.access_token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                auth_algo: authAlgo,
+                cert_url: certUrl,
+                transmission_id: transmissionId,
+                transmission_sig: transmissionSig,
+                transmission_time: transmissionTime,
+                webhook_id: PAYPAL_WEBHOOK_ID,
+                webhook_event: JSON.parse(body),
+            }),
+        });
+
+        const verifyData = await verifyResponse.json();
+        const isValid = verifyData.verification_status === 'SUCCESS';
+
+        if (!isValid) {
+            console.warn('PayPal webhook signature verification FAILED:', verifyData);
+        }
+
+        return isValid;
+    } catch (error) {
+        console.error('PayPal webhook verification error:', error);
+        return false;
+    }
 }
 
 export async function POST(request: NextRequest) {

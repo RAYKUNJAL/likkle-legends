@@ -30,7 +30,12 @@ const features = [
     }
 ];
 
+import { useSearchParams } from 'next/navigation';
+
 export default function OnboardingWelcome() {
+    const searchParams = useSearchParams();
+    const childName = searchParams.get('childName');
+
     return (
         <div className="min-h-screen bg-[#FFFDF7] bg-grid-pattern relative overflow-hidden font-sans text-deep">
             {/* Background Gradients */}
@@ -49,7 +54,7 @@ export default function OnboardingWelcome() {
                 >
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border-2 border-primary/10 shadow-sm mb-8 text-primary font-bold tracking-wide uppercase text-xs">
                         <Sparkles size={14} />
-                        <span>Welcome to the Family</span>
+                        <span>Welcome {childName ? `, ${childName} Family!` : "to the Family"}</span>
                     </div>
 
                     <h1 className="text-5xl lg:text-7xl font-black tracking-tight mb-6">
@@ -61,7 +66,7 @@ export default function OnboardingWelcome() {
 
                     <p className="text-xl lg:text-2xl text-deep/60 leading-relaxed font-medium">
                         You've successfully secured your pass to Likkle Legends. <br className="hidden lg:block" />
-                        Now, let's set up your crew.
+                        Now, let's set up {childName ? `${childName}'s` : "your"} crew.
                     </p>
                 </motion.div>
 

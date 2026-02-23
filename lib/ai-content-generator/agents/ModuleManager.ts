@@ -1,7 +1,6 @@
 
 import { contentGenerator } from '../core';
 import { storyGenerator, GeneratedStory } from '../generators/story-generator';
-import { songGenerator, GeneratedSong } from '../generators/song-generator';
 import { videoGenerator, GeneratedVideoScript } from '../generators/video-generator';
 import { printableGenerator, GeneratedPrintable } from '../generators/printable-generator';
 
@@ -18,7 +17,6 @@ export interface CompleteModule {
     };
     content: {
         story: GeneratedStory;
-        song: GeneratedSong;
         videoScript: GeneratedVideoScript;
         printable: GeneratedPrintable;
     };
@@ -50,13 +48,6 @@ export class ModuleManagerAgent {
             customPrompt: `Focus on: ${plan.storyFocus}`
         }).catch(err => { console.error("❌ Story Agent Failed"); throw err; });
 
-        const songPromise = songGenerator.generateSong({
-            island: plan.island,
-            topic: plan.theme,
-            ageTrack: ageGroup,
-            category: "educational"
-        }).catch(err => { console.error("❌ Song Agent Failed"); throw err; });
-
         const videoPromise = videoGenerator.generateScript({
             island: plan.island,
             topic: plan.theme,
@@ -72,9 +63,8 @@ export class ModuleManagerAgent {
         }).catch(err => { console.error("❌ Printable Agent Failed"); throw err; });
 
         // Await all parallel requests
-        const [story, song, video, printable] = await Promise.all([
+        const [story, video, printable] = await Promise.all([
             storyPromise,
-            songPromise,
             videoPromise,
             printablePromise
         ]);
@@ -95,7 +85,6 @@ export class ModuleManagerAgent {
             },
             content: {
                 story,
-                song,
                 videoScript: video,
                 printable
             }

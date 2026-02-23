@@ -6,7 +6,6 @@ import {
     ActionButton,
     Package, Eye, Edit, Trash2, ChevronRight
 } from '@/components/admin/AdminComponents';
-import { getAllOrders, updateOrderStatus } from '@/lib/database';
 
 interface Order {
     id: string;

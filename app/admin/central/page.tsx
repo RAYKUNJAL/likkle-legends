@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import AdminLogin from '@/components/AdminLogin';
-import AdminDashboard from '@/components/AdminDashboard';
-import { onAuthChange, logoutParent } from '@/services/supabase/authService';
+import { useRouter } from 'next/navigation';
+import { onAuthChange } from '@/services/supabase/authService';
 
 export default function AdminCentralPage() {
-    const [userEmail, setUserEmail] = useState<string | null>(null);
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
     const [mounted, setMounted] = useState(false);
 
@@ -15,13 +14,14 @@ export default function AdminCentralPage() {
 
         // Safety timeout in case onAuthChange doesn't fire
         const timer = setTimeout(() => {
-            setIsLoading(false);
+            // Not logged in — send to main login page with redirect back
+            router.replace('/login?redirect=/admin/overview');
         }, 3000);
 
         const unsub = onAuthChange(async (user) => {
+            clearTimeout(timer);
             if (user) {
                 try {
-                    // Quick check if admin (actual enforcement is on server actions)
                     const { supabase } = await import('@/lib/storage');
                     const { data: profile } = await supabase
                         .from('profiles')
@@ -32,25 +32,22 @@ export default function AdminCentralPage() {
                     const isAdmin = profile?.role === 'admin' || profile?.is_admin === true || user.email === 'admin@likklelegends.com' || user.email?.includes('raykunjal');
 
                     if (isAdmin) {
-                        setUserEmail(user.email || 'Admin');
+                        router.replace('/admin/overview');
+                        return;
                     } else {
                         console.warn("Unauthorized access attempt to Admin Central");
-                        setUserEmail(null);
                     }
                 } catch (err) {
                     console.error("Admin verification error:", err);
-                    setUserEmail(null);
                 }
-            } else {
-                setUserEmail(null);
             }
-            setIsLoading(false);
-            clearTimeout(timer);
+            // Not authenticated — redirect to unified login
+            router.replace('/login?redirect=/admin/overview');
         });
 
         if (!unsub) {
-            setIsLoading(false);
             clearTimeout(timer);
+            router.replace('/login?redirect=/admin/overview');
             return;
         }
 
@@ -59,15 +56,6 @@ export default function AdminCentralPage() {
             clearTimeout(timer);
         };
     }, []);
-
-    const handleLogin = (email: string) => {
-        setUserEmail(email);
-    };
-
-    const handleLogout = async () => {
-        await logoutParent();
-        setUserEmail(null);
-    };
 
     if (!mounted || isLoading) {
         return (
@@ -80,9 +68,5 @@ export default function AdminCentralPage() {
         );
     }
 
-    if (!userEmail) {
-        return <AdminLogin onLogin={handleLogin} />;
-    }
-
-    return <AdminDashboard userEmail={userEmail} onLogout={handleLogout} />;
+    return null;
 }

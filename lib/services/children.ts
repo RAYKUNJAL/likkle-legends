@@ -7,7 +7,7 @@ export async function getChildren(parentId: string) {
     const { data, error } = await supabase
         .from('children')
         .select('*')
-        .eq('primary_user_id', parentId)
+        .eq('parent_id', parentId)
         .order('created_at', { ascending: true });
 
     if (error) throw error;
@@ -37,7 +37,7 @@ export async function createChild(parentId: string, childData: {
     const { data, error } = await supabase
         .from('children')
         .insert({
-            primary_user_id: parentId,
+            parent_id: parentId,
             ...childData,
         })
         .select()

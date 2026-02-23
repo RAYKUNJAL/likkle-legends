@@ -76,21 +76,19 @@ export async function POST(request: NextRequest) {
         }
 
 
-        // Get user from session or body
+        // Authenticate user via Bearer token ONLY — no body userId fallback
         const authHeader = request.headers.get('Authorization');
-        let userIdToUpdate = userId;
-
-        if (authHeader) {
-            const token = authHeader.replace('Bearer ', '');
-            const { data: { user } } = await supabase.auth.getUser(token);
-            if (user) {
-                userIdToUpdate = user.id;
-            }
+        if (!authHeader) {
+            return NextResponse.json({ error: 'Missing Authorization header' }, { status: 401 });
         }
 
-        if (!userIdToUpdate) {
-            return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user } } = await supabase.auth.getUser(token);
+        if (!user) {
+            return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
         }
+
+        const userIdToUpdate = user.id;
 
         // Calculate next billing date based on cycle
         const daysToAdd = billingCycle === 'year' ? 365 : 30;

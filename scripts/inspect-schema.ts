@@ -1,53 +1,38 @@
-import '../lib/load-env';
-import { supabaseAdmin } from '../lib/supabase-client';
+import * as dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config({ path: path.resolve(__dirname, '..', '.env.local') });
 
 async function inspectSchema() {
-    // 1. List storage buckets
-    const { data: buckets, error: bucketsErr } = await supabaseAdmin.storage.listBuckets();
-    console.log('=== STORAGE BUCKETS ===');
-    console.log(bucketsErr ? `Error: ${bucketsErr.message}` : `Buckets: ${buckets?.map(b => b.name).join(', ') || 'NONE'}`);
+    const { createAdminClient } = await import('../lib/admin');
+    const admin = createAdminClient();
 
-    // 2. Check content_items columns
-    console.log('\n=== CONTENT_ITEMS TABLE ===');
-    const { data: sample, error: tableErr } = await supabaseAdmin
-        .from('content_items')
+    // Query information_schema directly
+    const { data: usersInfo, error: uError } = await admin
+        .from('users')
         .select('*')
         .limit(1);
 
-    if (tableErr) {
-        console.log(`Error: ${tableErr.message}`);
-    } else if (sample && sample.length > 0) {
-        console.log('Columns:', Object.keys(sample[0]).join(', '));
+    if (uError) {
+        console.log('Error selecting from users:', uError.message);
     } else {
-        console.log('Table exists but empty. Trying insert to discover schema...');
-        // Try a dummy query to see what columns exist
-        const { error: insertErr } = await supabaseAdmin
-            .from('content_items')
-            .insert({ content_type: '__schema_test__' })
-            .select();
-        if (insertErr) {
-            console.log('Insert error (shows missing columns):', insertErr.message);
-        }
-        // Cleanup
-        await supabaseAdmin.from('content_items').delete().eq('content_type', '__schema_test__');
+        console.log('Users columns (keys):', Object.keys(usersInfo[0] || {}));
     }
 
-    // 3. Check content_localizations
-    console.log('\n=== CONTENT_LOCALIZATIONS TABLE ===');
-    const { data: locSample, error: locErr } = await supabaseAdmin
-        .from('content_localizations')
+    const { data: adminInfo, error: aError } = await admin
+        .from('admin_users')
         .select('*')
         .limit(1);
 
-    if (locErr) {
-        console.log(`Error: ${locErr.message}`);
-    } else if (locSample && locSample.length > 0) {
-        console.log('Columns:', Object.keys(locSample[0]).join(', '));
+    if (aError) {
+        console.log('Error selecting from admin_users:', aError.message);
     } else {
-        console.log('Table exists but empty');
+        console.log('Admin Users columns (keys):', Object.keys(adminInfo[0] || {}));
     }
-
-    console.log('\n=== DONE ===');
 }
 
-inspectSchema();
+inspectSchema().catch(console.error);

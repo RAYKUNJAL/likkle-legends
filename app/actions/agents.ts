@@ -3,7 +3,6 @@
 
 import { verifyAdmin } from "./admin";
 import { storyGenerator } from "@/lib/ai-content-generator/generators/story-generator";
-import { songGenerator } from "@/lib/ai-content-generator/generators/song-generator";
 import { printableGenerator } from "@/lib/ai-content-generator/generators/printable-generator";
 import { videoGenerator } from "@/lib/ai-content-generator/generators/video-generator";
 import { moduleManagerAgent } from "@/lib/ai-content-generator/agents/ModuleManager";
@@ -22,15 +21,6 @@ export async function runStoryAgent(token: string, params: any) {
     try {
         await verifyAdmin(token);
         return await withTimeout(storyGenerator.generateStory(params));
-    } catch (e: any) {
-        return { success: false, error: e.message };
-    }
-}
-
-export async function runSongAgent(token: string, params: any) {
-    try {
-        await verifyAdmin(token);
-        return await withTimeout(songGenerator.generateSong(params));
     } catch (e: any) {
         return { success: false, error: e.message };
     }
@@ -58,8 +48,6 @@ export async function runModuleManagerAgent(token: string, objective: string, ag
     try {
         console.log(`[Agent] Start Module Manager. Objective: ${objective}`);
 
-        // Relaxed auth: If verifyAdmin fails due to timeout, we might still proceed for demo,
-        // but for now, we'll just catch the error and return it.
         await verifyAdmin(token);
 
         const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
@@ -82,7 +70,6 @@ export async function publishModuleToLive(token: string, module: any) {
 
         const results = {
             story: await databasePoster.postStory(module.content.story),
-            song: await databasePoster.postSong(module.content.song),
             printable: await databasePoster.postPrintable(module.content.printable),
             video: await databasePoster.postVideo(module.content.videoScript, {
                 island: module.island,

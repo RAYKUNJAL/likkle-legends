@@ -26,7 +26,7 @@ export default function GetStartedWizard() {
 
     // Filter islands based on search
     const filteredIslands = CARIBBEAN_ISLANDS.filter(island =>
-        island.toLowerCase().includes(searchTerm.toLowerCase())
+        island.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Step 1: Name
@@ -42,10 +42,9 @@ export default function GetStartedWizard() {
     };
 
     // Step 3: Island
-    const selectIsland = (island: string) => {
-        setData({ ...data, island });
+    const selectIsland = (island: { name: string; flag: string }) => {
+        setData({ ...data, island: island.name });
         setStep(3);
-        // Simulate "Analyzing..." delay for effect
         setTimeout(() => setStep(4), 1500);
     };
 
@@ -163,9 +162,9 @@ export default function GetStartedWizard() {
                         {/* Scrollable Grid */}
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-200 scrollbar-track-transparent">
                             {filteredIslands.map((island) => (
-                                <button key={island} onClick={() => selectIsland(island)} className="p-4 rounded-xl bg-white border-2 border-zinc-100 hover:bg-primary/5 hover:border-primary font-bold text-deep text-sm transition-all text-left flex items-center justify-between group">
-                                    {island}
-                                    <span className="opacity-0 group-hover:opacity-100 text-primary"><ArrowRight size={16} /></span>
+                                <button key={island.name} onClick={() => selectIsland(island)} className="p-4 rounded-xl bg-white border-2 border-zinc-100 hover:bg-primary/5 hover:border-primary font-bold text-deep text-sm transition-all text-left flex items-center gap-2 group">
+                                    <span className="text-xl shrink-0">{island.flag}</span>
+                                    <span className="truncate">{island.name}</span>
                                 </button>
                             ))}
                             {filteredIslands.length === 0 && (

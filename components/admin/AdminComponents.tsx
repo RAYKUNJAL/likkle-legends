@@ -59,35 +59,33 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
         checkAuth();
     }, []);
 
-    const navItems = [
-        { id: 'overview', label: 'Overview', icon: BarChart, href: '/admin' },
-        { id: 'leads', label: 'Leads & CRM', icon: Users, href: '/admin/leads' },
-        { id: 'affiliates', label: 'Affiliates', icon: Users, href: '/admin/affiliates' },
-        { id: 'customers', label: 'Customers', icon: Users, href: '/admin/customers' },
-        { id: 'orders', label: 'Orders & Fulfillment', icon: ShoppingCart, href: '/admin/orders' },
-        { id: 'custom-requests', label: 'Custom Requests', icon: Music, href: '/admin/custom-requests' },
-        { id: 'store-analytics', label: 'Store Analytics', icon: TrendingUp, href: '/admin/store-analytics' },
-        { id: 'content', label: 'Content Library', icon: BookOpen, href: '/admin/content' },
-        { id: 'approval', label: 'Standard Approval', icon: CheckCircle2, href: '/admin/approval' },
-        { id: 'ai-review', label: 'AI Verification Queue', icon: Sparkles, href: '/admin/ai-review' },
-        { id: 'auto-content', label: 'Fresh Content Agent', icon: Zap, href: '/admin/auto-content' },
-        { id: 'studio', label: 'Legend AI Studio', icon: Sparkles, href: '/admin/studio' },
-        { id: 'characters', label: 'Characters', icon: Palette, href: '/admin/characters' },
-        { id: 'personality', label: 'AI Brain & Personality', icon: Zap, href: '/admin/personality' },
-        { id: 'media', label: 'Media Library', icon: Video, href: '/admin/media' },
-        { id: 'games', label: 'Game Builder', icon: Gamepad2, href: '/admin/games' },
-        { id: 'voice', label: 'Voice AI Demo', icon: MessageSquare, href: '/voice-demo' },
-        { id: 'blog', label: 'Blog Manager', icon: MessageSquare, href: '/admin/blog' },
-        { id: 'radio', label: 'Radio & Market', icon: Music, href: '/admin/radio' },
-        { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/admin/messages' },
-        { id: 'cms', label: 'Site CMS', icon: Globe, href: '/admin/cms' },
-        { id: 'pixels', label: 'Launch Pixels', icon: Target, href: '/admin/pixels' },
-        { id: 'email-engine', label: 'Growth Agent', icon: Zap, href: '/admin/email-engine' },
-        { id: 'announcements', label: 'Announcements', icon: Megaphone, href: '/admin/announcements' },
-        { id: 'analytics', label: 'Analytics', icon: TrendingUp, href: '/admin/analytics' },
-        { id: 'verify', label: 'Launch Verification', icon: ShieldCheck, href: '/admin/verify' },
-        { id: 'debug', label: 'AI Diagnostics', icon: Activity, href: '/admin/debug' }, // Added for debugging
-        { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
+    const navSections = [
+        {
+            label: 'Business',
+            items: [
+                { id: 'overview', label: 'Overview', icon: BarChart, href: '/admin/overview' },
+                { id: 'leads', label: 'Leads & CRM', icon: Users, href: '/admin/leads' },
+                { id: 'customers', label: 'Customers', icon: CreditCard, href: '/admin/customers' },
+                { id: 'orders', label: 'Orders & Fulfillment', icon: ShoppingCart, href: '/admin/orders' },
+            ],
+        },
+        {
+            label: 'Content',
+            items: [
+                { id: 'content', label: 'Content Library', icon: BookOpen, href: '/admin/content' },
+                { id: 'media', label: 'Media Library', icon: Video, href: '/admin/media' },
+                { id: 'auto-content', label: 'Auto-Generate Content', icon: Zap, href: '/admin/auto-content' },
+                { id: 'ai-review', label: 'AI Review Queue', icon: Sparkles, href: '/admin/ai-review' },
+                { id: 'characters', label: 'Characters', icon: Palette, href: '/admin/characters' },
+                { id: 'blog', label: 'Blog Manager', icon: FileText, href: '/admin/blog' },
+            ],
+        },
+        {
+            label: 'System',
+            items: [
+                { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
+            ],
+        },
     ];
 
     return (
@@ -99,23 +97,32 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
                     <p className="text-xs text-white/60 mt-1">Admin Control Center</p>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                    {navItems.map((item) => {
-                        const Icon = item.icon;
-                        return (
-                            <Link
-                                key={item.id}
-                                href={item.href}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === item.id
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                    : 'text-white/70 hover:bg-white/10 hover:text-white'
-                                    }`}
-                            >
-                                {Icon && <Icon size={20} />}
-                                <span className="font-medium">{item.label}</span>
-                            </Link>
-                        );
-                    })}
+                <nav className="flex-1 p-4 overflow-y-auto space-y-6">
+                    {navSections.map((section) => (
+                        <div key={section.label}>
+                            <p className="px-4 mb-2 text-[10px] font-black uppercase tracking-widest text-white/30">
+                                {section.label}
+                            </p>
+                            <div className="space-y-1">
+                                {section.items.map((item) => {
+                                    const Icon = item.icon;
+                                    return (
+                                        <Link
+                                            key={item.id}
+                                            href={item.href}
+                                            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeSection === item.id
+                                                ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                                : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                                }`}
+                                        >
+                                            {Icon && <Icon size={20} />}
+                                            <span className="font-medium">{item.label}</span>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
                 </nav>
 
                 <div className="p-4 border-t border-white/10">

@@ -66,7 +66,7 @@ const nextConfig = {
         hostname: 'images.unsplash.com',
       },
     ],
-    unoptimized: true,
+    unoptimized: false,
   },
   typescript: {
     ignoreBuildErrors: true,

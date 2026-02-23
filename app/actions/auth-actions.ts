@@ -4,6 +4,8 @@
 import { supabaseAdmin } from "@/lib/supabase-client";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE, RESET_PASSWORD_EMAIL_TEMPLATE, WELCOME_EMAIL_TEMPLATE } from "@/lib/email";
+// Note: we intentionally use the SSR createClient (not supabaseAdmin) for signup
+// so it works regardless of whether the service role key matches the project URL.
 
 export interface SignupResult {
     success: boolean;
@@ -18,7 +20,9 @@ export interface SignupResult {
  */
 /**
  * Commercial-grade Signup Action
- * Handles user creation, auto-login for friction-less onboarding, and welcome email.
+ * Uses supabase.auth.signUp() so it works regardless of service role key config.
+ * For frictionless onboarding: disable "Email Confirmations" in Supabase Dashboard
+ * (Authentication → Email → Enable email confirmations = OFF)
  */
 export async function signupAction(formData: {
     email: string;
@@ -28,75 +32,61 @@ export async function signupAction(formData: {
     referral: string;
 }): Promise<SignupResult> {
     try {
-        console.log(`[AUTH] Starting frictionless signup: ${formData.email}`);
-        const supabase = createClient(); // For sign-in (cookies)
+        console.log(`[AUTH] Starting signup: ${formData.email}, plan: ${formData.plan}`);
+        const supabase = createClient(); // SSR client — sets auth cookies on response
 
-        // 1. Check for existing user (Admin API)
-        const { data: { users }, error: userError } = await supabaseAdmin.auth.admin.listUsers();
-        const existingUser = users.find(u => u.email === formData.email);
+        // 1. Sign up via standard Supabase auth
+        //    - Email confirmations OFF in Dashboard → session created immediately (auto-login)
+        //    - Email confirmations ON → emailSent:true, show "check your inbox"
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: formData.email,
+            password: formData.password,
+            options: {
+                emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/callback?next=/onboarding/welcome`,
+                data: {
+                    full_name: `Parent of ${formData.childName}`,
+                    child_name: formData.childName,
+                    chosen_plan: formData.plan,
+                    referral_source: formData.referral,
+                }
+            }
+        });
 
-        if (existingUser) {
-            console.log(`[AUTH] User already exists: ${existingUser.id}`);
-            if (existingUser.email_confirmed_at) {
+        if (signUpError) {
+            console.error("[AUTH] SignUp Error:", signUpError.message);
+            if (
+                signUpError.message.toLowerCase().includes('already registered') ||
+                signUpError.message.toLowerCase().includes('already exists') ||
+                signUpError.message.toLowerCase().includes('email address is already taken') ||
+                signUpError.message.toLowerCase().includes('user already registered')
+            ) {
                 return { success: false, error: "This email is already registered. Please log in." };
             }
-            // If unconfirmed, we could potentially force confirm them here, but better to ask them to check email or login.
-            // For launch speed, let's treat unconfirmed as "failed" to avoid complexity, or just delete and recreate?
-            // Safer:
-            return { success: false, error: "Account exists but is unverified. Please check your email or contact support." };
+            return { success: false, error: signUpError.message };
         }
 
-        console.log(`[AUTH] Creating new user via Admin (Auto-Confirm): ${formData.email}`);
-
-        // 2. Create User (Auto-Confirmed)
-        const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
-            email: formData.email,
-            password: formData.password,
-            email_confirm: true, // Auto-confirm to remove friction
-            user_metadata: {
-                full_name: `Parent of ${formData.childName}`,
-                child_name: formData.childName,
-                chosen_plan: formData.plan,
-                referral_source: formData.referral
-            }
-        });
-
-        if (createError) {
-            console.error("[AUTH] Admin Create Error:", createError.message);
-            return { success: false, error: createError.message };
+        if (!signUpData.user) {
+            return { success: false, error: "Failed to create user record. Please try again." };
         }
 
-        if (!createData.user) {
-            return { success: false, error: "Failed to create user record." };
-        }
+        const userId = signUpData.user.id;
+        const isAutoConfirmed = !!signUpData.session; // session exists = auto-confirmed
 
-        const userId = createData.user.id;
-
-        // 3. Auto-Login (Set Cookies)
-        console.log("[AUTH] Auto-logging in user...");
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-        });
-
-        if (signInError) {
-            console.error("[AUTH] Auto-login failed:", signInError.message);
-            // Non-critical, but user will be redirected to checkout unauthenticated?
-            // Actually, if cookie isn't set, middleware might block checkout.
-            return { success: false, error: "Account created, but auto-login failed. Please log in manually." };
-        }
-
-        // 4. Send Welcome Email (Fire and Forget to avoid lag)
-        console.log("[AUTH] Sending welcome email (background)...");
-        // Do not await to ensure instant UI feedback
+        // 2. Send Welcome Email (fire-and-forget)
         sendEmail({
             to: formData.email,
             subject: "Welcome to Likkle Legends! 🌴",
             html: WELCOME_EMAIL_TEMPLATE(formData.childName || "Legend Family")
         }).catch(err => console.error("[AUTH] Welcome email failed:", err));
 
-        // 5. Success - emailSent: false signals the frontend to Redirect directly
-        return { success: true, emailSent: false, userId };
+        if (isAutoConfirmed) {
+            console.log(`[AUTH] Auto-confirmed signup success for: ${formData.email}`);
+            return { success: true, emailSent: false, userId };
+        }
+
+        // 3. Email confirmation required
+        console.log(`[AUTH] Confirmation email sent to: ${formData.email}`);
+        return { success: true, emailSent: true, userId };
 
     } catch (err: any) {
         console.error("[AUTH] Unexpected Signup Error:", err);
@@ -200,6 +190,22 @@ export async function signInAction(email: string, password: string) {
         if (error) {
             console.error("[AUTH] Sign In Failed:", error.message);
             return { success: false, error: error.message };
+        }
+
+        // Get profile to check for admin redirect
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role, is_admin')
+                .eq('id', session.user.id)
+                .single();
+
+            return {
+                success: true,
+                role: profile?.role,
+                isAdmin: profile?.is_admin || profile?.role === 'admin'
+            };
         }
 
         return { success: true };

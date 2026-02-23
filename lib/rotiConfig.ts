@@ -176,7 +176,7 @@ export const ROTI_TECHNICAL = {
     maxTokens: 500
 };
 
-export default {
+const rotiConfig = {
     version: ROTI_VERSION,
     persona: ROTI_PERSONA,
     safety: ROTI_SAFETY,
@@ -185,3 +185,5 @@ export default {
     visual: ROTI_VISUAL,
     technical: ROTI_TECHNICAL
 };
+
+export default rotiConfig;

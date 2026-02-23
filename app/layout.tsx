@@ -100,7 +100,7 @@ export default async function RootLayout({
         </Suspense>
         <CookieConsentBanner />
         <Toaster position="top-right" />
-        <UserProvider>
+        <UserProvider suppressHydrationWarning>
           <GeoProvider>
             {children}
             {/* Tanty chatbot removed per user request */}

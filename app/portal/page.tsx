@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
     Sparkles, BookOpen, Music, Palette, Target, Star, Play,
     Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video, Radio,
-    Map as MapIcon, Grid, Wand2, LogOut, Download, Menu, X, ShoppingBag
+    Map as MapIcon, Grid, Wand2, LogOut, Download, Menu, X, ShoppingBag, LayoutDashboard, MessageCircle
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { getSongs, getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
@@ -24,6 +24,7 @@ import BadgeUnlockModal from '@/components/gamification/BadgeUnlockModal';
 import DialectDial from '@/components/portal/DialectDial';
 import { BadgeCheck } from 'lucide-react';
 import CoppaConsentModal from '@/components/auth/CoppaConsentModal';
+import UpgradeModal from '@/components/UpgradeModal';
 
 interface Song {
     id: string;
@@ -66,7 +67,7 @@ type PortalSection = 'home' | 'stories' | 'songs' | 'missions' | 'games' | 'less
 
 export default function ChildPortalPage() {
     const router = useRouter();
-    const { user, activeChild, canAccess, isSubscribed, isLoading: userLoading, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge, verifyAge } = useUser();
+    const { user, children, activeChild, canAccess, isSubscribed, isLoading: userLoading, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge, verifyAge } = useUser();
     const [songs, setSongs] = useState<Song[]>([]);
     const [stories, setStories] = useState<Storybook[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
@@ -87,6 +88,7 @@ export default function ChildPortalPage() {
     const [activeSong, setActiveSong] = useState<Song | null>(null);
     const [isCoppaModalOpen, setIsCoppaModalOpen] = useState(false);
     const [pendingRoute, setPendingRoute] = useState<string | null>(null);
+    const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; tier?: string; feature?: string }>({ open: false });
 
     const loadPortalData = useCallback(async () => {
         // Individual fetchers to avoid Promise.all bottleneck
@@ -150,9 +152,14 @@ export default function ChildPortalPage() {
 
     useEffect(() => {
         if (user) {
+            // REDIRECT ADMINS: If they are an admin and have no children, push to admin dashboard
+            if (user.is_admin && (!children || children.length === 0)) {
+                router.push('/admin');
+                return;
+            }
             loadPortalData();
         }
-    }, [user, loadPortalData]);
+    }, [user, children, loadPortalData, router]);
 
     // Show loading while checking auth
     if (userLoading) {
@@ -255,6 +262,7 @@ export default function ChildPortalPage() {
         { id: 'printables', label: 'Printables', icon: Download, color: 'from-amber-400 to-orange-500' },
         { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
         { id: 'music-hub', label: 'Market', icon: ShoppingBag, color: 'from-indigo-600 to-purple-700' },
+        { id: 'buddy', label: 'My Buddy', icon: MessageCircle, color: 'from-emerald-500 to-teal-500' },
     ];
 
     return (
@@ -366,6 +374,8 @@ export default function ChildPortalPage() {
                                             router.push('/portal/games');
                                         } else if (item.id === 'music-hub') {
                                             router.push('/portal/music');
+                                        } else if (item.id === 'buddy') {
+                                            router.push('/portal/buddy');
                                         } else {
                                             setActiveSection(item.id as PortalSection);
                                             setIsSidebarOpen(false); // Close on mobile
@@ -381,6 +391,17 @@ export default function ChildPortalPage() {
                                 </button>
                             );
                         })}
+
+                        {/* Admin Link */}
+                        {(user?.is_admin) && (
+                            <button
+                                onClick={() => router.push('/admin')}
+                                className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-sm text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 transition-all group mt-2 border border-amber-500/20"
+                            >
+                                <LayoutDashboard size={20} className="text-amber-500" />
+                                Admin Island
+                            </button>
+                        )}
 
                         {/* Exit/Logout Button */}
                         <button
@@ -490,7 +511,8 @@ export default function ChildPortalPage() {
                                                     <Link
                                                         key={story.id}
                                                         href={isLocked ? '#' : `/portal/stories/${story.id}`}
-                                                        className={`bg-white rounded-[2rem] sm:rounded-[3rem] p-3 sm:p-5 shadow-lg sm:shadow-xl hover:shadow-2xl transition-all group border-2 sm:border-4 border-transparent hover:border-blue-100 relative ${isLocked ? 'grayscale opacity-80' : ''}`}
+                                                        onClick={isLocked ? (e) => { e.preventDefault(); setUpgradeModal({ open: true, tier: story.tier_required, feature: story.title }); } : undefined}
+                                                        className={`bg-white rounded-[2rem] sm:rounded-[3rem] p-3 sm:p-5 shadow-lg sm:shadow-xl hover:shadow-2xl transition-all group border-2 sm:border-4 border-transparent hover:border-blue-100 relative ${isLocked ? 'cursor-pointer opacity-80' : ''}`}
                                                     >
                                                         <div className="relative aspect-[3/4] bg-blue-50 rounded-[1.5rem] sm:rounded-[2.5rem] mb-4 sm:mx-0 overflow-hidden">
                                                             {story.cover_image_url ? (
@@ -554,8 +576,8 @@ export default function ChildPortalPage() {
                                                 return (
                                                     <button
                                                         key={video.id}
-                                                        onClick={() => !isLocked && setActiveVideo(video)}
-                                                        className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-indigo-100 text-left ${isLocked ? 'grayscale opacity-80 cursor-not-allowed' : ''}`}
+                                                        onClick={() => isLocked ? setUpgradeModal({ open: true, tier: video.tier_required, feature: video.title }) : setActiveVideo(video)}
+                                                        className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-indigo-100 text-left ${isLocked ? 'opacity-80 cursor-pointer' : ''}`}
                                                     >
                                                         <div className="relative aspect-video bg-indigo-50 rounded-[2.5rem] mb-6 overflow-hidden shadow-inner">
                                                             {video.thumbnail_url ? (
@@ -636,8 +658,8 @@ export default function ChildPortalPage() {
                                                 return (
                                                     <button
                                                         key={song.id}
-                                                        onClick={() => !isLocked && setActiveSong(song)}
-                                                        className={`bg-white rounded-[2rem] sm:rounded-[3.5rem] p-4 sm:p-6 shadow-lg sm:shadow-xl hover:shadow-2xl transition-all group border-2 sm:border-4 border-transparent hover:border-pink-100 text-left ${isLocked ? 'grayscale opacity-80 cursor-not-allowed' : ''}`}
+                                                        onClick={() => isLocked ? setUpgradeModal({ open: true, tier: song.tier_required, feature: song.title }) : setActiveSong(song)}
+                                                        className={`bg-white rounded-[2rem] sm:rounded-[3.5rem] p-4 sm:p-6 shadow-lg sm:shadow-xl hover:shadow-2xl transition-all group border-2 sm:border-4 border-transparent hover:border-pink-100 text-left ${isLocked ? 'opacity-80 cursor-pointer' : ''}`}
                                                     >
                                                         <div className="relative aspect-square bg-pink-50 rounded-full mb-4 sm:mb-6 overflow-hidden shadow-xl ring-2 sm:ring-4 ring-white group-hover:ring-pink-100 transition-all">
                                                             {song.thumbnail_url ? (
@@ -763,6 +785,14 @@ export default function ChildPortalPage() {
                         }
                     }
                 }}
+            />
+
+            {/* Upgrade Modal */}
+            <UpgradeModal
+                isOpen={upgradeModal.open}
+                onClose={() => setUpgradeModal({ open: false })}
+                requiredTier={upgradeModal.tier}
+                featureName={upgradeModal.feature}
             />
         </div>
     );

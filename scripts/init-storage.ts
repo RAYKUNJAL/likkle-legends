@@ -1,18 +1,15 @@
-
-import { initializeStorageBuckets } from '../lib/storage';
+import { initializeStorageBuckets } from './lib/storage';
 import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 
-dotenv.config();
-
-async function main() {
-    console.log('🚀 Initializing storage buckets...');
+async function run() {
+    console.log('🚀 Initializing Likkle Legends Storage Buckets...');
     try {
         await initializeStorageBuckets();
-        console.log('✅ Storage buckets initialized successfully.');
+        console.log('✅ Storage initialization complete!');
     } catch (error) {
-        console.error('❌ Failed to initialize storage buckets:', error);
-        process.exit(1);
+        console.error('❌ Initialization failed:', error);
     }
 }
 
-main();
+run();

@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { getAdminStats, getRecentActivity } from '../../services/supabase/databaseService';
 
 export const DashboardOverview: React.FC = () => {
-    const [stats, setStats] = useState({ totalUsers: 0, totalVideos: 0, totalPosts: 0, revenue: 0 });
+    const [stats, setStats] = useState({ totalUsers: 0, totalVideos: 0, paidUsers: 0, revenue: 0 });
     const [activity, setActivity] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -42,7 +43,32 @@ export const DashboardOverview: React.FC = () => {
                 <Card title="Total Citizens" value={stats.totalUsers} icon="👥" trend="12%" color="bg-blue-100 text-blue-600" />
                 <Card title="Monthly Revenue" value={`$${stats.revenue}`} icon="💰" trend="8%" color="bg-green-100 text-green-600" />
                 <Card title="Library Assets" value={stats.totalVideos} icon="📹" color="bg-orange-100 text-orange-600" />
-                <Card title="Community Posts" value={stats.totalPosts} icon="💬" color="bg-purple-100 text-purple-600" />
+                <Card title="Paid Citizens" value={stats.paidUsers} icon="💬" color="bg-purple-100 text-purple-600" />
+            </div>
+
+            {/* AI Content Quick Actions */}
+            <div>
+                <h3 className="font-heading font-black text-base text-blue-950 mb-3 uppercase tracking-widest text-xs text-blue-300">AI Content</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Link href="/admin/auto-content" className="group flex items-center gap-4 bg-gradient-to-r from-violet-600 to-indigo-600 text-white p-5 rounded-2xl hover:from-violet-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg">
+                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform">
+                            ⚡
+                        </div>
+                        <div>
+                            <p className="font-black text-base">Auto-Generate Content</p>
+                            <p className="text-xs text-white/70 mt-0.5">Create new songs, stories & printables with AI</p>
+                        </div>
+                    </Link>
+                    <Link href="/admin/ai-review" className="group flex items-center gap-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white p-5 rounded-2xl hover:from-amber-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg">
+                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform">
+                            ✅
+                        </div>
+                        <div>
+                            <p className="font-black text-base">Review AI Queue</p>
+                            <p className="text-xs text-white/70 mt-0.5">Approve or reject AI-generated content</p>
+                        </div>
+                    </Link>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

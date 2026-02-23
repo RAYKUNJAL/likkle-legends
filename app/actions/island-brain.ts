@@ -115,14 +115,8 @@ export async function runAgentGeneration(
     constraints: any = {}
 ) {
     try {
-        let userId = "demo_user";
-
-        if (token === "BYPASS_FOR_TESTING") {
-            console.log("⚠️ EMERGENCY BYPASS ACTIVE for runAgentGeneration");
-        } else {
-            const user = await verifyUser(token);
-            userId = user.id;
-        }
+        const user = await verifyUser(token);
+        const userId = user.id;
 
         const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
         if (!apiKey) throw new Error("GEMINI_API_KEY is missing in environment.");

@@ -56,3 +56,4 @@ temp_plex/
 temp_plex_2/
 voice-server/
 .env*.local
+.mcp.json

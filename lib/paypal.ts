@@ -50,8 +50,8 @@ export const SUBSCRIPTION_PLANS = {
     },
     plan_mail_intro: {
         id: 'plan_mail_intro',
-        name: 'Legend Mail Intro',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_MAIL || 'P-1R150232CG183332XNFLNNBQ',
+        name: 'Island Starter',
+        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER || 'P-1R150232CG183332XNFLNNBQ',
         paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_MAIL_YEARLY || 'P-0YY72736T56573355NFLOZZQ',
         price: 9.99,
         priceYearly: 99.00,
@@ -70,7 +70,7 @@ export const SUBSCRIPTION_PLANS = {
     plan_legends_plus: {
         id: 'plan_legends_plus',
         name: 'Legends Plus',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_PLUS || 'P-45M32159VV6033601NFLOOYI',
+        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS || 'P-45M32159VV6033601NFLOOYI',
         paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_PLUS_YEARLY || 'P-2503312149524980NNFLO34Y',
         price: 19.99,
         priceYearly: 199.00,

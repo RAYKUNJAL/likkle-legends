@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
     ArrowLeft, Flame, Trophy, Star, Gift, CheckCircle, Clock,
@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { XP_ACTIONS, LEVELS, calculateLevel } from '@/lib/gamification';
+import { claimMissionReward, getMissionProgress } from '@/app/actions/missions';
+import toast from 'react-hot-toast';
 
 interface Mission {
     id: string;
@@ -27,25 +29,31 @@ export default function MissionsPage() {
     const { activeChild, canAccess } = useUser();
     const [missions, setMissions] = useState<Mission[]>([]);
     const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'special'>('daily');
+    const [totalXP, setTotalXP] = useState(activeChild?.total_xp || 0);
+    const [streak, setStreak] = useState(activeChild?.current_streak || 0);
+    const [claimingId, setClaimingId] = useState<string | null>(null);
 
     useEffect(() => {
         async function loadMissions() {
             try {
-                const { getMissions } = await import('@/lib/database');
-                // Pass age track from active child if available, or 'mini' default
+                const [{ getMissions }, progressMap] = await Promise.all([
+                    import('@/lib/database'),
+                    getMissionProgress(),
+                ]);
+
                 const data = await getMissions(activeChild?.age_track || 'mini');
 
-                // Map to Mission interface
                 const mappedMissions: Mission[] = data.map((m: any) => ({
                     id: m.id,
                     title: m.title,
                     description: m.description,
                     type: m.mission_type || 'daily',
                     reward_xp: m.reward_xp || 50,
-                    progress: 0, // Need to fetch user progress separately
+                    // Restore persisted progress from DB
+                    progress: progressMap[m.id]?.completed ? (m.completion_target || 1) : 0,
                     target: m.completion_target || 1,
                     icon: m.icon || '🎯',
-                    completed: false, // Calculate from user progress
+                    completed: progressMap[m.id]?.completed || false,
                     expires_at: m.end_date,
                     tier_required: 'free'
                 }));
@@ -59,9 +67,14 @@ export default function MissionsPage() {
         loadMissions();
     }, [activeChild]);
 
+    // Sync XP/streak from activeChild if it updates
+    useEffect(() => {
+        if (activeChild) {
+            setTotalXP(activeChild.total_xp || 0);
+            setStreak(activeChild.current_streak || 0);
+        }
+    }, [activeChild]);
 
-    const totalXP = activeChild?.total_xp || 850;
-    const streak = activeChild?.current_streak || 5;
     const level = calculateLevel(totalXP);
 
     const dailyMissions = missions.filter(m => m.type === 'daily');
@@ -71,11 +84,35 @@ export default function MissionsPage() {
     const completedDaily = dailyMissions.filter(m => m.completed).length;
     const totalDaily = dailyMissions.length;
 
-    const claimReward = (missionId: string) => {
-        setMissions(prev => prev.map(m =>
-            m.id === missionId ? { ...m, completed: true, progress: m.target } : m
-        ));
-    };
+    const claimReward = useCallback(async (missionId: string, rewardXp: number) => {
+        if (claimingId) return;
+        setClaimingId(missionId);
+        const toastId = toast.loading('Claiming reward...');
+
+        try {
+            const result = await claimMissionReward(missionId, rewardXp);
+
+            if (!result.success) {
+                toast.error(result.error || 'Failed to claim reward', { id: toastId });
+                return;
+            }
+
+            // Optimistically update UI
+            setMissions(prev => prev.map(m =>
+                m.id === missionId ? { ...m, completed: true, progress: m.target } : m
+            ));
+
+            // Update XP + streak display
+            if (result.newXp !== undefined) setTotalXP(result.newXp);
+            if (result.newStreak !== undefined) setStreak(result.newStreak);
+
+            toast.success(`+${rewardXp} XP earned! 🎉`, { id: toastId });
+        } catch (err: any) {
+            toast.error('Something went wrong', { id: toastId });
+        } finally {
+            setClaimingId(null);
+        }
+    }, [claimingId]);
 
     const getTimeRemaining = (expiresAt?: string) => {
         if (!expiresAt) return null;
@@ -256,10 +293,14 @@ export default function MissionsPage() {
                                         {/* Action Button */}
                                         {mission.progress >= mission.target && !mission.completed && !isLocked && (
                                             <button
-                                                onClick={() => claimReward(mission.id)}
-                                                className="mt-4 w-full py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                                                onClick={() => claimReward(mission.id, mission.reward_xp)}
+                                                disabled={claimingId === mission.id}
+                                                className="mt-4 w-full py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-60"
                                             >
-                                                <Gift size={18} /> Claim Reward
+                                                {claimingId === mission.id
+                                                    ? <><span className="animate-spin">⏳</span> Saving...</>
+                                                    : <><Gift size={18} /> Claim Reward</>
+                                                }
                                             </button>
                                         )}
 

@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import {
     Settings, BarChart, Users, Sparkles, Plus, ArrowRight,
     Edit, BookOpen, Music, Trophy, Flame, Target, TrendingUp,
-    ChevronRight, Star, Calendar, MapPin, Gift, Download, ShieldCheck
+    ChevronRight, Star, Calendar, MapPin, Gift, Download, ShieldCheck, LayoutDashboard
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -124,6 +124,15 @@ export default function ParentDashboard() {
                         >
                             Parent <br /><span className="text-primary">Dashboard.</span>
                         </motion.h1>
+
+                        {user?.is_admin && (
+                            <Link
+                                href="/admin"
+                                className="inline-flex items-center gap-2 mt-8 px-6 py-3 bg-amber-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
+                            >
+                                <LayoutDashboard size={14} /> Switch to Admin Island
+                            </Link>
+                        )}
                     </div>
 
                     <div className="flex bg-white p-3 rounded-[2.5rem] shadow-xl border border-slate-100 shadow-slate-200/50">

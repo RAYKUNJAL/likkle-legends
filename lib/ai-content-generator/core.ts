@@ -30,8 +30,8 @@ export interface GenerationOptions {
 }
 
 export class ContentGenerator {
-    // COMMERCIAL UPGRADE: Using Gemini 2.0 Flash as primary
-    private defaultModel = 'gemini-2.0-flash';
+    // COMMERCIAL UPGRADE: Using Gemini 2.5 Pro as primary for highest quality content
+    private defaultModel = 'gemini-2.5-pro';
 
     /**
      * Generate text content using Gemini with Timeout Protection
@@ -46,7 +46,7 @@ export class ContentGenerator {
 
             const modelsToTry = [
                 options?.model || this.defaultModel,
-                'gemini-2.0-flash-exp', // Fallback
+                'gemini-2.0-flash', // Fallback
             ];
 
             let lastError = null;

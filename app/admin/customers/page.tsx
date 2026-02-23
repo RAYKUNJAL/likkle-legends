@@ -6,7 +6,6 @@ import {
     ActionButton,
     Users, Edit, Eye, Package, CreditCard
 } from '@/components/admin/AdminComponents';
-import { getAllProfiles, getChildren } from '@/lib/database';
 
 interface Customer {
     id: string;

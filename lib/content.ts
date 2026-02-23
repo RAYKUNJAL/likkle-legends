@@ -437,14 +437,14 @@ export const siteContent = {
         title: "Start Your Culture Journey",
         subtitle: "Try the Intro Experience for just $10. Most families start here, then upgrade as their legends grow.",
         tabs: [
-            { id: "mail", label: "Mail Club", description: "Identity in their hands" },
-            { id: "digital", label: "Digital Only", description: "Learning everywhere" }
+            { id: "mail", label: "Mail Club", description: "Identity in their hands", icon: "📬" },
+            { id: "digital", label: "Digital Only", description: "Learning everywhere", icon: "📱" }
         ],
         plans: [
             {
                 id: "starter_mailer",
                 tab: "mail",
-                name: "Starter Mailer",
+                name: "Island Starter",
                 best_for: "New families wanting the physical connection of monthly letters.",
                 price_display: "$9.99/mo",
                 features: [

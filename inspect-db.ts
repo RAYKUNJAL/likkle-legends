@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '..', '.env.local') });
 
 async function inspect() {
-    const { createAdminClient } = await import('../lib/admin');
+    const { createAdminClient } = await import('./lib/admin');
     const admin = createAdminClient();
 
     console.log('--- Table Inspection ---');

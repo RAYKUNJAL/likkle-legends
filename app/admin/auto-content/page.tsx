@@ -35,9 +35,12 @@ export default function AutonomousContentPage() {
         try {
             const { supabase } = await import('@/lib/storage');
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error("No session");
+            if (!session) {
+                throw new Error("No session. Please log in as an admin.");
+            }
+            const token = session.access_token;
 
-            const result = await runModuleManagerAgent(session.access_token, obj, ageGroup);
+            const result = await runModuleManagerAgent(token, obj, ageGroup);
 
             if (result.success) {
                 setLastModule(result.data);
@@ -62,9 +65,10 @@ export default function AutonomousContentPage() {
         try {
             const { supabase } = await import('@/lib/storage');
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) throw new Error("No session");
+            if (!session) throw new Error("No session. Please log in.");
+            const token = session.access_token;
 
-            const res = await publishModuleToLive(session.access_token, lastModule);
+            const res = await publishModuleToLive(token, lastModule);
             if (res.success) {
                 alert("The module is now LIVE in the Kid Portal!");
                 setLastModule(null);
@@ -145,9 +149,11 @@ export default function AutonomousContentPage() {
                                         <p className="text-white/60">Autonomous content generation core</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full border border-white/10">
-                                    <div className={`w-3 h-3 rounded-full ${isGenerating ? 'bg-amber-400 animate-pulse' : 'bg-green-400'}`} />
-                                    <span className="text-xs font-bold uppercase tracking-widest">{isGenerating ? 'PROCESSING' : 'ONLINE'}</span>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full border border-white/10">
+                                        <div className={`w-3 h-3 rounded-full ${isGenerating ? 'bg-amber-400 animate-pulse' : 'bg-green-400'}`} />
+                                        <span className="text-xs font-bold uppercase tracking-widest">{isGenerating ? 'PROCESSING' : 'ONLINE'}</span>
+                                    </div>
                                 </div>
                             </div>
 

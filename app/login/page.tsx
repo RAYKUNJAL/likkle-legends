@@ -40,7 +40,19 @@ function LoginForm() {
         if (result.success) {
             // Successful login
             router.refresh(); // Refresh router to pick up cookies
-            const redirectUrl = searchParams.get('redirect') || '/portal';
+
+            // Smart Redirect
+            const resultAny = result as any;
+            let redirectUrl = searchParams.get('redirect');
+
+            if (!redirectUrl) {
+                if (resultAny.isAdmin) {
+                    redirectUrl = '/admin';
+                } else {
+                    redirectUrl = '/portal';
+                }
+            }
+
             router.push(redirectUrl);
         } else {
             console.error('Login failed:', result.error);

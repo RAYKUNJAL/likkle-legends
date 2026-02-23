@@ -3,7 +3,6 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 
 export interface FamilySetupData {
     home_islands: string[];
@@ -34,41 +33,38 @@ export async function setupFamilyProfile(familyData: FamilySetupData, childData:
     console.log('👪 Setting up Family Profile for User:', user.id);
 
     try {
-        // 2. Perform Transaction (Upsert Family, Insert Child)
-        // Since Supabase doesn't support strict transactions via client easily without RPC, we'll do sequential.
-
-        // --- FAMILY PROFILE ---
-        // Check if exists first to update, or insert.
-        const { data: family, error: familyError } = await supabase
-            .from('family_profile')
-            .upsert({
-                user_id: user.id,
+        // 2. Store family preferences in user metadata (via Supabase auth)
+        const { error: metadataError } = await supabase.auth.updateUser({
+            data: {
                 home_islands: familyData.home_islands,
                 language_flavour: familyData.language_flavour,
                 max_story_length_pages: familyData.max_story_length_pages,
                 allow_scary_folklore: familyData.allow_scary_folklore,
                 allow_trickster_folklore: familyData.allow_trickster_folklore,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' })
-            .select()
-            .single();
+                profile_setup_complete: true,
+            }
+        });
 
-        if (familyError) {
-            console.error('Family Profile Error:', familyError);
-            return { success: false, error: familyError.message };
+        if (metadataError) {
+            console.error('Family Metadata Error:', metadataError);
+            return { success: false, error: metadataError.message };
         }
 
-        // --- CHILD PROFILE ---
+        // 3. Determine age track from child age
+        const ageTrack = childData.child_age <= 5 ? 'mini' : 'big';
+
+        // 4. Insert child into the `children` table (real schema)
         const { data: child, error: childError } = await supabase
-            .from('child_profile')
+            .from('children')
             .insert({
-                family_id: family.id,
-                child_name: childData.child_name,
-                age_years: childData.child_age, // storing denormalized
-                reading_level: childData.reading_level,
-                attention_span: childData.attention_span,
-                favourite_topics: childData.favourite_topics,
-                favourite_characters: childData.favourite_characters
+                parent_id: user.id,
+                first_name: childData.child_name,
+                age: childData.child_age,
+                age_track: ageTrack,
+                primary_island: familyData.home_islands[0] || 'Trinidad & Tobago',
+                secondary_island: familyData.home_islands[1] || null,
+                favorite_character: childData.favourite_characters[0] || null,
+                // Gamification defaults are set by DB (total_xp: 0, current_level: 1, etc.)
             })
             .select()
             .single();
@@ -78,27 +74,10 @@ export async function setupFamilyProfile(familyData: FamilySetupData, childData:
             return { success: false, error: childError.message };
         }
 
-        // --- CHILD LEARNING STATE (Optional but good to init) ---
-        // Initialize basic subjects: Culture, HFLE
-        const subjects = ['Culture', 'HFLE'];
-        const learningStates = subjects.map(subject => ({
-            child_id: child.id,
-            subject: subject,
-            level_band: 'A', // Default start
-            total_books_generated: 0
-        }));
-
-        const { error: learningError } = await supabase
-            .from('child_learning_state')
-            .insert(learningStates);
-
-        if (learningError) {
-            console.warn('Learning State Init Warning (Non-critical):', learningError);
-        }
-
-        console.log('✅ Family Setup Complete!');
+        console.log('✅ Family Setup Complete! Child ID:', child.id);
+        revalidatePath('/portal');
         revalidatePath('/dashboard');
-        return { success: true };
+        return { success: true, childId: child.id };
 
     } catch (err: any) {
         console.error('Setup Exception:', err);

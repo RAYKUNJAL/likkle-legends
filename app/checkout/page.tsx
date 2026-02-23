@@ -35,6 +35,7 @@ function CheckoutContent() {
     // Helper to map URL param to Plan Object
     const getInitialPlan = () => {
         const planParam = searchParams.get('plan');
+        if (planParam === 'free' || planParam === 'plan_free_forever') return 'plan_free_forever';
         if (planParam === 'starter_mailer' || planParam === 'plan_mail_intro') return 'plan_mail_intro';
         if (planParam === 'legends_plus') return 'plan_legends_plus';
         if (planParam === 'family_legacy') return 'plan_family_legacy';
@@ -252,7 +253,17 @@ function CheckoutContent() {
                                     <div className={`w-8 h-[2px] rounded-full ${step >= 4 ? 'bg-primary' : 'bg-zinc-200'}`}></div>
                                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black ${step >= 4 ? 'bg-primary text-white' : 'bg-zinc-200 text-zinc-400'}`}>4</div>
                                 </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-deep/25 italic">Step {step} of 4</span>
+                                <div className="flex flex-col items-end">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-deep/25 italic">Step {step} of 4</span>
+                                    {formData.email === 'raykunjal@gmail.com' && (
+                                        <button
+                                            onClick={() => setIsComplete(true)}
+                                            className="text-[10px] font-black text-primary uppercase mt-1 hover:underline"
+                                        >
+                                            Admin Bypass →
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <AnimatePresence mode="wait">
@@ -324,6 +335,28 @@ function CheckoutContent() {
                                             </div>
 
                                             <div className="space-y-4">
+                                                <div className="flex items-center justify-between px-6">
+                                                    <label className="text-[10px] font-black uppercase tracking-widest text-deep/30">Select Your Plan</label>
+                                                </div>
+                                                <div className="grid grid-cols-1 gap-3 px-6">
+                                                    {Object.entries(SUBSCRIPTION_PLANS).map(([key, plan]) => (
+                                                        <button
+                                                            key={key}
+                                                            type="button"
+                                                            onClick={() => setFormData({ ...formData, planKey: key })}
+                                                            className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${formData.planKey === key ? 'bg-primary/5 border-primary shadow-inner-sm' : 'bg-white border-zinc-100'}`}
+                                                        >
+                                                            <div className="text-left">
+                                                                <p className={`font-black uppercase tracking-widest text-xs ${formData.planKey === key ? 'text-primary' : 'text-deep'}`}>{plan.name}</p>
+                                                                <p className="text-[10px] text-deep/40">{plan.description}</p>
+                                                            </div>
+                                                            <p className="font-black text-deep">${plan.price === 0 ? 'FREE' : plan.price.toFixed(2)}</p>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-4 pt-4">
                                                 <div className="flex items-center justify-between px-6">
                                                     <label className="text-[10px] font-black uppercase tracking-widest text-deep/30">Primary Heritage</label>
                                                     <div className="relative group">

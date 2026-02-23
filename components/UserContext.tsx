@@ -33,7 +33,6 @@ interface Child {
   requires_parental_consent: boolean;
   consent_last_verified?: string;
   parent_id: string;
-  primary_user_id?: string;
   last_activity_date?: string;
 }
 
@@ -181,7 +180,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
           email: fallbackProfile.email,
           full_name: fallbackProfile.full_name,
           role: 'parent'
-        }, { onConflict: 'id' }).then(({ error }) => {
+        }, { onConflict: 'id' }).then(({ error }: { error: any }) => {
           if (error && !error.message.includes('permission denied')) {
             console.error('Self-healing profile creation error:', error);
           }
@@ -207,7 +206,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       const { data } = await supabase
         .from('children')
         .select('*')
-        .eq('primary_user_id', userId)
+        .eq('parent_id', userId)
         .order('created_at', { ascending: true });
 
       if (data) {
@@ -215,7 +214,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
 
         // Restore active child from localStorage or set first child as active
         const savedChildId = localStorage.getItem('activeChildId');
-        const savedChild = data.find(c => c.id === savedChildId);
+        const savedChild = data.find((c: Child) => c.id === savedChildId);
 
         if (savedChild) {
           setActiveChildState(savedChild as Child);
@@ -406,7 +405,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     initialize();
 
     // Listen for ALL auth changes to keep context synced
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
       console.log(`[AUTH] Event: ${event}`);
 
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {

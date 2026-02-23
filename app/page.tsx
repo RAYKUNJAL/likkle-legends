@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import LandingPage from '@/components/landing-v3/LandingPage';
 
 export const metadata: Metadata = {
   title: "Likkle Legends | The #1 Caribbean Education Mail Club for Kids",
@@ -7,78 +6,70 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://likklelegends.com',
   },
-  openGraph: {
-    title: 'Likkle Legends | Caribbean Culture for Kids',
-    description: 'Transform screen time into culture time. Personalized letters, island missions, and AI reading buddies.',
-    url: 'https://likklelegends.com',
-    siteName: 'Likkle Legends',
-    images: [
-      {
-        url: 'https://likklelegends.com/images/roti-new.jpg', // Use absolute URL for OG images
-        width: 1200,
-        height: 630,
-        alt: 'Likkle Legends - Caribbean Kids Education',
-      },
-    ],
-    locale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Likkle Legends - Raise Proud Caribbean Kids',
-    description: 'The monthly mail club that brings island culture to your doorstep.',
-    images: ['https://likklelegends.com/images/roti-new.jpg'],
-  },
 };
 
 export default function Page() {
-  const jsonLdOrganization = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Likkle Legends",
-    "url": "https://likklelegends.com",
-    "logo": "https://likklelegends.com/images/logo.png",
-    "sameAs": [
-      "https://facebook.com/likklelegends",
-      "https://instagram.com/likklelegends"
-    ]
-  };
-
-  const jsonLdProduct = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": "Likkle Legends Mail Club",
-    "image": "https://likklelegends.com/images/roti-new.jpg",
-    "description": "Monthly Caribbean culture & educational mail kit for children ages 4-9.",
-    "brand": {
-      "@type": "Brand",
-      "name": "Likkle Legends"
-    },
-    "offers": {
-      "@type": "Offer",
-      "price": "10.00",
-      "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock",
-      "url": "https://likklelegends.com/pricing"
-    },
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.9",
-      "reviewCount": "542"
-    }
-  };
-
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdProduct) }}
-      />
-      <LandingPage />
-    </>
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex flex-col items-center justify-center p-4">
+      <div className="text-center max-w-2xl mx-auto space-y-8">
+        {/* Logo/Title */}
+        <div className="space-y-4">
+          <h1 className="text-5xl lg:text-7xl font-black text-orange-950">
+            🌴 Likkle Legends
+          </h1>
+          <p className="text-2xl text-orange-800 font-bold">
+            Caribbean Culture for Caribbean Kids
+          </p>
+        </div>
+
+        {/* Tagline */}
+        <p className="text-lg text-orange-700 leading-relaxed">
+          Join 500+ families raising <strong>proud, confident Caribbean kids</strong>.
+          Monthly cultural letters, island adventures, and AI reading buddies for ages 4-9.
+        </p>
+
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+          <a
+            href="/signup"
+            className="px-8 py-4 bg-orange-500 text-white rounded-full font-bold text-lg hover:bg-orange-600 transition-colors shadow-lg"
+          >
+            Join the Legends 🚀
+          </a>
+          <a
+            href="/characters"
+            className="px-8 py-4 bg-white text-orange-600 border-2 border-orange-500 rounded-full font-bold text-lg hover:bg-orange-50 transition-colors"
+          >
+            Meet Our Guides
+          </a>
+        </div>
+
+        {/* Features */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-12">
+          <div className="p-4">
+            <div className="text-4xl mb-2">📬</div>
+            <h3 className="font-bold text-orange-900">Monthly Mail</h3>
+            <p className="text-sm text-orange-700">Real letters to your door</p>
+          </div>
+          <div className="p-4">
+            <div className="text-4xl mb-2">🎭</div>
+            <h3 className="font-bold text-orange-900">Island Adventures</h3>
+            <p className="text-sm text-orange-700">Guided by Caribbean heroes</p>
+          </div>
+          <div className="p-4">
+            <div className="text-4xl mb-2">🤖</div>
+            <h3 className="font-bold text-orange-900">AI Buddy</h3>
+            <p className="text-sm text-orange-700">Tanty Spice - always there</p>
+          </div>
+        </div>
+
+        {/* Status Badge */}
+        <div className="pt-8 border-t border-orange-200">
+          <p className="text-sm text-orange-600 font-medium">
+            ✅ Platform Live | 🚀 Ready to Launch | 💪 Fully Functional
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

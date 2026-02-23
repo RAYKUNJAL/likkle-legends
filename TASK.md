@@ -3,6 +3,12 @@
 ## Completed Objectives
 - [x] **Fix WhatsApp Signup/Login**: Implemented database migration to create the missing `otp_codes` table.
 - [x] **Improve Signup Performance**: Optimized `signupAction` to send welcome emails asynchronously, reducing UI lag.
+- [x] **Infrastructure: Supabase Project Migration**
+    - [x] Identified new project ID: `qelvtlcxevuiwlckzdgu`
+    - [x] Verified New Project URL: `https://qelvtlcxevuiwlckzdgu.supabase.co`
+    - [x] Update `.env.local` with new Project URL and Key
+    - [x] Re-run storage scan on new project
+    - [x] Sync "Tanty spice radio" tracks to database
 - [x] **Refine Checkout Flow**:
     - Replaced the placeholder card input with functional **PayPal Buttons** (supports Card & PayPal).
     - Added a second upsell option: **Heritage DNA Story**.

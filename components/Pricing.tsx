@@ -54,6 +54,9 @@ export default function Pricing({ content }: PricingProps) {
                   : 'text-slate-400 hover:text-deep hover:bg-slate-50'
                   }`}
               >
+                {tab.icon && (
+                  <span className="text-2xl mb-1 leading-none">{tab.icon}</span>
+                )}
                 <span>{tab.label}</span>
                 <span className={`text-[9px] uppercase tracking-widest mt-0.5 opacity-60 ${activeTab === tab.id ? 'text-white' : 'text-slate-400'}`}>
                   {tab.description}

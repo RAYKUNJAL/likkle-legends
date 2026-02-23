@@ -385,7 +385,7 @@ export async function getReviewQueue(token: string, filter: 'pending' | 'approve
     return data || [];
 }
 
-export async function updateReviewStatus(token: string, id: string, status: 'approved' | 'rejected') {
+export async function updateReviewStatus(token: string, id: string, status: 'approved' | 'rejected' | 'pending') {
     const admin = await verifyAdmin(token);
 
     console.log(`updateReviewStatus: Setting ${id} to ${status}...`);
@@ -398,6 +398,19 @@ export async function updateReviewStatus(token: string, id: string, status: 'app
 
     if (error) throw error;
     return data;
+}
+
+export async function deleteGeneratedContent(token: string, id: string) {
+    const admin = await verifyAdmin(token);
+
+    console.log(`deleteGeneratedContent: Deleting ${id}...`);
+    const { error } = await admin
+        .from('generated_content')
+        .delete()
+        .eq('id', id);
+
+    if (error) throw error;
+    return { success: true };
 }
 
 export async function getAdminGames(token: string) {

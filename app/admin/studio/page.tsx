@@ -27,7 +27,6 @@ export default function LegendAIStudio() {
     const [isPublishing, setIsPublishing] = useState(false);
     const [result, setResult] = useState<any>(null);
     const [publishedId, setPublishedId] = useState<string | null>(null);
-    const [useBypass, setUseBypass] = useState(false);
 
     const handleGenerate = async () => {
         if (!prompt && activeAgent === 'manager') return;
@@ -35,17 +34,13 @@ export default function LegendAIStudio() {
         setResult(null);
 
         const { toast } = await import('react-hot-toast');
-        const toastId = toast.loading(`Deploying ${activeAgent}... ${useBypass ? '(BYPASS ON)' : '(25s limit)'}`);
+        const toastId = toast.loading(`Deploying ${activeAgent}... (25s limit)`);
 
         try {
-            let token = "BYPASS_FOR_TESTING";
-
-            if (!useBypass) {
-                const { supabase } = await import('@/lib/storage');
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session) throw new Error("Please log in again.");
-                token = session.access_token;
-            }
+            const { supabase } = await import('@/lib/storage');
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) throw new Error("Please log in again.");
+            const token = session.access_token;
 
             let contentType: ContentType = 'story_bedtime';
 
@@ -85,14 +80,10 @@ export default function LegendAIStudio() {
 
         } catch (error: any) {
             console.error("Generation failed", error);
-            const isLoginErr = error.message.includes("log in");
             toast.error(
-                isLoginErr
-                    ? "Session Expired. Enable 'Emergency Safe Mode' to bypass."
-                    : "Mission Failed: " + (error.message || "Communication Error"),
+                "Mission Failed: " + (error.message || "Communication Error"),
                 { id: toastId }
             );
-            if (isLoginErr) setUseBypass(true); // Auto-enable bypass on login failure for convenience
         } finally {
             setIsGenerating(false);
         }
@@ -134,15 +125,6 @@ export default function LegendAIStudio() {
                         <p className="text-gray-500">Autonomous agents building the Likkle Legends universe</p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 bg-red-50 px-4 py-2 rounded-2xl border border-red-100">
-                            <span className="text-[10px] font-black text-red-600 uppercase">Emergency Safe Mode</span>
-                            <input
-                                type="checkbox"
-                                checked={useBypass}
-                                onChange={(e) => setUseBypass(e.target.checked)}
-                                className="w-4 h-4 accent-red-600 cursor-pointer"
-                            />
-                        </div>
                         <div className="flex bg-gray-100 p-1 rounded-xl">
                             <button
                                 onClick={() => setAgeGroup('mini')}

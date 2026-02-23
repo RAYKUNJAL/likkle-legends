@@ -10,13 +10,22 @@ dotenv.config({ path: path.resolve(__dirname, '..', '.env.local') });
 
 const SAMPLE_SONGS = [
     {
+        title: "likkle Legends jingle",
+        artist: "Raytattoos",
+        audio_url: "https://cdn1.suno.ai/b792349c-09ad-4d94-8e96-ef4077b39209.mp3",
+        duration_seconds: 61,
+        category: "story",
+        is_active: true,
+        display_order: 1
+    },
+    {
         title: "Tanty's Morning Calypso",
         artist: "Likkle Legends",
         audio_url: "https://storage.googleapis.com/likkle-legends-public/radio/morning-calypso.mp3",
         duration_seconds: 185,
         category: "story",
         is_active: true,
-        display_order: 1
+        display_order: 2
     },
     {
         title: "The Legend of Anansi",
@@ -25,7 +34,7 @@ const SAMPLE_SONGS = [
         duration_seconds: 420,
         category: "culture",
         is_active: true,
-        display_order: 2
+        display_order: 3
     },
     {
         title: "Island Lullaby (Soft Steelpan)",
@@ -34,7 +43,7 @@ const SAMPLE_SONGS = [
         duration_seconds: 310,
         category: "lullaby",
         is_active: true,
-        display_order: 3
+        display_order: 4
     },
     {
         title: "A-B-C Island Style",
@@ -43,7 +52,7 @@ const SAMPLE_SONGS = [
         duration_seconds: 145,
         category: "learning",
         is_active: true,
-        display_order: 4
+        display_order: 5
     },
     {
         title: "Reggae Rhythms for Roti",
@@ -52,7 +61,7 @@ const SAMPLE_SONGS = [
         duration_seconds: 220,
         category: "culture",
         is_active: true,
-        display_order: 5
+        display_order: 6
     }
 ];
 

@@ -28,7 +28,7 @@ The first Caribbean emotional-learning universe for kids ages 4–8. Integrated 
 
 ## 🛠️ Tech Stack
 - **Framework**: Next.js / React (Vite-based in subfolder)
-- **AI Brain**: Google Gemini 2.0 Flash
+- **AI Brain**: Google Gemini 3.1 Pro (Latest 2026 Edition)
 - **Voice**: Google Gemini TTS (Vocal Blueprint: Kore)
 - **Styling**: Tailwind CSS + Custom Caribbean Glassmorphism
 - **Fonts**: Fredoka (Headings) & Quicksand (Body)

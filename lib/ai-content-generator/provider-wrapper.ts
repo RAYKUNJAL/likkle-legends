@@ -13,26 +13,26 @@ interface ModelConfig {
 
 const TIER_CONFIGS: Record<ModelTier, ModelConfig> = {
     'tier_0_low_cost': {
-        model: "gemini-1.5-flash", // Fast and cheap for routing/memory
+        model: "gemini-3.1-flash-preview", // Lightning fast for routing
         config: {
             temperature: 0.2,
-            maxOutputTokens: 400,
+            maxOutputTokens: 600,
             responseMimeType: "application/json",
         }
     },
     'tier_1_mid': {
-        model: "gemini-1.5-flash", // Flash is still good for worksheets
+        model: "gemini-3.1-flash-preview", // Flash remains great for detailed worksheets
         config: {
             temperature: 0.5,
-            maxOutputTokens: 1200,
+            maxOutputTokens: 1500,
             responseMimeType: "application/json",
         }
     },
     'tier_2_strong': {
-        model: "gemini-1.5-pro", // Pro for complex unit plans
+        model: "gemini-3.1-pro-preview", // Gemini 3.1 Pro for complex unit plans and stories
         config: {
             temperature: 0.6,
-            maxOutputTokens: 2500,
+            maxOutputTokens: 5000,
             responseMimeType: "application/json",
         }
     }

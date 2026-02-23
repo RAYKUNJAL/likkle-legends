@@ -99,19 +99,26 @@ function SignupForm() {
             if (result.emailSent) {
                 setIsEmailSent(true);
             } else {
-                // Success - Redirect to checkout
-                const planToTier: Record<string, string> = {
-                    'mail_club': 'starter_mailer',
-                    'starter_mailer': 'starter_mailer',
-                    'legends_plus': 'legends_plus',
-                    'annual_plus': 'legends_plus',
-                    'family_legacy': 'family_legacy'
-                };
+                // Determine redirect based on plan
+                const FREE_PLANS = ['free', 'mail_club', 'free_trial'];
+                const isFreePlan = FREE_PLANS.includes(plan);
 
-                const normalizedPlan = planToTier[plan] || 'legends_plus';
-                const cycle = (plan === 'annual_plus' || plan === 'legends_plus_annual') ? 'year' : 'month';
-
-                router.push(`/checkout?plan=${normalizedPlan}&cycle=${cycle}&uid=${userId}&childName=${encodeURIComponent(formData.childName)}`);
+                if (isFreePlan) {
+                    // Free plan → skip checkout, go straight to onboarding
+                    router.push(`/onboarding/welcome?uid=${userId}&childName=${encodeURIComponent(formData.childName)}`);
+                } else {
+                    // Paid plan → go to checkout
+                    const planToTier: Record<string, string> = {
+                        'starter_mailer': 'starter_mailer',
+                        'legends_plus': 'legends_plus',
+                        'annual_plus': 'legends_plus',
+                        'family_legacy': 'family_legacy',
+                        'legends_plus_annual': 'legends_plus',
+                    };
+                    const normalizedPlan = planToTier[plan] || 'legends_plus';
+                    const cycle = (plan === 'annual_plus' || plan === 'legends_plus_annual') ? 'year' : 'month';
+                    router.push(`/checkout?plan=${normalizedPlan}&cycle=${cycle}&uid=${userId}&childName=${encodeURIComponent(formData.childName)}`);
+                }
             }
 
         } catch (err: any) {

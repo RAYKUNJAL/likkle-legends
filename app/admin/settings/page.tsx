@@ -108,11 +108,16 @@ export default function AdminSettingsPage() {
 
                             <div>
                                 <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Default Currency</label>
-                                <select title="Default Currency" className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold text-gray-900 outline-none focus:ring-2 focus:ring-primary/20">
-                                    <option>USD ($)</option>
-                                    <option>GBP (£)</option>
-                                    <option>CAD ($)</option>
-                                    <option>JMD ($)</option>
+                                <select
+                                    title="Default Currency"
+                                    value={config.currency}
+                                    onChange={(e) => setConfig({ ...config, currency: e.target.value })}
+                                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold text-gray-900 outline-none focus:ring-2 focus:ring-primary/20"
+                                >
+                                    <option value="USD">USD ($)</option>
+                                    <option value="GBP">GBP (£)</option>
+                                    <option value="CAD">CAD ($)</option>
+                                    <option value="JMD">JMD ($)</option>
                                 </select>
                             </div>
 
@@ -121,9 +126,12 @@ export default function AdminSettingsPage() {
                                     <p className="font-bold text-gray-900">Auto-Publish Content</p>
                                     <p className="text-xs text-gray-400">Release monthly themes on the 1st</p>
                                 </div>
-                                <div className="w-12 h-6 bg-primary rounded-full relative cursor-pointer shadow-inner">
-                                    <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-md"></div>
-                                </div>
+                                <button
+                                    onClick={() => setConfig({ ...config, auto_publish: !config.auto_publish })}
+                                    className={`w-12 h-6 rounded-full relative cursor-pointer shadow-inner transition-colors ${config.auto_publish ? 'bg-primary' : 'bg-gray-300'}`}
+                                >
+                                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all ${config.auto_publish ? 'right-1' : 'left-1'}`}></div>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -192,24 +200,24 @@ export default function AdminSettingsPage() {
                         </h3>
 
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-bold text-gray-700">Welcome Emails</span>
-                                <div className="w-12 h-6 bg-green-500 rounded-full relative">
-                                    <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                            {([
+                                { key: 'welcome', label: 'Welcome Emails' },
+                                { key: 'subscriptions', label: 'Subscription Alerts' },
+                                { key: 'fulfillment', label: 'Monthly Fulfillment Reminders' },
+                            ] as { key: keyof typeof config.notifications; label: string }[]).map(({ key, label }) => (
+                                <div key={key} className="flex items-center justify-between">
+                                    <span className="text-sm font-bold text-gray-700">{label}</span>
+                                    <button
+                                        onClick={() => setConfig({
+                                            ...config,
+                                            notifications: { ...config.notifications, [key]: !config.notifications[key] }
+                                        })}
+                                        className={`w-12 h-6 rounded-full relative cursor-pointer transition-colors ${config.notifications[key] ? 'bg-green-500' : 'bg-gray-200'}`}
+                                    >
+                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${config.notifications[key] ? 'right-1' : 'left-1'}`}></div>
+                                    </button>
                                 </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-bold text-gray-700">Subscription Alerts</span>
-                                <div className="w-12 h-6 bg-green-500 rounded-full relative">
-                                    <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-sm font-bold text-gray-700">Monthly Fulfillment Reminders</span>
-                                <div className="w-12 h-6 bg-gray-200 rounded-full relative">
-                                    <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>
