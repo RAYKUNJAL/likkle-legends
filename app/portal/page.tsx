@@ -22,9 +22,12 @@ import PremiumVideoPlayer from '@/components/PremiumVideoPlayer';
 import PremiumMusicPlayer from '@/components/PremiumMusicPlayer';
 import BadgeUnlockModal from '@/components/gamification/BadgeUnlockModal';
 import DialectDial from '@/components/portal/DialectDial';
+import StreakWidget from '@/components/portal/StreakWidget';
+import DailyChestModal from '@/components/portal/DailyChestModal';
 import { BadgeCheck } from 'lucide-react';
 import CoppaConsentModal from '@/components/auth/CoppaConsentModal';
 import UpgradeModal from '@/components/UpgradeModal';
+import { checkDailyLogin, getFreezeCount } from '@/app/actions/retention';
 
 interface Song {
     id: string;
@@ -89,6 +92,12 @@ export default function ChildPortalPage() {
     const [isCoppaModalOpen, setIsCoppaModalOpen] = useState(false);
     const [pendingRoute, setPendingRoute] = useState<string | null>(null);
     const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; tier?: string; feature?: string }>({ open: false });
+
+    // Retention mechanic state
+    const [streakDay, setStreakDay] = useState(0);
+    const [freezeCount, setFreezeCount] = useState(0);
+    const [chestReady, setChestReady] = useState(false);
+    const [chestModalOpen, setChestModalOpen] = useState(false);
 
     const loadPortalData = useCallback(async () => {
         // Individual fetchers to avoid Promise.all bottleneck
@@ -160,6 +169,36 @@ export default function ChildPortalPage() {
             loadPortalData();
         }
     }, [user, children, loadPortalData, router]);
+
+    // Phase 1 Retention: check daily login on portal mount
+    useEffect(() => {
+        if (!activeChild?.id) return;
+        const childId = activeChild.id;
+
+        (async () => {
+            try {
+                const [loginResult, freezes] = await Promise.all([
+                    checkDailyLogin(childId),
+                    getFreezeCount(childId),
+                ]);
+                setStreakDay(loginResult.streakDay);
+                setFreezeCount(freezes);
+                setChestReady(loginResult.chestReady);
+
+                // Auto-open chest if it's ready and it was just created
+                if (loginResult.chestReady && !loginResult.alreadyLoggedIn) {
+                    setTimeout(() => setChestModalOpen(true), 1200);
+                }
+
+                // Trigger badge unlock animation if a badge was just earned
+                if (loginResult.badgeUnlocked) {
+                    setTimeout(() => triggerBadgeUnlock(loginResult.badgeUnlocked!), 600);
+                }
+            } catch (err) {
+                console.error('[Retention] Daily login check failed:', err);
+            }
+        })();
+    }, [activeChild?.id]);
 
     // Show loading while checking auth
     if (userLoading) {
@@ -428,8 +467,8 @@ export default function ChildPortalPage() {
 
                 {/* Main Viewport */}
                 <main className="flex-1 relative overflow-y-auto pt-24 lg:pt-16 px-6 lg:px-12 pb-32 lg:pb-24">
-                    {/* Top Bar for XP and Settings (Desktop only) */}
-                    <div className="hidden lg:flex absolute top-8 right-12 items-center gap-6 z-10">
+                    {/* Streak Widget (Desktop) */}
+                    <div className="hidden lg:flex items-center gap-4">
                         {activeChild && (
                             <div className="bg-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-4 border-2 border-primary/10">
                                 <span className="text-2xl animate-float">{currentLevel.icon}</span>
@@ -442,13 +481,32 @@ export default function ChildPortalPage() {
                         <button className="w-14 h-14 bg-white rounded-2xl shadow-xl flex items-center justify-center text-gray-400 hover:text-primary hover:rotate-90 transition-all border-2 border-transparent hover:border-primary/20">
                             <Grid size={28} />
                         </button>
-                        <button className="w-14 h-14 bg-[#FCD34D] rounded-2xl shadow-xl flex items-center justify-center text-white hover:rotate-45 transition-all">
-                            <Flame size={28} fill="currentColor" />
+                        {/* Chest button */}
+                        <button
+                            onClick={() => setChestModalOpen(true)}
+                            className="relative w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl shadow-xl flex items-center justify-center text-white hover:scale-110 transition-all"
+                            title="Daily Reward Chest"
+                        >
+                            <Gift size={26} fill="currentColor" />
+                            {chestReady && (
+                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white animate-pulse" />
+                            )}
                         </button>
                     </div>
 
                     {activeSection === 'home' ? (
-                        <div className="h-full flex flex-col justify-center max-w-5xl mx-auto space-y-12">
+                        <div className="h-full flex flex-col justify-center max-w-5xl mx-auto space-y-8">
+                            {/* Streak Widget — visible on mobile and desktop */}
+                            {activeChild && streakDay > 0 && (
+                                <div className="lg:max-w-md">
+                                    <StreakWidget
+                                        streakDay={streakDay}
+                                        freezeCount={freezeCount}
+                                        childId={activeChild.id}
+                                        onFreezeUsed={() => setFreezeCount(c => Math.max(0, c - 1))}
+                                    />
+                                </div>
+                            )}
                             <div className="space-y-4">
                                 <h2 className="text-5xl md:text-6xl font-black text-[#083344] tracking-tight">
                                     Choose Your <span className="text-[#3ABEF9]">Next Step</span>
@@ -794,6 +852,22 @@ export default function ChildPortalPage() {
                 requiredTier={upgradeModal.tier}
                 featureName={upgradeModal.feature}
             />
+
+            {/* Daily Chest Modal */}
+            {chestModalOpen && activeChild && (
+                <DailyChestModal
+                    childId={activeChild.id}
+                    chestReady={chestReady}
+                    onClose={() => setChestModalOpen(false)}
+                    onRewardClaimed={(type, value) => {
+                        setChestReady(false);
+                        if (type === 'xp') {
+                            // Refresh XP display via reload
+                            loadPortalData();
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 }

@@ -11,7 +11,11 @@ export const XP_ACTIONS = {
     PATOIS_WORD_LEARNED: 25,
     VR_PORTAL_VISITED: 40,
     AR_EXPERIENCE_USED: 35,
-    STREAK_BONUS_7_DAYS: 200,
+    // Daily Login Streak milestones (Phase 1 Retention)
+    DAILY_LOGIN_DAY1: 10,
+    DAILY_LOGIN_DAY3_BONUS: 50,
+    STREAK_BONUS_7_DAYS: 100,
+    STREAK_BONUS_14_DAYS: 200,
     STREAK_BONUS_30_DAYS: 500,
 };
 
@@ -46,6 +50,8 @@ export const BADGES = {
 
     // Streak Badges
     week_warrior: { id: 'week_warrior', name: 'Week Warrior', description: '7-day learning streak', icon: '🔥', category: 'streaks', rarity: 'rare' },
+    fortnight_fire: { id: 'fortnight_fire', name: 'Fortnight Fire', description: '14-day learning streak', icon: '🌋', category: 'streaks', rarity: 'epic' },
+    legend_title: { id: 'legend_title', name: 'Island Legend', description: '30-day learning streak', icon: '👑', category: 'streaks', rarity: 'legendary' },
     month_champion: { id: 'month_champion', name: 'Month Champion', description: '30-day learning streak', icon: '💪', category: 'streaks', rarity: 'epic' },
     consistency_king: { id: 'consistency_king', name: 'Consistency Crown', description: '100-day streak', icon: '👑', category: 'streaks', rarity: 'legendary' },
 
