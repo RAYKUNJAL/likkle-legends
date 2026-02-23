@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/storage';
-import { isSupabaseConfigured } from '@/lib/supabase-client';
+import { isSupabaseConfigured, supabaseAdmin } from '@/lib/supabase-client';
 import { getChild, updateChild } from './children';
 import { BADGES } from '@/lib/gamification';
 
@@ -40,7 +40,10 @@ export async function logActivity(
 
     // Add XP if earned
     if (xpEarned > 0) {
-        await addXP(childId, xpEarned, activityType);
+        // Apply global multiplier
+        const multiplier = await getXPMultiplier();
+        const adjustedXP = Math.floor(xpEarned * multiplier);
+        await addXP(childId, adjustedXP, activityType);
     }
 
     // Update family challenge progress (fire-and-forget, non-blocking)
@@ -61,8 +64,33 @@ export async function logActivity(
 }
 
 async function checkBadgeUnlock(childId: string, activityType: string): Promise<string | null> {
-    // 1. Get counts
-    // Placeholder logic for now to avoid build errors if counts are missing
+    if (!isSupabaseConfigured()) return null;
+
+    // 1. Weekend Warrior Badge (Earning > 500 XP over a weekend)
+    const now = new Date();
+    const isWeekend = now.getDay() === 0 || now.getDay() === 6; // Sunday or Saturday
+
+    if (isWeekend) {
+        // Calculate start of weekend (last Saturday 00:00)
+        const day = now.getDay();
+        const diff = now.getDate() - day + (day === 0 ? -1 : 6); // Last Saturday
+        const weekendStart = new Date(now.setDate(diff));
+        weekendStart.setHours(0, 0, 0, 0);
+
+        const { data: xpData } = await supabase
+            .from('activities')
+            .select('xp_earned')
+            .eq('child_id', childId)
+            .gte('created_at', weekendStart.toISOString());
+
+        const totalWeekendXP = xpData?.reduce((acc, curr) => acc + (curr.xp_earned || 0), 0) || 0;
+
+        if (totalWeekendXP >= 500) {
+            const hasBadge = await earnBadge(childId, 'weekend_warrior');
+            if (hasBadge) return 'weekend_warrior';
+        }
+    }
+
     return null;
 }
 
@@ -181,3 +209,57 @@ export async function getEarnedBadges(childId: string) {
 
 // Alias for compatibility
 export const getChildBadges = getEarnedBadges;
+
+/**
+ * getXPMultiplier
+ * Fetches the global XP multiplier from site_settings.
+ */
+export async function getXPMultiplier(): Promise<number> {
+    try {
+        const { data } = await supabase
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'xp_multiplier')
+            .maybeSingle();
+
+        return Number(data?.value) || 1;
+    } catch {
+        return 1;
+    }
+}
+
+/**
+ * sendMangoGift
+ * Allows children to send small XP gifts to friends.
+ */
+export async function sendMangoGift(senderId: string, receiverId: string, message?: string) {
+    // 1. Check daily limit
+    const sentToday = await getDailyGiftsSent(senderId);
+    if (sentToday >= 3) return { success: false, error: 'Daily gift limit (3) reached!' };
+
+    // 2. Insert gift
+    const { error } = await supabase.from('mango_gifts').insert({
+        sender_id: senderId,
+        receiver_id: receiverId,
+        message,
+        xp_value: 5
+    });
+
+    if (error) throw error;
+
+    // 3. Award XP to receiver
+    await addXP(receiverId, 5, 'mango_gift');
+
+    return { success: true };
+}
+
+async function getDailyGiftsSent(senderId: string): Promise<number> {
+    const today = new Date().toISOString().split('T')[0];
+    const { count } = await supabase
+        .from('mango_gifts')
+        .select('*', { count: 'exact', head: true })
+        .eq('sender_id', senderId)
+        .eq('created_at', today);
+
+    return count || 0;
+}

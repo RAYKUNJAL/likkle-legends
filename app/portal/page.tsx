@@ -29,6 +29,9 @@ import { BadgeCheck } from 'lucide-react';
 import CoppaConsentModal from '@/components/auth/CoppaConsentModal';
 import UpgradeModal from '@/components/UpgradeModal';
 import { checkDailyLogin, getFreezeCount } from '@/app/actions/retention';
+import DoubleXPBanner from '@/components/portal/DoubleXPBanner';
+import MangoGiftModal from '@/components/portal/MangoGiftModal';
+import { getXPMultiplier } from '@/lib/services/gamification';
 
 interface Song {
     id: string;
@@ -100,6 +103,8 @@ export default function ChildPortalPage() {
     const [chestReady, setChestReady] = useState(false);
     const [chestModalOpen, setChestModalOpen] = useState(false);
     const [shareCardOpen, setShareCardOpen] = useState(false);
+    const [xpMultiplier, setXpMultiplier] = useState(1);
+    const [giftModalOpen, setGiftModalOpen] = useState(false);
 
     const loadPortalData = useCallback(async () => {
         // Individual fetchers to avoid Promise.all bottleneck
@@ -196,11 +201,15 @@ export default function ChildPortalPage() {
                 if (loginResult.badgeUnlocked) {
                     setTimeout(() => triggerBadgeUnlock(loginResult.badgeUnlocked!), 600);
                 }
+
+                // Fetch XP Multiplier
+                const mult = await getXPMultiplier();
+                setXpMultiplier(mult);
             } catch (err) {
                 console.error('[Retention] Daily login check failed:', err);
             }
         })();
-    }, [activeChild?.id]);
+    }, [activeChild?.id, triggerBadgeUnlock]);
 
     // Show loading while checking auth
     if (userLoading) {
@@ -364,6 +373,16 @@ export default function ChildPortalPage() {
                             <span className="text-sm font-black text-slate-900 leading-none">{activeChild?.total_xp.toLocaleString()}</span>
                         </div>
                     </div>
+
+                    {activeChild && (
+                        <button
+                            onClick={() => setGiftModalOpen(true)}
+                            className="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center hover:bg-amber-100 hover:scale-105 transition-all shadow-md shadow-amber-100/50"
+                            title="Gift a Mango"
+                        >
+                            <Gift size={22} fill="currentColor" />
+                        </button>
+                    )}
                 </div>
             </header>
 
@@ -880,6 +899,20 @@ export default function ChildPortalPage() {
                     onClose={() => setShareCardOpen(false)}
                 />
             )}
+
+            {giftModalOpen && activeChild && (
+                <MangoGiftModal
+                    senderId={activeChild.id}
+                    friends={children?.filter(c => c.id !== activeChild.id) || []}
+                    onClose={() => setGiftModalOpen(false)}
+                    onGiftSent={() => loadPortalData()}
+                />
+            )}
+
+            <DoubleXPBanner
+                multiplier={xpMultiplier}
+                isVisible={xpMultiplier > 1}
+            />
         </div>
     );
 }
