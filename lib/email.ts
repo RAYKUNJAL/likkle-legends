@@ -477,3 +477,44 @@ export const WEEKLY_DIGEST_TEMPLATE = (parentName: string, stats: any[]) => `
 </body>
 </html>
 `;
+
+// 12. STREAK PROTECTION (Phase 3 Retention)
+export const STREAK_PROTECTION_TEMPLATE = (parentName: string, childName: string, currentStreak: number) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1e293b; background: white; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; border: 4px solid #ef4444; border-radius: 40px; overflow: hidden; }
+        .header { background: #fee2e2; padding: 40px; text-align: center; }
+        .btn { display: inline-block; padding: 20px 40px; background: #ef4444; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; text-transform: uppercase; }
+        .streak-count { font-size: 64px; font-weight: 900; color: #ef4444; line-height: 1; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 900; color: #991b1b;">Don't let de flame go out! 😱🔥</h1>
+        </div>
+        <div style="padding: 40px; text-align: center;">
+            <p style="font-size: 18px; font-weight: 800;">Hi ${parentName},</p>
+            <p style="font-size: 17px; color: #475569;">${childName}'s amazing streak is about to reset!</p>
+            
+            <div class="streak-count">${currentStreak}</div>
+            <p style="font-weight: 900; text-transform: uppercase; color: #991b1b; letter-spacing: 1px;">Day Streak at Risk</p>
+            
+            <div style="background: #f8fafc; border-radius: 30px; padding: 30px; margin: 30px 0; text-align: left;">
+                <p style="margin: 0; line-height: 1.6;">Consistency is de secret to mastering Caribbean culture! Just 5 minutes in de portal today will keep ${childName}'s streak alive and earn dem a progress bonus.</p>
+            </div>
+
+            <center><a href="https://likklelegends.com/portal" class="btn">Save de Streak</a></center>
+            
+            <p style="margin-top: 30px; font-size: 14px; color: #94a3b8;">Psst... If you have a <b>Streak Freeze</b> in your inventory, it will activate automatically at midnight if you miss today!</p>
+
+            ${VALUE_PIN_PATOIS}
+            ${SOCIAL_TRUST_FOOTER}
+        </div>
+    </div>
+</body>
+</html>
+`;

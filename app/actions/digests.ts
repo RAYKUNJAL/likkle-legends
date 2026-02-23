@@ -103,3 +103,61 @@ export async function sendWeeklyDigests() {
 
     return { success: true, count: sentCount };
 }
+
+/**
+ * sendStreakNudges
+ * Identifies children at risk of losing their streak and sends a nudge to parents.
+ */
+export async function sendStreakNudges() {
+    const { sendEmail, STREAK_PROTECTION_TEMPLATE } = await import('@/lib/email');
+
+    // 1. Find children with active streaks who haven't logged in TODAY
+    // We use a raw query or secondary check because 'daily_logins' stores the records
+    const today = new Date().toISOString().split('T')[0];
+
+    // Fetch children with streak > 0
+    const { data: atRiskChildren } = await supabaseAdmin
+        .from('children')
+        .select(`
+            id, 
+            first_name, 
+            current_streak, 
+            parent_id,
+            profiles:parent_id (email, full_name)
+        `)
+        .gt('current_streak', 0);
+
+    if (!atRiskChildren) return { success: false, count: 0 };
+
+    let sentCount = 0;
+    for (const child of atRiskChildren) {
+        // Check if they have a login record for today
+        const { data: todayLogin } = await supabaseAdmin
+            .from('daily_logins')
+            .select('id')
+            .eq('child_id', child.id)
+            .eq('login_date', today)
+            .single();
+
+        // If no login today, they are at risk!
+        if (!todayLogin) {
+            const parent = child.profiles as any;
+            if (parent?.email) {
+                const html = STREAK_PROTECTION_TEMPLATE(
+                    parent.full_name || 'Legend Parent',
+                    child.first_name,
+                    child.current_streak
+                );
+
+                await sendEmail({
+                    to: parent.email,
+                    subject: `${child.first_name}'s ${child.current_streak}-day streak is at risk! 😱🔥`,
+                    html
+                });
+                sentCount++;
+            }
+        }
+    }
+
+    return { success: true, count: sentCount };
+}
