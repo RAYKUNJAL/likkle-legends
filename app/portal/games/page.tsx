@@ -161,6 +161,32 @@ const FEATURED_GAMES = [
         isNew: true,
         isPopular: true,
     },
+    {
+        id: 'flag-match',
+        title: 'Caribbean Flag Match',
+        description: 'Match flags to islands and learn cool Caribbean facts!',
+        emoji: '🌍',
+        gradient: 'from-blue-400 via-cyan-500 to-teal-600',
+        tier: 'free',
+        category: 'trivia',
+        xp: 200,
+        time: '10 min',
+        isNew: true,
+        isPopular: false,
+    },
+    {
+        id: 'steelpan-simon',
+        title: 'Steelpan Simon Says',
+        description: 'Listen and repeat the steelpan music sequences!',
+        emoji: '🥁',
+        gradient: 'from-purple-500 via-pink-500 to-rose-600',
+        tier: 'free',
+        category: 'creative',
+        xp: 200,
+        time: '8-12 min',
+        isNew: true,
+        isPopular: true,
+    },
 ];
 
 import { EmptyState } from '@/components/EmptyState';
