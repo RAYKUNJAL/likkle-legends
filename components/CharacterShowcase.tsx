@@ -1,3 +1,4 @@
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { CHARACTERS, TANTY_CHARACTER } from '../lib/constants';
