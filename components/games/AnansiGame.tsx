@@ -1,178 +1,174 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { AnansiGameState, startAnansiGame, submitAnansiAnswer } from '@/app/actions/games';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Send, Volume2, RefreshCw, Trophy } from 'lucide-react';
-import { narrateText } from '@/services/geminiService'; // Use our new robust voice service
+import React, { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
+import confetti from 'canvas-confetti';
+
+interface DrumPattern {
+    drums: ('red' | 'yellow' | 'blue' | 'green')[];
+    speed: number;
+}
+
+const PATTERNS: DrumPattern[] = [
+    { drums: ['red', 'yellow', 'red', 'yellow'], speed: 800 },
+    { drums: ['yellow', 'blue', 'yellow', 'blue'], speed: 700 },
+    { drums: ['red', 'blue', 'green', 'yellow'], speed: 600 },
+    { drums: ['green', 'red', 'yellow', 'blue', 'red'], speed: 550 },
+    { drums: ['yellow', 'yellow', 'red', 'red', 'blue', 'blue'], speed: 500 },
+];
+
+const DRUM_COLORS = {
+    red: { bg: 'bg-red-400', sound: 261.63 },
+    yellow: { bg: 'bg-yellow-400', sound: 329.63 },
+    blue: { bg: 'bg-blue-400', sound: 392.0 },
+    green: { bg: 'bg-green-400', sound: 523.25 },
+};
 
 export default function AnansiGame({ onComplete }: { onComplete?: (score: number) => void }) {
-    const [gameState, setGameState] = useState<AnansiGameState | null>(null);
-    const [input, setInput] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const [feedbacks, setFeedbacks] = useState<{ text: string; type: 'success' | 'error' | 'neutral' }[]>([]);
-    const [isSpeaking, setIsSpeaking] = useState(false);
+    const [gameState, setGameState] = useState<'start' | 'pattern' | 'playing' | 'won' | 'lost'>('start');
+    const [round, setRound] = useState(0);
+    const [score, setScore] = useState(0);
+    const [playerSequence, setPlayerSequence] = useState<('red' | 'yellow' | 'blue' | 'green')[]>([]);
+    const [showingPattern, setShowingPattern] = useState(false);
+    const [activeDrum, setActiveDrum] = useState<string | null>(null);
+    const audioContextRef = useRef<AudioContext | null>(null);
 
-    // Audio context for sound effects or speech
-    const startRef = useRef<HTMLDivElement>(null);
-
-    const handleStart = async () => {
-        setIsLoading(true);
-        console.log("[Anansi] Starting game with 15s safety lock...");
-
-        let hasTimedOut = false;
-        const timer = setTimeout(() => {
-            hasTimedOut = true;
-            setIsLoading(false);
-            addFeedback("Anansi is slow today... please refresh or try later.", 'error');
-            console.error("[Anansi] UI Forced Stop: 15s timeout reached.");
-        }, 15000);
-
-        try {
-            const state = await startAnansiGame("easy");
-            clearTimeout(timer);
-
-            if (hasTimedOut) return; // ignore late response
-
-            setGameState(state);
-            addFeedback(state.currentRiddle?.question || "Ready?", 'neutral');
-            playSpeech(state.currentRiddle?.question || "");
-        } catch (e) {
-            clearTimeout(timer);
-            console.error(e);
-            addFeedback("Something went wrong spinning the web.", 'error');
-        } finally {
-            if (!hasTimedOut) setIsLoading(false);
+    // Initialize audio context
+    useEffect(() => {
+        if (!audioContextRef.current) {
+            audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
         }
+    }, []);
+
+    const playDrumSound = async (drum: string) => {
+        const ctx = audioContextRef.current;
+        if (!ctx) return;
+
+        const freq = DRUM_COLORS[drum as keyof typeof DRUM_COLORS]?.sound || 440;
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        oscillator.frequency.value = freq;
+        gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + 0.3);
     };
 
-    const handleSubmit = async () => {
-        if (!input.trim() || !gameState) return;
+    const startGame = () => {
+        setGameState('pattern');
+        setRound(0);
+        setScore(0);
+        setPlayerSequence([]);
+        playRound(0);
+    };
 
-        setIsLoading(true);
-        const currentAnswer = input;
-        setInput(""); // clear early
+    const playRound = async (roundNum: number) => {
+        if (roundNum >= PATTERNS.length) {
+            setGameState('won');
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            if (onComplete) onComplete(score + 500);
+            return;
+        }
 
-        let hasTimedOut = false;
-        const timer = setTimeout(() => {
-            hasTimedOut = true;
-            setIsLoading(false);
-            addFeedback("Anansi got tangled in the web. Try again!", 'error');
-            console.error("[Anansi] Submit Forced Stop: 15s timeout.");
-        }, 15000);
+        setRound(roundNum);
+        const pattern = PATTERNS[roundNum];
+        setShowingPattern(true);
+        setPlayerSequence([]);
 
-        try {
-            const result = await submitAnansiAnswer(gameState, currentAnswer);
-            clearTimeout(timer);
-
-            if (hasTimedOut) return;
-
-            // Add feedback
-            addFeedback(result.feedback, result.isCorrect ? 'success' : 'error');
-            playSpeech(result.feedback);
-
-            if (result.isCorrect) {
-                // Wait for feedback reading then update state
+        // Show pattern
+        for (const drum of pattern.drums) {
+            await new Promise((resolve) => {
                 setTimeout(() => {
-                    setGameState(result.newState);
-                    if (result.newState.isComplete) {
-                        playSpeech("We reach the top! You are a Legend for true!");
-                        // Call completion callback with score
-                        if (onComplete) {
-                            onComplete(result.newState.score || 150);
-                        }
-                    } else if (result.newState.currentRiddle) {
-                        // Queue next riddle
-                        setTimeout(() => {
-                            addFeedback(result.newState.currentRiddle!.question, 'neutral');
-                            playSpeech(result.newState.currentRiddle!.question);
-                        }, 2000);
-                    }
-                }, 2000);
-            }
-        } catch (e) {
-            clearTimeout(timer);
-            console.error(e);
-            addFeedback("The web got tangled. Try again.", 'error');
-        } finally {
-            if (!hasTimedOut) setIsLoading(false);
+                    setActiveDrum(drum);
+                    playDrumSound(drum);
+                    setTimeout(() => {
+                        setActiveDrum(null);
+                        resolve(null);
+                    }, 200);
+                }, pattern.speed);
+            });
+        }
+
+        // Wait before letting player play
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        setShowingPattern(false);
+        setGameState('playing');
+    };
+
+    const handleDrumTap = async (drum: 'red' | 'yellow' | 'blue' | 'green') => {
+        if (gameState !== 'playing' || showingPattern) return;
+
+        const pattern = PATTERNS[round];
+        const newSequence = [...playerSequence, drum];
+        setPlayerSequence(newSequence);
+
+        // Play sound
+        setActiveDrum(drum);
+        await playDrumSound(drum);
+        setTimeout(() => setActiveDrum(null), 200);
+
+        // Check if correct
+        if (drum !== pattern.drums[newSequence.length - 1]) {
+            // Wrong!
+            setGameState('lost');
+            return;
+        }
+
+        // Check if completed this round
+        if (newSequence.length === pattern.drums.length) {
+            // Next round!
+            setScore(score + 100);
+            await new Promise((resolve) => setTimeout(resolve, 800));
+            playRound(round + 1);
         }
     };
 
-    const addFeedback = (text: string, type: 'success' | 'error' | 'neutral') => {
-        setFeedbacks(prev => [...prev.slice(-2), { text, type }]); // Keep last 3
-    };
-
-    const playSpeech = async (text: string) => {
-        if (!text) return;
-        try {
-            setIsSpeaking(true);
-            const buffer = await narrateText(text);
-            if (buffer) {
-                const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-                const source = ctx.createBufferSource();
-                source.buffer = buffer;
-                source.connect(ctx.destination);
-                source.onended = () => setIsSpeaking(false);
-                source.start(0);
-            } else {
-                setIsSpeaking(false);
-            }
-        } catch (e) {
-            console.warn("Speech failed", e);
-            setIsSpeaking(false);
-        }
-    };
-
-    if (!gameState) {
+    if (gameState === 'start') {
         return (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-8 bg-gradient-to-b from-purple-900 via-purple-800 to-indigo-900 text-white rounded-[3rem]">
-                <div className="w-48 h-48 bg-white/10 rounded-full flex items-center justify-center mb-4 relative">
-                    <span className="text-8xl">🕷️</span>
-                    <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                        className="absolute inset-0 border-4 border-dashed border-white/20 rounded-full"
-                    />
-                </div>
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-8 bg-gradient-to-b from-purple-100 to-pink-50 rounded-[3rem]">
+                <div className="text-9xl animate-bounce">🥁</div>
                 <div>
-                    <h1 className="text-4xl md:text-6xl font-black font-heading tracking-tight mb-4 text-orange-400">
-                        Anansi's Web v2.2
+                    <h1 className="text-4xl md:text-5xl font-black text-purple-900 mb-4">
+                        Anansi's Drum Party
                     </h1>
-                    <p className="text-xl md:text-2xl text-purple-200 max-w-2xl mx-auto">
-                        Help Anansi the Spider climb to the top of the mango tree! Solve the riddles to spin the web higher.
+                    <p className="text-lg text-purple-700 max-w-2xl mx-auto">
+                        Watch the drum pattern and tap the drums in the same order! The drums get faster each round!
                     </p>
                 </div>
                 <button
-                    onClick={handleStart}
-                    disabled={isLoading}
-                    className="group relative px-12 py-6 bg-orange-500 hover:bg-orange-400 text-white rounded-[2rem] font-black text-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all"
+                    onClick={startGame}
+                    className="px-12 py-6 bg-purple-500 hover:bg-purple-600 text-white rounded-[2rem] font-black text-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all"
                 >
-                    {isLoading ? "Spinning..." : "Start Adventure!"}
-                    <Sparkles className="absolute top-2 right-4 text-orange-200 animate-pulse" />
+                    Start Playing! 🎵
                 </button>
             </div>
         );
     }
 
-    if (gameState.isComplete) {
+    if (gameState === 'won') {
         return (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-8 bg-gradient-to-b from-blue-400 to-green-400 text-white rounded-[3rem]">
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-8 bg-gradient-to-b from-green-400 to-emerald-300 rounded-[3rem]">
                 <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1, rotate: [0, 10, -10, 0] }}
-                    className="text-9xl mb-4"
+                    className="text-9xl"
                 >
                     🏆
                 </motion.div>
-                <h1 className="text-5xl font-black text-yellow-300 drop-shadow-lg">You Did It!</h1>
-                <p className="text-2xl font-bold">Anansi reached the top safely!</p>
-                <div className="bg-white/20 p-6 rounded-3xl backdrop-blur-sm">
-                    <p className="text-xl">Score: <span className="font-black text-yellow-300">{gameState.score}</span></p>
+                <h1 className="text-5xl font-black text-white drop-shadow-lg">Drum Master!</h1>
+                <div className="bg-white/30 p-8 rounded-3xl backdrop-blur-sm">
+                    <p className="text-3xl font-black text-white">
+                        Final Score: <span className="text-yellow-300">{score + 500}</span> 🎵
+                    </p>
                 </div>
                 <button
-                    onClick={() => setGameState(null)}
-                    className="px-8 py-4 bg-white text-green-600 rounded-2xl font-black hover:scale-105 transition-transform"
+                    onClick={() => setGameState('start')}
+                    className="px-8 py-4 bg-white text-green-600 rounded-2xl font-black text-lg hover:scale-105 transition-transform"
                 >
                     Play Again
                 </button>
@@ -180,89 +176,78 @@ export default function AnansiGame({ onComplete }: { onComplete?: (score: number
         );
     }
 
-    // Determine Anansi's position based on level (1, 2, 3) -> 10%, 50%, 90%
-    const webHeight = `${gameState.level * 33}%`;
+    if (gameState === 'lost') {
+        return (
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-8 bg-gradient-to-b from-red-400 to-orange-300 rounded-[3rem]">
+                <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="text-9xl"
+                >
+                    😅
+                </motion.div>
+                <h1 className="text-5xl font-black text-white drop-shadow-lg">Oops! Wrong Drum!</h1>
+                <div className="bg-white/30 p-8 rounded-3xl backdrop-blur-sm">
+                    <p className="text-3xl font-black text-white">
+                        You made it to: <span className="text-yellow-300">Round {round + 1}</span>
+                    </p>
+                    <p className="text-2xl font-bold text-white mt-2">
+                        Score: <span className="text-yellow-300">{score}</span> 🎵
+                    </p>
+                </div>
+                <button
+                    onClick={() => setGameState('start')}
+                    className="px-8 py-4 bg-white text-red-600 rounded-2xl font-black text-lg hover:scale-105 transition-transform"
+                >
+                    Try Again
+                </button>
+            </div>
+        );
+    }
 
     return (
-        <div className="h-full flex flex-col md:flex-row gap-6 p-4 md:p-8 bg-slate-900 rounded-[3rem] overflow-hidden relative">
-            {/* Left: The Web Visual */}
-            <div className="flex-1 bg-slate-800/50 rounded-[2.5rem] relative overflow-hidden border-4 border-slate-700">
-                {/* Background Pattern */}
-                <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
+        <div className="h-full flex flex-col items-center justify-center p-8 space-y-8 bg-gradient-to-b from-purple-50 to-pink-100 rounded-[3rem]">
+            {/* Header */}
+            <div className="text-center">
+                <p className="text-3xl font-black text-purple-900 mb-2">Round {round + 1} / {PATTERNS.length}</p>
+                <p className="text-lg text-purple-700">
+                    {showingPattern ? '👂 Watch carefully...' : '🎯 Your turn!'}
+                </p>
+            </div>
 
-                {/* The Web Line */}
-                <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-white/20 -translate-x-1/2"></div>
-
-                {/* Anansi Character */}
-                <motion.div
-                    className="absolute left-1/2 -translate-x-1/2 text-6xl z-10 filter drop-shadow-lg cursor-pointer"
-                    animate={{ bottom: webHeight }}
-                    transition={{ type: "spring", stiffness: 50 }}
-                    whileHover={{ scale: 1.2, rotate: 10 }}
-                    onClick={() => playSpeech("Eh heh! Don't tickle me!")}
-                >
-                    🕷️
-                </motion.div>
-
-                {/* Level Markers */}
-                {[1, 2, 3].map(lvl => (
-                    <div key={lvl} className="absolute left-2 text-xs font-bold text-slate-500" style={{ bottom: `${lvl * 33}%` }}>
-                        Level {lvl}
-                    </div>
+            {/* Drums Grid */}
+            <div className="grid grid-cols-2 gap-6 w-full max-w-md">
+                {(['red', 'yellow', 'blue', 'green'] as const).map((drum) => (
+                    <motion.button
+                        key={drum}
+                        onClick={() => handleDrumTap(drum)}
+                        disabled={showingPattern}
+                        whileHover={!showingPattern ? { scale: 1.05 } : {}}
+                        whileTap={!showingPattern ? { scale: 0.95 } : {}}
+                        animate={
+                            activeDrum === drum
+                                ? { scale: 1.15, boxShadow: '0 0 30px rgba(0,0,0,0.3)' }
+                                : { scale: 1, boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }
+                        }
+                        className={`${DRUM_COLORS[drum].bg} rounded-full w-24 h-24 shadow-xl cursor-pointer transition-all disabled:opacity-50 flex items-center justify-center text-5xl font-black`}
+                    >
+                        🥁
+                    </motion.button>
                 ))}
             </div>
 
-            {/* Right: Interaction Area */}
-            <div className="flex-1 flex flex-col gap-4">
-                {/* Chat/Riddle Area */}
-                <div className="flex-1 bg-white rounded-[2.5rem] p-6 shadow-xl flex flex-col overflow-y-auto min-h-[300px]">
-                    <div className="flex-1 space-y-4">
-                        <AnimatePresence>
-                            {feedbacks.map((fb, idx) => (
-                                <motion.div
-                                    key={idx}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0 }}
-                                    className={`p-4 rounded-2xl max-w-[90%] ${fb.type === 'neutral' ? 'bg-orange-100 text-orange-900 self-start rounded-tl-none' :
-                                        fb.type === 'success' ? 'bg-green-100 text-green-800 self-start' :
-                                            'bg-red-50 text-red-800 self-start'
-                                        }`}
-                                >
-                                    <p className="font-bold text-lg">{fb.text}</p>
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                        {isSpeaking && (
-                            <div className="flex gap-1 items-center px-4 py-2 bg-slate-100 rounded-full self-start w-fit">
-                                <Volume2 size={16} className="text-slate-400" />
-                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
-                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-75"></span>
-                                <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-150"></span>
-                            </div>
-                        )}
-                    </div>
-                </div>
+            {/* Status */}
+            <div className="text-center bg-white p-6 rounded-2xl shadow-lg">
+                <p className="text-lg font-bold text-purple-900">
+                    Progress: <span className="text-purple-600 text-2xl">{playerSequence.length} / {PATTERNS[round]?.drums.length || 0}</span>
+                </p>
+            </div>
 
-                {/* Input Area */}
-                <div className="bg-white p-2 rounded-[2rem] shadow-lg flex items-center gap-2 border-4 border-orange-200">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
-                        placeholder="Type your answer..."
-                        className="flex-1 px-6 py-4 bg-transparent outline-none text-xl font-bold text-slate-800 placeholder:text-slate-300"
-                        disabled={isLoading}
-                    />
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isLoading || !input.trim()}
-                        className="w-14 h-14 bg-orange-500 hover:bg-orange-400 text-white rounded-full flex items-center justify-center transition-all disabled:opacity-50 disabled:scale-95 shadow-md active:scale-90"
-                    >
-                        {isLoading ? <RefreshCw className="animate-spin" /> : <Send size={24} />}
-                    </button>
-                </div>
+            {/* Instructions */}
+            <div className="text-center text-sm text-purple-700 font-bold bg-purple-100 p-4 rounded-2xl max-w-md">
+                <p>🎵 Watch the drums light up and play</p>
+                <p>🥁 Tap them in the same order</p>
+                <p>🏆 Each round gets harder!</p>
             </div>
         </div>
     );
