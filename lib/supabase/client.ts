@@ -1,5 +1,5 @@
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 const PLACEHOLDER_URL = 'https://placeholder.supabase.co';
 const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MTY0MDMyMjUsImV4cCI6MTkzMTk3OTIyNX0.placeholder';
@@ -14,54 +14,30 @@ function getValidKey(): string {
     return (key && key.length > 20 && key !== 'false') ? key : PLACEHOLDER_KEY;
 }
 
-// Monkey-patch navigator.locks to prevent timeout
-if (typeof window !== 'undefined' && navigator.locks) {
-    const originalRequest = navigator.locks.request;
-    navigator.locks.request = function(name: string, options: any, callback: any) {
-        // Reduce timeout aggressively
-        const patchedOptions = {
-            ...options,
-            signal: AbortSignal.timeout(1000) // 1 second max
-        };
-        return originalRequest.call(this, name, patchedOptions, callback).catch((err: any) => {
-            if (err?.name === 'AbortError' || err?.message?.includes('timeout')) {
-                console.warn(`[Supabase] Lock timeout for ${name}, continuing without lock`);
-                // Continue anyway
-                return callback(null);
-            }
-            throw err;
-        });
-    };
-}
-
-// Singleton client for browser
+// Singleton client for browser - using direct client without SSR wrapper to avoid lock issues
 let browserClient: any;
 
 export const createClient = () => {
     if (typeof window === 'undefined') {
-        return createBrowserClient(getValidUrl(), getValidKey());
+        // Server-side: use direct client
+        return createSupabaseClient(getValidUrl(), getValidKey());
     }
 
     if (!browserClient) {
-        browserClient = createBrowserClient(
+        // Browser-side: use direct client with simple storage (no NavigatorLock issues)
+        browserClient = createSupabaseClient(
             getValidUrl(),
             getValidKey(),
             {
-                cookieOptions: {
-                    name: 'sb-likkle-auth',
-                },
                 auth: {
                     storageKey: 'sb-likkle-auth',
+                    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
                     autoRefreshToken: true,
                     persistSession: true,
                     detectSessionInUrl: true,
-                    flowType: 'pkce',
                 },
-                // Disable the problematic lock entirely
-                global: {
-                    headers: {
-                        'X-Client-Info': 'likkle-legends'
-                    }
+                headers: {
+                    'X-Client-Info': 'likkle-legends',
                 }
             }
         );
