@@ -22,7 +22,7 @@ export async function getUserSubscriptionAction(userId: string) {
         return {
             success: true,
             subscription: {
-                tier: profile.subscription_tier as SubscriptionTier || 'free',
+                tier: (profile.subscription_tier as SubscriptionTier) || 'free',
                 status: profile.subscription_status,
                 trial_ends_at: profile.trial_ends_at
             }

@@ -47,8 +47,14 @@ export default function FeatureUpgradeModal({
             >
                 {/* Close Button */}
                 <button
-                    onClick={onClose}
-                    className="absolute top-6 right-6 z-10 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onClose();
+                    }}
+                    className="absolute top-6 right-6 z-10 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors cursor-pointer"
+                    type="button"
+                    aria-label="Close modal"
                 >
                     <X size={20} className="text-gray-600" />
                 </button>

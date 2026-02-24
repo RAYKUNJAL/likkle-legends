@@ -3,7 +3,7 @@
  * Determines which subscription tiers have access to which features
  */
 
-export type SubscriptionTier = 'free' | 'starter_mailer' | 'legends_plus' | 'family_legacy';
+export type SubscriptionTier = 'free' | 'starter_mailer' | 'legends_plus' | 'family_legacy' | 'admin';
 
 export interface FeatureAccess {
     name: string;
@@ -74,13 +74,14 @@ export const FEATURE_ACCESS: Record<string, FeatureAccess> = {
 };
 
 /**
- * TIER HIERARCHY (free < starter < legends < family)
+ * TIER HIERARCHY (free < starter < legends < family < admin)
  */
 export const TIER_LEVELS: Record<SubscriptionTier, number> = {
     'free': 0,
     'starter_mailer': 1,
     'legends_plus': 2,
-    'family_legacy': 3
+    'family_legacy': 3,
+    'admin': 999 // Full access to everything
 };
 
 /**
@@ -192,7 +193,8 @@ export function getUpgradeTier(currentTier: SubscriptionTier): SubscriptionTier 
         'free': 'starter_mailer',
         'starter_mailer': 'legends_plus',
         'legends_plus': 'family_legacy',
-        'family_legacy': 'family_legacy' // Already at max
+        'family_legacy': 'family_legacy', // Already at max
+        'admin': 'admin' // Admin stays admin
     };
     return tierProgression[currentTier];
 }

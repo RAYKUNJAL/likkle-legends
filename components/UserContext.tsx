@@ -43,7 +43,7 @@ interface Profile {
   phone?: string;
   whatsapp_number?: string;
   avatar_url?: string;
-  subscription_tier: 'free' | 'starter_mailer' | 'legends_plus' | 'family_legacy';
+  subscription_tier: 'free' | 'starter_mailer' | 'legends_plus' | 'family_legacy' | 'admin';
   subscription_status: 'inactive' | 'active' | 'trialing' | 'past_due' | 'canceled';
   trial_ends_at?: string;
   country_code: string;
@@ -107,6 +107,7 @@ const TIER_LEVELS: Record<string, number> = {
   starter_mailer: 1,
   legends_plus: 2,
   family_legacy: 3,
+  admin: 999, // Full access
 };
 
 // ==========================================
