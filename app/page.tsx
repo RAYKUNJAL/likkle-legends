@@ -1,18 +1,20 @@
 import { Metadata } from 'next';
-import Navbar from '@/components/Navbar';
-import NotificationBar from '@/components/landing/NotificationBar';
-import VideoHero from '@/components/landing/VideoHero';
-import ParentEmotionalHook from '@/components/landing/ParentEmotionalHook';
-import SocialProofStrip from '@/components/landing/SocialProofStrip';
-import LandingCharacters from '@/components/landing/LandingCharacters';
-import HowItWorks from '@/components/HowItWorks';
-import Features from '@/components/Features';
-import LandingPricing from '@/components/landing/LandingPricing';
-import FAQ from '@/components/FAQ';
-import FinalCTA from '@/components/landing/FinalCTA';
+import { NavbarV2 } from "@/components/landing-v2/NavbarV2";
+import { Hero } from "@/components/landing-v3/Hero";
+import { TantyRadioSection } from "@/components/landing-v3/TantyRadioSection";
+import { MeetTheLegends } from "@/components/landing-v3/MeetTheLegends";
+import { BlogPreview } from "@/components/landing-v3/BlogPreview";
+import { LinkV2 } from "@/components/landing-v2/LinkV2"; // If needed, but let's stick to the v3 structure
+import { SocialProofBar } from "@/components/landing-v2/SocialProofBar";
+import { PhysicalDigitalBridge } from "@/components/landing-v2/PhysicalDigitalBridge";
+import { FeatureMatrix } from "@/components/landing-v2/FeatureMatrix";
+import { VillainSection } from "@/components/landing-v2/VillainSection";
+import { GuaranteeBand } from "@/components/landing-v2/GuaranteeBand";
+import { TripleTier } from "@/components/landing-v2/TripleTier";
+import { AccordionV2 } from "@/components/landing-v2/AccordionV2";
+import { FooterV2 } from "@/components/landing-v2/FooterV2";
+import { BenefitStory } from "@/components/landing-v2/BenefitStory";
 import StickyMobileCTA from '@/components/landing/StickyMobileCTA';
-import Footer from '@/components/Footer';
-import { siteContent } from '@/lib/content';
 
 export const metadata: Metadata = {
   title: "Likkle Legends | Caribbean Learning for Kids 4–8",
@@ -26,49 +28,91 @@ export const metadata: Metadata = {
   },
 };
 
+const benefitContent = [
+  {
+    header: "Physical Surprise",
+    body: "There’s no dopamine hit like actual mail. We bridge the gap between digital games and physical wonder with your child’s name on a real envelope."
+  },
+  {
+    header: "Cultural Confidence",
+    body: "We don't just teach reading; we teach heritage. Your child sees themselves reflected in every character and every mission."
+  }
+];
+
+const faqItems = [
+  {
+    q: "How long does the mail take?",
+    a: "We ship within 48 hours to US addresses. Domestic delivery takes 3–7 business days. You get instant digital portal access the moment you purchase—no waiting for the mail! Canada and UK mail is coming soon.",
+  },
+  {
+    q: "Is the AI safe for my child?",
+    a: "100%. Our AI is closed-loop and doesn't access the open web. It only discusses Likkle Legends stories and culture. We are fully COPPA compliant, ad-free, and parent-controlled.",
+  },
+  {
+    q: "What islands do you cover?",
+    a: "We cover 30+ Caribbean islands and diaspora communities including Jamaica, Trinidad & Tobago, Barbados, The Bahamas, Guyana, Haiti, Dominican Republic, St. Lucia, Grenada, Antigua & Barbuda, and many more.",
+  },
+  {
+    q: "Can I cancel anytime?",
+    a: "Absolutely. The $10 Intro is a one-time purchase with no commitment. If you upgrade to Legends Member, you can cancel your monthly subscription at any time with zero fees.",
+  },
+  {
+    q: "What is the 'Legend Key Code'?",
+    a: "The Legend Key Code is a unique code included in every physical Legend Envelope. When entered in the digital portal, it unlocks an exclusive Island Pack tailored to your chosen heritage island—bonus stories, activities, and content.",
+  },
+  {
+    q: "Do you ship outside the US?",
+    a: "Not yet for physical mail—US-only right now. Canada and UK are next on the list. Join the waitlist and we'll notify you the moment international shipping goes live. The full digital portal is available worldwide instantly.",
+  },
+  {
+    q: "What's the Triple Promise Guarantee?",
+    a: "Three promises: (1) Instant portal access after purchase, (2) If your US envelope is delayed or lost, we reissue your Key Code, (3) If you don't love it within 30 days, we refund your $10. One refund per household.",
+  },
+];
+
 export default function Page() {
   return (
-    <div className="min-h-screen font-sans selection:bg-primary/20 selection:text-primary">
-      {/* ─── Urgency Bar ───────────────────────────── */}
-      <NotificationBar content={siteContent} />
+    <div className="flex flex-col min-h-screen bg-white">
+      <NavbarV2 />
 
-      {/* ─── Navigation ────────────────────────────── */}
-      <Navbar />
+      <main className="flex-grow pt-0 space-y-0">
+        {/* V3 Hero - Passport Builder */}
+        <Hero />
 
-      <main>
-        {/* 1. STOP THE SCROLL — Cinematic video hero with price-anchored CTA */}
-        <VideoHero />
+        {/* Social Proof (Preserved) */}
+        <SocialProofBar />
 
-        {/* 2. MIRROR THE PAIN — Speak to parent anxiety about culture + screens */}
-        <ParentEmotionalHook />
+        {/* Tanty Radio Section - Audio Brand Personality */}
+        <TantyRadioSection />
 
-        {/* 3. BUILD TRUST — Stats, testimonials, global reach */}
-        <SocialProofStrip />
+        {/* The "Why it Matters" Story - Primary Trust Section */}
+        <BenefitStory title="The Legacy in the Mailbox." content={benefitContent} />
 
-        {/* 4. CHARACTERS SELL THEMSELVES — Interactive carousel with parent value props */}
-        <LandingCharacters />
+        {/* V3 Character Section with Real Assets */}
+        <MeetTheLegends />
 
-        {/* 5. MAKE THE VALUE CONCRETE — What's inside each month */}
-        <Features />
+        {/* Preserved V2 Sections */}
+        <PhysicalDigitalBridge />
 
-        {/* 6. REDUCE FRICTION — 3 simple steps */}
-        <HowItWorks />
+        <FeatureMatrix />
 
-        {/* 7. CLOSE THE DEAL — Pricing with guarantee */}
-        <LandingPricing />
+        {/* Scorcha Pepper Section (Must be preserved) */}
+        <VillainSection />
 
-        {/* 8. HANDLE OBJECTIONS — FAQ */}
-        <FAQ />
+        <GuaranteeBand />
 
-        {/* 9. FINAL CLOSE — Don't let them leave without one last CTA */}
-        <FinalCTA />
+        <TripleTier />
+
+        {/* Latest from the Blog - SEO Scaling */}
+        <BlogPreview />
+
+        <AccordionV2 items={faqItems} />
       </main>
 
-      {/* ─── Sticky Mobile CTA ─────────────────────── */}
-      <StickyMobileCTA />
+      <FooterV2 />
 
-      {/* ─── Footer ────────────────────────────────── */}
-      <Footer />
+      {/* Sticky Mobile CTA */}
+      <StickyMobileCTA />
     </div>
   );
 }
