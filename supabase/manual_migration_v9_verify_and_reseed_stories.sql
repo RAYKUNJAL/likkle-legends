@@ -1,0 +1,91 @@
+-- LIKKLE LEGENDS: VERIFY AND RE-SEED STORIES (2026-02-24)
+-- This migration checks if stories exist and re-seeds if needed
+-- Ensures data is properly inserted into stories_library table
+
+-- 1. CHECK CURRENT STATE
+DO $$
+DECLARE
+    story_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO story_count FROM public.stories_library;
+    RAISE NOTICE 'Current story count: %', story_count;
+
+    IF story_count = 0 THEN
+        RAISE NOTICE 'No stories found - proceeding with seed data insertion';
+    ELSE
+        RAISE NOTICE 'Stories already exist - skipping insertion (current count: %)', story_count;
+    END IF;
+END $$;
+
+-- 2. DELETE EXISTING DATA (OPTIONAL - comment out if you want to preserve data)
+-- DELETE FROM public.stories_library WHERE true;
+
+-- 3. INSERT SEED DATA (only if table is empty)
+INSERT INTO public.stories_library (
+    title, slug, tradition, reading_level, island_code, age_track,
+    summary, xp_reward, estimated_reading_time_minutes, content_json, is_active
+)
+SELECT * FROM (VALUES
+    -- ANANSI STORIES
+    ('Anansi and the Pot of Gold', 'anansi-pot-gold-jm-emergent', 'anansi', 'emergent', 'JM', 'mini', 'Anansi finds a magical golden pot in the forest.', 100, 5, '{"pages":[{"page_number":1,"narrative_text":"Anansi saw gold.","illustration_prompt":"Spider Anansi in Jamaica forest with golden pot"},{"page_number":2,"narrative_text":"He was happy.","illustration_prompt":"Anansi dancing with joy"}]}'::jsonb, true),
+    ('Anansi and the Golden Yam', 'anansi-golden-yam-jm-early', 'anansi', 'early', 'JM', 'big', 'The clever spider tricks his neighbors to claim a magical yam that feeds the whole village.', 150, 7, '{"pages":[{"page_number":1,"narrative_text":"Anansi was clever. He saw a golden yam.","illustration_prompt":"Anansi with magical glowing yam in Jamaica"}]}'::jsonb, true),
+    ('Anansi and the Wisdom Box', 'anansi-wisdom-jm-transitional', 'anansi', 'transitional', 'JM', 'big', 'Anansi tries to hide all the world''s wisdom in a box, but learns that wisdom cannot be contained or owned.', 200, 10, '{"pages":[{"page_number":1,"narrative_text":"Anansi gathered all the wisdom he could find across Jamaica...","illustration_prompt":"Anansi collecting glowing orbs of wisdom in Caribbean landscape"}]}'::jsonb, true),
+    ('Anansi in Trinidad', 'anansi-trinidad-tt-emergent', 'anansi', 'emergent', 'TT', 'mini', 'Anansi plays tricks in Trinidad.', 100, 5, '{"pages":[{"page_number":1,"narrative_text":"Anansi went to Trinidad.","illustration_prompt":"Spider in Trinidad tropical setting"}]}'::jsonb, true),
+
+    -- PAPA BOIS STORIES
+    ('Papa Bois Protects the Forest', 'papa-forest-tt-emergent', 'papa_bois', 'emergent', 'TT', 'mini', 'Papa Bois guards the forest animals in Trinidad and Tobago.', 100, 5, '{"pages":[{"page_number":1,"narrative_text":"Papa Bois is wise. He loves animals.","illustration_prompt":"Guardian figure with animals in Trinidad forest"}]}'::jsonb, true),
+    ('Papa Bois and the Lost Deer', 'papa-deer-tt-early', 'papa_bois', 'early', 'TT', 'big', 'A young deer gets lost in the forest, and Papa Bois guides it safely home while teaching about respect for nature.', 150, 7, '{"pages":[{"page_number":1,"narrative_text":"A little deer was lost. Papa Bois saw her cry.","illustration_prompt":"Guardian helping young deer in Trinidad forest"}]}'::jsonb, true),
+    ('Papa Bois and the Hunters', 'papa-hunters-gy-transitional', 'papa_bois', 'transitional', 'GY', 'big', 'Papa Bois confronts hunters who threaten the forest ecosystem and teaches them the consequences of greed.', 200, 10, '{"pages":[{"page_number":1,"narrative_text":"Hunters came to Guyana with axes and nets...","illustration_prompt":"Spirit guardian protecting rainforest creatures"}]}'::jsonb, true),
+
+    -- RIVER MUMMA STORIES
+    ('River Mumma and the Golden Comb', 'river-mumma-jm-emergent', 'river_mumma', 'emergent', 'JM', 'mini', 'River Mumma combs her golden hair in the river.', 100, 5, '{"pages":[{"page_number":1,"narrative_text":"River Mumma lived in water. She had gold hair.","illustration_prompt":"Mermaid-like figure with golden comb in Jamaica river"}]}'::jsonb, true),
+    ('River Mumma Saves a Child', 'river-mumma-save-gy-early', 'river_mumma', 'early', 'GY', 'big', 'A child almost drowns in the Guyanese river, but River Mumma rescues them and teaches them water safety.', 150, 7, '{"pages":[{"page_number":1,"narrative_text":"A child fell in the river. River Mumma heard the splash.","illustration_prompt":"Water spirit saving child in Guyana"}]}'::jsonb, true),
+    ('River Mumma''s Gift', 'river-gift-lc-transitional', 'river_mumma', 'transitional', 'LC', 'big', 'River Mumma offers a magical gift to someone who shows her kindness and respect for her waters.', 200, 10, '{"pages":[{"page_number":1,"narrative_text":"By the river in Saint Lucia lived River Mumma...","illustration_prompt":"Golden spirit of water with glowing gift"}]}'::jsonb, true),
+
+    -- CHICKCHARNEY STORIES
+    ('Chickcharney Mystery', 'chickcharney-bahamas-emergent', 'chickcharney', 'emergent', 'BS', 'mini', 'The mysterious bird-spirits of Andros Island play in the moonlight.', 100, 5, '{"pages":[{"page_number":1,"narrative_text":"Clickcharney birds play. They fly at night.","illustration_prompt":"Magical bird spirits flying over Bahamas island"}]}'::jsonb, true),
+    ('The Chickcharney''s Song', 'chickcharney-song-bs-early', 'chickcharney', 'early', 'BS', 'big', 'A lonely child hears the enchanting song of a Chickcharney and discovers the magic of friendship and belonging.', 150, 7, '{"pages":[{"page_number":1,"narrative_text":"A child heard a strange song. It was beautiful and sad.","illustration_prompt":"Child listening to mystical bird singing in Bahamas"}]}'::jsonb, true),
+    ('Chickcharney Guardians', 'chickcharney-guard-ag-transitional', 'chickcharney', 'transitional', 'AG', 'big', 'The Chickcharney spirits are guardians of island forests, protecting them from those who would do harm.', 200, 10, '{"pages":[{"page_number":1,"narrative_text":"In Antigua, the Chickcharney birds guard the ancient forests...","illustration_prompt":"Spirit birds protecting mystical forest landscape"}]}'::jsonb, true),
+
+    -- MORE DIVERSE ISLAND STORIES
+    ('Island Adventure - Cuba', 'island-adventure-cu-emergent', 'anansi', 'emergent', 'CU', 'mini', 'Anansi''s adventure in Cuba.', 100, 5, '{"pages":[{"page_number":1,"narrative_text":"Anansi came to Cuba.","illustration_prompt":"Spider in Cuban landscape"}]}'::jsonb, true),
+    ('Caribbean Explorer - Puerto Rico', 'caribbean-explorer-pr-early', 'papa_bois', 'early', 'PR', 'big', 'A young explorer discovers the magical creatures and spirits of Puerto Rico''s rainforest.', 150, 7, '{"pages":[{"page_number":1,"narrative_text":"The rainforest was green and mysterious.","illustration_prompt":"Explorer in Puerto Rico El Yunque rainforest"}]}'::jsonb, true),
+    ('Island Sisters - Dominican Republic', 'sisters-do-transitional', 'river_mumma', 'transitional', 'DO', 'big', 'Two island sisters learn the power of unity and cultural pride through a legendary water spirit.', 200, 10, '{"pages":[{"page_number":1,"narrative_text":"In Dominican Republic lived two sisters...","illustration_prompt":"Sisters in Caribbean setting with water spirits"}]}'::jsonb, true),
+    ('Haiti''s Hidden Treasure', 'haiti-treasure-ht-emergent', 'anansi', 'emergent', 'HT', 'mini', 'Anansi searches for Haiti''s hidden treasure of culture and history.', 100, 5, '{"pages":[{"page_number":1,"narrative_text":"Anansi came to Haiti.","illustration_prompt":"Spider in Haitian landscape with historical elements"}]}'::jsonb, true),
+    ('Suriname''s Forest Spirit', 'suriname-spirit-sr-early', 'papa_bois', 'early', 'SR', 'big', 'Papa Bois teaches a young girl about the importance of protecting Suriname''s vast rainforests.', 150, 7, '{"pages":[{"page_number":1,"narrative_text":"The forest in Suriname was huge and beautiful.","illustration_prompt":"Spirit guide with child in Suriname rainforest"}]}'::jsonb, true),
+    ('Grenada''s Spice Island Magic', 'grenada-spice-gd-transitional', 'chickcharney', 'transitional', 'GD', 'big', 'The magical spice gardens of Grenada come alive through the songs of ancient bird spirits.', 200, 10, '{"pages":[{"page_number":1,"narrative_text":"In Grenada, the spice gardens held ancient magic...","illustration_prompt":"Mystical bird spirits over spice gardens"}]}'::jsonb, true),
+
+    -- EXTRA DIVERSITY
+    ('Barbados Legend', 'barbados-legend-bb-emergent', 'river_mumma', 'emergent', 'BB', 'mini', 'River Mumma visits Barbados beaches.', 100, 5, '{"pages":[{"page_number":1,"narrative_text":"River Mumma swam to Barbados.","illustration_prompt":"Water spirit at Barbados beach"}]}'::jsonb, true),
+    ('St. Lucia Mountains', 'lucia-mountains-lc-early', 'chickcharney', 'early', 'LC', 'big', 'A child climbs the magical Pitons of Saint Lucia and meets enchanted bird spirits.', 150, 7, '{"pages":[{"page_number":1,"narrative_text":"The Pitons were tall and beautiful.","illustration_prompt":"Child climbing Saint Lucia Pitons with mystical birds"}]}'::jsonb, true),
+    ('Caribbean Unity', 'caribbean-unity-all-transitional', 'anansi', 'transitional', 'JM', 'big', 'Anansi brings together characters from across the Caribbean to solve a problem that affects all islands.', 200, 10, '{"pages":[{"page_number":1,"narrative_text":"Anansi had an idea that would help all Caribbean islands...","illustration_prompt":"Characters from across Caribbean in harmony"}]}'::jsonb, true)
+) AS data(title, slug, tradition, reading_level, island_code, age_track, summary, xp_reward, estimated_reading_time_minutes, content_json, is_active)
+WHERE NOT EXISTS (SELECT 1 FROM public.stories_library LIMIT 1);
+
+-- 4. VERIFY INSERTION
+DO $$
+DECLARE
+    final_count INTEGER;
+BEGIN
+    SELECT COUNT(*) INTO final_count FROM public.stories_library;
+    RAISE NOTICE 'Final story count after seeding: %', final_count;
+
+    -- Show count by tradition
+    PERFORM (
+        SELECT tradition, COUNT(*) as count
+        FROM public.stories_library
+        GROUP BY tradition
+    );
+END $$;
+
+-- 5. SHOW SAMPLE QUERY RESULT
+SELECT
+    title, slug, tradition, reading_level, island_code
+FROM public.stories_library
+WHERE tradition = 'anansi'
+AND reading_level = 'emergent'
+AND island_code = 'JM'
+LIMIT 5;
+
+-- 6. REFRESH SCHEMA CACHE
+NOTIFY pgrst, 'reload schema';
