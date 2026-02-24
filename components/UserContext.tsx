@@ -390,11 +390,20 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
         const { data: { session } } = await supabase.auth.getSession();
 
         if (session?.user && mounted) {
-          // Parallelize profile and children fetch for speed
-          await Promise.allSettled([
-            refreshUser(),
-            refreshChildren()
-          ]);
+          // Sequential auth calls to avoid lock contention
+          try {
+            await refreshUser();
+          } catch (err) {
+            console.error("refreshUser failed:", err);
+          }
+
+          if (mounted) {
+            try {
+              await refreshChildren();
+            } catch (err) {
+              console.error("refreshChildren failed:", err);
+            }
+          }
         }
       } catch (err) {
         console.error("Auth initialization failed:", err);

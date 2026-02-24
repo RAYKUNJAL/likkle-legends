@@ -44,10 +44,14 @@ export async function updateSession(request: NextRequest) {
     // refresh the session
     let user = null;
     try {
-        const { data } = await supabase.auth.getUser();
-        user = data.user;
+        // Use getSession instead of getUser to avoid lock contention
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (!error && session?.user) {
+            user = session.user;
+        }
     } catch (e) {
         // Safe fail for build or missing env
+        console.debug('[Middleware] Auth check failed (expected during build):', typeof e === 'object' && e && 'message' in e ? (e as any).message : 'unknown error');
     }
 
     // Protected routes logic

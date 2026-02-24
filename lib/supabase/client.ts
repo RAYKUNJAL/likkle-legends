@@ -30,6 +30,18 @@ export const createClient = () => {
                 cookieOptions: {
                     name: 'sb-likkle-auth',
                 },
+                // Disable lock mechanism to prevent timeout issues
+                auth: {
+                    storageKey: 'sb-likkle-auth',
+                    autoRefreshToken: true,
+                    persistSession: true,
+                    detectSessionInUrl: true,
+                },
+                // Handle lock timeouts gracefully
+                lock: {
+                    acquire_timeout: 2000, // Reduce timeout to fail faster
+                    acquire_max_wait: 5000,
+                },
             }
         );
     }
