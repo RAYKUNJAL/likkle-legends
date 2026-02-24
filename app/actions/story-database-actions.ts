@@ -14,12 +14,16 @@ export async function selectStoryAction(selection: {
     childName?: string;
 }): Promise<{ success: boolean; story?: StoryBook; error?: string }> {
     try {
+        console.log("[StoryDatabaseAction] Starting story selection with:", selection);
+
         // Get all stories matching the criteria
         const stories = await getStoriesByTradition(selection.tradition, {
             reading_level: selection.level,
             island_code: selection.island,
             limit: 10
         });
+
+        console.log(`[StoryDatabaseAction] Found ${stories?.length || 0} matching stories`);
 
         if (!stories || stories.length === 0) {
             return {
@@ -30,13 +34,17 @@ export async function selectStoryAction(selection: {
 
         // Pick a random story from matching ones (for variety)
         const randomStory = stories[Math.floor(Math.random() * stories.length)];
+        console.log("[StoryDatabaseAction] Selected story slug:", randomStory.slug);
 
         // Fetch full story content
         const fullStory = await getStoryBySlug(randomStory.slug);
 
         if (!fullStory) {
+            console.error("[StoryDatabaseAction] Failed to fetch full story by slug:", randomStory.slug);
             return { success: false, error: "Failed to load story content." };
         }
+
+        console.log("[StoryDatabaseAction] Successfully loaded full story:", fullStory.book_meta?.title);
 
         // Personalize the story with child's name
         if (selection.childName && fullStory.structure?.pages?.[0]) {
@@ -46,8 +54,8 @@ export async function selectStoryAction(selection: {
 
         return { success: true, story: fullStory };
     } catch (error) {
-        console.error("[StoryDatabaseAction] Error:", error);
-        return { success: false, error: "An unexpected error occurred while loading the story." };
+        console.error("[StoryDatabaseAction] Critical error:", error);
+        return { success: false, error: `Error: ${error instanceof Error ? error.message : 'Unknown error'}` };
     }
 }
 
