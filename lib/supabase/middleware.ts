@@ -1,8 +1,17 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { initializeStories } from '@/lib/init-stories'
+
+// Initialize stories on first request
+let storiesInitialized = false;
 
 export async function updateSession(request: NextRequest) {
+    // Initialize stories database once on first request
+    if (!storiesInitialized && process.env.NODE_ENV !== 'development') {
+        storiesInitialized = true;
+        initializeStories().catch(err => console.error('[Middleware] Story init failed:', err));
+    }
     let response = NextResponse.next({
         request: {
             headers: request.headers,

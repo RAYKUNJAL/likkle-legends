@@ -1,10 +1,14 @@
 "use server";
 
 import { getStoriesByTradition, getStoryBySlug } from '@/lib/stories-database';
+import { initializeStories } from '@/lib/init-stories';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
     try {
+        // Initialize stories before testing
+        await initializeStories();
+
         const { searchParams } = new URL(request.url);
         const tradition = searchParams.get('tradition') || 'anansi';
         const level = searchParams.get('level') || 'emergent';
