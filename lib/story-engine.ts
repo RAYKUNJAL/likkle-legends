@@ -68,7 +68,7 @@ export async function generateStory(selection: StoryInputs): Promise<StoryBook |
 
     try {
         const model = genAI.getGenerativeModel({
-            model: "gemini-3.1-pro-preview",
+            model: "gemini-2.0-flash",
             safetySettings,
             generationConfig: { responseMimeType: "application/json" }
         });

@@ -34,10 +34,21 @@ const LEVELS = [
 
 const ISLANDS = [
     { id: 'JM', name: 'Jamaica', flag: '🇯🇲' },
-    { id: 'TT', name: 'Trinidad', flag: '🇹🇹' },
+    { id: 'TT', name: 'Trinidad & Tobago', flag: '🇹🇹' },
     { id: 'BB', name: 'Barbados', flag: '🇧🇧' },
     { id: 'BS', name: 'Bahamas', flag: '🇧🇸' },
-    { id: 'LC', name: 'St. Lucia', flag: '🇱🇨' }
+    { id: 'LC', name: 'Saint Lucia', flag: '🇱🇨' },
+    { id: 'GY', name: 'Guyana', flag: '🇬🇾' },
+    { id: 'GD', name: 'Grenada', flag: '🇬🇩' },
+    { id: 'KN', name: 'St. Kitts & Nevis', flag: '🇰🇳' },
+    { id: 'VC', name: 'St. Vincent & Grenadines', flag: '🇻🇨' },
+    { id: 'AG', name: 'Antigua & Barbuda', flag: '🇦🇬' },
+    { id: 'DM', name: 'Dominica', flag: '🇩🇲' },
+    { id: 'PR', name: 'Puerto Rico', flag: '🇵🇷' },
+    { id: 'CU', name: 'Cuba', flag: '🇨🇺' },
+    { id: 'DO', name: 'Dominican Republic', flag: '🇩🇴' },
+    { id: 'HT', name: 'Haiti', flag: '🇭🇹' },
+    { id: 'SR', name: 'Suriname', flag: '🇸🇷' }
 ];
 
 export default function StoryStudioPage() {
