@@ -123,36 +123,11 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
   const [unlockedBadge, setUnlockedBadge] = useState<any | null>(null);
   const [dialectMode, setDialectMode] = useState<'standard' | 'localized'>('standard');
 
-  // Refresh user profile with lock timeout handling
+  // Refresh user profile
   const refreshUser = useCallback(async () => {
     try {
-      // Use getUser() for higher security but keep getSession() for speed
-      // In SSR/Next.js, we need to be careful with session staleness
-      let session: any;
-      let sessionError: any;
-
-      try {
-        const result = await supabase.auth.getSession();
-        session = result.data.session;
-        sessionError = result.error;
-      } catch (lockError: any) {
-        // Handle lock timeout - use fallback from URL or cookie
-        if (lockError?.message?.includes('Navigator LockManager')) {
-          console.warn('[Auth] Lock timeout - using fallback session check');
-          // Try to get session from cookie directly as fallback
-          const cookie = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('sb-likkle-auth'));
-          if (!cookie) {
-            setUser(null);
-            setChildren([]);
-            setActiveChildState(null);
-            return;
-          }
-        } else {
-          throw lockError;
-        }
-      }
+      // Use getSession for speed (lock timeout handling is at client level)
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
       if (sessionError) {
         console.error('Session error:', sessionError);

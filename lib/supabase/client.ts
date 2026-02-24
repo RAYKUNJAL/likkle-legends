@@ -14,61 +14,24 @@ function getValidKey(): string {
     return (key && key.length > 20 && key !== 'false') ? key : PLACEHOLDER_KEY;
 }
 
-// Custom storage that bypasses NavigatorLock issues
-class NoLockStorage implements Storage {
-    private store = new Map<string, string>();
-
-    getItem(key: string): string | null {
-        try {
-            if (typeof localStorage !== 'undefined') {
-                return localStorage.getItem(key);
+// Monkey-patch navigator.locks to prevent timeout
+if (typeof window !== 'undefined' && navigator.locks) {
+    const originalRequest = navigator.locks.request;
+    navigator.locks.request = function(name: string, options: any, callback: any) {
+        // Reduce timeout aggressively
+        const patchedOptions = {
+            ...options,
+            signal: AbortSignal.timeout(1000) // 1 second max
+        };
+        return originalRequest.call(this, name, patchedOptions, callback).catch((err: any) => {
+            if (err?.name === 'AbortError' || err?.message?.includes('timeout')) {
+                console.warn(`[Supabase] Lock timeout for ${name}, continuing without lock`);
+                // Continue anyway
+                return callback(null);
             }
-        } catch {
-            // Ignore quota errors
-        }
-        return this.store.get(key) ?? null;
-    }
-
-    setItem(key: string, value: string): void {
-        this.store.set(key, value);
-        try {
-            if (typeof localStorage !== 'undefined') {
-                localStorage.setItem(key, value);
-            }
-        } catch {
-            // Ignore quota errors
-        }
-    }
-
-    removeItem(key: string): void {
-        this.store.delete(key);
-        try {
-            if (typeof localStorage !== 'undefined') {
-                localStorage.removeItem(key);
-            }
-        } catch {
-            // Ignore errors
-        }
-    }
-
-    clear(): void {
-        this.store.clear();
-        try {
-            if (typeof localStorage !== 'undefined') {
-                localStorage.clear();
-            }
-        } catch {
-            // Ignore errors
-        }
-    }
-
-    key(index: number): string | null {
-        return Array.from(this.store.keys())[index] ?? null;
-    }
-
-    get length(): number {
-        return this.store.size;
-    }
+            throw err;
+        });
+    };
 }
 
 // Singleton client for browser
@@ -80,8 +43,6 @@ export const createClient = () => {
     }
 
     if (!browserClient) {
-        const storage = new NoLockStorage();
-
         browserClient = createBrowserClient(
             getValidUrl(),
             getValidKey(),
@@ -89,16 +50,19 @@ export const createClient = () => {
                 cookieOptions: {
                     name: 'sb-likkle-auth',
                 },
-                db: {
-                    schema: 'auth',
-                },
                 auth: {
                     storageKey: 'sb-likkle-auth',
-                    storage: storage,
                     autoRefreshToken: true,
                     persistSession: true,
                     detectSessionInUrl: true,
+                    flowType: 'pkce',
                 },
+                // Disable the problematic lock entirely
+                global: {
+                    headers: {
+                        'X-Client-Info': 'likkle-legends'
+                    }
+                }
             }
         );
     }
