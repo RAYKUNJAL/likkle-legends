@@ -5,6 +5,7 @@
 
 import { supabase } from '@/lib/storage';
 import { StoryBook } from '@/types/story';
+import { transformToStoryBook } from '@/lib/story-transformer';
 
 export interface StoryFilters {
     tradition?: string;
@@ -56,7 +57,10 @@ export async function getStoryBySlug(slug: string): Promise<StoryBook | null> {
             .single();
 
         if (error) throw error;
-        return data?.content_json as StoryBook || null;
+        if (!data) return null;
+
+        // Transform simple story to full StoryBook format
+        return transformToStoryBook(data);
     } catch (error) {
         console.error('[StoriesDB] Error fetching story:', error);
         return null;
