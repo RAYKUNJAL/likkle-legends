@@ -14,6 +14,63 @@ function getValidKey(): string {
     return (key && key.length > 20 && key !== 'false') ? key : PLACEHOLDER_KEY;
 }
 
+// Custom storage that bypasses NavigatorLock issues
+class NoLockStorage implements Storage {
+    private store = new Map<string, string>();
+
+    getItem(key: string): string | null {
+        try {
+            if (typeof localStorage !== 'undefined') {
+                return localStorage.getItem(key);
+            }
+        } catch {
+            // Ignore quota errors
+        }
+        return this.store.get(key) ?? null;
+    }
+
+    setItem(key: string, value: string): void {
+        this.store.set(key, value);
+        try {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem(key, value);
+            }
+        } catch {
+            // Ignore quota errors
+        }
+    }
+
+    removeItem(key: string): void {
+        this.store.delete(key);
+        try {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.removeItem(key);
+            }
+        } catch {
+            // Ignore errors
+        }
+    }
+
+    clear(): void {
+        this.store.clear();
+        try {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.clear();
+            }
+        } catch {
+            // Ignore errors
+        }
+    }
+
+    key(index: number): string | null {
+        return Array.from(this.store.keys())[index] ?? null;
+    }
+
+    get length(): number {
+        return this.store.size;
+    }
+}
+
 // Singleton client for browser
 let browserClient: any;
 
@@ -23,6 +80,8 @@ export const createClient = () => {
     }
 
     if (!browserClient) {
+        const storage = new NoLockStorage();
+
         browserClient = createBrowserClient(
             getValidUrl(),
             getValidKey(),
@@ -30,17 +89,15 @@ export const createClient = () => {
                 cookieOptions: {
                     name: 'sb-likkle-auth',
                 },
-                // Disable lock mechanism to prevent timeout issues
+                db: {
+                    schema: 'auth',
+                },
                 auth: {
                     storageKey: 'sb-likkle-auth',
+                    storage: storage,
                     autoRefreshToken: true,
                     persistSession: true,
                     detectSessionInUrl: true,
-                },
-                // Handle lock timeouts gracefully
-                lock: {
-                    acquire_timeout: 2000, // Reduce timeout to fail faster
-                    acquire_max_wait: 5000,
                 },
             }
         );
