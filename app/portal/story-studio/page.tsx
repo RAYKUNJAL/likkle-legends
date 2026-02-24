@@ -1,15 +1,17 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Wand2, BookOpen, Map, Sparkles, ArrowRight, ArrowLeft,
-    Check, Star, Brain, ShieldCheck, Rocket, Loader2, Music
+    Check, Star, Brain, ShieldCheck, Rocket, Loader2, Music, Lock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { selectStoryAction } from '@/app/actions/story-database-actions';
 import { useUser } from '@/components/UserContext';
+import { hasFeatureAccess, getFeatureInfo, isFreeTier, getUpgradeTier } from '@/lib/feature-access';
+import FeatureUpgradeModal from '@/components/FeatureUpgradeModal';
 
 type WizardStep = 'tradition' | 'reading-level' | 'island' | 'creating';
 
@@ -53,13 +55,26 @@ const ISLANDS = [
 
 export default function StoryStudioPage() {
     const router = useRouter();
-    const { activeChild } = useUser();
+    const { activeChild, user } = useUser();
     const [step, setStep] = useState<WizardStep>('tradition');
     const [selection, setSelection] = useState<Selection>({
         tradition: '',
         level: activeChild?.age_track === 'mini' ? 'emergent' : 'early',
         island: activeChild?.primary_island || 'JM'
     });
+
+    // ACCESS CONTROL
+    const userSubscriptionTier = (user?.subscription_tier as any) || 'free';
+    const hasAccess = hasFeatureAccess(userSubscriptionTier, 'story_builder');
+    const [showUpgradeModal, setShowUpgradeModal] = useState(!hasAccess);
+    const upgradeTier = getUpgradeTier(userSubscriptionTier);
+
+    // REDIRECT IF NO ACCESS
+    useEffect(() => {
+        if (!hasAccess && !showUpgradeModal) {
+            router.push('/portal');
+        }
+    }, [hasAccess, showUpgradeModal, router]);
 
 
     const handleCreate = async () => {
@@ -284,6 +299,19 @@ export default function StoryStudioPage() {
                     </footer>
                 )}
             </div>
+
+            {/* UPGRADE MODAL */}
+            <FeatureUpgradeModal
+                isOpen={showUpgradeModal}
+                onClose={() => {
+                    setShowUpgradeModal(false);
+                    router.push('/portal');
+                }}
+                featureName="Story Builder"
+                featureDescription="Create personalized Caribbean stories for your child"
+                currentTier={userSubscriptionTier}
+                requiredTier="starter_mailer"
+            />
         </main>
     );
 }
