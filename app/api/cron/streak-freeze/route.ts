@@ -1,4 +1,4 @@
-'use server';
+export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
@@ -100,18 +100,19 @@ export async function GET(request: NextRequest) {
             // Insert a "frozen day" login entry
             // Mark with xp_awarded: 0, streak_day: -1 (indicator that freeze was applied)
             // This allows the portal to show "❄️ Streak Freeze Used Today" UI
-            await supabaseAdmin.from('daily_logins').insert({
-                child_id: child.id,
-                login_date: today,
-                xp_awarded: 0,
-                streak_day: child.current_streak, // Keep same streak number for tomorrow
-                badge_earned: null,
-                freeze_used: true, // Flag to indicate freeze was used
-            }).then(() => {
-                // If the table doesn't have freeze_used column, this will fail gracefully
-                return;
-            }).catch(async () => {
-                // Fallback: Insert without freeze_used flag
+            try {
+                const { error: insertError } = await supabaseAdmin.from('daily_logins').insert({
+                    child_id: child.id,
+                    login_date: today,
+                    xp_awarded: 0,
+                    streak_day: child.current_streak, // Keep same streak number for tomorrow
+                    badge_earned: null,
+                    freeze_used: true, // Flag to indicate freeze was used
+                });
+
+                if (insertError) throw insertError;
+            } catch (err) {
+                // Fallback: Insert without freeze_used flag (if column doesn't exist)
                 await supabaseAdmin.from('daily_logins').insert({
                     child_id: child.id,
                     login_date: today,
@@ -119,7 +120,7 @@ export async function GET(request: NextRequest) {
                     streak_day: child.current_streak,
                     badge_earned: null,
                 });
-            });
+            }
 
             console.log(`✅ Auto-froze streak for child ${child.id} (${newFreezeCount} freezes remaining)`);
         }

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { processEmailQueue } from '@/lib/services/email-processor';
 import { sendWeeklyDigests, sendStreakNudges } from '@/app/actions/digests';
