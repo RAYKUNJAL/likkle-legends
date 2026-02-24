@@ -320,12 +320,12 @@ export default function AutonomousContentPage() {
                                         <div className="space-y-4">
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Educational Goal</p>
-                                                <p className="text-sm font-bold text-slate-600 leading-relaxed">{lastModule.metadata.educationalGoal}</p>
+                                                <p className="text-sm font-bold text-slate-600 leading-relaxed">{lastModule.metadata?.educationalGoal || 'N/A'}</p>
                                             </div>
                                             <div>
                                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Themes Detected</p>
                                                 <div className="flex flex-wrap gap-2 mt-2">
-                                                    {lastModule.theme.split(',').map((t: string) => (
+                                                    {lastModule.theme && lastModule.theme.split(',').map((t: string) => (
                                                         <span key={t} className="px-3 py-1 bg-white border border-slate-100 rounded-lg text-xs font-bold text-slate-500">{t.trim()}</span>
                                                     ))}
                                                 </div>
