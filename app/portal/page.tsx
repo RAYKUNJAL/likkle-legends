@@ -171,7 +171,9 @@ export default function ChildPortalPage() {
     useEffect(() => {
         if (user) {
             // REDIRECT ADMINS: If they are an admin and have no children, push to admin dashboard
-            if (user.is_admin && (!children || children.length === 0)) {
+            // UNLESS they're in test mode (?test=true for game testing)
+            const isTestMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('test') === 'true';
+            if (user.is_admin && (!children || children.length === 0) && !isTestMode) {
                 router.push('/admin');
                 return;
             }

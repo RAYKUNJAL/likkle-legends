@@ -127,7 +127,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
 
                 <div className="p-4 border-t border-white/10 space-y-3">
                     <Link
-                        href="/portal"
+                        href="/portal?test=true"
                         className="flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all text-white/90 hover:text-white"
                     >
                         <Gamepad2 size={20} />
