@@ -1,10 +1,11 @@
-import { Metadata } from 'next';
+"use client";
+
+import { useState } from 'react';
 import { NavbarV2 } from "@/components/landing-v2/NavbarV2";
 import { Hero } from "@/components/landing-v3/Hero";
 import { TantyRadioSection } from "@/components/landing-v3/TantyRadioSection";
 import { MeetTheLegends } from "@/components/landing-v3/MeetTheLegends";
 import { BlogPreview } from "@/components/landing-v3/BlogPreview";
-import { LinkV2 } from "@/components/landing-v2/LinkV2"; // If needed, but let's stick to the v3 structure
 import { SocialProofBar } from "@/components/landing-v2/SocialProofBar";
 import { PhysicalDigitalBridge } from "@/components/landing-v2/PhysicalDigitalBridge";
 import { FeatureMatrix } from "@/components/landing-v2/FeatureMatrix";
@@ -14,19 +15,8 @@ import { TripleTier } from "@/components/landing-v2/TripleTier";
 import { AccordionV2 } from "@/components/landing-v2/AccordionV2";
 import { FooterV2 } from "@/components/landing-v2/FooterV2";
 import { BenefitStory } from "@/components/landing-v2/BenefitStory";
+import { WaitlistModal } from "@/components/landing-v3/WaitlistModal";
 import StickyMobileCTA from '@/components/landing/StickyMobileCTA';
-
-export const metadata: Metadata = {
-  title: "Likkle Legends | Caribbean Learning for Kids 4–8",
-  description:
-    "Help your child grow academically while staying connected to Caribbean culture — wherever you live. Stories, songs, activities and monthly character drops for kids 4-8.",
-  alternates: { canonical: 'https://likklelegends.com' },
-  openGraph: {
-    title: "Likkle Legends | Caribbean Learning for Kids 4–8",
-    description: "Join 500+ families raising proud, confident Caribbean kids.",
-    images: [{ url: '/images/logo.png' }],
-  },
-};
 
 const benefitContent = [
   {
@@ -71,13 +61,15 @@ const faqItems = [
 ];
 
 export default function Page() {
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
+
   return (
     <div className="flex flex-col min-h-screen bg-white">
       <NavbarV2 />
 
       <main className="flex-grow pt-0 space-y-0">
         {/* V3 Hero - Passport Builder */}
-        <Hero />
+        <Hero onOpenWaitlist={() => setIsWaitlistOpen(true)} />
 
         {/* Social Proof (Preserved) */}
         <SocialProofBar />
@@ -89,7 +81,7 @@ export default function Page() {
         <BenefitStory title="The Legacy in the Mailbox." content={benefitContent} />
 
         {/* V3 Character Section with Real Assets */}
-        <MeetTheLegends />
+        <MeetTheLegends onOpenWaitlist={() => setIsWaitlistOpen(true)} />
 
         {/* Preserved V2 Sections */}
         <PhysicalDigitalBridge />
@@ -110,6 +102,12 @@ export default function Page() {
       </main>
 
       <FooterV2 />
+
+      {/* Global Waitlist Modal */}
+      <WaitlistModal
+        isOpen={isWaitlistOpen}
+        onClose={() => setIsWaitlistOpen(false)}
+      />
 
       {/* Sticky Mobile CTA */}
       <StickyMobileCTA />

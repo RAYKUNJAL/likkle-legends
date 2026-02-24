@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowLeft, Send, Volume2, VolumeX, Flame, Zap, Loader2, Mic, Sparkles } from 'lucide-react';
@@ -88,7 +88,6 @@ const DAILY_PROMPTS: Record<CharacterId, { emoji: string; text: string }[][]> = 
 
 function getDailyPrompts(characterId: CharacterId): { emoji: string; text: string }[] {
     const sets = DAILY_PROMPTS[characterId];
-    if (!sets) return [];
     const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
     return sets[dayOfYear % sets.length];
 }
@@ -104,21 +103,6 @@ export default function CharacterChatPage() {
     const characterId = params.character as CharacterId;
     const { activeChild } = useUser();
 
-    // ─── STAGE 1: Static Lookups (Safe) ───
-    const config = useMemo(() => {
-        try {
-            return getCharacterConfig(characterId);
-        } catch {
-            return null;
-        }
-    }, [characterId]);
-
-    const dailyPrompts = useMemo(() => {
-        if (!characterId) return [];
-        return getDailyPrompts(characterId);
-    }, [characterId]);
-
-    // ─── STAGE 2: Hooks (Must all be at the top level) ───
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isSending, setIsSending] = useState(false);
@@ -132,21 +116,22 @@ export default function CharacterChatPage() {
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
 
-    // ─── STAGE 3: Effects & Callbacks ───
+    let config;
+    try {
+        config = getCharacterConfig(characterId);
+    } catch {
+        router.push('/portal/buddy');
+        return null;
+    }
 
-    // Auto-redirect if config is missing
-    useEffect(() => {
-        if (!config && characterId) {
-            router.push('/portal/buddy');
-        }
-    }, [config, characterId, router]);
+    const dailyPrompts = getDailyPrompts(characterId);
 
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
     useEffect(() => {
-        if (!activeChild || !characterId || !config) return;
+        if (!activeChild || !characterId) return;
 
         let cancelled = false;
 
@@ -171,7 +156,7 @@ export default function CharacterChatPage() {
                         id: m.id
                     })));
                 } else {
-                    const welcomeText = config.persona.welcomeMessage(
+                    const welcomeText = config!.persona.welcomeMessage(
                         activeChild.first_name,
                         activeChild.current_streak || 0
                     );
@@ -183,7 +168,7 @@ export default function CharacterChatPage() {
                 }
             } catch {
                 if (cancelled) return;
-                const welcomeText = config.persona.welcomeMessage(
+                const welcomeText = config!.persona.welcomeMessage(
                     activeChild.first_name,
                     activeChild.current_streak || 0
                 );
@@ -199,36 +184,11 @@ export default function CharacterChatPage() {
 
         loadHistory();
         return () => { cancelled = true; };
-    }, [activeChild?.id, characterId, config]);
-
-    const speakText = useCallback(async (text: string) => {
-        if (!config) return;
-        setIsSpeaking(true);
-        try {
-            const res = await fetch('/api/voice/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    text,
-                    voiceId: config.technical.elevenLabsVoiceId,
-                    voiceName: config.technical.geminiVoiceName
-                })
-            });
-            if (!res.ok) throw new Error('Voice failed');
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            if (audioRef.current) {
-                audioRef.current.src = url;
-                audioRef.current.play();
-                audioRef.current.onended = () => { setIsSpeaking(false); URL.revokeObjectURL(url); };
-            }
-        } catch {
-            setIsSpeaking(false);
-        }
-    }, [config]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeChild?.id, characterId]);
 
     const sendMessage = useCallback(async (text: string) => {
-        if (!activeChild || !text.trim() || isSending || !config) return;
+        if (!activeChild || !text.trim() || isSending) return;
 
         setUserHasSent(true);
         setIsSending(true);
@@ -265,7 +225,33 @@ export default function CharacterChatPage() {
             setIsSending(false);
             inputRef.current?.focus();
         }
-    }, [activeChild, characterId, voiceEnabled, isSending, config, speakText]);
+    }, [activeChild, characterId, voiceEnabled, isSending]);
+
+    const speakText = async (text: string) => {
+        if (!config) return;
+        setIsSpeaking(true);
+        try {
+            const res = await fetch('/api/voice/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text,
+                    voiceId: config.technical.elevenLabsVoiceId,
+                    voiceName: config.technical.geminiVoiceName
+                })
+            });
+            if (!res.ok) throw new Error('Voice failed');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            if (audioRef.current) {
+                audioRef.current.src = url;
+                audioRef.current.play();
+                audioRef.current.onended = () => { setIsSpeaking(false); URL.revokeObjectURL(url); };
+            }
+        } catch {
+            setIsSpeaking(false);
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -279,7 +265,6 @@ export default function CharacterChatPage() {
         }
     };
 
-    // ─── STAGE 4: Early Return (Safe after all hooks) ───
     if (!config) return null;
 
     const childProfile: CharacterChild | null = activeChild ? {
