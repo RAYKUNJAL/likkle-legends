@@ -14,6 +14,26 @@ function getValidKey(): string {
     return (key && key.length > 20 && key !== 'false') ? key : PLACEHOLDER_KEY;
 }
 
+// CRITICAL: Disable NavigatorLock before Supabase tries to use it
+if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
+    // Completely override the locks API to disable it
+    if (navigator.locks) {
+        navigator.locks.request = async function(name: string, options: any, callback: any) {
+            // Skip the lock entirely - just run the callback immediately
+            try {
+                const result = await callback({
+                    release: () => Promise.resolve(),
+                    signal: new AbortSignal(),
+                });
+                return result;
+            } catch (err) {
+                console.warn('[Supabase] Lock bypassed, continuing', err?.message);
+                return undefined;
+            }
+        } as any;
+    }
+}
+
 // Singleton client for browser - using direct client without SSR wrapper to avoid lock issues
 let browserClient: any;
 

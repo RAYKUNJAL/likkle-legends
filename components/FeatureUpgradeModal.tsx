@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { X, Lock, Sparkles, ArrowRight, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -22,6 +23,20 @@ export default function FeatureUpgradeModal({
     currentTier,
     requiredTier
 }: FeatureUpgradeModalProps) {
+    // Handle escape key to close modal
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [isOpen, onClose]);
+
     if (!isOpen) return null;
 
     const upgradeTier = getUpgradeTier(currentTier);
