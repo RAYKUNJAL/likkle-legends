@@ -125,7 +125,14 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-white/10">
+                <div className="p-4 border-t border-white/10 space-y-3">
+                    <Link
+                        href="/portal"
+                        className="flex items-center gap-3 px-4 py-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all text-white/90 hover:text-white"
+                    >
+                        <Gamepad2 size={20} />
+                        <span className="font-bold text-sm">View Portal</span>
+                    </Link>
                     <div className="flex items-center gap-3 px-4 py-3">
                         <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                             <ShieldCheck size={20} />
