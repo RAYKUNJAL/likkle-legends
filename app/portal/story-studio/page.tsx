@@ -8,7 +8,7 @@ import {
     Check, Star, Brain, ShieldCheck, Rocket, Loader2, Music
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createStoryAction } from '@/app/actions/story-actions';
+import { selectStoryAction } from '@/app/actions/story-database-actions';
 import { useUser } from '@/components/UserContext';
 
 type WizardStep = 'tradition' | 'reading-level' | 'island' | 'creating';
@@ -66,10 +66,11 @@ export default function StoryStudioPage() {
         setStep('creating');
 
         try {
-            const result = await createStoryAction({
+            const result = await selectStoryAction({
                 tradition: selection.tradition,
                 level: selection.level,
                 island: selection.island,
+                childAge: activeChild?.age || 6,
                 childName: activeChild?.first_name || 'Little Legend'
             });
 
@@ -257,9 +258,9 @@ export default function StoryStudioPage() {
                             </div>
 
                             <div className="space-y-4 max-w-sm">
-                                <h2 className="text-3xl font-black text-deep italic">Tanty is writing...</h2>
+                                <h2 className="text-3xl font-black text-deep italic">Tanty is fetching...</h2>
                                 <p className="text-deep/40 font-bold leading-relaxed">
-                                    Gathering patois phrases, mixing in some phonics, and dusting it with Caribbean stardust! ✨
+                                    Pulling the perfect story from our library just for you! ✨
                                 </p>
                             </div>
 
