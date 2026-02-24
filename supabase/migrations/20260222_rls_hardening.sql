@@ -101,7 +101,7 @@ DO $$ BEGIN
         CREATE POLICY "Admins can view admin list" ON public.admin_users FOR SELECT USING (
             auth.jwt() ->> 'email' = 'raykunjal@gmail.com' OR 
             auth.jwt() ->> 'email' LIKE '%admin@%' OR
-            EXISTS (SELECT 1 FROM public.admin_users au WHERE au.id = auth.uid())
+            (auth.uid() = id)
         );
     END IF;
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;

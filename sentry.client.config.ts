@@ -1,4 +1,3 @@
-```
 import * as Sentry from "@sentry/nextjs";
 
 if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
@@ -10,4 +9,3 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
     debug: false,
   });
 }
-```
