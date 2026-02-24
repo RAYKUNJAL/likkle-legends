@@ -49,6 +49,7 @@ export async function getStoriesForChild(
  */
 export async function getStoryBySlug(slug: string): Promise<StoryBook | null> {
     try {
+        console.log('[StoriesDB] 📖 getStoryBySlug called with slug:', slug);
         const { data, error } = await supabase
             .from('stories_library')
             .select('*')
@@ -56,13 +57,28 @@ export async function getStoryBySlug(slug: string): Promise<StoryBook | null> {
             .eq('is_active', true)
             .single();
 
-        if (error) throw error;
-        if (!data) return null;
+        if (error) {
+            console.error('[StoriesDB] ❌ Supabase query error:', error.message, error.code);
+            throw error;
+        }
+
+        if (!data) {
+            console.warn('[StoriesDB] ⚠️ No data returned for slug:', slug);
+            return null;
+        }
+
+        console.log('[StoriesDB] ✅ Data fetched for slug:', slug, '- title:', data.title);
 
         // Transform simple story to full StoryBook format
-        return transformToStoryBook(data);
+        console.log('[StoriesDB] 🔄 Transforming to StoryBook format...');
+        const transformed = transformToStoryBook(data);
+        console.log('[StoriesDB] ✨ Transform complete - pages:', transformed.structure?.pages?.length);
+
+        return transformed;
     } catch (error) {
-        console.error('[StoriesDB] Error fetching story:', error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error('[StoriesDB] ❌ Error fetching story by slug:', errorMsg);
+        if (error instanceof Error && error.stack) console.error('[StoriesDB] Stack:', error.stack);
         return null;
     }
 }
@@ -75,6 +91,8 @@ export async function getStoriesByTradition(
     filters?: Partial<StoryFilters>
 ) {
     try {
+        console.log('[StoriesDB] 🎯 getStoriesByTradition called - tradition:', tradition, 'filters:', filters);
+
         let query = supabase
             .from('stories_library')
             .select('id, title, slug, cover_image_url, summary, tradition, xp_reward')
@@ -82,12 +100,15 @@ export async function getStoriesByTradition(
             .eq('is_active', true);
 
         if (filters?.reading_level) {
+            console.log('[StoriesDB] Adding filter - reading_level:', filters.reading_level);
             query = query.eq('reading_level', filters.reading_level);
         }
         if (filters?.island_code) {
+            console.log('[StoriesDB] Adding filter - island_code:', filters.island_code);
             query = query.eq('island_code', filters.island_code);
         }
         if (filters?.age_track) {
+            console.log('[StoriesDB] Adding filter - age_track:', filters.age_track);
             query = query.eq('age_track', filters.age_track);
         }
 
@@ -95,10 +116,21 @@ export async function getStoriesByTradition(
             .order('created_at', { ascending: false })
             .limit(filters?.limit || 10);
 
-        if (error) throw error;
+        if (error) {
+            console.error('[StoriesDB] ❌ Supabase query error:', error.message, error.code);
+            throw error;
+        }
+
+        console.log('[StoriesDB] ✅ Query successful - returned', data?.length || 0, 'stories');
+        if (data && data.length > 0) {
+            console.log('[StoriesDB] Story IDs:', data.map((s: any) => s.slug).join(', '));
+        }
+
         return data || [];
     } catch (error) {
-        console.error('[StoriesDB] Error fetching tradition stories:', error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error('[StoriesDB] ❌ Error fetching tradition stories:', errorMsg);
+        if (error instanceof Error && error.stack) console.error('[StoriesDB] Stack:', error.stack);
         return [];
     }
 }
