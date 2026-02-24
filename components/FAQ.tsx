@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, Minus } from 'lucide-react';
+import Link from 'next/link';
 import { siteContent } from '@/lib/content';
 
 export default function FAQ({ content }: { content?: any }) {
@@ -41,6 +42,25 @@ export default function FAQ({ content }: { content?: any }) {
                             </div>
                         </div>
                     ))}
+                </div>
+
+                {/* CTA after objection handling */}
+                <div className="mt-12 text-center space-y-4">
+                    <p className="text-deep/40 font-bold text-sm">Still have questions?</p>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <a
+                            href="mailto:hello@likklelegends.com"
+                            className="text-primary font-black hover:underline"
+                        >
+                            Chat with us →
+                        </a>
+                        <Link
+                            href="/signup?plan=starter_mailer"
+                            className="bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-black px-8 py-4 rounded-2xl shadow-lg shadow-orange-500/20 hover:scale-[1.02] transition-all"
+                        >
+                            Get Started for $10
+                        </Link>
+                    </div>
                 </div>
             </div>
 

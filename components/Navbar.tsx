@@ -49,7 +49,7 @@ export default function Navbar() {
                         )}
                     </div>
 
-                    <Link href={navigation.auth.primary_cta.href} className="btn btn-primary animate-pulse-slow">
+                    <Link href={navigation.auth.primary_cta.href} className="btn btn-primary">
                         {navigation.auth.primary_cta.label}
                     </Link>
                 </div>

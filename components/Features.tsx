@@ -1,6 +1,8 @@
 "use client";
 
 import { Mail, Palette, Laptop, Sparkles, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { siteContent } from '@/lib/content';
 
 export default function Features({ content }: { content?: any }) {
@@ -34,6 +36,17 @@ export default function Features({ content }: { content?: any }) {
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Mid-funnel CTA */}
+        <div className="text-center mt-12">
+          <Link
+            href="/signup?plan=starter_mailer"
+            className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-black px-8 py-4 rounded-2xl shadow-lg shadow-orange-500/20 hover:scale-[1.02] transition-all group text-sm"
+          >
+            Start Your Adventure
+            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       </div>
     </section>

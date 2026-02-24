@@ -21,18 +21,16 @@ export const siteContent = {
         },
         links: [
             { label: "How It Works", href: "/#how-it-works" },
-            { label: "What You Get", href: "/#offer" },
-            { label: "Characters", href: "/characters" },
+            { label: "Characters", href: "/#characters" },
+            { label: "Pricing", href: "/#pricing" },
             { label: "Blog", href: "/blog" },
-            { label: "Pricing", href: "/pricing" },
-            { label: "Testimonials", href: "/#testimonials" }
         ],
         auth: {
             login_label: "Login",
             login_href: "/login",
             primary_cta: {
                 label: "Try $10 Intro",
-                href: "/get-started"
+                href: "/signup?plan=starter_mailer"
             }
         }
     },
@@ -45,7 +43,7 @@ export const siteContent = {
         subheadline: "The monthly mail club that delivers personalized letters, cultural activities, and AI-powered stories to help your child love their roots.",
         primary_cta: {
             label: "Start Your Child's Adventure",
-            href: "/get-started"
+            href: "/signup?plan=starter_mailer"
         },
         secondary_cta: {
             label: "Preview a free sample letter",
@@ -93,7 +91,7 @@ export const siteContent = {
                 icon: "digital-portal"
             }
         ],
-        bottom_note: "Most families start with Mail Club at $10/month, then upgrade once their child is hooked."
+        bottom_note: "Join 500+ families. Most start with the $10 Intro — upgrade anytime as your child grows."
     },
     what_you_get: {
         id: "what-you-get",
@@ -492,23 +490,37 @@ export const siteContent = {
                 id: "digital_explorer",
                 tab: "digital",
                 name: "Digital Explorer",
-                best_for: "Simple digital-only access for quick learning.",
+                best_for: "Standard digital access for learning everywhere.",
                 price_display: "$4.99/mo",
                 features: [
                     "Full Digital Portal Access",
                     "Interactive Island Radio",
-                    "Basic Progress Tracking",
+                    "Progress Tracking & Badges",
                     "Weekly Digital Missions"
                 ],
                 cta: { label: "Start Digital", href: "/checkout?plan=digital_explorer" }
+            },
+            {
+                id: "free_forever",
+                tab: "digital",
+                name: "Free Explorer",
+                best_for: "Curious families starting their Caribbean journey.",
+                price_display: "$0/mo",
+                features: [
+                    "Core Stories & Songs",
+                    "Basic Island Radio",
+                    "Community Patois Lessons",
+                    "Teacher & School Access"
+                ],
+                cta: { label: "Start Free", href: "/signup?plan=free" }
             }
         ],
         comparison_table: [
-            { label: "Physical Monthly Mail", values: ["Yes", "Yes", "Yes", "No"] },
-            { label: "Digital Portal Access", values: ["Yes", "Yes", "Yes", "Yes"] },
-            { label: "AI Story Studio", values: ["Basic", "Unlimited", "Unlimited", "Basic"] },
-            { label: "Island Radio", values: ["Yes", "Yes", "Yes", "Yes"] },
-            { label: "Multiple Child Profiles", values: ["1", "2", "3", "1"] }
+            { label: "Physical Monthly Mail", values: ["Yes", "Yes", "Yes", "No", "No"] },
+            { label: "Digital Portal Access", values: ["Yes", "Yes", "Yes", "Yes", "Yes"] },
+            { label: "AI Story Studio", values: ["Basic", "Unlimited", "Unlimited", "Basic", "No"] },
+            { label: "Island Radio", values: ["Yes", "Yes", "Yes", "Yes", "Yes"] },
+            { label: "Multiple Child Profiles", values: ["1", "2", "3", "1", "1"] }
         ]
     },
     educator_block: {

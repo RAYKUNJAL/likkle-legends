@@ -73,13 +73,6 @@ export default function Footer() {
                     </p>
                     <div className="flex items-center justify-center gap-6">
                         <Link
-                            href="/admin"
-                            className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
-                        >
-                            Admin Access
-                        </Link>
-                        <span className="w-1 h-1 bg-white/10 rounded-full"></span>
-                        <Link
                             href="/contact"
                             className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
                         >

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, BadgeCheck } from 'lucide-react';
 
 const stats = [
     { value: '500+', label: 'Families enrolled' },
@@ -14,6 +14,8 @@ const testimonials = [
     {
         quote: "My daughter literally runs to the mailbox on the 15th. She's never been this excited about learning.",
         name: 'Kezia T.',
+        initials: 'KT',
+        color: 'bg-orange-400',
         meta: 'Mom of Amara, 6 · Toronto, Canada',
         flag: '🇨🇦',
         stars: 5,
@@ -21,6 +23,8 @@ const testimonials = [
     {
         quote: "We moved from Trinidad when she was 2. Likkle Legends is keeping our culture alive in our home in a way nothing else has.",
         name: 'Marcus J.',
+        initials: 'MJ',
+        color: 'bg-blue-500',
         meta: 'Dad of Zara, 7 · London, UK',
         flag: '🇬🇧',
         stars: 5,
@@ -28,6 +32,8 @@ const testimonials = [
     {
         quote: "The AI reading buddy is unbelievable. My son reads to Tanty Spice every night and his confidence has jumped.",
         name: 'Nadine R.',
+        initials: 'NR',
+        color: 'bg-emerald-500',
         meta: 'Mom of Devon, 5 · Brooklyn, USA',
         flag: '🇺🇸',
         stars: 5,
@@ -89,11 +95,17 @@ export default function SocialProofStrip() {
                                 "{t.quote}"
                             </p>
                             <div className="flex items-center gap-3 mt-auto pt-4 border-t border-orange-100">
-                                <span className="text-2xl">{t.flag}</span>
-                                <div>
-                                    <p className="font-black text-deep text-sm">{t.name}</p>
+                                <div className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center text-white font-black text-sm shrink-0`}>
+                                    {t.initials}
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                        <p className="font-black text-deep text-sm">{t.name}</p>
+                                        <BadgeCheck size={14} className="text-blue-500" />
+                                    </div>
                                     <p className="text-deep/40 text-xs font-bold">{t.meta}</p>
                                 </div>
+                                <span className="text-xl">{t.flag}</span>
                             </div>
                         </motion.div>
                     ))}
