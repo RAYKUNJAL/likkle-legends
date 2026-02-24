@@ -2,7 +2,8 @@
 description: Verify the project builds correctly and monitor for common Vercel failures
 ---
 
-This workflow ensures the project is in the "right format" for deployment and prevents common failures like 'Dynamic Server Usage' or RLS recursion.
+### Build Integrity Framework
+This workflow ensures the project complies with the [Build Integrity Rules](.agent/rules/build-integrity.md) and prevents common failures like 'Dynamic Server Usage' or RLS recursion.
 
 ### 1. Run Lint Check
 // turbo
