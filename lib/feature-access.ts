@@ -161,7 +161,18 @@ export function hasFeatureAccess(
     const userTierLevel = TIER_LEVELS[userTier];
     const requiredTierLevel = TIER_LEVELS[feature.tier_required];
 
-    return userTierLevel >= requiredTierLevel;
+    // Allow access if user tier >= required tier
+    if (userTierLevel >= requiredTierLevel) {
+        return true;
+    }
+
+    // Special case: Free tier users can access features with free_limit
+    // (they just have usage restrictions)
+    if (userTier === 'free' && feature.free_limit && feature.free_limit > 0) {
+        return true;
+    }
+
+    return false;
 }
 
 /**
