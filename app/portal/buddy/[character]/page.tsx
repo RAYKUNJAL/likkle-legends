@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowLeft, Send, Volume2, VolumeX, Flame, Zap, Loader2, Mic, Sparkles } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
-import { getCharacterConfig, CharacterId, CharacterChild } from '@/lib/characterConfig';
+import { getCharacterConfig, CharacterId, CharacterChild, CharacterConfig } from '@/lib/characterConfig';
 import IslandVoice from '@/components/IslandVoice';
 
 interface Message {
@@ -116,14 +116,7 @@ export default function CharacterChatPage() {
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
 
-    let config;
-    try {
-        config = getCharacterConfig(characterId);
-    } catch {
-        router.push('/portal/buddy');
-        return null;
-    }
-
+    // ── Pre-calculate and Hooks (Must be top-level) ──
     const dailyPrompts = getDailyPrompts(characterId);
 
     useEffect(() => {
@@ -184,7 +177,7 @@ export default function CharacterChatPage() {
 
         loadHistory();
         return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeChild?.id, characterId]);
 
     const sendMessage = useCallback(async (text: string) => {
@@ -227,6 +220,16 @@ export default function CharacterChatPage() {
         }
     }, [activeChild, characterId, voiceEnabled, isSending]);
 
+    // ── config check (After Hooks) ──
+    let config: CharacterConfig | null = null;
+    try {
+        config = getCharacterConfig(characterId);
+    } catch {
+        // Fallback handled below
+    }
+
+
+
     const speakText = async (text: string) => {
         if (!config) return;
         setIsSpeaking(true);
@@ -265,7 +268,10 @@ export default function CharacterChatPage() {
         }
     };
 
-    if (!config) return null;
+    if (!config) {
+        router.push('/portal/buddy');
+        return null;
+    }
 
     const childProfile: CharacterChild | null = activeChild ? {
         first_name: activeChild.first_name,
