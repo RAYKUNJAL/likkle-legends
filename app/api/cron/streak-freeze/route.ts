@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         // Security: Verify this is a legitimate Vercel cron request
         // In production, Vercel includes an Authorization header with a secret
         const authHeader = request.headers.get('authorization');
-        const vercelCronSecret = process.env.VERCEL_CRON_SECRET;
+        const vercelCronSecret = process.env.CRON_SECRET;
 
         if (vercelCronSecret && authHeader !== `Bearer ${vercelCronSecret}`) {
             console.warn('Unauthorized cron request');
