@@ -82,6 +82,19 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
     const setupVisualizer = async () => {
         if (!audioRef.current || isVideo || mediaSourceRef.current) return;
 
+        // Skip Web Audio connection for cross-origin tracks.
+        // createMediaElementSource on a cross-origin element throws SecurityError
+        // which silently captures the element and sends audio to a disconnected
+        // destination — resulting in the player showing "playing" but no sound.
+        const trackUrl = currentTrack?.url || '';
+        const isCrossOrigin = trackUrl.startsWith('http') && !trackUrl.startsWith(window.location.origin);
+        if (isCrossOrigin) {
+            // Still draw the idle visualizer animation, just no frequency data
+            stopVisualizer();
+            drawVisualizer();
+            return;
+        }
+
         try {
             const ctx = getGlobalAudioContext();
             if (ctx.state === 'suspended') {
