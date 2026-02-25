@@ -335,7 +335,6 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
                             onError={handleMediaError}
                             playsInline
                             controls={false}
-                            crossOrigin="anonymous"
                             aria-label="Video Player"
                         />
                     ) : (
@@ -402,7 +401,6 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
                 <audio
                     ref={audioRef}
                     src={currentTrack?.url}
-                    crossOrigin="anonymous"
                     onEnded={handleNextTrack}
                     onError={handleMediaError}
                 />
