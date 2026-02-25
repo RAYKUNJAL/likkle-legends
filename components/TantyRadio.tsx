@@ -8,15 +8,17 @@ import { getGlobalPlaylist } from '../services/storageService';
 
 interface TantyRadioProps {
     isLite?: boolean;
+    featuredTracks?: Track[];   // If provided, skips DB fetch and uses these tracks directly
+    defaultChannel?: string;    // Channel to activate on mount (default: 'story')
 }
 
 const TantySnippets = ["Eh-eh!", "Mmm-hmmm!", "Irie!", "Sweet!", "Yes, suh!", "Look at me star!", "Turn up de tunes!"];
 
-const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false }) => {
+const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks, defaultChannel }) => {
     // Start empty to prevent flash of defaults if user has cleared playlist
-    const [allTracks, setAllTracks] = useState<Track[]>([]);
-    const [isInitializing, setIsInitializing] = useState(true);
-    const [activeChannel, setActiveChannel] = useState('story');
+    const [allTracks, setAllTracks] = useState<Track[]>(featuredTracks ?? []);
+    const [isInitializing, setIsInitializing] = useState(!featuredTracks);
+    const [activeChannel, setActiveChannel] = useState(defaultChannel ?? 'story');
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingStatus, setLoadingStatus] = useState('');
@@ -34,6 +36,9 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false }) => {
     const mediaSourceRef = useRef<MediaElementAudioSourceNode | null>(null);
 
     useEffect(() => {
+        // If featuredTracks were passed as props, skip DB fetch entirely
+        if (featuredTracks) return;
+
         const fetchMusic = async () => {
             try {
                 const customTracks = await getGlobalPlaylist();

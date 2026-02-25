@@ -3,6 +3,13 @@
 import TantyRadio from '@/components/TantyRadio';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
+import { Track } from '@/lib/types';
+
+const LANDING_TRACKS: Track[] = [
+    { id: 'track-9a',  title: 'Island Alphabet', artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/614d60d0-dce6-4fdf-8c65-4f6efdec40a3.mp3', channel: 'learning' },
+    { id: 'track-11a', title: 'Coco Water',       artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/ed6d7539-ed37-4f21-a06c-73142ea2129d.mp3', channel: 'learning' },
+    { id: 'track-8a',  title: 'Island Counting',  artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/d85cfbfe-41ac-4694-9000-54b8ab87f460.mp3', channel: 'learning' },
+];
 
 export function TantyRadioSection() {
     return (
@@ -74,7 +81,7 @@ export function TantyRadioSection() {
                     viewport={{ once: true }}
                     transition={{ delay: 0.3 }}
                 >
-                    <TantyRadio />
+                    <TantyRadio featuredTracks={LANDING_TRACKS} defaultChannel="learning" />
                 </motion.div>
             </div>
         </section>
