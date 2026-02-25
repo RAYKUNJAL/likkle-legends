@@ -148,7 +148,7 @@ function CheckoutContent() {
     }
 
     return (
-        <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD", intent: "subscription", vault: true }}>
+        <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD", intent: "subscription", vault: true, components: "buttons" }}>
             <main className="min-h-screen bg-[#FFFDF7] flex flex-col lg:flex-row">
                 {/* Left: Branding & Summary (Visible on Desktop) */}
                 <section className="lg:w-[40%] bg-white p-8 sm:p-12 lg:p-20 flex flex-col justify-between border-r border-zinc-100">

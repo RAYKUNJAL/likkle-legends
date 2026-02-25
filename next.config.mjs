@@ -30,10 +30,10 @@ const nextConfig = {
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
               font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai;
               img-src 'self' blob: data: https://*.supabase.co https://www.paypalobjects.com https://api.dicebear.com https://ui-avatars.com https://modelviewer.dev https://images.unsplash.com;
-              connect-src 'self' https://*.supabase.co https://*.googleapis.com https://*.elevenlabs.io https://www.paypal.com https://api.elevenlabs.io https://generativelanguage.googleapis.com https://modelviewer.dev;
+              connect-src 'self' https://*.supabase.co https://*.googleapis.com https://*.elevenlabs.io https://www.paypal.com https://api.paypal.com https://api-m.paypal.com https://api.sandbox.paypal.com https://api.elevenlabs.io https://generativelanguage.googleapis.com https://modelviewer.dev;
               media-src 'self' blob: data: https://*.supabase.co https://modelviewer.dev https://cdn1.suno.ai https://cdn2.suno.ai;
               worker-src 'self' blob:;
-              frame-src 'self' https://www.paypal.com;
+              frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com;
               object-src 'none';
               base-uri 'self';
               form-action 'self';
