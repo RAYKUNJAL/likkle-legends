@@ -9,41 +9,41 @@ const CHARACTERS = [
     {
         name: 'Dilly Doubles',
         role: 'Joy Specialist',
-        color: 'var(--dilly-purple)',
+        color: '#7B3FBE',           // deep purple — readable on white
         personality: 'The rhythm master of the islands, bringing music and movement to every lesson.',
         teaches: 'Joy, Movement, and Island Celebrations',
         icon: Music,
-        gradient: 'from-purple-400 to-purple-600',
+        gradient: 'from-purple-500 to-purple-700',
         image: '/images/dilly-doubles.jpg'
     },
     {
         name: 'R.O.T.I.',
         role: 'Learning Buddy',
-        color: 'var(--roti-yellow)',
+        color: '#B45309',           // amber-700 — readable on white (replaces invisible yellow)
         personality: 'A friendly guide who makes learning island history fun and interactive.',
         teaches: 'Island History, Phonics, and Math',
         icon: Zap,
-        gradient: 'from-yellow-400 to-yellow-600',
+        gradient: 'from-amber-400 to-orange-500',
         image: '/images/roti-new.jpg'
     },
     {
         name: 'Tanty Spice',
         role: 'Wisdom Guardian',
-        color: 'var(--tanty-pink)',
+        color: '#BE185D',           // pink-700 — readable on white
         personality: 'Warm and caring, she shares the hidden wisdom of Caribbean traditions.',
         teaches: 'Cultural Stories, Folklore, and Traditions',
         icon: Heart,
-        gradient: 'from-pink-400 to-pink-600',
+        gradient: 'from-pink-500 to-rose-600',
         image: '/images/tanty_spice_avatar.jpg'
     },
     {
         name: 'Mango Moko',
         role: 'Balance Protector',
-        color: 'var(--mango-green)',
+        color: '#15803D',           // green-700 — readable on white
         personality: 'Watching over the islands, ensuring every child grows with confidence and pride.',
         teaches: 'Geography, Traditions, and Life Balance',
         icon: Shield,
-        gradient: 'from-green-400 to-green-600',
+        gradient: 'from-green-500 to-emerald-700',
         image: '/images/mango_moko.png'
     }
 ];

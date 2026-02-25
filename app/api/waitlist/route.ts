@@ -21,19 +21,17 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: true, message: 'Already on the list' });
         }
 
+        // Map form fields to actual leads table columns
         const { error } = await supabaseAdmin
             .from('leads')
             .insert({
                 email,
-                child_name: childName,
-                island_preference: country, // Map country/region here or use metadata
+                first_name: parentName || null,
+                current_location: country || null,
                 source: 'waitlist',
-                status: 'new',
-                metadata: {
-                    parent_name: parentName,
-                    source_modal: 'landing_v3_modal',
-                    signup_date: new Date().toISOString()
-                }
+                status: 'active',           // CHECK: 'active' | 'unsubscribed' | 'bounced' | 'spam_reported'
+                utm_campaign: 'landing_v3_waitlist_modal',
+                interests: childName ? [childName] : [], // store child name in interests JSONB as workaround
             });
 
         if (error) {

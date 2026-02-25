@@ -89,41 +89,54 @@ export const RADIO_CHANNELS = [
     { id: 'vip', label: "Heritage VIP", icon: "👑" }
 ];
 
+// ─── RADIO TRACKS ────────────────────────────────────────────────────────────
+// TO ADD YOUR OWN MUSIC:
+//   1. Drop MP3s into public/audio/ (e.g. public/audio/steelpan-serenade.mp3)
+//   2. Update the `url` field below to '/audio/your-file.mp3'
+//   OR upload to Supabase Storage bucket "audio" and paste the public URL.
+// ─────────────────────────────────────────────────────────────────────────────
 export const RADIO_TRACKS: Track[] = [
     {
         id: 'track-1',
-        title: 'Welcome to Tanty Radio',
-        artist: 'Tanty Spice',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-magical-twinkle-sound-2900.mp3', // Placeholder: Replace with /audio/intro.mp3
-        channel: 'story'
+        title: 'Island Morning Vibes',
+        artist: 'Likkle Legends',
+        url: '/audio/island-morning.mp3',   // → drop your MP3 at public/audio/island-morning.mp3
+        channel: 'calm'
     },
     {
         id: 'track-2',
         title: 'Steelpan Serenade',
-        artist: 'Steelpan Sam',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-game-level-completed-2059.mp3', // Placeholder: Replace with /audio/steelpan.mp3
+        artist: 'Likkle Legends',
+        url: '/audio/steelpan-serenade.mp3',
         channel: 'learning'
     },
     {
         id: 'track-3',
-        title: 'Caribbean Waves',
-        artist: 'Mango Moko',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-sea-waves-loop-1196.mp3', // Placeholder: Replace with /audio/waves.mp3
-        channel: 'calm'
+        title: 'Tanty Story Time',
+        artist: 'Tanty Spice',
+        url: '/audio/tanty-story-time.mp3',
+        channel: 'story'
     },
     {
         id: 'track-4',
         title: 'Island Lullaby',
         artist: 'Tanty Spice',
-        url: 'https://assets.mixkit.co/sfx/preview/mixkit-dreamy-magic-chimes-2792.mp3', // Placeholder: Replace with /audio/lullaby.mp3
+        url: '/audio/island-lullaby.mp3',
         channel: 'lullaby'
     },
     {
-        id: 'track-v1',
-        title: 'Island Tour',
+        id: 'track-5',
+        title: 'Caribbean Heritage',
         artist: 'Likkle Legends',
-        url: 'https://assets.mixkit.co/video/preview/mixkit-beautiful-aerial-shot-of-a-tropical-beach-and-sea-1101-large.mp4',
+        url: '/audio/caribbean-heritage.mp3',
         channel: 'culture'
+    },
+    {
+        id: 'track-6',
+        title: 'Counting with Roti',
+        artist: 'R.O.T.I.',
+        url: '/audio/counting-with-roti.mp3',
+        channel: 'learning'
     }
 ];
 

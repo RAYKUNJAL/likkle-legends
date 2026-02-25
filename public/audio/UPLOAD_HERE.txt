@@ -1,0 +1,12 @@
+DROP YOUR MP3 FILES IN THIS FOLDER.
+
+Expected filenames (match lib/constants.ts RADIO_TRACKS):
+  - island-morning.mp3       → Calm channel
+  - steelpan-serenade.mp3    → Learning channel
+  - tanty-story-time.mp3     → Story channel
+  - island-lullaby.mp3       → Lullaby channel
+  - caribbean-heritage.mp3   → Culture channel
+  - counting-with-roti.mp3   → Learning channel
+
+After dropping files here, run: git add public/audio && git commit && git push
+Vercel will serve them at /audio/filename.mp3 automatically.
