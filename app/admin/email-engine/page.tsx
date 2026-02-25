@@ -63,15 +63,19 @@ export default function AdminEmailEnginePage() {
                 failed_today: failedToday || 0
             });
 
-            // Get campaign settings
+            // Get campaign settings from dedicated table
             const { data: settings } = await supabase
-                .from('site_settings')
-                .select('content')
-                .eq('key', 'email_campaigns')
+                .from('campaign_settings')
+                .select('*')
+                .eq('id', 'default')
                 .single();
 
-            if (settings?.content) {
-                setCampaigns(settings.content as any);
+            if (settings) {
+                setCampaigns({
+                    welcome_sequence_enabled: settings.welcome_sequence_enabled ?? true,
+                    abandoned_checkout_enabled: settings.abandoned_checkout_enabled ?? false,
+                    win_back_enabled: settings.win_back_enabled ?? false
+                });
             }
 
         } catch (error) {
@@ -112,14 +116,15 @@ export default function AdminEmailEnginePage() {
 
         try {
             const { supabase } = await import('@/lib/storage');
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { saveContentAction } = await import('@/app/actions/cms');
-                await saveContentAction(session.access_token, 'email_campaigns', newCampaigns);
-            }
+            await supabase
+                .from('campaign_settings')
+                .update({
+                    [key]: newCampaigns[key],
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', 'default');
         } catch (error) {
             console.error('Failed to save campaign settings:', error);
-            // Revert on error if needed
         }
     };
 
