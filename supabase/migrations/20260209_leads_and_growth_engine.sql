@@ -131,5 +131,4 @@ $$ LANGUAGE plpgsql;
 -- Trigger for download count
 DROP TRIGGER IF EXISTS trigger_increment_downloads ON lead_magnet_downloads;
 CREATE TRIGGER trigger_increment_downloads
-AFTER
-INSERT ON lead_magnet_downloads FOR EACH ROW EXECUTE FUNCTION increment_lead_magnet_downloads();
+AFTER INSERT ON lead_magnet_downloads FOR EACH ROW EXECUTE FUNCTION increment_lead_magnet_downloads();
