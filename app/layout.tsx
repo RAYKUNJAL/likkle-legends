@@ -1,38 +1,36 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Fredoka, Quicksand, Montserrat } from "next/font/google";
+import { Fredoka, Quicksand, Montserrat } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Inter({
-  variable: "--font-geist-sans",
+// Montserrat: primary brand font — preloaded (critical)
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
+  weight: ["400", "600", "700", "800", "900"],
+  display: "swap",
+  preload: true,
 });
 
-const geistMono = JetBrains_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
+// Fredoka/Quicksand: accent fonts — lazy loaded, no CLS penalty
 const fredoka = Fredoka({
   variable: "--font-fredoka",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
+  preload: false,
 });
 
 const quicksand = Quicksand({
   variable: "--font-quicksand",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  preload: false,
 });
 
 import { siteContent } from '@/lib/content';
-import { getMergedSiteContent } from '@/lib/services/cms';
+import { getCachedSiteContent } from '@/lib/services/cms';
 import NotificationBar from '@/components/landing/NotificationBar';
 import { GeoProvider } from '@/components/GeoContext';
 
@@ -68,8 +66,6 @@ import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import { UserProvider } from '@/components/UserContext';
 import StructuredData from '@/components/StructuredData';
 import ReferralTracker from '@/components/ReferralTracker';
-// TantySpiceWidget removed - R.O.T.I. is the primary chat interface
-
 import { Toaster } from 'react-hot-toast';
 
 export default async function RootLayout({
@@ -79,7 +75,7 @@ export default async function RootLayout({
 }>) {
   let content = siteContent;
   try {
-    content = await getMergedSiteContent();
+    content = await getCachedSiteContent();
   } catch (err) {
     console.error("Failed to load CMS content:", err);
   }
@@ -90,7 +86,7 @@ export default async function RootLayout({
         <StructuredData />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} ${quicksand.variable} ${montserrat.variable} font-montserrat antialiased`}
+        className={`${montserrat.variable} ${fredoka.variable} ${quicksand.variable} font-montserrat antialiased`}
         suppressHydrationWarning
       >
         <NotificationBar content={content} />
@@ -103,7 +99,6 @@ export default async function RootLayout({
         <UserProvider suppressHydrationWarning>
           <GeoProvider>
             {children}
-            {/* Tanty chatbot removed per user request */}
           </GeoProvider>
         </UserProvider>
       </body>

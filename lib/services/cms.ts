@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { supabase } from '@/lib/storage';
 import { isSupabaseConfigured } from '@/lib/supabase-client';
 import { createAdminClient } from '@/lib/admin';
@@ -53,6 +54,17 @@ export async function updateSiteContent(key: string, content: any, userId?: stri
 let contentCache: any = null;
 let lastFetch = 0;
 const CACHE_TTL = 60000; // 1 minute
+
+/**
+ * Next.js cached version of getMergedSiteContent.
+ * Revalidates every 5 minutes across all serverless instances.
+ * Use this in layouts/pages for zero-latency on repeat renders.
+ */
+export const getCachedSiteContent = unstable_cache(
+    async () => getMergedSiteContent(),
+    ['site-content'],
+    { revalidate: 300 } // 5 minutes
+);
 
 /**
  * Gets the fully merged site content object.

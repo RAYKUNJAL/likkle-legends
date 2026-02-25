@@ -1,27 +1,32 @@
 "use client";
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
+
+// ── Above fold: eagerly loaded ────────────────────────────────────────────────
 import { NavbarV2 } from "@/components/landing-v2/NavbarV2";
 import { Hero } from "@/components/landing-v3/Hero";
-import { TantyRadioSection } from "@/components/landing-v3/TantyRadioSection";
-import { MeetTheLegends } from "@/components/landing-v3/MeetTheLegends";
-import { BlogPreview } from "@/components/landing-v3/BlogPreview";
-import { SocialProofBar } from "@/components/landing-v2/SocialProofBar";
-import { PhysicalDigitalBridge } from "@/components/landing-v2/PhysicalDigitalBridge";
-import { FeatureMatrix } from "@/components/landing-v2/FeatureMatrix";
-import { VillainSection } from "@/components/landing-v2/VillainSection";
-import { GuaranteeBand } from "@/components/landing-v2/GuaranteeBand";
-import { TripleTier } from "@/components/landing-v2/TripleTier";
-import { AccordionV2 } from "@/components/landing-v2/AccordionV2";
-import { FooterV2 } from "@/components/landing-v2/FooterV2";
-import { BenefitStory } from "@/components/landing-v2/BenefitStory";
-import { WaitlistModal } from "@/components/landing-v3/WaitlistModal";
-import StickyMobileCTA from '@/components/landing/StickyMobileCTA';
+
+// ── Below fold: lazily loaded — skips JS cost until needed ───────────────────
+const SocialProofBar        = dynamic(() => import('@/components/landing-v2/SocialProofBar').then(m => ({ default: m.SocialProofBar })),        { ssr: false, loading: () => <div className="h-20 bg-white" /> });
+const TantyRadioSection     = dynamic(() => import('@/components/landing-v3/TantyRadioSection').then(m => ({ default: m.TantyRadioSection })),  { ssr: false, loading: () => <div className="h-48 bg-white" /> });
+const BenefitStory          = dynamic(() => import('@/components/landing-v2/BenefitStory').then(m => ({ default: m.BenefitStory })),            { ssr: false, loading: () => <div className="h-64 bg-white" /> });
+const MeetTheLegends        = dynamic(() => import('@/components/landing-v3/MeetTheLegends').then(m => ({ default: m.MeetTheLegends })),        { ssr: false, loading: () => <div className="h-96 bg-white" /> });
+const PhysicalDigitalBridge = dynamic(() => import('@/components/landing-v2/PhysicalDigitalBridge').then(m => ({ default: m.PhysicalDigitalBridge })), { ssr: false, loading: () => <div className="h-64 bg-white" /> });
+const FeatureMatrix         = dynamic(() => import('@/components/landing-v2/FeatureMatrix').then(m => ({ default: m.FeatureMatrix })),          { ssr: false, loading: () => <div className="h-64 bg-white" /> });
+const VillainSection        = dynamic(() => import('@/components/landing-v2/VillainSection').then(m => ({ default: m.VillainSection })),        { ssr: false, loading: () => <div className="h-64 bg-white" /> });
+const GuaranteeBand         = dynamic(() => import('@/components/landing-v2/GuaranteeBand').then(m => ({ default: m.GuaranteeBand })),          { ssr: false, loading: () => <div className="h-32 bg-white" /> });
+const TripleTier            = dynamic(() => import('@/components/landing-v2/TripleTier').then(m => ({ default: m.TripleTier })),                { ssr: false, loading: () => <div className="h-96 bg-white" /> });
+const BlogPreview           = dynamic(() => import('@/components/landing-v3/BlogPreview').then(m => ({ default: m.BlogPreview })),              { ssr: false, loading: () => <div className="h-64 bg-white" /> });
+const AccordionV2           = dynamic(() => import('@/components/landing-v2/AccordionV2').then(m => ({ default: m.AccordionV2 })),              { ssr: false, loading: () => <div className="h-64 bg-white" /> });
+const FooterV2              = dynamic(() => import('@/components/landing-v2/FooterV2').then(m => ({ default: m.FooterV2 })),                    { ssr: false, loading: () => <div className="h-32 bg-deep" /> });
+const WaitlistModal         = dynamic(() => import('@/components/landing-v3/WaitlistModal').then(m => ({ default: m.WaitlistModal })),         { ssr: false });
+const StickyMobileCTA       = dynamic(() => import('@/components/landing/StickyMobileCTA'),                                                     { ssr: false });
 
 const benefitContent = [
   {
     header: "Physical Surprise",
-    body: "There’s no dopamine hit like actual mail. We bridge the gap between digital games and physical wonder with your child’s name on a real envelope."
+    body: "There's no dopamine hit like actual mail. We bridge the gap between digital games and physical wonder with your child's name on a real envelope."
   },
   {
     header: "Cultural Confidence",
@@ -68,48 +73,22 @@ export default function Page() {
       <NavbarV2 />
 
       <main className="flex-grow pt-0 space-y-0">
-        {/* V3 Hero - Passport Builder */}
         <Hero onOpenWaitlist={() => setIsWaitlistOpen(true)} />
-
-        {/* Social Proof (Preserved) */}
         <SocialProofBar />
-
-        {/* Tanty Radio Section - Audio Brand Personality */}
         <TantyRadioSection />
-
-        {/* The "Why it Matters" Story - Primary Trust Section */}
         <BenefitStory title="The Legacy in the Mailbox." content={benefitContent} />
-
-        {/* V3 Character Section with Real Assets */}
         <MeetTheLegends onOpenWaitlist={() => setIsWaitlistOpen(true)} />
-
-        {/* Preserved V2 Sections */}
         <PhysicalDigitalBridge />
-
         <FeatureMatrix />
-
-        {/* Scorcha Pepper Section (Must be preserved) */}
         <VillainSection />
-
         <GuaranteeBand />
-
         <TripleTier />
-
-        {/* Latest from the Blog - SEO Scaling */}
         <BlogPreview />
-
         <AccordionV2 items={faqItems} />
       </main>
 
       <FooterV2 />
-
-      {/* Global Waitlist Modal */}
-      <WaitlistModal
-        isOpen={isWaitlistOpen}
-        onClose={() => setIsWaitlistOpen(false)}
-      />
-
-      {/* Sticky Mobile CTA */}
+      <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
       <StickyMobileCTA />
     </div>
   );
