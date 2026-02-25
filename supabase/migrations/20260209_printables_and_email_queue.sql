@@ -24,24 +24,28 @@ CREATE TABLE IF NOT EXISTS printables (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+
 -- Enable RLS
 ALTER TABLE printables ENABLE ROW LEVEL SECURITY;
+
 -- Allow public read access
-CREATE POLICY "Printables are viewable by everyone" ON printables FOR
-SELECT USING (is_active = true);
+CREATE POLICY "Printables are viewable by everyone"
+ON printables FOR SELECT
+USING (is_active = true);
+
 -- Allow authenticated admin to manage
-CREATE POLICY "Admins can manage printables" ON printables FOR ALL USING (
-    auth.jwt()->>'email' IN ('raykunjal@gmail.com')
-) WITH CHECK (
-    auth.jwt()->>'email' IN ('raykunjal@gmail.com')
-);
+CREATE POLICY "Admins can manage printables"
+ON printables FOR ALL
+USING (auth.jwt()->>'email' IN ('raykunjal@gmail.com'))
+WITH CHECK (auth.jwt()->>'email' IN ('raykunjal@gmail.com'));
+
 -- Email Queue Table for Growth Agent
 CREATE TABLE IF NOT EXISTS email_queue (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     recipient_email TEXT NOT NULL,
     recipient_name TEXT,
     template_id TEXT NOT NULL,
-    template_data JSONB DEFAULT '{}',
+    template_data JSONB DEFAULT '{}'::jsonb,
     status TEXT DEFAULT 'pending' CHECK (
         status IN ('pending', 'sent', 'failed', 'skipped')
     ),
@@ -60,17 +64,21 @@ CREATE TABLE IF NOT EXISTS email_queue (
     attempts INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
 -- Enable RLS
 ALTER TABLE email_queue ENABLE ROW LEVEL SECURITY;
+
 -- Only admin can access email queue
-CREATE POLICY "Admins can manage email queue" ON email_queue FOR ALL USING (
-    auth.jwt()->>'email' IN ('raykunjal@gmail.com')
-) WITH CHECK (
-    auth.jwt()->>'email' IN ('raykunjal@gmail.com')
-);
+CREATE POLICY "Admins can manage email queue"
+ON email_queue FOR ALL
+USING (auth.jwt()->>'email' IN ('raykunjal@gmail.com'))
+WITH CHECK (auth.jwt()->>'email' IN ('raykunjal@gmail.com'));
+
 -- Index for efficient queue processing
-CREATE INDEX IF NOT EXISTS idx_email_queue_pending ON email_queue (status, scheduled_for)
+CREATE INDEX IF NOT EXISTS idx_email_queue_pending
+ON email_queue (status, scheduled_for)
 WHERE status = 'pending';
+
 -- Campaign Settings Table
 CREATE TABLE IF NOT EXISTS campaign_settings (
     id TEXT PRIMARY KEY,
@@ -79,14 +87,16 @@ CREATE TABLE IF NOT EXISTS campaign_settings (
     win_back_enabled BOOLEAN DEFAULT false,
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+
 -- Insert default settings
 INSERT INTO campaign_settings (
-        id,
-        welcome_sequence_enabled,
-        abandoned_checkout_enabled,
-        win_back_enabled
-    )
-VALUES ('default', true, false, false) ON CONFLICT (id) DO NOTHING;
+    id,
+    welcome_sequence_enabled,
+    abandoned_checkout_enabled,
+    win_back_enabled
+) VALUES ('default', true, false, false)
+ON CONFLICT (id) DO NOTHING;
+
 -- Content Schedule Table for Calendar
 CREATE TABLE IF NOT EXISTS content_schedule (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -108,13 +118,16 @@ CREATE TABLE IF NOT EXISTS content_schedule (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+
 -- Enable RLS
 ALTER TABLE content_schedule ENABLE ROW LEVEL SECURITY;
+
 -- Only admin can access content schedule
-CREATE POLICY "Admins can manage content schedule" ON content_schedule FOR ALL USING (
-    auth.jwt()->>'email' IN ('raykunjal@gmail.com')
-) WITH CHECK (
-    auth.jwt()->>'email' IN ('raykunjal@gmail.com')
-);
+CREATE POLICY "Admins can manage content schedule"
+ON content_schedule FOR ALL
+USING (auth.jwt()->>'email' IN ('raykunjal@gmail.com'))
+WITH CHECK (auth.jwt()->>'email' IN ('raykunjal@gmail.com'));
+
 -- Index for efficient date queries
-CREATE INDEX IF NOT EXISTS idx_content_schedule_date ON content_schedule (scheduled_date);
+CREATE INDEX IF NOT EXISTS idx_content_schedule_date
+ON content_schedule (scheduled_date);
