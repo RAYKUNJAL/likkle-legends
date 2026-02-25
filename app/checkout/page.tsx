@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,8 +11,6 @@ import {
     Mail,
     User,
     Globe,
-    CreditCard,
-    ChevronRight,
     Star,
     Sparkles,
     Zap,
@@ -54,7 +52,6 @@ function CheckoutContent() {
         hasUpsell: false,
         hasHeritageStory: false
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isComplete, setIsComplete] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -103,15 +100,6 @@ function CheckoutContent() {
         return total.toFixed(2);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        // Simulate payment/account creation
-        await new Promise(r => setTimeout(r, 2000));
-        setIsComplete(true);
-        setIsSubmitting(false);
-    };
-
     if (isComplete) {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center p-4">
@@ -148,7 +136,7 @@ function CheckoutContent() {
     }
 
     return (
-        <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD", intent: "subscription", vault: true, components: "buttons" }}>
+        <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD", intent: "subscription" }}>
             <main className="min-h-screen bg-[#FFFDF7] flex flex-col lg:flex-row">
                 {/* Left: Branding & Summary (Visible on Desktop) */}
                 <section className="lg:w-[40%] bg-white p-8 sm:p-12 lg:p-20 flex flex-col justify-between border-r border-zinc-100">
@@ -510,7 +498,7 @@ function CheckoutContent() {
                                                 ) : (
                                                     <PayPalButtons
                                                         style={{ layout: "vertical", shape: "rect", borderRadius: 12, height: 48 }}
-                                                        createSubscription={(data, actions) => {
+                                                        createSubscription={(_data, actions) => {
                                                             const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
                                                             let targetPlanId = selectedPlan?.paypalPlanId || SUBSCRIPTION_PLANS.plan_mail_intro.paypalPlanId;
 
@@ -518,7 +506,7 @@ function CheckoutContent() {
                                                                 plan_id: targetPlanId
                                                             });
                                                         }}
-                                                        onApprove={async (data, actions) => {
+                                                        onApprove={async (data, _actions) => {
                                                             try {
                                                                 const { data: sessionData } = await supabase.auth.getSession();
                                                                 const token = sessionData?.session?.access_token;
