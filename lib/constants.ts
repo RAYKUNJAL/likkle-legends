@@ -124,17 +124,24 @@ export const RADIO_TRACKS: Track[] = [
     },
     {
         id: 'track-5',
-        title: 'Island Morning Vibes',
+        title: 'Island Monkeys',
         artist: 'Likkle Legends',
-        url: '/audio/island-morning.mp3',
+        url: 'https://cdn1.suno.ai/6d2d490e-2cd6-4593-898d-ee6c82d7b4b8.mp3',
         channel: 'calm'
     },
     {
         id: 'track-6',
-        title: 'Counting with Roti',
-        artist: 'R.O.T.I.',
-        url: '/audio/counting-with-roti.mp3',
+        title: 'Island Parrots',
+        artist: 'Likkle Legends',
+        url: 'https://cdn1.suno.ai/ee0e94a6-d116-4116-992e-7ecb8fd76109.mp3',
         channel: 'learning'
+    },
+    {
+        id: 'track-7',
+        title: 'Island Parrots',
+        artist: 'Likkle Legends',
+        url: 'https://cdn1.suno.ai/ee0e94a6-d116-4116-992e-7ecb8fd76109.mp3',
+        channel: 'vip'
     }
 ];
 
