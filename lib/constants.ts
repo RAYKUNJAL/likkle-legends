@@ -103,9 +103,9 @@ export const RADIO_TRACKS: Track[] = [
     },
     {
         id: 'track-2',
-        title: 'Steelpan Serenade',
+        title: 'Sorell Drink',
         artist: 'Likkle Legends',
-        url: '/audio/steelpan-serenade.mp3',
+        url: 'https://cdn1.suno.ai/3f649c16-75ff-43de-99d6-17e4534d716b.mp3',
         channel: 'learning'
     },
     {
