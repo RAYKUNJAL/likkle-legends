@@ -194,48 +194,38 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
 
         await kickstartMobileAudio();
         const mediaElement = isVideo ? videoRef.current : audioRef.current;
-
         if (!mediaElement) return;
 
         if (isPlaying) {
             mediaElement.pause();
             setIsPlaying(false);
-        } else {
-            if (hasError) {
-                handleNextTrack();
-                return;
+            return;
+        }
+
+        if (hasError) { handleNextTrack(); return; }
+
+        // Start play immediately — don't block on visualizer setup
+        // This eliminates the "laggy" pause between tap and audio starting
+        if (!isVideo) setupVisualizer(); // fire-and-forget
+
+        try {
+            const ctx = getGlobalAudioContext();
+            if (ctx.state === 'suspended') ctx.resume(); // fire-and-forget
+
+            const playPromise = mediaElement.play();
+            if (playPromise !== undefined) {
+                setIsPlaying(true); // optimistic — instant button feedback
+                playPromise.catch((err) => {
+                    console.error("[RADIO] Playback failed:", err);
+                    setIsPlaying(false);
+                    setHasError(true);
+                    setLoadingStatus(err.message?.includes('supported sources') ? "Format Not Supported" : "Playback Error");
+                });
             }
-
-            setIsLoading(true);
-            setLoadingStatus('Tuning in...');
-
-            try {
-                if (!isVideo) await setupVisualizer();
-
-                const ctx = getGlobalAudioContext();
-                if (ctx.state === 'suspended') await ctx.resume();
-
-                const playPromise = mediaElement.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        setIsPlaying(true);
-                        setIsLoading(false);
-                    }).catch((err) => {
-                        console.error("[RADIO] Playback failed:", err);
-                        setIsPlaying(false);
-                        setIsLoading(false);
-                        setHasError(true);
-                        if (err.message.includes('supported sources')) {
-                            setLoadingStatus("Format Not Supported");
-                        }
-                    });
-                }
-            } catch (err) {
-                console.error("[RADIO] Setup error:", err);
-                setIsPlaying(false);
-                setIsLoading(false);
-                setHasError(true);
-            }
+        } catch (err) {
+            console.error("[RADIO] Play error:", err);
+            setIsPlaying(false);
+            setHasError(true);
         }
     };
 
@@ -308,108 +298,197 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
 
     if (isInitializing) {
         return (
-            <div className="max-w-4xl mx-auto flex flex-col items-center justify-center p-20 text-center opacity-50">
-                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="font-black uppercase text-xs tracking-widest text-blue-900">Tuning Radio...</p>
+            <div className="max-w-3xl mx-auto flex items-center justify-center gap-4 py-16 opacity-60">
+                <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                <p className="font-black uppercase text-xs tracking-widest text-white/60">Tuning Radio...</p>
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-10" role="region" aria-label="Tanty's Radio Station">
+        <div className="max-w-3xl mx-auto" role="region" aria-label="Tanty Spice Radio">
+
+            {/* ── Channel tabs (full mode only) ─────────────────────────────── */}
             {!isLite && (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4" role="tablist">
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-6" role="tablist">
                     {RADIO_CHANNELS.map(ch => (
                         <button
                             key={ch.id}
+                            type="button"
                             role="tab"
                             aria-selected={activeChannel === ch.id}
                             onClick={() => { setActiveChannel(ch.id); setCurrentTrackIndex(0); setIsPlaying(false); }}
-                            className={`p-6 rounded-[2.5rem] flex flex-col items-center gap-3 border-4 transition-all ${activeChannel === ch.id ? 'bg-orange-500 text-white border-white shadow-xl scale-105' : 'bg-white text-blue-950 border-blue-50 hover:bg-blue-50'}`}
+                            className={`py-3 px-2 rounded-2xl flex flex-col items-center gap-1.5 border-2 transition-all text-center
+                                ${activeChannel === ch.id
+                                    ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/30 scale-105'
+                                    : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'}`}
                         >
-                            <span className="text-4xl" role="img" aria-hidden="true">{ch.icon}</span>
-                            <span className="text-[10px] font-black uppercase tracking-widest text-center">{ch.label}</span>
+                            <span className="text-2xl leading-none" aria-hidden="true">{ch.icon}</span>
+                            <span className="text-[9px] font-black uppercase tracking-wider">{ch.label}</span>
                         </button>
                     ))}
                 </div>
             )}
 
-            <div className={`bg-deep rounded-[3rem] md:rounded-[4rem] flex flex-col md:flex-row items-center relative overflow-hidden shadow-premium-xl border-4 border-white/5 ${isLite ? 'p-6 sm:p-8 gap-6' : 'p-10 md:p-16 gap-10'}`}>
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 mix-blend-overlay"></div>
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10 pointer-events-none"></div>
+            {/* ── Main Player Card ────────────────────────────────────────────── */}
+            <div className="rounded-3xl overflow-hidden border border-white/10 shadow-2xl" style={{ background: 'linear-gradient(135deg, #1a0a00 0%, #2d1200 50%, #1a0a00 100%)' }}>
 
-                <div className={`${isLite ? 'w-full md:w-[280px]' : 'w-full md:w-1/2'} aspect-video bg-zinc-950 rounded-[2rem] border-4 border-white/10 relative overflow-hidden shadow-2xl group cursor-pointer active:scale-[0.98] transition-transform`}>
-                    {isVideo ? (
-                        <video
-                            ref={videoRef}
-                            src={currentTrack?.url}
-                            className="w-full h-full object-cover"
-                            onEnded={handleNextTrack}
-                            onError={handleMediaError}
-                            playsInline
-                            controls={false}
-                            aria-label="Video Player"
-                        />
-                    ) : (
-                        <canvas
-                            ref={canvasRef}
-                            onClick={handleVisualizerClick}
-                            className="w-full h-full opacity-90"
-                            width={600}
-                            height={300}
-                            aria-label="Audio Visualizer"
-                        />
-                    )}
-
-                    {!isVideo && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center p-6 pointer-events-none">
-                            <span className={`text-6xl ${isPlaying ? 'animate-bounce' : ''}`} role="img" aria-hidden="true">
-                                {isLite ? "📻" : RADIO_CHANNELS.find(c => c.id === activeChannel)?.icon}
-                            </span>
-                            {isLite && !isPlaying && (
-                                <p className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm">Tap for Island Vibes</p>
-                            )}
+                {/* Header bar */}
+                <div className="flex items-center justify-between px-5 py-3.5" style={{ background: 'linear-gradient(90deg, #c2410c, #991b1b)' }}>
+                    <div className="flex items-center gap-2.5">
+                        <span className="text-xl" aria-hidden="true">🌶️</span>
+                        <div>
+                            <p className="text-white font-black text-sm uppercase tracking-[0.15em] leading-none">Tanty Spice Radio</p>
+                            <p className="text-orange-200/80 text-[9px] font-bold uppercase tracking-widest mt-0.5">Caribbean Vibes for Kids</p>
                         </div>
-                    )}
-
-                    <div className={`absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md p-4 rounded-2xl border border-white/10 transition-opacity duration-300 ${isPlaying && isVideo ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}>
-                        <h3 className={`${isLite ? 'text-sm' : 'text-xl'} font-quicksand font-black text-primary-light uppercase tracking-tighter truncate`}>{currentTrack?.title || "Station Offline"}</h3>
-                        <p className="text-[10px] font-black text-white/60 uppercase tracking-[0.3em]">{currentTrack?.artist || (currentTrack ? "Unknown Artist" : "No Tracks Available")}</p>
                     </div>
-
-                    {(isNarrating || isLoading || hasError) && (
-                        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-4 text-white p-6 pointer-events-auto">
-                            {hasError ? (
-                                <button onClick={handleNextTrack} className="flex flex-col items-center gap-2 hover:scale-105 transition-transform">
-                                    <div className="text-4xl">⚠️</div>
-                                    <p className="text-xs font-black uppercase tracking-widest text-error">Media Error - Tap to Skip</p>
-                                </button>
-                            ) : (
-                                <>
-                                    <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                                    <p className="text-xs font-black uppercase tracking-widest text-primary-light">{loadingStatus || 'Buffering...'}</p>
-                                </>
-                            )}
-                        </div>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                        <div className={`w-1.5 h-1.5 rounded-full ${isPlaying ? 'bg-green-400 animate-pulse' : 'bg-white/30'}`} />
+                        <span className="text-white/70 text-[9px] font-black uppercase tracking-widest">
+                            {isPlaying ? 'LIVE' : 'READY'}
+                        </span>
+                    </div>
                 </div>
 
-                <div className={`${isLite ? 'flex-grow items-start' : 'w-full md:w-1/2 items-center'} flex flex-col gap-6 relative z-10`}>
-                    <div className="flex items-center gap-6">
-                        <button onClick={handlePrevTrack} disabled={!currentTrack} className="text-white/60 text-xl hover:text-white transition-colors disabled:opacity-20" aria-label="Previous Track">⏮️</button>
-                        <button
-                            onClick={togglePlay}
-                            disabled={isLoading || !currentTrack}
-                            className={`${isLite ? 'w-16 h-16 text-2xl' : 'w-24 h-24 text-4xl'} bg-gradient-to-br from-primary to-primary-dark text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/30 hover:scale-110 active:scale-90 transition-all border-4 border-white/10 disabled:opacity-50 disabled:cursor-not-allowed`}
-                            aria-label={isPlaying ? "Pause" : "Play"}
-                        >
-                            {isPlaying ? '⏸️' : '▶️'}
-                        </button>
-                        <button onClick={handleNextTrack} disabled={!currentTrack} className="text-white/60 text-xl hover:text-white transition-colors disabled:opacity-20" aria-label="Next Track">⏭️</button>
+                {/* Body: visualizer + info/controls */}
+                <div className="flex flex-col sm:flex-row">
+
+                    {/* ── Visualizer panel ──────────────────────────────────────── */}
+                    <div className="relative w-full sm:w-56 h-48 sm:h-auto flex-shrink-0 bg-black/40">
+                        {isVideo ? (
+                            <video
+                                ref={videoRef}
+                                src={currentTrack?.url}
+                                className="w-full h-full object-cover"
+                                onEnded={handleNextTrack}
+                                onError={handleMediaError}
+                                playsInline
+                                controls={false}
+                                aria-label="Video Player"
+                            />
+                        ) : (
+                            <canvas
+                                ref={canvasRef}
+                                onClick={handleVisualizerClick}
+                                className="w-full h-full"
+                                width={400}
+                                height={300}
+                                aria-label="Audio Visualizer"
+                            />
+                        )}
+
+                        {/* Tanty mascot overlay */}
+                        {!isVideo && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
+                                <span className={`text-5xl drop-shadow-lg ${isPlaying ? 'animate-bounce' : ''}`} aria-hidden="true">🌶️</span>
+                                {!isPlaying && (
+                                    <p className="text-white/30 text-[8px] font-black uppercase tracking-[0.2em]">Tap Play</p>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Error overlay */}
+                        {(hasError || isNarrating) && (
+                            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center gap-3 pointer-events-auto">
+                                {hasError ? (
+                                    <button type="button" onClick={handleNextTrack} className="flex flex-col items-center gap-2 hover:scale-105 transition-transform">
+                                        <span className="text-3xl">⚠️</span>
+                                        <p className="text-red-400 text-[9px] font-black uppercase tracking-widest">Tap to Skip</p>
+                                    </button>
+                                ) : (
+                                    <div className="text-orange-300 text-[9px] font-black uppercase tracking-widest">Speaking...</div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* ── Info + Controls panel ──────────────────────────────────── */}
+                    <div className="flex-1 flex flex-col justify-between p-5 gap-5">
+
+                        {/* Track info */}
+                        <div>
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="text-white font-black text-xl md:text-2xl leading-tight truncate">
+                                        {currentTrack?.title || 'No Track Loaded'}
+                                    </h3>
+                                    <p className="text-orange-400 text-[11px] font-bold uppercase tracking-widest mt-1">
+                                        {currentTrack?.artist || 'Likkle Legends'}
+                                    </p>
+                                </div>
+                                {channelTracks.length > 1 && (
+                                    <span className="text-white/25 text-xs font-black tabular-nums flex-shrink-0 pt-1">
+                                        {safeIndex + 1}&nbsp;/&nbsp;{channelTracks.length}
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Track list pills */}
+                            {channelTracks.length > 1 && (
+                                <div className="flex flex-wrap gap-1.5 mt-3">
+                                    {channelTracks.map((t, i) => (
+                                        <button
+                                            key={t.id}
+                                            type="button"
+                                            onClick={() => { setCurrentTrackIndex(i); setIsPlaying(false); }}
+                                            className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border transition-all truncate max-w-[120px]
+                                                ${i === safeIndex
+                                                    ? 'bg-orange-500 border-orange-400 text-white'
+                                                    : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white'}`}
+                                        >
+                                            {t.title}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Controls */}
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={handlePrevTrack}
+                                disabled={channelTracks.length <= 1}
+                                className="w-10 h-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all disabled:opacity-20"
+                                aria-label="Previous Track"
+                            >
+                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={togglePlay}
+                                disabled={!currentTrack}
+                                className="w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+                                style={{ background: 'linear-gradient(135deg, #f97316, #dc2626)', boxShadow: isPlaying ? '0 0 24px rgba(249,115,22,0.5)' : '0 4px 16px rgba(249,115,22,0.3)' }}
+                                aria-label={isPlaying ? 'Pause' : 'Play'}
+                            >
+                                {isPlaying
+                                    ? <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                    : <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6 ml-0.5"><path d="M8 5v14l11-7z"/></svg>
+                                }
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleNextTrack}
+                                disabled={channelTracks.length <= 1}
+                                className="w-10 h-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all disabled:opacity-20"
+                                aria-label="Next Track"
+                            >
+                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/></svg>
+                            </button>
+
+                            {/* Loading status text (non-blocking) */}
+                            {loadingStatus && !hasError && (
+                                <span className="text-orange-300/60 text-[9px] font-black uppercase tracking-widest">{loadingStatus}</span>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
 
+            {/* Hidden audio element */}
             {!isVideo && currentTrack && (
                 <audio
                     ref={audioRef}
