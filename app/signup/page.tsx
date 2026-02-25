@@ -4,7 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, Lock, User, Sparkles, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '@/lib/supabase-client';
 import { useState, useEffect, Suspense } from 'react';
 import { signupAction } from '@/app/actions/auth-actions';
 import { trackEvent } from '@/lib/analytics';
@@ -46,12 +45,7 @@ function SignupForm() {
         agreed: false
     });
 
-    // Cleanup session on mount
     useEffect(() => {
-        const resetSession = async () => {
-            await supabase.auth.signOut().catch(() => { });
-        };
-        resetSession();
         trackEvent('signup_viewed', { plan });
     }, []);
 

@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase-client';
 import { sendMagicLinkAction, signInAction } from '@/app/actions/auth-actions';
 import WhatsAppOtpForm from '@/components/auth/WhatsAppOtpForm';
 import { MessageSquare } from 'lucide-react';
@@ -38,9 +37,6 @@ function LoginForm() {
         const result = await signInAction(email, password);
 
         if (result.success) {
-            // Successful login
-            router.refresh(); // Refresh router to pick up cookies
-
             // Smart Redirect
             const resultAny = result as any;
             let redirectUrl = searchParams.get('redirect');

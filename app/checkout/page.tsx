@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     ShieldCheck,
@@ -25,11 +26,13 @@ import { Suspense } from "react";
 import { ISLAND_REGISTRY } from "@/lib/registries/islands";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { SUBSCRIPTION_PLANS } from "@/lib/paypal";
+import { supabase } from "@/lib/supabase-client";
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "sb";
 
 function CheckoutContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const [step, setStep] = useState(1);
 
     // Helper to map URL param to Plan Object
@@ -495,7 +498,11 @@ function CheckoutContent() {
                                             <div className="relative min-h-[150px] flex flex-col justify-center">
                                                 {formData.planKey === 'plan_free_forever' ? (
                                                     <button
-                                                        onClick={() => setIsComplete(true)}
+                                                        onClick={() => {
+                                                            const uid = searchParams.get('uid') || '';
+                                                            const childName = formData.childName || searchParams.get('childName') || '';
+                                                            router.push(`/onboarding/welcome?childName=${encodeURIComponent(childName)}${uid ? `&uid=${uid}` : ''}`);
+                                                        }}
                                                         className="w-full py-5 bg-[var(--caribbean-ocean)] text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                                                     >
                                                         Activate Free Account
@@ -512,6 +519,33 @@ function CheckoutContent() {
                                                             });
                                                         }}
                                                         onApprove={async (data, actions) => {
+                                                            try {
+                                                                const { data: sessionData } = await supabase.auth.getSession();
+                                                                const token = sessionData?.session?.access_token;
+
+                                                                const res = await fetch('/api/payments/paypal/confirm', {
+                                                                    method: 'POST',
+                                                                    headers: {
+                                                                        'Content-Type': 'application/json',
+                                                                        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                                                                    },
+                                                                    body: JSON.stringify({
+                                                                        subscriptionId: data.subscriptionID,
+                                                                        tier: formData.planKey,
+                                                                        billingCycle: 'month',
+                                                                        currency: 'USD',
+                                                                    }),
+                                                                });
+
+                                                                if (!res.ok) {
+                                                                    const err = await res.json().catch(() => ({}));
+                                                                    console.error('Confirm error:', err);
+                                                                    toast.error('Payment received but account setup failed. Please contact support.');
+                                                                }
+                                                            } catch (err) {
+                                                                console.error('Confirm fetch failed:', err);
+                                                                toast.error('Payment received but account setup failed. Please contact support.');
+                                                            }
                                                             setIsComplete(true);
                                                         }}
                                                         onError={(err) => {

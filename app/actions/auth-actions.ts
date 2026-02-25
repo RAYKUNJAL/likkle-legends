@@ -190,7 +190,7 @@ export async function signInAction(email: string, password: string) {
     try {
         const supabase = createClient();
 
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
@@ -200,13 +200,12 @@ export async function signInAction(email: string, password: string) {
             return { success: false, error: error.message };
         }
 
-        // Get profile to check for admin redirect
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
+        // Use user returned directly — no extra getSession() round trip
+        if (signInData.user) {
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('role, is_admin')
-                .eq('id', session.user.id)
+                .eq('id', signInData.user.id)
                 .single();
 
             return {
