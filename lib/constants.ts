@@ -90,18 +90,16 @@ export const RADIO_CHANNELS = [
 ];
 
 // ─── RADIO TRACKS ────────────────────────────────────────────────────────────
-// TO ADD YOUR OWN MUSIC:
-//   1. Drop MP3s into public/audio/ (e.g. public/audio/steelpan-serenade.mp3)
-//   2. Update the `url` field below to '/audio/your-file.mp3'
-//   OR upload to Supabase Storage bucket "audio" and paste the public URL.
+// Add more Suno tracks: paste the share URL in chat and get the cdn1.suno.ai link.
+// Add more local MP3s: drop file in public/audio/ and use '/audio/filename.mp3'.
 // ─────────────────────────────────────────────────────────────────────────────
 export const RADIO_TRACKS: Track[] = [
     {
         id: 'track-1',
-        title: 'Island Morning Vibes',
+        title: 'Angry Rooster',
         artist: 'Likkle Legends',
-        url: '/audio/island-morning.mp3',   // → drop your MP3 at public/audio/island-morning.mp3
-        channel: 'calm'
+        url: 'https://cdn1.suno.ai/c5e7a4d5-3154-4a42-9106-e33f446b9b4b.mp3',
+        channel: 'culture'
     },
     {
         id: 'track-2',
@@ -126,10 +124,10 @@ export const RADIO_TRACKS: Track[] = [
     },
     {
         id: 'track-5',
-        title: 'Caribbean Heritage',
+        title: 'Island Morning Vibes',
         artist: 'Likkle Legends',
-        url: '/audio/caribbean-heritage.mp3',
-        channel: 'culture'
+        url: '/audio/island-morning.mp3',
+        channel: 'calm'
     },
     {
         id: 'track-6',
