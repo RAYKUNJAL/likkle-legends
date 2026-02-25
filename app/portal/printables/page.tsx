@@ -24,10 +24,11 @@ interface Printable {
 }
 
 const CATEGORIES = [
-    { id: 'all', label: 'All', icon: LayoutGrid },
-    { id: 'coloring', label: 'Coloring', icon: Printer },
-    { id: 'activity', label: 'Activities', icon: Sparkles },
-    { id: 'educational', label: 'Learning', icon: FileText },
+    { id: 'all',       label: 'All',        icon: LayoutGrid },
+    { id: 'coloring',  label: 'Coloring',   icon: Printer },
+    { id: 'activity',  label: 'Activities', icon: Sparkles },
+    { id: 'worksheet', label: 'Learning',   icon: FileText },
+    { id: 'craft',     label: 'Crafts',     icon: Star },
 ];
 
 export default function PrintablesPage() {
@@ -98,12 +99,16 @@ export default function PrintablesPage() {
                         </div>
                         <div className="flex bg-slate-100 p-1 rounded-2xl border-2 border-slate-200">
                             <button
+                                type="button"
+                                aria-label="Grid view"
                                 onClick={() => setViewMode('grid')}
                                 className={`p-2 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
                             >
                                 <LayoutGrid size={20} />
                             </button>
                             <button
+                                type="button"
+                                aria-label="List view"
                                 onClick={() => setViewMode('list')}
                                 className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}
                             >
@@ -118,6 +123,7 @@ export default function PrintablesPage() {
                     {CATEGORIES.map(cat => (
                         <button
                             key={cat.id}
+                            type="button"
                             onClick={() => setActiveCategory(cat.id)}
                             className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black whitespace-nowrap transition-all border-b-4 ${activeCategory === cat.id
                                 ? 'bg-amber-400 border-amber-600 text-white translate-y-1'
@@ -184,7 +190,7 @@ function PrintableCard({ item, isLocked, view }: { item: Printable, isLocked: bo
             >
                 <div className="flex items-center gap-6">
                     <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl border-2 border-slate-100">
-                        {item.category === 'coloring' ? '🖍️' : item.category === 'educational' ? '🧠' : '✨'}
+                        {item.category === 'coloring' ? '🖍️' : item.category === 'worksheet' ? '🧠' : item.category === 'craft' ? '✂️' : '✨'}
                     </div>
                     <div>
                         <h3 className="text-xl font-black text-slate-800">{item.title}</h3>
@@ -262,6 +268,8 @@ function PrintableCard({ item, isLocked, view }: { item: Printable, isLocked: bo
                             href={item.pdf_url}
                             target="_blank"
                             rel="noopener noreferrer"
+                            title={`Print ${item.title}`}
+                            aria-label={`Print ${item.title}`}
                             className="bg-white text-amber-600 p-6 rounded-full shadow-2xl scale-75 group-hover:scale-100 transition-transform duration-300 hover:bg-amber-50"
                         >
                             <Printer size={32} />
@@ -277,7 +285,7 @@ function PrintableCard({ item, isLocked, view }: { item: Printable, isLocked: bo
                         {item.category}
                     </span>
                     {!isLocked && (
-                        <button className="text-slate-300 hover:text-rose-500 transition-colors">
+                        <button type="button" title="Save to favourites" aria-label="Save to favourites" className="text-slate-300 hover:text-rose-500 transition-colors">
                             <Heart size={18} />
                         </button>
                     )}

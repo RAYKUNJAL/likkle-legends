@@ -70,9 +70,26 @@ export async function getContentById(id: string) {
 export const getCharacters = () => getContentItems('character');
 export const getStorybooks = () => getContentItems('story');
 export const getVideos = () => getContentItems('video');
-export const getPrintables = () => getContentItems('resource_pdf');
 export const getMissions = (ageTrack?: string) => getContentItems('mission', undefined, ageTrack);
 export const getGameById = (id: string) => getContentById(id);
+
+// Printables — dedicated table (has pdf_url, category, thumbnail_url, is_new)
+export async function getPrintables() {
+    if (!isSupabaseConfigured()) {
+        return [];
+    }
+    const { data, error } = await supabase
+        .from('printables')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+    if (error) {
+        console.warn('Printables Fetch Warning:', error.message);
+        return [];
+    }
+    // Map thumbnail_url → preview_url so the portal UI finds it
+    return (data || []).map((p: any) => ({ ...p, preview_url: p.thumbnail_url }));
+}
 
 // Admin Operations
 export async function upsertContent(contentData: any) {
@@ -122,9 +139,9 @@ export const createVideo = (data: any) => upsertContent({ ...data, content_type:
 export const updateVideo = (id: string, data: any) => upsertContent({ ...data, id });
 export const deleteVideo = deleteContent;
 
-export const createPrintable = (data: any) => upsertContent({ ...data, content_type: 'resource_pdf' });
-export const updatePrintable = (id: string, data: any) => upsertContent({ ...data, id });
-export const deletePrintable = deleteContent;
+export const createPrintable = (data: any) => supabase.from('printables').insert(data).select().single();
+export const updatePrintable = (id: string, data: any) => supabase.from('printables').update(data).eq('id', id).select().single();
+export const deletePrintable = (id: string) => supabase.from('printables').delete().eq('id', id);
 
 // Support for other tables that might still exist or be added
 export async function getGames() {
