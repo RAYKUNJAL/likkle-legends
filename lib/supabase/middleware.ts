@@ -45,7 +45,9 @@ export async function updateSession(request: NextRequest) {
     let user = null;
     try {
         // Check for auth cookie first (faster than getSession)
-        const authCookie = request.cookies.get('sb-likkle-auth');
+        // Supabase SSR chunks large JWTs, so cookies are named sb-likkle-auth.0, .1, etc.
+        // Use startsWith to match any chunk, not just an exact name.
+        const authCookie = request.cookies.getAll().find(c => c.name.startsWith('sb-likkle-auth'));
         if (authCookie) {
             user = { email: 'authenticated' }; // Minimal user object just to pass auth checks
         }
