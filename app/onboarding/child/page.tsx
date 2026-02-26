@@ -75,7 +75,11 @@ export default function ChildOnboardingPage() {
     };
 
     const handleSubmit = async () => {
-        if (!user?.id) return;
+        if (!user?.id) {
+            // Session not ready — redirect to login
+            router.push('/login?redirect=/onboarding/child');
+            return;
+        }
         setIsSubmitting(true);
         try {
             await createChild(user.id, {

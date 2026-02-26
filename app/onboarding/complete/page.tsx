@@ -6,24 +6,36 @@ import { Sparkles, Map, Users, ArrowRight, ExternalLink, Copy, Check } from 'luc
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/components/UserContext';
-import { supabase } from '@/lib/storage';
+import { supabase } from '@/lib/supabase-client';
 
 export default function OnboardingComplete() {
     const router = useRouter();
     const { user, children } = useUser();
     const [latestChild, setLatestChild] = useState<any>(null);
     const [copied, setCopied] = useState(false);
+    const [referralCode, setReferralCode] = useState<string>('');
 
     useEffect(() => {
         if (children && children.length > 0) {
-            // Get the most recently created child (assuming sorting or just taking first for single child flow)
             setLatestChild(children[children.length - 1]);
         }
     }, [children]);
 
+    useEffect(() => {
+        if (!user?.id) return;
+        supabase
+            .from('profiles')
+            .select('my_referral_code')
+            .eq('id', user.id)
+            .single()
+            .then(({ data }) => {
+                if (data?.my_referral_code) setReferralCode(data.my_referral_code);
+            });
+    }, [user?.id]);
+
     const handleCopyCode = () => {
-        // In a real app, this would be a unique login code
-        navigator.clipboard.writeText("LEGEND-123");
+        const code = referralCode || `LL-${user?.id?.slice(0, 6).toUpperCase()}`;
+        navigator.clipboard.writeText(`https://www.likklelegends.com/signup?ref=${code}`);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -113,14 +125,15 @@ export default function OnboardingComplete() {
                         <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl shadow-sm border border-zinc-100">🎁</div>
                         <div>
                             <h3 className="font-bold text-deep">Invite the Grandparents?</h3>
-                            <p className="text-xs text-deep/50 font-medium">They get free access to follow along!</p>
+                            <p className="text-xs text-deep/50 font-medium">Share your link — they get free access to follow along!</p>
                         </div>
                     </div>
-                    <Link href="/parent/family">
-                        <button className="px-6 py-3 bg-white border-2 border-zinc-200 hover:border-deep/20 rounded-xl font-bold text-sm text-deep transition-all">
-                            Get Invite Code
-                        </button>
-                    </Link>
+                    <button
+                        onClick={handleCopyCode}
+                        className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-zinc-200 hover:border-primary/40 rounded-xl font-bold text-sm text-deep transition-all"
+                    >
+                        {copied ? <><Check size={16} className="text-green-500" /> Copied!</> : <><Copy size={16} /> Copy Invite Link</>}
+                    </button>
                 </div>
 
             </motion.div>
