@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Text is required' }, { status: 400 });
         }
 
-        const API_KEY = process.env.ELEVENLABS_API_KEY || process.env.VITE_ELEVENLABS_API_KEY || 'sk_a6d13d625a2cb1d95fc41ef29736b92cecd11b39351eb7c9';
+        const API_KEY = process.env.ELEVENLABS_API_KEY || process.env.VITE_ELEVENLABS_API_KEY;
         const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || process.env.VITE_ELEVENLABS_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS';
 
         if (!API_KEY) {

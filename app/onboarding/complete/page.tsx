@@ -35,7 +35,7 @@ export default function OnboardingComplete() {
 
     const handleCopyCode = () => {
         const code = referralCode || `LL-${user?.id?.slice(0, 6).toUpperCase()}`;
-        navigator.clipboard.writeText(`https://www.likklelegends.com/signup?ref=${code}`);
+        navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'}/signup?ref=${code}`);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };

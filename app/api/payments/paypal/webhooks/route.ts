@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
                         .select('first_name')
                         .eq('parent_id', profile.id)
                         .limit(1)
-                        .single();
+                        .maybeSingle();
 
                     // Send Branded Confirmation Email
                     await sendEmail({

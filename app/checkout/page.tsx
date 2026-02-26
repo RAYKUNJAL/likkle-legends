@@ -520,7 +520,9 @@ function CheckoutContent() {
                                                                     }),
                                                                 });
 
-                                                                if (!res.ok) {
+                                                                if (res.ok) {
+                                                                    setIsComplete(true);
+                                                                } else {
                                                                     const err = await res.json().catch(() => ({}));
                                                                     console.error('Confirm error:', err);
                                                                     toast.error('Payment received but account setup failed. Please contact support.');
@@ -529,7 +531,6 @@ function CheckoutContent() {
                                                                 console.error('Confirm fetch failed:', err);
                                                                 toast.error('Payment received but account setup failed. Please contact support.');
                                                             }
-                                                            setIsComplete(true);
                                                         }}
                                                         onError={(err) => {
                                                             console.error("PayPal Error:", err);

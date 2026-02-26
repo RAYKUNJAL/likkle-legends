@@ -41,7 +41,8 @@ function LoginForm() {
             const resultAny = result as any;
             let redirectUrl = searchParams.get('redirect');
 
-            if (!redirectUrl) {
+            // Only allow relative paths to prevent open redirect attacks
+            if (!redirectUrl || redirectUrl.startsWith('http') || redirectUrl.startsWith('//')) {
                 if (resultAny.isAdmin) {
                     redirectUrl = '/admin';
                 } else {

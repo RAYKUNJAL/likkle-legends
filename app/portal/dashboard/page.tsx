@@ -9,6 +9,7 @@ import { useSearchParams } from 'next/navigation';
 function DashboardContent() {
     const searchParams = useSearchParams();
     const [childName, setChildName] = useState<string>('Legend');
+    const [userId, setUserId] = useState<string>('');
     const [hasUpsell, setHasUpsell] = useState<boolean>(false);
     const [hasHeritage, setHasHeritage] = useState<boolean>(false);
     const [heritageCode, setHeritageCode] = useState<string>('');
@@ -22,6 +23,7 @@ function DashboardContent() {
             if (stored) {
                 const data = JSON.parse(stored);
                 setChildName(data.childName || 'Legend');
+                setUserId(data.userId || data.uid || '');
                 setHasUpsell(data.hasUpsell);
                 setHasHeritage(data.hasHeritageStory);
                 setHeritageCode(data.heritage);
@@ -137,7 +139,7 @@ function DashboardContent() {
                         <h3 className="text-2xl font-black text-deep tracking-tight flex items-center gap-2">
                             <Sparkles className="text-primary" /> Chat with R.O.T.I.
                         </h3>
-                        <ChatInterface childName={childName} />
+                        <ChatInterface childName={childName} userId={userId} />
                     </div>
 
                     <div className="opacity-50 pointer-events-none filter grayscale">
@@ -153,7 +155,7 @@ function DashboardContent() {
     );
 }
 
-function ChatInterface({ childName }: { childName: string }) {
+function ChatInterface({ childName, userId }: { childName: string; userId?: string }) {
     const [messages, setMessages] = useState<{ role: 'user' | 'ai', content: string }[]>([]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -170,7 +172,7 @@ function ChatInterface({ childName }: { childName: string }) {
             const res = await fetch('/api/brain/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: 'dev-user-123', message: userMsg })
+                body: JSON.stringify({ userId: userId || childName || 'guest', message: userMsg })
             });
             const data = await res.json();
             setMessages(prev => [...prev, { role: 'ai', content: data.text }]);

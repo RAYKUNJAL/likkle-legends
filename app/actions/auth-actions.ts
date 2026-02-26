@@ -43,7 +43,7 @@ export async function signupAction(formData: {
             email: formData.email,
             password: formData.password,
             options: {
-                emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/callback?next=/onboarding/welcome`,
+                emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'}/api/auth/callback?next=/onboarding/welcome`,
                 data: {
                     full_name: `Parent of ${formData.childName}`,
                     child_name: formData.childName,
@@ -114,7 +114,7 @@ export async function forgotPasswordAction(email: string): Promise<SignupResult>
             type: 'recovery',
             email: email,
             options: {
-                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'}/api/auth/callback?next=/portal/settings`
+                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'}/api/auth/callback?next=/reset-password`
             }
         });
 
