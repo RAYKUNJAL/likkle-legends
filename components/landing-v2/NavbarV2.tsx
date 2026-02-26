@@ -4,16 +4,24 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, ArrowRight, Sparkles, User, ShoppingBag } from "lucide-react";
+import { Menu, X, ArrowRight, Sparkles, LogIn, LayoutDashboard, Gift } from "lucide-react";
+import { supabase } from "@/lib/supabase-client";
 
 export const NavbarV2 = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data }) => setIsLoggedIn(!!data.session));
+        const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => setIsLoggedIn(!!session));
+        return () => listener.subscription.unsubscribe();
     }, []);
 
     return (
@@ -36,18 +44,30 @@ export const NavbarV2 = () => {
                         <Link href="#envelope" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">The Envelope</Link>
                         <Link href="#pricing" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">Pricing</Link>
 
-                        <div className="flex items-center gap-6 ml-4 pl-4 border-l border-zinc-100">
-                            <Link href="/login" className="p-3 bg-zinc-50 text-deep/60 rounded-2xl hover:bg-zinc-100 transition-all">
-                                <User size={20} strokeWidth={2.5} />
-                            </Link>
-                            <Link
-                                href="/checkout"
-                                className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all overflow-hidden"
-                            >
-                                <span className="relative z-10">Get Started</span>
-                                <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />
-                                <div className="absolute inset-0 bg-primary-gradient opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                            </Link>
+                        <div className="flex items-center gap-3 ml-4 pl-4 border-l border-zinc-100">
+                            {isLoggedIn ? (
+                                <Link href="/portal" className="group relative flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                                    <LayoutDashboard size={16} />
+                                    <span>My Portal</span>
+                                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link href="/login" className="flex items-center gap-2 px-5 py-3 text-deep/70 hover:text-primary font-black text-xs uppercase tracking-[0.15em] transition-all hover:bg-zinc-50 rounded-xl">
+                                        <LogIn size={16} strokeWidth={2.5} />
+                                        Log In
+                                    </Link>
+                                    <Link href="/signup?plan=mail_club" className="flex items-center gap-2 px-5 py-3 text-primary border-2 border-primary/20 hover:border-primary/40 font-black text-xs uppercase tracking-[0.15em] rounded-xl transition-all hover:bg-primary/5">
+                                        <Gift size={14} />
+                                        Free
+                                    </Link>
+                                    <Link href="/checkout" className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all overflow-hidden">
+                                        <span className="relative z-10">Get Started</span>
+                                        <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />
+                                        <div className="absolute inset-0 bg-primary-gradient opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -72,13 +92,26 @@ export const NavbarV2 = () => {
                         <Link href="#pricing" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors">Pricing</Link>
 
                         <div className="pt-5 sm:pt-8 border-t border-zinc-50 flex flex-col gap-3 sm:gap-4">
-                            <Link href="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-3 py-4 sm:py-6 bg-zinc-50 text-deep font-black uppercase tracking-widest text-xs rounded-xl sm:rounded-[2rem]">
-                                <User size={18} /> Parent Login
-                            </Link>
-                            <Link href="/checkout" onClick={() => setIsOpen(false)} className="group flex items-center justify-center gap-3 sm:gap-4 py-5 sm:py-8 bg-primary-gradient text-white rounded-xl sm:rounded-[2rem] font-black text-base sm:text-xl shadow-2xl shadow-primary/30">
-                                Get Started ($10)
-                                <Sparkles size={24} className="animate-pulse" />
-                            </Link>
+                            {isLoggedIn ? (
+                                <Link href="/portal" onClick={() => setIsOpen(false)} className="group flex items-center justify-center gap-3 sm:gap-4 py-5 sm:py-8 bg-primary-gradient text-white rounded-xl sm:rounded-[2rem] font-black text-base sm:text-xl shadow-2xl shadow-primary/30">
+                                    <LayoutDashboard size={22} />
+                                    My Portal
+                                    <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link href="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-3 py-4 sm:py-6 bg-zinc-50 text-deep font-black uppercase tracking-widest text-xs rounded-xl sm:rounded-[2rem]">
+                                        <LogIn size={18} /> Log In
+                                    </Link>
+                                    <Link href="/signup?plan=mail_club" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-3 py-4 sm:py-6 bg-primary/10 text-primary border-2 border-primary/20 font-black uppercase tracking-widest text-xs rounded-xl sm:rounded-[2rem]">
+                                        <Gift size={18} /> Sign Up Free
+                                    </Link>
+                                    <Link href="/checkout" onClick={() => setIsOpen(false)} className="group flex items-center justify-center gap-3 sm:gap-4 py-5 sm:py-8 bg-primary-gradient text-white rounded-xl sm:rounded-[2rem] font-black text-base sm:text-xl shadow-2xl shadow-primary/30">
+                                        Get Started
+                                        <Sparkles size={24} className="animate-pulse" />
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 )}
