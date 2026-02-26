@@ -31,7 +31,7 @@ export const SUBSCRIPTION_PLANS = {
     plan_digital_legends: {
         id: 'plan_digital_legends',
         name: 'Digital Legends',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL || 'P-4W703714E9171780MNFLN65Y',
+        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL || 'P-0LU582199P7741420NGQA4JI',
         paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL_YEARLY || 'P-0YY72736T56573355NFLOZZQ',
         price: 4.99,
         priceYearly: 49.90, // Approx 2 months free
@@ -51,7 +51,7 @@ export const SUBSCRIPTION_PLANS = {
     plan_mail_intro: {
         id: 'plan_mail_intro',
         name: 'Island Starter',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER || 'P-1R150232CG183332XNFLNNBQ',
+        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER || 'P-9Y7503296X038324YNGN72CI',
         paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_MAIL_YEARLY || 'P-0YY72736T56573355NFLOZZQ',
         price: 9.99,
         priceYearly: 99.00,
@@ -90,8 +90,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_family_legacy: {
         id: 'plan_family_legacy',
         name: 'Family Legacy',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY || 'P-4G842008M1421443UNFLO3MY',
-        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY_YEARLY || 'P-5U054702T9664311ANFLO53',
+        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY || 'P-9MP32022V70125639NFLT4IA',
+        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY_YEARLY || 'P-5U054702T9664311ANFLO53A',
         price: 34.99,
         priceYearly: 349.00,
         interval: 'month',

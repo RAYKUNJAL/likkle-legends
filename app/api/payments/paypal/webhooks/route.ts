@@ -8,15 +8,20 @@ const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID || '';
 
 // Internal mapping of PayPal Plan IDs to our logic tiers
 const PLAN_TO_TIER: Record<string, string> = {
-    'P-1R150232CG183332XNFLNNBQ': 'starter_mailer', // Starter Monthly
-    'P-0YY72736T56573355NFLOZZQ': 'starter_mailer', // Starter Yearly
-    'P-45M32159VV6033601NFLOOYI': 'legends_plus',   // Plus Monthly
-    'P-2503312149524980NNFLO34Y': 'legends_plus',  // Plus Yearly
-    'P-4G842008M1421443UNFLO3MY': 'family_legacy', // Family Monthly
-    'P-5U054702T9664311ANFLO53': 'family_legacy',  // Family Yearly
+    'P-0LU582199P7741420NGQA4JI': 'digital_legends', // Digital Legends Monthly
+    'P-9Y7503296X038324YNGN72CI': 'starter_mailer',  // Island Starter Monthly (current)
+    'P-1R150232CG183332XNFLNNBQ': 'starter_mailer',  // Starter Monthly (legacy)
+    'P-0YY72736T56573355NFLOZZQ': 'starter_mailer',  // Starter Yearly
+    'P-45M32159VV6033601NFLOOYI': 'legends_plus',    // Legends Plus Monthly
+    'P-2503312149524980NNFLO34Y': 'legends_plus',    // Legends Plus Yearly
+    'P-9MP32022V70125639NFLT4IA': 'family_legacy',   // Family Legacy Monthly (current)
+    'P-4G842008M1421443UNFLO3MY': 'family_legacy',   // Family Legacy Monthly (legacy)
+    'P-5U054702T9664311ANFLO53A': 'family_legacy',   // Family Yearly (current)
+    'P-5U054702T9664311ANFLO53': 'family_legacy',    // Family Yearly (legacy)
 };
 
 // Also pull from env to ensure production IDs are covered
+if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL] = 'digital_legends';
 if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER] = 'starter_mailer';
 if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS] = 'legends_plus';
 if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY] = 'family_legacy';
