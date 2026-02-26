@@ -131,10 +131,10 @@ export async function POST(request: NextRequest) {
                     user_id: user.id,
                     content_type: 'song',
                     content_id: songId,
-                    transaction_id: transaction.id,
                     amount_paid: parseFloat(transaction.amount.value) / (selectedSongIds.length || 1),
                     metadata: {
                         paypal_order_id: orderID,
+                        paypal_transaction_id: transaction.id,
                         product_id: productId,
                         bundle: true,
                     }
@@ -147,9 +147,8 @@ export async function POST(request: NextRequest) {
                         user_id: user.id,
                         content_type: 'bundle',
                         content_id: null,
-                        transaction_id: transaction.id,
                         amount_paid: parseFloat(transaction.amount.value),
-                        metadata: { paypal_order_id: orderID, product_id: productId }
+                        metadata: { paypal_order_id: orderID, paypal_transaction_id: transaction.id, product_id: productId }
                     });
                 }
             } else {
@@ -160,10 +159,10 @@ export async function POST(request: NextRequest) {
                         user_id: user.id,
                         content_type: 'song',
                         content_id: contentId,
-                        transaction_id: transaction.id,
                         amount_paid: parseFloat(transaction.amount.value),
                         metadata: {
                             paypal_order_id: orderID,
+                            paypal_transaction_id: transaction.id,
                             product_id: productId
                         }
                     });
