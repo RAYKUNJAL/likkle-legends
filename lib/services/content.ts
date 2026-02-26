@@ -68,7 +68,16 @@ export async function getContentById(id: string) {
 
 // Legacy Aliases for compatibility during transition
 export const getCharacters = () => getContentItems('character');
-export const getStorybooks = () => getContentItems('story');
+export async function getStorybooks() {
+    const data = await getContentItems('story');
+    // Map content_items columns → shape expected by the portal
+    return data.map((item: any) => ({
+        ...item,
+        summary: item.description,
+        cover_image_url: item.thumbnail_url,
+        reading_time_minutes: item.metadata?.reading_time_minutes ?? 5,
+    }));
+}
 export const getVideos = () => getContentItems('video');
 export const getMissions = (ageTrack?: string) => getContentItems('mission', undefined, ageTrack);
 export const getGameById = (id: string) => getContentById(id);
@@ -148,7 +157,7 @@ export async function getGames() {
     if (!isSupabaseConfigured()) {
         return [];
     }
-    const { data, error } = await supabase
+    const { data } = await supabase
         .from('content_items')
         .select('*')
         .eq('content_type', 'game');

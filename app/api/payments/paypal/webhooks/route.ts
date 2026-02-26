@@ -12,7 +12,7 @@ const PLAN_TO_TIER: Record<string, string> = {
     'P-0YY72736T56573355NFLOZZQ': 'starter_mailer', // Starter Yearly
     'P-45M32159VV6033601NFLOOYI': 'legends_plus',   // Plus Monthly
     'P-2503312149524980NNFLO34Y': 'legends_plus',  // Plus Yearly
-    'P-FAMILY_TEST_ID': 'family_legacy',           // Family Monthly
+    'P-4G842008M1421443UNFLO3MY': 'family_legacy', // Family Monthly
     'P-5U054702T9664311ANFLO53': 'family_legacy',  // Family Yearly
 };
 

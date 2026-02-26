@@ -16,36 +16,70 @@
 -- =============================================================================
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 0. SCHEMA ADDITIONS
+-- 0. SCHEMA ADDITIONS (idempotent)
 -- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.printables (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    title text NOT NULL,
+    description text,
+    category text,
+    pdf_url text,
+    thumbnail_url text,
+    age_group text,
+    age_track text,
+    island text,
+    tier_required text,
+    is_active boolean DEFAULT true,
+    display_order int,
+    is_new boolean DEFAULT false
+);
+
 ALTER TABLE printables ADD COLUMN IF NOT EXISTS is_new BOOLEAN DEFAULT false;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 1. STORAGE BUCKET (safe to re-run — uses IF NOT EXISTS logic via RLS)
+-- 1. STORAGE BUCKET (idempotent)
 -- ─────────────────────────────────────────────────────────────────────────────
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
     'printables',
     'printables',
     true,
-    10485760, -- 10MB limit
+    10485760,
     ARRAY['image/png', 'image/jpeg', 'image/webp', 'application/pdf']
 )
 ON CONFLICT (id) DO NOTHING;
 
--- Storage RLS: public read, admin write
+-- Storage RLS: drop-then-recreate so this script is safe to re-run
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+      AND policyname = 'Public read printables storage'
+  ) THEN
+    EXECUTE 'DROP POLICY "Public read printables storage" ON storage.objects';
+  END IF;
+END$$;
 CREATE POLICY "Public read printables storage"
 ON storage.objects FOR SELECT
-USING (bucket_id = 'printables')
-;
+USING (bucket_id = 'printables');
 
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage' AND tablename = 'objects'
+      AND policyname = 'Admin upload printables storage'
+  ) THEN
+    EXECUTE 'DROP POLICY "Admin upload printables storage" ON storage.objects';
+  END IF;
+END$$;
 CREATE POLICY "Admin upload printables storage"
 ON storage.objects FOR INSERT
 WITH CHECK (
     bucket_id = 'printables'
     AND auth.role() = 'authenticated'
-)
-;
+);
 
 -- =============================================================================
 -- 2. PRINTABLES — Coloring Pages (8 rows)
@@ -299,17 +333,25 @@ VALUES
 ;
 
 -- =============================================================================
--- 7. NEW STORYBOOKS (3 books)
+-- 7. STORYBOOKS — stored in content_items (content_type = 'story')
+-- Fields: slug, title, description (=summary), thumbnail_url (=cover),
+--         age_track, tier_required, island_code, reward_xp, is_active,
+--         metadata.reading_time_minutes, metadata.content_json,
+--         metadata.display_order
 -- =============================================================================
-INSERT INTO public.storybooks
-    (id, title, summary, content_json, age_track, tier_required, island_theme, reading_time_minutes, is_active, display_order)
+INSERT INTO public.content_items
+    (id, slug, content_type, title, description, thumbnail_url,
+     age_track, tier_required, island_code, reward_xp, is_active, metadata)
 VALUES
 
 -- ── Book 1: Dilly's First Day at Island School ──────────────────────────────
 (
     'aaaaaaaa-1111-1111-1111-111111111111',
+    'dilly-first-day-island-school',
+    'story',
     'Dilly''s First Day at Island School',
     'Dilly is nervous about her first day at Island School — but a new friend, a mango tree, and a little Tanty wisdom make it the best day ever.',
+    'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800',
     '{
         "book_meta": {
             "id": "dilly-001",
@@ -388,14 +430,18 @@ VALUES
             }
         }
     }'::jsonb,
-    'mini', 'free', 'Jamaica', 5, true, 3
+    'mini', 'free', 'JAM', 50, true,
+    '{"reading_time_minutes": 5, "display_order": 3}'::jsonb
 ),
 
 -- ── Book 2: Mango Moko and the Lost Mango Grove ─────────────────────────────
 (
     'bbbbbbbb-2222-2222-2222-222222222222',
+    'mango-moko-lost-mango-grove',
+    'story',
     'Mango Moko and the Lost Mango Grove',
     'Mango Moko discovers the ancient mango grove of his ancestors is disappearing. Can he convince the village to save it before the last tree falls?',
+    'https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?w=800',
     '{
         "book_meta": {
             "id": "moko-001",
@@ -474,14 +520,18 @@ VALUES
             }
         }
     }'::jsonb,
-    'big', 'rookie', 'Grenada', 7, true, 4
+    'big', 'rookie', 'GRD', 50, true,
+    '{"reading_time_minutes": 7, "display_order": 4}'::jsonb
 ),
 
 -- ── Book 3: Tanty Spice's Pepper Patch Party ────────────────────────────────
 (
     'cccccccc-3333-3333-3333-333333333333',
+    'tanty-spice-pepper-patch-party',
+    'story',
     'Tanty Spice''s Pepper Patch Party',
     'Every year Tanty Spice throws the biggest pepper-tasting party on the island. But this year, someone has stolen her prize-winning pepper recipe — and Dilly, Moko, and R.O.T.I. must solve the mystery before the party begins!',
+    'https://images.unsplash.com/photo-1588891557811-5b56e6b70bcc?w=800',
     '{
         "book_meta": {
             "id": "tanty-001",
@@ -560,7 +610,8 @@ VALUES
             }
         }
     }'::jsonb,
-    'all', 'free', 'Trinidad and Tobago', 6, true, 5
+    'all', 'free', 'TTO', 50, true,
+    '{"reading_time_minutes": 6, "display_order": 5}'::jsonb
 )
 
 ON CONFLICT (id) DO NOTHING;
