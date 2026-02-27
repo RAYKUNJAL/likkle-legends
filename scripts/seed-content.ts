@@ -470,71 +470,70 @@ const STORIES = [
 // ─── PRINTABLES ──────────────────────────────────────────────────────────────
 
 const PRINTABLES = [
-    { title: "Caribbean Alphabet A-M", description: "Colour each letter with a Caribbean fruit or animal — A for Ackee, B for Breadfruit, and more!", category: "coloring", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 1 },
-    { title: "Caribbean Alphabet N-Z", description: "Complete your alphabet journey — N for Nutmeg, P for Pawpaw, S for Soursop!", category: "coloring", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 2 },
-    { title: "Count the Coconuts (1-10)", description: "Count and circle the coconuts on each palm tree. Practise writing the numbers 1-10.", category: "worksheet", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 3 },
-    { title: "Island Animals Matching Game", description: "Match each Caribbean animal to its island home — hummingbird, sea turtle, iguana and more!", category: "worksheet", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 4 },
-    { title: "My Heritage Island Map", description: "Colour in the Caribbean islands and mark your family's heritage island. Add the name and one thing you love about it.", category: "activity_pack", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 5 },
-    { title: "Patois Word Matching", description: "Match the Patois/Creole words to their English meanings. Learn 10 essential Caribbean phrases!", category: "worksheet", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 6 },
-    { title: "Caribbean Fruits Colouring Page", description: "Colour in mangoes, guavas, soursops, and sugar apples in bright Caribbean colours!", category: "coloring", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 7 },
-    { title: "Anansi Story Sequencing", description: "Cut out the story scenes and put them in the right order. Then retell the Anansi story in your own words!", category: "activity_pack", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 8 },
-    { title: "Caribbean Number Bonds (to 10)", description: "Use mangoes and coconuts to practise number bonds to 10. A fun Caribbean twist on maths!",  category: "worksheet", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 9 },
-    { title: "My Family Heritage Tree", description: "Fill in your family tree and add the islands or countries your family comes from. Celebrate your roots!", category: "activity_pack", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 10 },
-    { title: "Carnival Costume Design Sheet", description: "Design your very own Carnival costume! Draw the colours, feathers, and decorations. What would your mas costume look like?", category: "coloring", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 11 },
-    { title: "Caribbean Weather Journal", description: "Track the weather for one week like a real island scientist! Draw clouds, sunshine, and rain on each day.", category: "activity_pack", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf", display_order: 12 },
+    { title: "Caribbean Alphabet A-M", description: "Colour each letter with a Caribbean fruit or animal — A for Ackee, B for Breadfruit, and more!", category: "coloring", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
+    { title: "Caribbean Alphabet N-Z", description: "Complete your alphabet journey — N for Nutmeg, P for Pawpaw, S for Soursop!", category: "coloring", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
+    { title: "Count the Coconuts (1-10)", description: "Count and circle the coconuts on each palm tree. Practise writing the numbers 1-10.", category: "worksheet", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
+    { title: "Island Animals Matching Game", description: "Match each Caribbean animal to its island home — hummingbird, sea turtle, iguana and more!", category: "worksheet", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
+    { title: "My Heritage Island Map", description: "Colour in the Caribbean islands and mark your family's heritage island. Add the name and one thing you love about it.", category: "activity_pack", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
+    { title: "Patois Word Matching", description: "Match the Patois/Creole words to their English meanings. Learn 10 essential Caribbean phrases!", category: "worksheet", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
+    { title: "Caribbean Fruits Colouring Page", description: "Colour in mangoes, guavas, soursops, and sugar apples in bright Caribbean colours!", category: "coloring", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
+    { title: "Anansi Story Sequencing", description: "Cut out the story scenes and put them in the right order. Then retell the Anansi story in your own words!", category: "activity_pack", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
+    { title: "Caribbean Number Bonds (to 10)", description: "Use mangoes and coconuts to practise number bonds to 10. A fun Caribbean twist on maths!", category: "worksheet", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
+    { title: "My Family Heritage Tree", description: "Fill in your family tree and add the islands or countries your family comes from. Celebrate your roots!", category: "activity_pack", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
+    { title: "Carnival Costume Design Sheet", description: "Design your very own Carnival costume! Draw the colours, feathers, and decorations. What would your mas costume look like?", category: "coloring", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
+    { title: "Caribbean Weather Journal", description: "Track the weather for one week like a real island scientist! Draw clouds, sunshine, and rain on each day.", category: "activity_pack", tier_required: "free", is_active: true, preview_url: "/images/logo.png", pdf_url: "/printables/placeholder.pdf" },
 ];
 
 // ─── SONGS ───────────────────────────────────────────────────────────────────
 
 const SONGS = [
-    { title: "Soca Alphabet Song", artist: "Likkle Legends", description: "Learn your ABCs to a bouncy soca beat — the Caribbean way!", lyrics: "A B C D E F G... (soca style)", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 120, category: "educational", island_origin: "Trinidad", age_track: "mini", tier_required: "free", is_active: true, display_order: 1 },
-    { title: "Count With Me (Caribbean Style)", artist: "Likkle Legends", description: "Count 1-10 using Caribbean fruits and animals. Mathematics never sounded so sweet!", lyrics: "One mango, two coconuts, three hummingbirds in a tree...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 105, category: "educational", island_origin: "Caribbean", age_track: "mini", tier_required: "free", is_active: true, display_order: 2 },
-    { title: "Islands of the Caribbean", artist: "Likkle Legends", description: "A beautiful geography song naming all the Caribbean islands. Sing along and learn the map!", lyrics: "Jamaica, Trinidad, Barbados too, Antigua, St Lucia under skies so blue...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 150, category: "educational", island_origin: "Caribbean", age_track: "big", tier_required: "free", is_active: true, display_order: 3 },
-    { title: "Bless Up Morning Song", artist: "Likkle Legends", description: "Start your learning day right with this energetic morning reggae-inspired wake-up song!", lyrics: "Rise up, rise up, blessed morning is here, put on your smile and have no fear...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 130, category: "nursery", island_origin: "Jamaica", age_track: "mini", tier_required: "free", is_active: true, display_order: 4 },
-    { title: "The Steelpan Dance", artist: "Likkle Legends", description: "Shake your body to the rhythm of the steelpan! A joyful calypso-inspired movement song.", lyrics: "Ding ding dong, the steelpan song, dance along all evening long...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 140, category: "cultural", island_origin: "Trinidad", age_track: "all", tier_required: "free", is_active: true, display_order: 5 },
-    { title: "Goodnight Caribbean Moon", artist: "Likkle Legends", description: "A gentle Caribbean lullaby to wind down the day, guided by Tanty Spice.", lyrics: "Caribbean moon, shine so bright, watch over our legends through the night...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 180, category: "nursery", island_origin: "Caribbean", age_track: "mini", tier_required: "free", is_active: true, display_order: 6 },
+    { title: "Soca Alphabet Song", artist: "Likkle Legends", description: "Learn your ABCs to a bouncy soca beat — the Caribbean way!", lyrics: "A B C D E F G... (soca style)", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 120, category: "educational", island_origin: "Trinidad", age_track: "mini", tier_required: "free", is_active: true },
+    { title: "Count With Me (Caribbean Style)", artist: "Likkle Legends", description: "Count 1-10 using Caribbean fruits and animals. Mathematics never sounded so sweet!", lyrics: "One mango, two coconuts, three hummingbirds in a tree...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 105, category: "educational", island_origin: "Caribbean", age_track: "mini", tier_required: "free", is_active: true },
+    { title: "Islands of the Caribbean", artist: "Likkle Legends", description: "A beautiful geography song naming all the Caribbean islands. Sing along and learn the map!", lyrics: "Jamaica, Trinidad, Barbados too, Antigua, St Lucia under skies so blue...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 150, category: "educational", island_origin: "Caribbean", age_track: "big", tier_required: "free", is_active: true },
+    { title: "Bless Up Morning Song", artist: "Likkle Legends", description: "Start your learning day right with this energetic morning reggae-inspired wake-up song!", lyrics: "Rise up, rise up, blessed morning is here, put on your smile and have no fear...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 130, category: "nursery", island_origin: "Jamaica", age_track: "mini", tier_required: "free", is_active: true },
+    { title: "The Steelpan Dance", artist: "Likkle Legends", description: "Shake your body to the rhythm of the steelpan! A joyful calypso-inspired movement song.", lyrics: "Ding ding dong, the steelpan song, dance along all evening long...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 140, category: "cultural", island_origin: "Trinidad", age_track: "all", tier_required: "free", is_active: true },
+    { title: "Goodnight Caribbean Moon", artist: "Likkle Legends", description: "A gentle Caribbean lullaby to wind down the day, guided by Tanty Spice.", lyrics: "Caribbean moon, shine so bright, watch over our legends through the night...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 180, category: "nursery", island_origin: "Caribbean", age_track: "mini", tier_required: "free", is_active: true },
 ];
 
 // ─── MAIN ────────────────────────────────────────────────────────────────────
 
+async function insertNew<T extends { title: string }>(
+    table: string,
+    rows: T[],
+    label: string
+) {
+    // Fetch existing titles to avoid duplicates (tables have no unique constraint on title)
+    const { data: existing } = await supabase
+        .from(table)
+        .select('title');
+
+    const existingTitles = new Set((existing || []).map((r: any) => r.title));
+    const newRows = rows.filter(r => !existingTitles.has(r.title));
+
+    if (newRows.length === 0) {
+        console.log(`✅ ${label}: all ${rows.length} already seeded — skipping`);
+        return;
+    }
+
+    const { error } = await supabase.from(table).insert(newRows);
+    if (error) {
+        console.error(`❌ ${label} seed error:`, error.message);
+    } else {
+        console.log(`✅ ${label}: inserted ${newRows.length} new (${existingTitles.size} already existed)`);
+    }
+}
+
 async function seedContent() {
     console.log('🌴 Likkle Legends — Content Seeder\n');
 
-    // Seed Stories
     console.log(`📚 Seeding ${STORIES.length} stories...`);
-    const { error: storyError } = await supabase
-        .from('storybooks')
-        .upsert(STORIES, { onConflict: 'title', ignoreDuplicates: true });
+    await insertNew('storybooks', STORIES, 'Stories');
 
-    if (storyError) {
-        console.error('❌ Story seed error:', storyError.message);
-    } else {
-        console.log(`✅ ${STORIES.length} stories seeded`);
-    }
-
-    // Seed Printables
     console.log(`\n🖨️ Seeding ${PRINTABLES.length} printables...`);
-    const { error: printableError } = await supabase
-        .from('printables')
-        .upsert(PRINTABLES, { onConflict: 'title', ignoreDuplicates: true });
+    await insertNew('printables', PRINTABLES, 'Printables');
 
-    if (printableError) {
-        console.error('❌ Printable seed error:', printableError.message);
-    } else {
-        console.log(`✅ ${PRINTABLES.length} printables seeded`);
-    }
-
-    // Seed Songs
     console.log(`\n🎵 Seeding ${SONGS.length} songs...`);
-    const { error: songError } = await supabase
-        .from('songs')
-        .upsert(SONGS, { onConflict: 'title', ignoreDuplicates: true });
-
-    if (songError) {
-        console.error('❌ Song seed error:', songError.message);
-    } else {
-        console.log(`✅ ${SONGS.length} songs seeded`);
-    }
+    await insertNew('songs', SONGS, 'Songs');
 
     console.log('\n🏝️ Content seeding complete!');
 }
