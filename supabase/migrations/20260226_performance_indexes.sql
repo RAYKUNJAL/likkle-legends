@@ -17,6 +17,13 @@ CREATE INDEX IF NOT EXISTS idx_daily_logins_child_date ON public.daily_logins(ch
 -- Email queue: processing composite (status + send_at queried together for cron)
 CREATE INDEX IF NOT EXISTS idx_email_queue_status_send ON public.email_queue(status, send_at);
 
--- Prevent duplicate nurture emails per user per type
-ALTER TABLE public.subscription_nurture
-  ADD CONSTRAINT IF NOT EXISTS uniq_nurture_user_type UNIQUE (user_id, email_type);
+-- Prevent duplicate nurture emails per user per type (safe re-run)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'uniq_nurture_user_type'
+  ) THEN
+    ALTER TABLE public.subscription_nurture
+      ADD CONSTRAINT uniq_nurture_user_type UNIQUE (user_id, email_type);
+  END IF;
+END$$;
