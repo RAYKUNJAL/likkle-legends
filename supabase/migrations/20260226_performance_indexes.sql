@@ -10,8 +10,12 @@ CREATE INDEX IF NOT EXISTS idx_children_last_activity ON public.children(last_ac
 -- Daily logins: streak calculation composite (child_id + login_date queried together)
 CREATE INDEX IF NOT EXISTS idx_daily_logins_child_date ON public.daily_logins(child_id, login_date);
 
--- Email queue: processing composite (status + send_at queried together for cron)
-CREATE INDEX IF NOT EXISTS idx_email_queue_status_send ON public.email_queue(status, send_at);
+-- Email queue: add send_at column if missing, then create composite index
+ALTER TABLE public.email_queue
+  ADD COLUMN IF NOT EXISTS send_at timestamptz;
+
+CREATE INDEX IF NOT EXISTS idx_email_queue_status_send
+  ON public.email_queue(status, COALESCE(send_at, created_at));
 
 -- Prevent duplicate nurture emails per user per type (safe re-run)
 DO $$
