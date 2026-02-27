@@ -109,20 +109,6 @@ export const RADIO_TRACKS: Track[] = [
         channel: 'learning'
     },
     {
-        id: 'track-3',
-        title: 'Tanty Story Time',
-        artist: 'Tanty Spice',
-        url: '/audio/tanty-story-time.mp3',
-        channel: 'story'
-    },
-    {
-        id: 'track-4',
-        title: 'Island Lullaby',
-        artist: 'Tanty Spice',
-        url: '/audio/island-lullaby.mp3',
-        channel: 'lullaby'
-    },
-    {
         id: 'track-5',
         title: 'Island Monkeys',
         artist: 'Likkle Legends',
