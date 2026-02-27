@@ -485,15 +485,8 @@ const PRINTABLES = [
 ];
 
 // ─── SONGS ───────────────────────────────────────────────────────────────────
-
-const SONGS = [
-    { title: "Soca Alphabet Song", artist: "Likkle Legends", description: "Learn your ABCs to a bouncy soca beat — the Caribbean way!", lyrics: "A B C D E F G... (soca style)", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 120, category: "educational", island_origin: "Trinidad", age_track: "mini", tier_required: "free", is_active: true },
-    { title: "Count With Me (Caribbean Style)", artist: "Likkle Legends", description: "Count 1-10 using Caribbean fruits and animals. Mathematics never sounded so sweet!", lyrics: "One mango, two coconuts, three hummingbirds in a tree...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 105, category: "educational", island_origin: "Caribbean", age_track: "mini", tier_required: "free", is_active: true },
-    { title: "Islands of the Caribbean", artist: "Likkle Legends", description: "A beautiful geography song naming all the Caribbean islands. Sing along and learn the map!", lyrics: "Jamaica, Trinidad, Barbados too, Antigua, St Lucia under skies so blue...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 150, category: "educational", island_origin: "Caribbean", age_track: "big", tier_required: "free", is_active: true },
-    { title: "Bless Up Morning Song", artist: "Likkle Legends", description: "Start your learning day right with this energetic morning reggae-inspired wake-up song!", lyrics: "Rise up, rise up, blessed morning is here, put on your smile and have no fear...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 130, category: "nursery", island_origin: "Jamaica", age_track: "mini", tier_required: "free", is_active: true },
-    { title: "The Steelpan Dance", artist: "Likkle Legends", description: "Shake your body to the rhythm of the steelpan! A joyful calypso-inspired movement song.", lyrics: "Ding ding dong, the steelpan song, dance along all evening long...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 140, category: "cultural", island_origin: "Trinidad", age_track: "all", tier_required: "free", is_active: true },
-    { title: "Goodnight Caribbean Moon", artist: "Likkle Legends", description: "A gentle Caribbean lullaby to wind down the day, guided by Tanty Spice.", lyrics: "Caribbean moon, shine so bright, watch over our legends through the night...", thumbnail_url: "/images/logo.png", audio_url: null, duration_seconds: 180, category: "nursery", island_origin: "Caribbean", age_track: "mini", tier_required: "free", is_active: true },
-];
+// Songs are built in Suno.com and added manually via the admin panel.
+// This script does not seed songs.
 
 // ─── MAIN ────────────────────────────────────────────────────────────────────
 
@@ -532,8 +525,7 @@ async function seedContent() {
     console.log(`\n🖨️ Seeding ${PRINTABLES.length} printables...`);
     await insertNew('printables', PRINTABLES, 'Printables');
 
-    console.log(`\n🎵 Seeding ${SONGS.length} songs...`);
-    await insertNew('songs', SONGS, 'Songs');
+    console.log('\n🎵 Songs: skipped — build real songs in Suno.com and add via admin panel');
 
     console.log('\n🏝️ Content seeding complete!');
 }
