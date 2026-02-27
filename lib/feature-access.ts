@@ -153,6 +153,11 @@ export const TIER_INFO: Record<SubscriptionTier, {
             'Custom content requests',
             'Dedicated account manager'
         ]
+    },
+    'admin': {
+        name: 'Admin',
+        description: 'Full platform access',
+        features: ['All features', 'Admin dashboard', 'Content management']
     }
 };
 

@@ -392,12 +392,13 @@ export async function generatePlanAction(input: GeneratePlanInput): Promise<{
     // 9. Save new plan
     const preferredChar = quizResults?.preferred_character || 'roti';
     const focusAreas = quizResults?.focus_areas || [];
-    const charName = {
+    const charNames: Record<string, string> = {
         roti: "R.O.T.I.'s Learning Adventure",
         tanty_spice: "Tanty Spice's Story Journey",
         dilly_doubles: "Dilly Doubles' Quest for Greatness",
         benny: "Benny's Island Discovery",
-    }[preferredChar] || 'My Learning Adventure';
+    };
+    const charName = charNames[preferredChar] || 'My Learning Adventure';
 
     const { data: savedPlan, error: saveError } = await supabaseAdmin
         .from('learning_plans')

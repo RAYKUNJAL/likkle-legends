@@ -74,13 +74,15 @@ export async function signupAction(formData: {
         const isAutoConfirmed = !!signUpData.session; // session exists = auto-confirmed
 
         // 2. Persist COPPA parental consent (required by law for children's apps)
-        supabaseAdmin.from('profiles').upsert({
-            id: userId,
-            is_coppa_designated_parent: true,
-            coppa_consent_date: new Date().toISOString(),
-        }, { onConflict: 'id' })
-            .then(({ error }) => { if (error) console.error('[AUTH] COPPA consent persist failed:', error.message); })
-            .catch(err => console.error('[AUTH] COPPA consent persist error:', err));
+        Promise.resolve(
+            supabaseAdmin.from('profiles').upsert({
+                id: userId,
+                is_coppa_designated_parent: true,
+                coppa_consent_date: new Date().toISOString(),
+            }, { onConflict: 'id' })
+        ).then(({ error }) => {
+            if (error) console.error('[AUTH] COPPA consent persist failed:', error.message);
+        }).catch(err => console.error('[AUTH] COPPA consent persist error:', err));
 
         // 3. Send Welcome Email (fire-and-forget)
         sendEmail({
