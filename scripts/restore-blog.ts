@@ -4,13 +4,13 @@ import path from 'path';
 // Load .env.local BEFORE other imports
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
-import { batchGeneratePosts, CONTENT_IDEAS } from '../lib/services/blog-agent';
-import { resetSupabaseConnection } from '../lib/supabase-client';
-
-// Force reset in case something was cached
-resetSupabaseConnection();
-
 async function restoreBlog() {
+    const { batchGeneratePosts, CONTENT_IDEAS } = await import('../lib/services/blog-agent');
+    const { resetSupabaseConnection } = await import('../lib/supabase-client');
+
+    // Force reset in case something was cached
+    resetSupabaseConnection();
+
     console.log('🔄 Restoring missing blog posts...');
 
     // Pick 5 random topics to start
