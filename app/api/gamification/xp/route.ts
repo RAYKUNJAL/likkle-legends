@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { XP_ACTIONS, calculateLevel, BADGES, LEVELS } from '@/lib/gamification';
+import { refreshPlanForProgress } from '@/app/actions/generate-plan';
 
 const client = supabaseAdmin;
 
@@ -109,6 +110,10 @@ export async function POST(request: NextRequest) {
                 });
             }
         }
+
+        // Fire-and-forget: refresh plan if child has made enough progress
+        // Does NOT block the XP response — runs in background
+        refreshPlanForProgress(child_id, user.id).catch(() => {});
 
         return NextResponse.json({
             success: true,
