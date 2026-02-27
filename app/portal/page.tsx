@@ -34,6 +34,9 @@ import MangoGiftModal from '@/components/portal/MangoGiftModal';
 import LeaderboardPanel from '@/components/portal/LeaderboardPanel';
 import FamilyChallengesPanel from '@/components/portal/FamilyChallengesPanel';
 import { getXPMultiplier } from '@/lib/services/gamification';
+import { CharacterGuideBanner } from '@/components/portal/CharacterGuideBanner';
+import { TodaysPlanCard } from '@/components/portal/TodaysPlanCard';
+import type { LearningPlan, PlanActivity } from '@/app/actions/generate-plan';
 
 interface Song {
     id: string;
@@ -107,6 +110,8 @@ export default function ChildPortalPage() {
     const [shareCardOpen, setShareCardOpen] = useState(false);
     const [xpMultiplier, setXpMultiplier] = useState(1);
     const [giftModalOpen, setGiftModalOpen] = useState(false);
+    const [activePlan, setActivePlan] = useState<LearningPlan | null>(null);
+    const [todaysActivities, setTodaysActivities] = useState<PlanActivity[]>([]);
 
     const loadPortalData = useCallback(async () => {
         // Individual fetchers to avoid Promise.all bottleneck
@@ -214,6 +219,30 @@ export default function ChildPortalPage() {
             }
         })();
     }, [activeChild?.id, triggerBadgeUnlock]);
+
+    // Fetch active learning plan for today's activities
+    useEffect(() => {
+        if (!activeChild?.id) return;
+        (async () => {
+            try {
+                const res = await fetch(`/api/learning-plan?childId=${activeChild.id}`);
+                if (!res.ok) return;
+                const { plan } = await res.json();
+                if (!plan?.plan_data?.weeks) return;
+                setActivePlan(plan);
+
+                // Determine today's activities from the plan
+                const dayIndex = new Date().getDay(); // 0=Sun, 1=Mon...
+                const weekdayIndex = Math.max(0, dayIndex - 1); // Mon=0, Fri=4
+                const week = plan.plan_data.weeks[0]; // Use week 1 for daily view
+                if (week?.days?.[weekdayIndex]) {
+                    setTodaysActivities(week.days[weekdayIndex].activities || []);
+                }
+            } catch {
+                // silently ignore — plan is optional
+            }
+        })();
+    }, [activeChild?.id]);
 
     // Show loading while checking auth
     if (userLoading) {
@@ -535,6 +564,38 @@ export default function ChildPortalPage() {
                                     />
                                 </div>
                             )}
+                            {/* Today's Learning Plan */}
+                            {todaysActivities.length > 0 && (
+                                <div className="bg-white rounded-3xl border-2 border-primary/10 p-5 shadow-md">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h3 className="font-black text-lg text-gray-800 leading-tight">Today's Learning</h3>
+                                            <p className="text-xs text-gray-400 font-medium">Your personalised plan for today</p>
+                                        </div>
+                                        <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                                            {todaysActivities.length} activities
+                                        </span>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {todaysActivities.slice(0, 3).map((activity, i) => (
+                                            <TodaysPlanCard
+                                                key={i}
+                                                activity={activity}
+                                                index={i}
+                                                onStart={(a) => {
+                                                    const sectionMap: Record<string, string> = {
+                                                        lesson_micro: 'lessons', quiz_micro: 'missions',
+                                                        story_short: 'stories', song_video_script: 'songs',
+                                                        printable: 'printables', game: 'games',
+                                                    };
+                                                    setActiveSection((sectionMap[a.type] || 'home') as PortalSection);
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="space-y-4">
                                 <h2 className="text-5xl md:text-6xl font-black text-[#083344] tracking-tight">
                                     Choose Your <span className="text-[#3ABEF9]">Next Step</span>
@@ -569,6 +630,10 @@ export default function ChildPortalPage() {
                             {/* Stories Section */}
                             {(activeSection === 'stories') && (
                                 <section className="space-y-8 animate-in fade-in slide-in-from-bottom-5">
+                                    <CharacterGuideBanner
+                                        character="tanty_spice"
+                                        message="Come nuh, sit down wid me! Tanty has the most beautiful island stories to share."
+                                    />
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                                         <div className="flex items-center gap-4 sm:gap-5">
                                             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-[1.5rem] sm:rounded-[2rem] flex items-center justify-center text-2xl sm:text-4xl shadow-inner italic">📖</div>
@@ -637,6 +702,10 @@ export default function ChildPortalPage() {
                             {/* Lessons Section */}
                             {(activeSection === 'lessons') && (
                                 <section className="space-y-8 animate-in fade-in slide-in-from-bottom-5">
+                                    <CharacterGuideBanner
+                                        character="roti"
+                                        message="Brains on — sunshine mode! R.O.T.I. is here to guide your lesson today."
+                                    />
                                     <div className="flex items-center gap-5">
                                         <div className="w-16 h-16 bg-indigo-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner">🎥</div>
                                         <div>
@@ -713,6 +782,10 @@ export default function ChildPortalPage() {
                             {/* Songs Section */}
                             {(activeSection === 'songs') && (
                                 <section className="space-y-8 animate-in fade-in slide-in-from-bottom-5">
+                                    <CharacterGuideBanner
+                                        character="dilly_doubles"
+                                        message="Lesss gooo, Legend! Dilly Doubles is cranking up the vibes — let's move!"
+                                    />
                                     <div className="flex items-center gap-5">
                                         <div className="w-16 h-16 bg-pink-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner">🎵</div>
                                         <div>
@@ -832,6 +905,10 @@ export default function ChildPortalPage() {
 
                             {(activeSection === 'printables') && (
                                 <div className="max-w-6xl mx-auto space-y-10 pb-12">
+                                    <CharacterGuideBanner
+                                        character="benny"
+                                        message="Shhh... Benny has special worksheets just for you. Grab your crayons, let's explore quietly."
+                                    />
                                     <div className="flex items-center gap-5 mb-6">
                                         <div className="w-16 h-16 bg-amber-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner border-2 border-amber-200">🖨️</div>
                                         <div>

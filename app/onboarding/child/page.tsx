@@ -82,7 +82,7 @@ export default function ChildOnboardingPage() {
         }
         setIsSubmitting(true);
         try {
-            await createChild(user.id, {
+            const child = await createChild(user.id, {
                 first_name: formData.first_name,
                 age: formData.age,
                 age_track: formData.age < 6 ? 'mini' : 'big',
@@ -90,7 +90,7 @@ export default function ChildOnboardingPage() {
                 avatar_id: formData.avatar_id,
             });
             await refreshChildren();
-            router.push('/onboarding/complete');
+            router.push(`/onboarding/learning-goals?childId=${child.id}`);
         } catch (error) {
             console.error('Onboarding error:', error);
             setIsSubmitting(false);
