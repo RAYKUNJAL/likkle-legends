@@ -25,6 +25,7 @@ const STORY_COVERS: Record<string, string> = {
 };
 
 const PRINTABLE_PREVIEWS: Record<string, string> = {
+    // From seed-content.ts
     "Caribbean Alphabet A-M":           "/images/flashcard-coloring.png",
     "Caribbean Alphabet N-Z":           "/images/flashcard-coloring.png",
     "Count the Coconuts (1-10)":        "/images/mango_moko.png",
@@ -37,6 +38,22 @@ const PRINTABLE_PREVIEWS: Record<string, string> = {
     "My Family Heritage Tree":          "/images/parent-child-smiling.png",
     "Carnival Costume Design Sheet":    "/images/dilly-doubles.jpg",
     "Caribbean Weather Journal":        "/images/benny-of-shadows.jpg",
+    // From seed-printables.ts
+    "Caribbean Alphabet \u2014 A is for Ackee":              "/images/flashcard-coloring.png",
+    "Alphabet Tracing \u2014 Big Letters":                   "/images/flashcard-coloring.png",
+    "Count the Coconuts (1\u201310)":                        "/images/mango_moko.png",
+    "Mango Math \u2014 Shapes & Sorting":                    "/images/mango_moko.png",
+    "Island Market Math Problems":                          "/images/roti-new.jpg",
+    "Caribbean Sea Creatures \u2014 Word Search":             "/images/benny-of-shadows.jpg",
+    "Nature Observation Log \u2014 My Backyard":             "/images/benny-of-shadows.jpg",
+    "My Heritage Island \u2014 Colouring Map":               "/images/island-pattern.png",
+    "Patois Word Matching Game":                            "/images/tanty_spice_avatar.jpg",
+    "Caribbean Festival Traditions \u2014 Matching Activity": "/images/dilly-doubles.jpg",
+    "Steelpan Music Worksheet \u2014 Rhythm Basics":         "/images/steelpan_sam.png",
+    "My Feelings Board \u2014 Emotion Check-in":             "/images/child_reading.png",
+    "My Caribbean Family Tree":                             "/images/parent-child-smiling.png",
+    "Caribbean Handwriting Practice \u2014 Island Words":    "/images/tanty_spice_avatar.jpg",
+    "My Healthy Caribbean Plate \u2014 Food Activity":       "/images/mango_moko.png",
 };
 
 async function updateCovers() {
