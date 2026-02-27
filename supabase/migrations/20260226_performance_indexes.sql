@@ -1,10 +1,6 @@
 -- Performance indexes for commercial launch
 -- Run in Supabase SQL editor or via supabase db push
-
--- Profiles: subscription lookups (used on every authenticated page load)
-CREATE INDEX IF NOT EXISTS idx_profiles_subscription_status ON public.profiles(subscription_status);
-CREATE INDEX IF NOT EXISTS idx_profiles_paypal_sub_id ON public.profiles(paypal_subscription_id);
-CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
+-- Note: profiles is a view in this project — indexes only on concrete tables
 
 -- Children: parent lookups and streak queries
 CREATE INDEX IF NOT EXISTS idx_children_parent_id ON public.children(parent_id);
