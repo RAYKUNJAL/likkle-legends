@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Sparkles, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface PassportData {
     childName: string;
@@ -207,10 +208,12 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
                                 className="relative"
                             >
                                 <div className="absolute inset-0 bg-gradient-to-tr from-[var(--caribbean-sun)] to-[var(--caribbean-papaya)] rounded-[40px] blur-3xl opacity-20 animate-pulse" />
-                                <img
+                                <Image
                                     src="/images/parent-child-smiling.png"
                                     alt="Likkle Legends Family Celebration"
-                                    fetchPriority="high"
+                                    width={500}
+                                    height={625}
+                                    priority
                                     className="rounded-[40px] shadow-2xl relative z-10 w-full max-w-[500px] aspect-[4/5] object-cover border-8 border-white transform rotate-2 hover:rotate-0 transition-transform duration-500"
                                 />
                                 <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-3xl shadow-xl z-20 border border-slate-100 max-w-[240px]">
