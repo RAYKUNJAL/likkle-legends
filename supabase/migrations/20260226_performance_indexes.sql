@@ -1,6 +1,7 @@
 -- Performance indexes for commercial launch
 -- Run in Supabase SQL editor or via supabase db push
--- Note: profiles is a view in this project — indexes only on concrete tables
+-- Note: profiles is a view — indexes only on concrete tables
+-- Note: subscription_nurture table added separately when that feature is built
 
 -- Children: parent lookups and streak queries
 CREATE INDEX IF NOT EXISTS idx_children_parent_id ON public.children(parent_id);
@@ -16,14 +17,3 @@ ALTER TABLE public.email_queue
 
 CREATE INDEX IF NOT EXISTS idx_email_queue_status_send
   ON public.email_queue(status, COALESCE(send_at, created_at));
-
--- Prevent duplicate nurture emails per user per type (safe re-run)
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint WHERE conname = 'uniq_nurture_user_type'
-  ) THEN
-    ALTER TABLE public.subscription_nurture
-      ADD CONSTRAINT uniq_nurture_user_type UNIQUE (user_id, email_type);
-  END IF;
-END$$;
