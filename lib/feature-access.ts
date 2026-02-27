@@ -75,13 +75,21 @@ export const FEATURE_ACCESS: Record<string, FeatureAccess> = {
 
 /**
  * TIER HIERARCHY (free < starter < legends < family < admin)
+ * Accepts both internal names and PayPal plan_* naming stored in DB.
  */
-export const TIER_LEVELS: Record<SubscriptionTier, number> = {
+export const TIER_LEVELS: Record<string, number> = {
+    // Internal names
     'free': 0,
     'starter_mailer': 1,
     'legends_plus': 2,
     'family_legacy': 3,
-    'admin': 999 // Full access to everything
+    'admin': 10,
+    // PayPal plan_* naming stored in DB
+    'plan_free_forever': 0,
+    'plan_mail_intro': 1,
+    'plan_digital_legends': 1,
+    'plan_legends_plus': 2,
+    'plan_family_legacy': 3,
 };
 
 /**
@@ -152,13 +160,13 @@ export const TIER_INFO: Record<SubscriptionTier, {
  * Check if user has access to a feature
  */
 export function hasFeatureAccess(
-    userTier: SubscriptionTier,
+    userTier: string,
     featureKey: string
 ): boolean {
     const feature = FEATURE_ACCESS[featureKey];
     if (!feature) return false; // Feature doesn't exist
 
-    const userTierLevel = TIER_LEVELS[userTier];
+    const userTierLevel = TIER_LEVELS[userTier] ?? 0; // Unknown tier = free
     const requiredTierLevel = TIER_LEVELS[feature.tier_required];
 
     // Allow access if user tier >= required tier
@@ -185,15 +193,15 @@ export function getFeatureInfo(featureKey: string): FeatureAccess | null {
 /**
  * Check if user is on free tier
  */
-export function isFreeTier(tier: SubscriptionTier): boolean {
-    return tier === 'free';
+export function isFreeTier(tier: string): boolean {
+    return (TIER_LEVELS[tier] ?? 0) === 0;
 }
 
 /**
  * Check if user is on premium tier (any paid tier)
  */
-export function isPremiumTier(tier: SubscriptionTier): boolean {
-    return tier !== 'free';
+export function isPremiumTier(tier: string): boolean {
+    return (TIER_LEVELS[tier] ?? 0) > 0;
 }
 
 /**

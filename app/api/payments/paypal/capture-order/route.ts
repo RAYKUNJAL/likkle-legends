@@ -152,10 +152,10 @@ export async function POST(request: NextRequest) {
                     });
                 }
             } else {
-                // Single track purchase
+                // Single track purchase — upsert to prevent double-insert on PayPal retry
                 await supabaseAdmin
                     .from('purchased_content')
-                    .insert({
+                    .upsert({
                         user_id: user.id,
                         content_type: 'song',
                         content_id: contentId,
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
                             paypal_transaction_id: transaction.id,
                             product_id: productId
                         }
-                    });
+                    }, { onConflict: 'user_id,content_id', ignoreDuplicates: true });
 
                 // Send Receipt Email
                 try {

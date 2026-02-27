@@ -73,14 +73,23 @@ export async function signupAction(formData: {
         const userId = signUpData.user.id;
         const isAutoConfirmed = !!signUpData.session; // session exists = auto-confirmed
 
-        // 2. Send Welcome Email (fire-and-forget)
+        // 2. Persist COPPA parental consent (required by law for children's apps)
+        supabaseAdmin.from('profiles').upsert({
+            id: userId,
+            is_coppa_designated_parent: true,
+            coppa_consent_date: new Date().toISOString(),
+        }, { onConflict: 'id' })
+            .then(({ error }) => { if (error) console.error('[AUTH] COPPA consent persist failed:', error.message); })
+            .catch(err => console.error('[AUTH] COPPA consent persist error:', err));
+
+        // 3. Send Welcome Email (fire-and-forget)
         sendEmail({
             to: formData.email,
             subject: "Welcome to Likkle Legends! 🌴",
             html: WELCOME_EMAIL_TEMPLATE(formData.childName || "Legend Family")
         }).catch(err => console.error("[AUTH] Welcome email failed:", err));
 
-        // 3. Referral reward (fire-and-forget — non-blocking)
+        // 4. Referral reward (fire-and-forget — non-blocking)
         const refCode = formData.referral;
         if (refCode && refCode !== 'direct' && refCode.startsWith('LL')) {
             claimReferralReward(refCode, userId)
@@ -92,7 +101,7 @@ export async function signupAction(formData: {
             return { success: true, emailSent: false, userId };
         }
 
-        // 3. Email confirmation required
+        // 5. Email confirmation required
         console.log(`[AUTH] Confirmation email sent to: ${formData.email}`);
         return { success: true, emailSent: true, userId };
 

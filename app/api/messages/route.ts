@@ -6,6 +6,13 @@ const client = supabaseAdmin;
 // Get messages for a conversation
 export async function GET(request: NextRequest) {
     try {
+        // Verify caller is authenticated
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('user_id');
         const contactId = searchParams.get('contact_id');
@@ -14,6 +21,11 @@ export async function GET(request: NextRequest) {
 
         if (!userId) {
             return NextResponse.json({ error: 'Missing user_id' }, { status: 400 });
+        }
+
+        // Callers can only read their own messages
+        if (userId !== user.id) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
 
@@ -53,11 +65,23 @@ export async function GET(request: NextRequest) {
 // Send a new message
 export async function POST(request: NextRequest) {
     try {
+        // Verify caller is authenticated
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
         const body = await request.json();
         const { sender_id, recipient_id, content, message_type = 'text', child_id } = body;
 
         if (!sender_id || !recipient_id || !content) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        // Callers can only send messages as themselves
+        if (sender_id !== user.id) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
 
@@ -101,11 +125,23 @@ export async function POST(request: NextRequest) {
 // Mark messages as read
 export async function PATCH(request: NextRequest) {
     try {
+        // Verify caller is authenticated
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
         const body = await request.json();
         const { user_id, contact_id } = body;
 
         if (!user_id || !contact_id) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        // Callers can only mark their own messages as read
+        if (user_id !== user.id) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
 

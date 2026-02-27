@@ -14,7 +14,7 @@ export async function GET() {
         const { data: stories, error } = await client
             .from('storybooks')
             .select('*')
-            .eq('is_active', false) // Currently we only save as is_active=false (pending). Change to true if we auto-approve.
+            .eq('is_active', true)
             .order('created_at', { ascending: false });
 
         if (error) {

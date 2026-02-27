@@ -30,8 +30,12 @@ export const FooterV2 = () => {
                                 "Preserving the heartbeat of Caribbean culture, one personalized story at a time. Empowering the next generation of diaspora heroes."
                             </p>
                             <div className="flex gap-3 sm:gap-6">
-                                {[Instagram, Twitter, Facebook].map((Icon, i) => (
-                                    <a key={i} href="#" className="w-12 h-12 sm:w-16 sm:h-16 bg-white/5 rounded-xl sm:rounded-2xl flex items-center justify-center hover:bg-primary transition-all duration-500 border border-white/5 hover:-translate-y-2">
+                                {[
+                                    { Icon: Instagram, href: 'https://www.instagram.com/likklelegends', label: 'Instagram' },
+                                    { Icon: Twitter, href: 'https://twitter.com/likklelegends', label: 'Twitter' },
+                                    { Icon: Facebook, href: 'https://www.facebook.com/likklelegends', label: 'Facebook' },
+                                ].map(({ Icon, href, label }) => (
+                                    <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="w-12 h-12 sm:w-16 sm:h-16 bg-white/5 rounded-xl sm:rounded-2xl flex items-center justify-center hover:bg-primary transition-all duration-500 border border-white/5 hover:-translate-y-2">
                                         <Icon size={20} />
                                     </a>
                                 ))}

@@ -3,13 +3,15 @@ import { sendEmail, WELCOME_EMAIL_TEMPLATE } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
     try {
+        // Require CRON_SECRET header to prevent public abuse
+        const cronSecret = process.env.CRON_SECRET;
+        const authHeader = request.headers.get('Authorization');
+        if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { to, name, type } = body;
-
-        // Basic Auth Check (Service Role token or Admin check would be better)
-        // For now, let's just assume this endpoint is protected by middleware or used internally.
-        // But to be safe, let's check for a secret header or similar if called externally.
-        // For MVP, simplistic check.
 
         if (!to) {
             return NextResponse.json({ error: 'Missing "to" email address' }, { status: 400 });

@@ -317,12 +317,10 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     }
 
     // 5. COPPA Safety Gate: Specific features (like AI generators) require verified age/consent
-    // Note: We check if the 'activeChild' exists and is verified if tier is high
     if (tierRequired === 'legends_plus' || tierRequired === 'family_legacy') {
       if (activeChild && activeChild.requires_parental_consent && !activeChild.age_verified) {
         console.warn("[COPPA] Feature locked: Child needs parental consent.");
-        // We could return false here, or a special status to trigger the Consent Modal
-        // return false; 
+        return false;
       }
     }
 

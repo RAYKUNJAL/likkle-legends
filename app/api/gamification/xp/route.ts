@@ -7,6 +7,13 @@ const client = supabaseAdmin;
 // Award XP to a child
 export async function POST(request: NextRequest) {
     try {
+        // Verify caller is authenticated
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
         const body = await request.json();
         const { child_id, action, metadata } = body;
 
@@ -19,19 +26,22 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid action type' }, { status: 400 });
         }
 
-
         const client = supabaseAdmin;
 
-
-        // Get current child data
+        // Get current child data — also fetch parent_id for ownership check
         const { data: child, error: childError } = await client
             .from('children')
-            .select('total_xp, current_streak, last_activity_date')
+            .select('total_xp, current_streak, last_activity_date, parent_id')
             .eq('id', child_id)
             .single();
 
         if (childError || !child) {
             return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+        }
+
+        // Verify the child belongs to the authenticated parent
+        if (child.parent_id !== user.id) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
         // Calculate new XP
@@ -88,15 +98,10 @@ export async function POST(request: NextRequest) {
 
         // Create level-up notification if applicable
         if (leveledUp) {
-            const { data: childData } = await client
-                .from('children')
-                .select('parent_id')
-                .eq('id', child_id)
-                .single();
-
-            if (childData?.parent_id) {
+            // Reuse parent_id already fetched above — no extra query needed
+            if (child.parent_id) {
                 await client.from('notifications').insert({
-                    user_id: childData.parent_id,
+                    user_id: child.parent_id,
                     title: `🎉 ${newLevel.icon} Level Up!`,
                     body: `Your child reached Level ${newLevel.level}: ${newLevel.name}!`,
                     notification_type: 'achievement',
@@ -122,6 +127,13 @@ export async function POST(request: NextRequest) {
 // Get child's XP and progress
 export async function GET(request: NextRequest) {
     try {
+        // Verify caller is authenticated
+        const authHeader = request.headers.get('Authorization');
+        if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
         const { searchParams } = new URL(request.url);
         const childId = searchParams.get('child_id');
 
@@ -131,15 +143,19 @@ export async function GET(request: NextRequest) {
 
         const client = supabaseAdmin;
 
-        // Get child data
+        // Get child data — include parent_id for ownership check
         const { data: child, error: childError } = await client
             .from('children')
-            .select('id, first_name, total_xp, current_streak, last_activity_date')
+            .select('id, first_name, total_xp, current_streak, last_activity_date, parent_id')
             .eq('id', childId)
             .single();
 
         if (childError || !child) {
             return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+        }
+
+        if (child.parent_id !== user.id) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
         const level = calculateLevel(child.total_xp || 0);
