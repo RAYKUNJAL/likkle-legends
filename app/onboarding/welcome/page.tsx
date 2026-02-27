@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { Sparkles, Map, Users, Star, ArrowRight, ShieldCheck, Gamepad2 } from 'lucide-react';
+import { Suspense } from 'react';
+import { motion } from 'framer-motion';
+import { Sparkles, Users, Star, ArrowRight, ShieldCheck, Gamepad2 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 
 const features = [
     {
@@ -18,7 +18,7 @@ const features = [
         icon: <Gamepad2 className="w-6 h-6 text-white" />,
         title: "Island Adventure",
         desc: "Your child's immersive world for learning history and culture.",
-        color: "bg-primary", // Orange
+        color: "bg-primary",
         delay: 0.2
     },
     {
@@ -30,9 +30,7 @@ const features = [
     }
 ];
 
-import { useSearchParams } from 'next/navigation';
-
-export default function OnboardingWelcome() {
+function WelcomeContent() {
     const searchParams = useSearchParams();
     const childName = searchParams.get('childName');
 
@@ -122,5 +120,17 @@ export default function OnboardingWelcome() {
 
             </div>
         </div>
+    );
+}
+
+export default function OnboardingWelcome() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#FFFDF7] flex items-center justify-center">
+                <Sparkles className="animate-pulse text-primary" size={48} />
+            </div>
+        }>
+            <WelcomeContent />
+        </Suspense>
     );
 }

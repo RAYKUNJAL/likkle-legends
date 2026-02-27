@@ -286,6 +286,13 @@ function SignupForm() {
                                 </label>
                             </div>
 
+                            {error && (
+                                <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700">
+                                    <AlertCircle size={18} className="mt-0.5 shrink-0" />
+                                    <p className="text-sm font-bold">{error}</p>
+                                </div>
+                            )}
+
                             <button
                                 type="submit"
                                 disabled={isLoading}

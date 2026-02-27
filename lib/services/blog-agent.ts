@@ -284,4 +284,52 @@ export const CONTENT_IDEAS: BlogGenerationRequest[] = [
     { topic: '20 Easy Jamaican Patois Words to Teach Your Kids', category: 'patois', tone: 'educational' },
     { topic: 'Patois Phrases for Everyday Family Moments', category: 'patois', tone: 'practical' },
     { topic: 'Caribbean Greetings Your Children Should Know', category: 'patois', tone: 'fun' },
+
+    // Culture (extended — SEO targeted)
+    { topic: 'Caribbean Independence Day Celebrations: What Your Kids Need to Know', category: 'culture', tone: 'educational', targetKeywords: ['Caribbean Independence Day', 'Caribbean culture for kids', 'Caribbean heritage'] },
+    { topic: 'Jonkonnu: The Ancient Jamaican Festival Your Children Should Experience', category: 'culture', tone: 'fun', targetKeywords: ['Jonkonnu festival', 'Jamaican traditions for kids', 'Caribbean festivals'] },
+    { topic: 'Crop Over Festival: A Family Guide to Barbados\' Biggest Celebration', category: 'culture', tone: 'fun', targetKeywords: ['Crop Over festival', 'Barbados culture', 'Caribbean festivals for families'] },
+    { topic: 'What is Emancipation Day? Explaining Caribbean Freedom to Children', category: 'culture', tone: 'inspiring', targetKeywords: ['Emancipation Day Caribbean', 'Caribbean Black history for kids', 'Caribbean heritage'] },
+    { topic: 'Caribbean Music Your Kids Will Love: From Soca to Steelpan', category: 'culture', tone: 'fun', targetKeywords: ['Caribbean music for kids', 'soca for children', 'steelpan music'] },
+    { topic: 'African Roots of Caribbean Culture: A Family Heritage Guide', category: 'culture', tone: 'educational', targetKeywords: ['African Caribbean heritage', 'Caribbean history for kids', 'diaspora identity'] },
+
+    // Parenting (extended — SEO targeted)
+    { topic: 'When Your Child Asks "Why Are We Different?": Caribbean Identity Conversations', category: 'parenting', tone: 'practical', targetKeywords: ['Caribbean diaspora parenting', 'raising bilingual Caribbean children', 'cultural identity kids'] },
+    { topic: 'Building a Caribbean Village When You Live Far from Home', category: 'parenting', tone: 'inspiring', targetKeywords: ['Caribbean community abroad', 'diaspora parenting tips', 'Caribbean family abroad'] },
+    { topic: 'Caribbean Grandparents and Long-Distance Bonds: Tips for Staying Connected', category: 'parenting', tone: 'practical', targetKeywords: ['Caribbean grandparents', 'long distance family Caribbean', 'diaspora family bonds'] },
+    { topic: 'Caribbean Parenting Values That Transcend Geography', category: 'parenting', tone: 'inspiring', targetKeywords: ['Caribbean parenting values', 'Caribbean family values', 'raising Caribbean children'] },
+    { topic: 'How to Find Caribbean Community in Your City', category: 'parenting', tone: 'practical', targetKeywords: ['Caribbean community diaspora', 'Caribbean parents abroad', 'Caribbean cultural groups'] },
+    { topic: 'Why Caribbean Storytelling Is Your Child\'s Greatest Superpower', category: 'parenting', tone: 'inspiring', targetKeywords: ['Caribbean storytelling for kids', 'oral tradition Caribbean', 'Caribbean folklore children'] },
+
+    // Education (extended — SEO targeted)
+    { topic: 'The Haitian Revolution: The Most Important Caribbean Story for Kids', category: 'education', tone: 'inspiring', targetKeywords: ['Haitian Revolution for kids', 'Caribbean Black history', 'Haiti history children'] },
+    { topic: 'Nanny of the Maroons: Jamaica\'s Warrior Queen Your Child Should Know', category: 'education', tone: 'inspiring', targetKeywords: ['Nanny of the Maroons', 'Jamaican history for kids', 'Caribbean women history'] },
+    { topic: 'Caribbean Women Who Changed History: Role Models for Girls', category: 'education', tone: 'inspiring', targetKeywords: ['Caribbean women history', 'Caribbean female role models', 'Black women Caribbean history'] },
+    { topic: 'Caribbean STEM Heroes: Scientists and Innovators from the Islands', category: 'education', tone: 'inspiring', targetKeywords: ['Caribbean STEM role models', 'Caribbean scientists for kids', 'Black scientists Caribbean'] },
+    { topic: 'Marcus Garvey\'s Lessons Every Caribbean Child Should Learn', category: 'education', tone: 'educational', targetKeywords: ['Marcus Garvey for kids', 'Caribbean Black history', 'Pan-Africanism children'] },
+    { topic: 'Caribbean Children\'s Books: 20 Must-Reads That Celebrate Our Heritage', category: 'education', tone: 'practical', targetKeywords: ['Caribbean children\'s books', 'Caribbean literature for kids', 'diverse children\'s books Caribbean'] },
+
+    // Activities (extended — SEO targeted)
+    { topic: 'How to Host a Caribbean Cultural Night at Home', category: 'activities', tone: 'practical', targetKeywords: ['Caribbean culture at home', 'Caribbean family activities', 'Caribbean kids activities'] },
+    { topic: 'Steelpan Music for Kids: How to Start Playing at Home', category: 'activities', tone: 'practical', targetKeywords: ['steelpan lessons for kids', 'Caribbean music activities', 'steelpan for children'] },
+    { topic: 'Cricket for Kids: A Guide for Caribbean Families', category: 'activities', tone: 'fun', targetKeywords: ['cricket Caribbean kids', 'Caribbean sports for children', 'teaching kids cricket'] },
+    { topic: 'Caribbean Heritage Box: 10 Things to Put in Your Child\'s Cultural Chest', category: 'activities', tone: 'practical', targetKeywords: ['Caribbean heritage box', 'Caribbean cultural gifts for kids', 'Caribbean memory box'] },
+
+    // Recipes (extended — SEO targeted)
+    { topic: 'Jamaican Rice and Peas: The Classic Family Recipe Made Easy', category: 'recipes', tone: 'practical', targetKeywords: ['Jamaican rice and peas recipe', 'Caribbean rice recipe kids', 'Jamaican cooking for families'] },
+    { topic: 'Trinidad Doubles Recipe: Introducing Street Food to Your Kids at Home', category: 'recipes', tone: 'fun', targetKeywords: ['Trinidad doubles recipe', 'Trinidadian food for kids', 'Caribbean street food recipe'] },
+    { topic: 'Bajan Macaroni Pie: The Caribbean Mac and Cheese Your Kids Will Love', category: 'recipes', tone: 'fun', targetKeywords: ['Bajan macaroni pie recipe', 'Barbados food for kids', 'Caribbean mac and cheese'] },
+    { topic: 'Simple Trinidadian Pelau: One-Pot Caribbean Cooking with Kids', category: 'recipes', tone: 'practical', targetKeywords: ['pelau recipe Trinidad', 'Caribbean one-pot meals', 'cooking with kids Caribbean'] },
+    { topic: 'How to Make Jamaican Festival (Fried Dumplings) with Your Little Ones', category: 'recipes', tone: 'fun', targetKeywords: ['Jamaican festival dumplings recipe', 'Jamaican cooking with kids', 'Caribbean fried dumplings'] },
+
+    // Stories (extended — SEO targeted)
+    { topic: 'La Diablesse: The Caribbean Shape-Shifter Legend Retold for Children', category: 'stories', tone: 'fun', targetKeywords: ['Caribbean folklore stories', 'La Diablesse legend', 'Trinidad folklore for kids'] },
+    { topic: 'Brer Rabbit and the Tar Baby: Caribbean Trickster Tales for Children', category: 'stories', tone: 'fun', targetKeywords: ['Brer Rabbit Caribbean', 'Caribbean trickster stories', 'Caribbean folklore for kids'] },
+    { topic: 'The Duppy Stories of Jamaica: Kid-Friendly Ghost Tales', category: 'stories', tone: 'fun', targetKeywords: ['Jamaican duppy stories', 'Caribbean ghost stories for kids', 'Jamaican folklore children'] },
+
+    // Patois (extended — SEO targeted)
+    { topic: 'Trinidadian Creole Phrases to Teach Your Children', category: 'patois', tone: 'fun', targetKeywords: ['Trinidadian creole for kids', 'Trinidad language for children', 'Caribbean creole phrases'] },
+    { topic: 'Bajan Dialect: Fun Barbadian Words to Learn With Your Family', category: 'patois', tone: 'fun', targetKeywords: ['Bajan dialect for kids', 'Barbados dialect words', 'Caribbean dialect children'] },
+    { topic: 'Simple Haitian Creole Phrases to Start Teaching Your Kids Today', category: 'patois', tone: 'practical', targetKeywords: ['Haitian Creole for kids', 'Creole for children', 'Haitian language learning'] },
+    { topic: 'How to Keep Your Caribbean Language Alive When Living Abroad', category: 'patois', tone: 'practical', targetKeywords: ['Caribbean language at home', 'raising bilingual Caribbean children', 'Caribbean dialect preservation'] },
 ];
