@@ -60,7 +60,15 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
         fetchMusic();
     }, []);
 
-    const channelTracks = allTracks.filter(t => t.channel === activeChannel);
+    // Only show channels that actually have tracks — prevents "No Track Loaded" on empty channels
+    const availableChannels = RADIO_CHANNELS.filter(ch => allTracks.some(t => t.channel === ch.id));
+
+    // Auto-correct active channel if it has no tracks (e.g. default 'story' with no story tracks)
+    const resolvedChannel = allTracks.some(t => t.channel === activeChannel)
+        ? activeChannel
+        : (availableChannels[0]?.id ?? activeChannel);
+
+    const channelTracks = allTracks.filter(t => t.channel === resolvedChannel);
     const safeIndex = currentTrackIndex >= channelTracks.length ? 0 : currentTrackIndex;
     const currentTrack = channelTracks[safeIndex]; // Can be undefined if list empty
     const isVideo = currentTrack?.url?.toLowerCase().includes('.mp4') || currentTrack?.url?.includes('video');
@@ -309,17 +317,17 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
         <div className="max-w-3xl mx-auto" role="region" aria-label="Tanty Spice Radio">
 
             {/* ── Channel tabs (full mode only) ─────────────────────────────── */}
-            {!isLite && (
+            {!isLite && availableChannels.length > 1 && (
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-6" role="tablist">
-                    {RADIO_CHANNELS.map(ch => (
+                    {availableChannels.map(ch => (
                         <button
                             key={ch.id}
                             type="button"
                             role="tab"
-                            aria-selected={activeChannel === ch.id}
+                            aria-selected={resolvedChannel === ch.id}
                             onClick={() => { setActiveChannel(ch.id); setCurrentTrackIndex(0); setIsPlaying(false); }}
                             className={`py-3 px-2 rounded-2xl flex flex-col items-center gap-1.5 border-2 transition-all text-center
-                                ${activeChannel === ch.id
+                                ${resolvedChannel === ch.id
                                     ? 'bg-orange-500 text-white border-orange-400 shadow-lg shadow-orange-500/30 scale-105'
                                     : 'bg-white/5 text-white/60 border-white/10 hover:bg-white/10 hover:text-white'}`}
                         >
