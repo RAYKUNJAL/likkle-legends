@@ -9,34 +9,40 @@ import {
     Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video, Radio,
     Map as MapIcon, Grid, Wand2, LogOut, Download, Menu, X, ShoppingBag, LayoutDashboard, MessageCircle
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useUser } from '@/components/UserContext';
 import { getSongs, getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
 import { calculateLevel, LEVELS } from '@/lib/gamification';
-import { CultureQuests } from '@/components/CultureQuests';
-import { IslandMissionMap } from '@/components/IslandMissionMap';
-import { PrintablesSection } from '@/components/PrintablesSection';
 import { EmptyState } from '@/components/EmptyState';
-import TantyRadio from '@/components/TantyRadio';
-import IslandVillageMap from '@/components/IslandVillageMap';
-import PremiumVideoPlayer from '@/components/PremiumVideoPlayer';
-import PremiumMusicPlayer from '@/components/PremiumMusicPlayer';
-import BadgeUnlockModal from '@/components/gamification/BadgeUnlockModal';
-import DialectDial from '@/components/portal/DialectDial';
-import StreakWidget from '@/components/portal/StreakWidget';
-import DailyChestModal from '@/components/portal/DailyChestModal';
-import StreakShareCard from '@/components/portal/StreakShareCard';
 import { BadgeCheck } from 'lucide-react';
-import CoppaConsentModal from '@/components/auth/CoppaConsentModal';
-import UpgradeModal from '@/components/UpgradeModal';
 import { checkDailyLogin, getFreezeCount } from '@/app/actions/retention';
-import DoubleXPBanner from '@/components/portal/DoubleXPBanner';
-import MangoGiftModal from '@/components/portal/MangoGiftModal';
-import LeaderboardPanel from '@/components/portal/LeaderboardPanel';
-import FamilyChallengesPanel from '@/components/portal/FamilyChallengesPanel';
 import { getXPMultiplier } from '@/lib/services/gamification';
 import { CharacterGuideBanner } from '@/components/portal/CharacterGuideBanner';
 import { TodaysPlanCard } from '@/components/portal/TodaysPlanCard';
 import type { LearningPlan, PlanActivity } from '@/app/actions/generate-plan';
+
+// ─── Lazy-loaded heavy components ────────────────────────────────────────────
+// Only loaded when the user navigates to that section — keeps initial bundle small.
+const TantyRadio = dynamic(() => import('@/components/TantyRadio'), { ssr: false });
+const IslandVillageMap = dynamic(() => import('@/components/IslandVillageMap'), { ssr: false });
+const PremiumVideoPlayer = dynamic(() => import('@/components/PremiumVideoPlayer'), { ssr: false });
+const PremiumMusicPlayer = dynamic(() => import('@/components/PremiumMusicPlayer'), { ssr: false });
+const LeaderboardPanel = dynamic(() => import('@/components/portal/LeaderboardPanel'), { ssr: false });
+const FamilyChallengesPanel = dynamic(() => import('@/components/portal/FamilyChallengesPanel'), { ssr: false });
+const CultureQuests = dynamic(() => import('@/components/CultureQuests').then(m => ({ default: m.CultureQuests })), { ssr: false });
+const IslandMissionMap = dynamic(() => import('@/components/IslandMissionMap').then(m => ({ default: m.IslandMissionMap })), { ssr: false });
+const PrintablesSection = dynamic(() => import('@/components/PrintablesSection').then(m => ({ default: m.PrintablesSection })), { ssr: false });
+
+// Modals — only rendered when triggered, so lazy load them too
+const BadgeUnlockModal = dynamic(() => import('@/components/gamification/BadgeUnlockModal'), { ssr: false });
+const DialectDial = dynamic(() => import('@/components/portal/DialectDial'), { ssr: false });
+const StreakWidget = dynamic(() => import('@/components/portal/StreakWidget'), { ssr: false });
+const DailyChestModal = dynamic(() => import('@/components/portal/DailyChestModal'), { ssr: false });
+const StreakShareCard = dynamic(() => import('@/components/portal/StreakShareCard'), { ssr: false });
+const CoppaConsentModal = dynamic(() => import('@/components/auth/CoppaConsentModal'), { ssr: false });
+const UpgradeModal = dynamic(() => import('@/components/UpgradeModal'), { ssr: false });
+const DoubleXPBanner = dynamic(() => import('@/components/portal/DoubleXPBanner'), { ssr: false });
+const MangoGiftModal = dynamic(() => import('@/components/portal/MangoGiftModal'), { ssr: false });
 
 interface Song {
     id: string;

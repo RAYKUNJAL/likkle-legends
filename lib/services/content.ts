@@ -14,10 +14,7 @@ export async function getContentItems(type?: string, island?: string, ageTrack?:
 
     let query = supabase
         .from('content_items')
-        .select(`
-            *,
-            content_localizations(*)
-        `)
+        .select('id, title, description, content_type, thumbnail_url, audio_url, video_url, tier_required, age_track, island_code, slug, metadata, reward_xp, game_config, is_active, created_at')
         .order('created_at', { ascending: false });
 
     if (type) {
@@ -51,10 +48,7 @@ export async function getContentById(id: string) {
 
     const { data, error } = await supabase
         .from('content_items')
-        .select(`
-            *,
-            content_localizations(*)
-        `)
+        .select('id, title, description, content_type, thumbnail_url, audio_url, video_url, tier_required, age_track, island_code, slug, metadata, reward_xp, game_config, is_active, created_at')
         .eq('id', id)
         .single();
 
@@ -89,9 +83,9 @@ export async function getPrintables() {
     }
     const { data, error } = await supabase
         .from('printables')
-        .select('*')
+        .select('id, title, description, category, tier_required, pdf_url, preview_url, is_active, created_at')
         .eq('is_active', true)
-        .order('display_order', { ascending: true });
+        .order('created_at', { ascending: false });
     if (error) {
         console.warn('Printables Fetch Warning:', error.message);
         return [];
@@ -125,7 +119,7 @@ export async function getSongs() {
     }
     const { data, error } = await supabase
         .from('songs')
-        .select('*')
+        .select('id, title, artist, audio_url, thumbnail_url, tier_required, is_premium, reward_xp, created_at')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -159,7 +153,7 @@ export async function getGames() {
     }
     const { data } = await supabase
         .from('content_items')
-        .select('*')
+        .select('id, title, description, thumbnail_url, tier_required, age_track, metadata, game_config, reward_xp, slug')
         .eq('content_type', 'game');
     return data || [];
 }
