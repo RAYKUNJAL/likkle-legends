@@ -4,6 +4,13 @@ const nextConfig = {
 
   async headers() {
     return [
+      // Always revalidate HTML pages — prevents mobile browsers from serving stale page shells
+      {
+        source: '/((?!_next/static|_next/image|images|favicon.ico|apple-icon.png|icon.png).*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+        ],
+      },
       // Long-cache for static assets (JS chunks, fonts, images)
       {
         source: '/_next/static/(.*)',
