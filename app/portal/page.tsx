@@ -13,6 +13,7 @@ import dynamic from 'next/dynamic';
 import { useUser } from '@/components/UserContext';
 import { getSongs, getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
 import { calculateLevel, LEVELS } from '@/lib/gamification';
+import { RADIO_TRACKS } from '@/lib/constants';
 import { EmptyState } from '@/components/EmptyState';
 import { BadgeCheck } from 'lucide-react';
 import { checkDailyLogin, getFreezeCount } from '@/app/actions/retention';
@@ -936,7 +937,7 @@ export default function ChildPortalPage() {
                                         </div>
                                     </div>
                                     <div className="bg-white rounded-[5rem] p-1 shadow-2xl border-8 border-orange-50 overflow-hidden">
-                                        <TantyRadio />
+                                        <TantyRadio featuredTracks={RADIO_TRACKS} defaultChannel="learning" />
                                     </div>
                                 </div>
                             )}
