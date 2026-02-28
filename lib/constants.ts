@@ -94,51 +94,17 @@ export const RADIO_CHANNELS = [
 // Add more local MP3s: drop file in public/audio/ and use '/audio/filename.mp3'.
 // ─────────────────────────────────────────────────────────────────────────────
 export const RADIO_TRACKS: Track[] = [
-    {
-        id: 'track-1',
-        title: 'Angry Rooster',
-        artist: 'Likkle Legends',
-        url: 'https://cdn1.suno.ai/c5e7a4d5-3154-4a42-9106-e33f446b9b4b.mp3',
-        channel: 'culture'
-    },
-    {
-        id: 'track-2',
-        title: 'Sorell Drink',
-        artist: 'Likkle Legends',
-        url: 'https://cdn1.suno.ai/3f649c16-75ff-43de-99d6-17e4534d716b.mp3',
-        channel: 'learning'
-    },
-    {
-        id: 'track-5',
-        title: 'Island Monkeys',
-        artist: 'Likkle Legends',
-        url: 'https://cdn1.suno.ai/6d2d490e-2cd6-4593-898d-ee6c82d7b4b8.mp3',
-        channel: 'calm'
-    },
-    // ── Island Parrots ─────────────────────────────────────────────────────────
-    { id: 'track-6a', title: 'Island Parrots',       artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/ee0e94a6-d116-4116-992e-7ecb8fd76109.mp3', channel: 'learning' },
-    { id: 'track-6b', title: 'Island Parrots',       artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/ee0e94a6-d116-4116-992e-7ecb8fd76109.mp3', channel: 'culture'  },
-    { id: 'track-6c', title: 'Island Parrots',       artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/ee0e94a6-d116-4116-992e-7ecb8fd76109.mp3', channel: 'vip'      },
-    // ── Iguana Song ────────────────────────────────────────────────────────────
-    { id: 'track-7a', title: 'Iguana Song',           artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/0303769f-299a-40dd-bc6a-890c405dbb07.mp3', channel: 'learning' },
-    { id: 'track-7b', title: 'Iguana Song',           artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/0303769f-299a-40dd-bc6a-890c405dbb07.mp3', channel: 'culture'  },
-    { id: 'track-7c', title: 'Iguana Song',           artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/0303769f-299a-40dd-bc6a-890c405dbb07.mp3', channel: 'vip'      },
-    // ── Island Counting ────────────────────────────────────────────────────────
-    { id: 'track-8a', title: 'Island Counting',       artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/d85cfbfe-41ac-4694-9000-54b8ab87f460.mp3', channel: 'learning' },
-    { id: 'track-8b', title: 'Island Counting',       artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/d85cfbfe-41ac-4694-9000-54b8ab87f460.mp3', channel: 'culture'  },
-    { id: 'track-8c', title: 'Island Counting',       artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/d85cfbfe-41ac-4694-9000-54b8ab87f460.mp3', channel: 'vip'      },
-    // ── Island Alphabet ────────────────────────────────────────────────────────
-    { id: 'track-9a', title: 'Island Alphabet',       artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/614d60d0-dce6-4fdf-8c65-4f6efdec40a3.mp3', channel: 'learning' },
-    { id: 'track-9b', title: 'Island Alphabet',       artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/614d60d0-dce6-4fdf-8c65-4f6efdec40a3.mp3', channel: 'culture'  },
-    { id: 'track-9c', title: 'Island Alphabet',       artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/614d60d0-dce6-4fdf-8c65-4f6efdec40a3.mp3', channel: 'vip'      },
-    // ── Likkle Legends Jingle ──────────────────────────────────────────────────
-    { id: 'track-10a', title: 'Likkle Legends Jingle', artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/b792349c-09ad-4d94-8e96-ef4077b39209.mp3', channel: 'learning' },
-    { id: 'track-10b', title: 'Likkle Legends Jingle', artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/b792349c-09ad-4d94-8e96-ef4077b39209.mp3', channel: 'culture'  },
-    { id: 'track-10c', title: 'Likkle Legends Jingle', artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/b792349c-09ad-4d94-8e96-ef4077b39209.mp3', channel: 'vip'      },
-    // ── Coco Water ─────────────────────────────────────────────────────────────
-    { id: 'track-11a', title: 'Coco Water',            artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/ed6d7539-ed37-4f21-a06c-73142ea2129d.mp3', channel: 'learning' },
-    { id: 'track-11b', title: 'Coco Water',            artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/ed6d7539-ed37-4f21-a06c-73142ea2129d.mp3', channel: 'culture'  },
-    { id: 'track-11c', title: 'Coco Water',            artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/ed6d7539-ed37-4f21-a06c-73142ea2129d.mp3', channel: 'vip'      },
+    // ── Learning Songs ─────────────────────────────────────────────────────────
+    { id: 'track-9a',  title: 'Island Alphabet',        artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/614d60d0-dce6-4fdf-8c65-4f6efdec40a3.mp3', channel: 'learning' },
+    { id: 'track-11a', title: 'Coco Water',              artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/ed6d7539-ed37-4f21-a06c-73142ea2129d.mp3', channel: 'learning' },
+    { id: 'track-8a',  title: 'Island Counting',         artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/d85cfbfe-41ac-4694-9000-54b8ab87f460.mp3', channel: 'learning' },
+    { id: 'track-6a',  title: 'Island Parrots',          artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/ee0e94a6-d116-4116-992e-7ecb8fd76109.mp3', channel: 'learning' },
+    { id: 'track-10a', title: 'Likkle Legends Jingle',   artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/b792349c-09ad-4d94-8e96-ef4077b39209.mp3', channel: 'learning' },
+    { id: 'track-2',   title: 'Sorell Drink',            artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/3f649c16-75ff-43de-99d6-17e4534d716b.mp3', channel: 'learning' },
+    // ── Culture Corner ─────────────────────────────────────────────────────────
+    { id: 'track-1',   title: 'Angry Rooster',           artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/c5e7a4d5-3154-4a42-9106-e33f446b9b4b.mp3', channel: 'culture'  },
+    { id: 'track-7a',  title: 'Iguana Song',             artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/0303769f-299a-40dd-bc6a-890c405dbb07.mp3', channel: 'culture'  },
+    { id: 'track-5',   title: 'Island Monkeys',          artist: 'Likkle Legends', url: 'https://cdn1.suno.ai/6d2d490e-2cd6-4593-898d-ee6c82d7b4b8.mp3', channel: 'culture'  },
 ];
 
 export const QUESTS: Quest[] = [
