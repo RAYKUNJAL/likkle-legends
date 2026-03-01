@@ -4,9 +4,16 @@ const nextConfig = {
 
   async headers() {
     return [
+      // API routes must never be publicly cached (auth callbacks set cookies that CDNs must not strip)
+      {
+        source: '/api/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'no-store, no-cache' },
+        ],
+      },
       // Always revalidate HTML pages — prevents mobile browsers from serving stale page shells
       {
-        source: '/((?!_next/static|_next/image|images|favicon.ico|apple-icon.png|icon.png).*)',
+        source: '/((?!_next/static|_next/image|images|favicon.ico|apple-icon.png|icon.png|api).*)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
         ],

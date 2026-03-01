@@ -216,6 +216,11 @@ function LoginForm() {
                     <div className="text-sm text-deep/40">
                         Don't have an account? <Link href="/signup" className="text-secondary font-bold hover:underline">Start your adventure</Link>
                     </div>
+                    <div className="pt-2 border-t border-zinc-100">
+                        <Link href="/admin" className="text-xs text-deep/25 hover:text-deep/50 font-bold uppercase tracking-widest transition-colors">
+                            Admin Panel
+                        </Link>
+                    </div>
                 </div>
             </div>
         </div>
