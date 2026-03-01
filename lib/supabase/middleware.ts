@@ -19,9 +19,6 @@ export async function updateSession(request: NextRequest) {
         supabaseUrl,
         supabaseKey,
         {
-            cookieOptions: {
-                name: 'sb-likkle-auth',
-            },
             cookies: {
                 getAll() {
                     return request.cookies.getAll()
@@ -41,18 +38,19 @@ export async function updateSession(request: NextRequest) {
         }
     )
 
-    // refresh the session (simplified to avoid lock contention)
+    // Derive the real project ref from the Supabase URL so we match the actual
+    // cookie name @supabase/ssr sets: sb-[project-ref]-auth-token[.chunk]
+    // cookieOptions.name is NOT supported in @supabase/ssr 0.x — always uses project ref.
+    const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] ?? '';
+    const cookiePrefix = projectRef ? `sb-${projectRef}-auth-token` : 'sb-';
+
     let user = null;
     try {
-        // Check for auth cookie first (faster than getSession)
-        // Supabase SSR chunks large JWTs, so cookies are named sb-likkle-auth.0, .1, etc.
-        // Use startsWith to match any chunk, not just an exact name.
-        const authCookie = request.cookies.getAll().find(c => c.name.startsWith('sb-likkle-auth'));
+        const authCookie = request.cookies.getAll().find(c => c.name.startsWith(cookiePrefix));
         if (authCookie) {
-            user = { email: 'authenticated' }; // Minimal user object just to pass auth checks
+            user = { email: 'authenticated' };
         }
     } catch (e) {
-        // Safe fail for build or missing env
         console.debug('[Middleware] Auth check failed (expected during build)');
     }
 
@@ -66,7 +64,6 @@ export async function updateSession(request: NextRequest) {
             const redirectTo = request.nextUrl.searchParams.get('redirect') || '/portal';
             const redirectResponse = NextResponse.redirect(new URL(redirectTo, request.url));
 
-            // Critical: Copy session cookies to the redirect response
             const cookies = response.cookies.getAll();
             cookies.forEach(cookie => {
                 redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
@@ -81,8 +78,6 @@ export async function updateSession(request: NextRequest) {
         if (!user) {
             const redirectResponse = NextResponse.redirect(new URL('/login', request.url));
 
-            // Critical: Copy cleared/updated cookies to the redirect response
-            // (e.g. if getUser failed and cleared the cookie)
             const cookies = response.cookies.getAll();
             cookies.forEach(cookie => {
                 redirectResponse.cookies.set(cookie.name, cookie.value, cookie);

@@ -22,9 +22,6 @@ export const createClient = () => {
         getValidUrl(),
         getValidKey(),
         {
-            cookieOptions: {
-                name: 'sb-likkle-auth',
-            },
             cookies: {
                 getAll() {
                     return cookieStore.getAll()

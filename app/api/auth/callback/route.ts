@@ -22,10 +22,6 @@ export async function GET(request: Request) {
             supabaseUrl,
             supabaseKey,
             {
-                // Must match the cookie prefix used everywhere else in the app
-                cookieOptions: {
-                    name: 'sb-likkle-auth',
-                },
                 cookies: {
                     getAll() {
                         return cookieStore.getAll()
