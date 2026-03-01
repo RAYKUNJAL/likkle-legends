@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { X, Lock, Sparkles, ArrowRight, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { TIER_INFO, SubscriptionTier, getUpgradeTier } from '@/lib/feature-access';
+import { fireConversionEvent } from '@/lib/analytics';
 
 interface FeatureUpgradeModalProps {
     isOpen: boolean;
@@ -141,12 +142,18 @@ export default function FeatureUpgradeModal({
                     <div className="space-y-3">
                         <Link
                             href={`/checkout?plan=${upgradeTier}`}
+                            onClick={() => fireConversionEvent('begin_checkout', {
+                                tier: upgradeTier,
+                                feature: featureName,
+                                source: 'feature_upgrade_modal',
+                            })}
                             className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-2xl font-black text-center transition-colors flex items-center justify-center gap-2 group"
                         >
                             Upgrade to {tierInfo.name}
                             <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
                         </Link>
                         <button
+                            type="button"
                             onClick={onClose}
                             className="w-full bg-gray-100 hover:bg-gray-200 text-deep py-3 rounded-2xl font-bold transition-colors"
                         >

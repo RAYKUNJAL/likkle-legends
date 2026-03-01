@@ -44,6 +44,9 @@ const CoppaConsentModal = dynamic(() => import('@/components/auth/CoppaConsentMo
 const UpgradeModal = dynamic(() => import('@/components/UpgradeModal'), { ssr: false });
 const DoubleXPBanner = dynamic(() => import('@/components/portal/DoubleXPBanner'), { ssr: false });
 const MangoGiftModal = dynamic(() => import('@/components/portal/MangoGiftModal'), { ssr: false });
+const FeatureUpgradeModal = dynamic(() => import('@/components/FeatureUpgradeModal'), { ssr: false });
+import { FreeTierBanner } from '@/components/portal/FreeTierBanner';
+import { fireConversionEvent } from '@/lib/analytics';
 
 interface Song {
     id: string;
@@ -119,6 +122,12 @@ export default function ChildPortalPage() {
     const [giftModalOpen, setGiftModalOpen] = useState(false);
     const [activePlan, setActivePlan] = useState<LearningPlan | null>(null);
     const [todaysActivities, setTodaysActivities] = useState<PlanActivity[]>([]);
+
+    // CRO: track how many locked items a free user has hit this session
+    const [lockedHitCount, setLockedHitCount] = useState(0);
+    const [featureUpgradeModal, setFeatureUpgradeModal] = useState<{
+        open: boolean; featureName: string; featureDescription: string; requiredTier: string;
+    }>({ open: false, featureName: '', featureDescription: '', requiredTier: 'legends_plus' });
 
     const loadPortalData = useCallback(async () => {
         // Individual fetchers to avoid Promise.all bottleneck
@@ -340,6 +349,20 @@ export default function ChildPortalPage() {
         await handleActivityLog('mission', questId, undefined, xp);
     };
 
+    // CRO: called when a free user taps a locked content item
+    const handleLockedClick = useCallback((tier: string, featureName: string, featureDescription = '') => {
+        const nextCount = lockedHitCount + 1;
+        setLockedHitCount(nextCount);
+        fireConversionEvent('view_item', { item_name: featureName, item_tier: tier, locked_hit: nextCount });
+
+        if (nextCount >= 3) {
+            // After 3 locked hits, use FeatureUpgradeModal for a more targeted pitch
+            setFeatureUpgradeModal({ open: true, featureName, featureDescription: featureDescription || `Upgrade to access ${featureName} and more premium content.`, requiredTier: tier });
+        } else {
+            setUpgradeModal({ open: true, tier, feature: featureName });
+        }
+    }, [lockedHitCount]);
+
     const currentLevel = activeChild ? calculateLevel(activeChild.total_xp) : LEVELS[0];
 
     const navItems = [
@@ -534,6 +557,10 @@ export default function ChildPortalPage() {
 
                 {/* Main Viewport */}
                 <main className="flex-1 relative overflow-y-auto pt-24 lg:pt-16 px-6 lg:px-12 pb-32 lg:pb-24">
+                    {/* CRO: Free / Trial upgrade banner — spans full width */}
+                    <div className="-mx-6 lg:-mx-12 -mt-24 lg:-mt-16 mb-4 sticky top-0 z-20">
+                        <FreeTierBanner />
+                    </div>
                     {/* Streak Widget (Desktop) */}
                     <div className="hidden lg:flex items-center gap-4">
                         {activeChild && (
@@ -677,7 +704,7 @@ export default function ChildPortalPage() {
                                                     <Link
                                                         key={story.id}
                                                         href={isLocked ? '#' : `/portal/stories/${story.id}`}
-                                                        onClick={isLocked ? (e) => { e.preventDefault(); setUpgradeModal({ open: true, tier: story.tier_required, feature: story.title }); } : undefined}
+                                                        onClick={isLocked ? (e) => { e.preventDefault(); handleLockedClick(story.tier_required, story.title, 'Read this story and explore the full library of island tales.'); } : undefined}
                                                         className={`bg-white rounded-[2rem] sm:rounded-[3rem] p-3 sm:p-5 shadow-lg sm:shadow-xl hover:shadow-2xl transition-all group border-2 sm:border-4 border-transparent hover:border-blue-100 relative ${isLocked ? 'cursor-pointer opacity-80' : ''}`}
                                                     >
                                                         <div className="relative aspect-[3/4] bg-blue-50 rounded-[1.5rem] sm:rounded-[2.5rem] mb-4 sm:mx-0 overflow-hidden">
@@ -746,7 +773,7 @@ export default function ChildPortalPage() {
                                                 return (
                                                     <button
                                                         key={video.id}
-                                                        onClick={() => isLocked ? setUpgradeModal({ open: true, tier: video.tier_required, feature: video.title }) : setActiveVideo(video)}
+                                                        onClick={() => isLocked ? handleLockedClick(video.tier_required, video.title, 'Watch this lesson and unlock all Village Cinema videos.') : setActiveVideo(video)}
                                                         className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-indigo-100 text-left ${isLocked ? 'opacity-80 cursor-pointer' : ''}`}
                                                     >
                                                         <div className="relative aspect-video bg-indigo-50 rounded-[2.5rem] mb-6 overflow-hidden shadow-inner">
@@ -832,7 +859,7 @@ export default function ChildPortalPage() {
                                                 return (
                                                     <button
                                                         key={song.id}
-                                                        onClick={() => isLocked ? setUpgradeModal({ open: true, tier: song.tier_required, feature: song.title }) : setActiveSong(song)}
+                                                        onClick={() => isLocked ? handleLockedClick(song.tier_required, song.title, 'Listen to this track and unlock the full Music Studio.') : setActiveSong(song)}
                                                         className={`bg-white rounded-[2rem] sm:rounded-[3.5rem] p-4 sm:p-6 shadow-lg sm:shadow-xl hover:shadow-2xl transition-all group border-2 sm:border-4 border-transparent hover:border-pink-100 text-left ${isLocked ? 'opacity-80 cursor-pointer' : ''}`}
                                                     >
                                                         <div className="relative aspect-square bg-pink-50 rounded-full mb-4 sm:mb-6 overflow-hidden shadow-xl ring-2 sm:ring-4 ring-white group-hover:ring-pink-100 transition-all">
@@ -991,12 +1018,22 @@ export default function ChildPortalPage() {
                 }}
             />
 
-            {/* Upgrade Modal */}
+            {/* Standard Upgrade Modal (first 2 locked hits) */}
             <UpgradeModal
                 isOpen={upgradeModal.open}
                 onClose={() => setUpgradeModal({ open: false })}
                 requiredTier={upgradeModal.tier}
                 featureName={upgradeModal.feature}
+            />
+
+            {/* Feature-Specific Upgrade Modal (shown after 3+ locked hits) */}
+            <FeatureUpgradeModal
+                isOpen={featureUpgradeModal.open}
+                onClose={() => setFeatureUpgradeModal({ open: false, featureName: '', featureDescription: '', requiredTier: 'legends_plus' })}
+                featureName={featureUpgradeModal.featureName}
+                featureDescription={featureUpgradeModal.featureDescription}
+                currentTier={(user?.subscription_tier || 'free') as import('@/lib/feature-access').SubscriptionTier}
+                requiredTier={(featureUpgradeModal.requiredTier || 'legends_plus') as import('@/lib/feature-access').SubscriptionTier}
             />
 
             {/* Daily Chest Modal */}

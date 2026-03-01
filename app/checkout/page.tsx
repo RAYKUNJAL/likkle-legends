@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fireConversionEvent } from "@/lib/analytics";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -55,6 +56,13 @@ function CheckoutContent() {
     const [isComplete, setIsComplete] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState("");
+
+    // CRO: fire begin_checkout when the page loads (visitor intent signal)
+    useEffect(() => {
+        const plan = searchParams.get('plan') || 'unknown';
+        fireConversionEvent('begin_checkout', { tier: plan, source: 'checkout_page' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const heritages = [
         ...Object.values(ISLAND_REGISTRY).map(island => ({
