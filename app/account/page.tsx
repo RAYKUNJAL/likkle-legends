@@ -10,6 +10,8 @@ import {
 import { useUser } from '@/components/UserContext';
 import { updateProfile } from '@/lib/services/profiles';
 import { TIER_INFO } from '@/lib/feature-access';
+import { deleteUserAccountAction } from '@/app/actions/user-actions';
+import { supabase } from '@/lib/supabase-client';
 
 type SettingsTab = 'profile' | 'billing' | 'notifications' | 'security' | 'children';
 
@@ -19,6 +21,11 @@ export default function AccountSettingsPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [pwdMsg, setPwdMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [isUpdatingPwd, setIsUpdatingPwd] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [passwords, setPasswords] = useState({ current: '', newPwd: '', confirm: '' });
 
     const [profile, setProfile] = useState({
         full_name: user?.full_name || 'Parent Name',
@@ -49,6 +56,27 @@ export default function AccountSettingsPage() {
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleUpdatePassword = async () => {
+        setPwdMsg(null);
+        if (!passwords.newPwd || !passwords.confirm) { setPwdMsg({ type: 'error', text: 'Please fill in all password fields.' }); return; }
+        if (passwords.newPwd.length < 6) { setPwdMsg({ type: 'error', text: 'New password must be at least 6 characters.' }); return; }
+        if (passwords.newPwd !== passwords.confirm) { setPwdMsg({ type: 'error', text: 'New passwords do not match.' }); return; }
+        setIsUpdatingPwd(true);
+        const { error } = await supabase.auth.updateUser({ password: passwords.newPwd });
+        setIsUpdatingPwd(false);
+        if (error) { setPwdMsg({ type: 'error', text: error.message }); }
+        else { setPwdMsg({ type: 'success', text: 'Password updated successfully.' }); setPasswords({ current: '', newPwd: '', confirm: '' }); }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!user?.id) return;
+        setIsDeleting(true);
+        const result = await deleteUserAccountAction(user.id);
+        setIsDeleting(false);
+        if (result.success) { logout(); }
+        else { setConfirmDelete(false); }
     };
 
     const tabs = [
@@ -142,18 +170,8 @@ export default function AccountSettingsPage() {
 
                                 {/* Avatar */}
                                 <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-100">
-                                    <div className="relative">
-                                        <div className="w-24 h-24 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white text-3xl font-bold">
-                                            {profile.full_name.charAt(0)}
-                                        </div>
-                                        {isEditing && (
-                                            <button
-                                                className="absolute -bottom-1 -right-1 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50"
-                                                aria-label="Upload photo"
-                                            >
-                                                <Camera size={14} className="text-gray-600" />
-                                            </button>
-                                        )}
+                                    <div className="w-24 h-24 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white text-3xl font-bold">
+                                        {profile.full_name.charAt(0)}
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-bold text-gray-900">{profile.full_name}</h3>
@@ -349,39 +367,39 @@ export default function AccountSettingsPage() {
 
                                     <div className="space-y-4 max-w-md">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
                                             <div className="relative">
                                                 <input
                                                     type={showPassword ? 'text' : 'password'}
+                                                    value={passwords.newPwd}
+                                                    onChange={e => setPasswords(p => ({ ...p, newPwd: e.target.value }))}
                                                     className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl"
-                                                    placeholder="Enter current password"
+                                                    placeholder="Enter new password"
                                                 />
-                                                <button
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
-                                                >
+                                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
                                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                                 </button>
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-                                            <input
-                                                type="password"
-                                                className="w-full px-4 py-3 border border-gray-200 rounded-xl"
-                                                placeholder="Enter new password"
-                                            />
-                                        </div>
-                                        <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
                                             <input
                                                 type="password"
+                                                value={passwords.confirm}
+                                                onChange={e => setPasswords(p => ({ ...p, confirm: e.target.value }))}
                                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl"
                                                 placeholder="Confirm new password"
                                             />
                                         </div>
-                                        <button className="px-6 py-3 bg-primary text-white rounded-xl font-bold">
-                                            Update Password
+                                        {pwdMsg && (
+                                            <p className={`text-sm font-bold ${pwdMsg.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{pwdMsg.text}</p>
+                                        )}
+                                        <button
+                                            onClick={handleUpdatePassword}
+                                            disabled={isUpdatingPwd}
+                                            className="px-6 py-3 bg-primary text-white rounded-xl font-bold disabled:opacity-60 flex items-center gap-2"
+                                        >
+                                            {isUpdatingPwd ? <><X size={16} className="animate-spin" /> Updating...</> : <><Check size={16} /> Update Password</>}
                                         </button>
                                     </div>
                                 </div>
@@ -390,15 +408,39 @@ export default function AccountSettingsPage() {
                                     <h2 className="text-xl font-bold text-gray-900 mb-6">Danger Zone</h2>
 
                                     <div className="p-4 border border-red-200 rounded-xl bg-red-50">
-                                        <div className="flex items-start justify-between">
-                                            <div>
-                                                <h3 className="font-bold text-red-800">Delete Account</h3>
-                                                <p className="text-sm text-red-600">This will permanently delete your account and all data.</p>
+                                        {!confirmDelete ? (
+                                            <div className="flex items-start justify-between">
+                                                <div>
+                                                    <h3 className="font-bold text-red-800">Delete Account</h3>
+                                                    <p className="text-sm text-red-600">This will cancel your subscription and remove all your data.</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => setConfirmDelete(true)}
+                                                    className="px-4 py-2 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700"
+                                                >
+                                                    Delete Account
+                                                </button>
                                             </div>
-                                            <button className="px-4 py-2 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700">
-                                                Delete Account
-                                            </button>
-                                        </div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                <p className="font-bold text-red-800">Are you sure? This cannot be undone.</p>
+                                                <div className="flex gap-3">
+                                                    <button
+                                                        onClick={handleDeleteAccount}
+                                                        disabled={isDeleting}
+                                                        className="px-4 py-2 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 disabled:opacity-60"
+                                                    >
+                                                        {isDeleting ? 'Deleting...' : 'Yes, Delete My Account'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setConfirmDelete(false)}
+                                                        className="px-4 py-2 bg-white text-gray-600 border border-gray-200 rounded-xl font-bold text-sm hover:bg-gray-50"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

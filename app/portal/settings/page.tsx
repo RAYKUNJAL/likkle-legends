@@ -49,21 +49,19 @@ export default function SettingsPage() {
         setIsLoading(false);
     };
 
+    const [confirmDelete, setConfirmDelete] = useState(false);
+
     const handleDeleteAccount = async () => {
         if (!user) return;
-        if (!confirm('Are you sure you want to delete your account? This will cancel your subscription and you will lose access to all your legends.')) return;
-
         setIsLoading(true);
         const result = await deleteUserAccountAction(user.id);
-
+        setIsLoading(false);
         if (result.success) {
-            alert('Account queued for deletion. You will be logged out.');
-            // Add logout logic here if needed
             router.push('/');
         } else {
+            setConfirmDelete(false);
             setMessage({ type: 'error', text: 'Failed to delete account. Please contact support.' });
         }
-        setIsLoading(false);
     };
 
     if (userLoading) {
@@ -188,16 +186,30 @@ export default function SettingsPage() {
                                     </div>
                                 </button>
 
-                                <button
-                                    onClick={handleDeleteAccount}
-                                    className="flex items-center gap-3 p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-colors group"
-                                >
-                                    <Trash2 className="text-red-400 group-hover:text-red-600" size={20} />
-                                    <div className="text-left">
-                                        <p className="font-bold text-sm text-red-600">Delete Account</p>
-                                        <p className="text-[10px] text-red-400 uppercase font-black">Permanent Action</p>
+                                {!confirmDelete ? (
+                                    <button
+                                        onClick={() => setConfirmDelete(true)}
+                                        className="flex items-center gap-3 p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-colors group"
+                                    >
+                                        <Trash2 className="text-red-400 group-hover:text-red-600" size={20} />
+                                        <div className="text-left">
+                                            <p className="font-bold text-sm text-red-600">Delete Account</p>
+                                            <p className="text-[10px] text-red-400 uppercase font-black">Permanent Action</p>
+                                        </div>
+                                    </button>
+                                ) : (
+                                    <div className="col-span-2 p-4 bg-red-50 rounded-2xl border border-red-200 space-y-3">
+                                        <p className="font-bold text-sm text-red-800">Are you sure? This will cancel your subscription and delete all data.</p>
+                                        <div className="flex gap-3">
+                                            <button onClick={handleDeleteAccount} disabled={isLoading} className="px-4 py-2 bg-red-600 text-white rounded-xl font-bold text-xs hover:bg-red-700 disabled:opacity-60">
+                                                {isLoading ? 'Deleting...' : 'Yes, Delete Everything'}
+                                            </button>
+                                            <button onClick={() => setConfirmDelete(false)} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-xs">
+                                                Cancel
+                                            </button>
+                                        </div>
                                     </div>
-                                </button>
+                                )}
                             </div>
                         </div>
 
