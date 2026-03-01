@@ -57,9 +57,9 @@ export default function StoriesPage() {
                     age_track: sb.age_track || 'mini',
                     tier_required: sb.tier_required,
                     reading_time: sb.reading_time_minutes || 5,
-                    page_count: 10, // Default if not in DB
-                    rating: 4.8, // Placeholder until ratings implemented
-                    read_count: 0,
+                    page_count: sb.page_count || null,
+                    rating: sb.average_rating || null,
+                    read_count: sb.read_count || 0,
                     completed: false
                 }));
 

@@ -8,6 +8,8 @@ import {
     Crown, Gift, Calendar, Download, Trash2, Eye, EyeOff
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
+import { updateProfile } from '@/lib/services/profiles';
+import { TIER_INFO } from '@/lib/feature-access';
 
 type SettingsTab = 'profile' | 'billing' | 'notifications' | 'security' | 'children';
 
@@ -34,10 +36,19 @@ export default function AccountSettingsPage() {
     });
 
     const handleSaveProfile = async () => {
+        if (!user?.id) return;
         setIsSaving(true);
-        await new Promise(r => setTimeout(r, 1000));
-        setIsSaving(false);
-        setIsEditing(false);
+        try {
+            await updateProfile(user.id, {
+                full_name: profile.full_name,
+                phone: profile.phone,
+            });
+            setIsEditing(false);
+        } catch (err) {
+            console.error('[Account] Profile update failed:', err);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const tabs = [
@@ -151,7 +162,9 @@ export default function AccountSettingsPage() {
                                             <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold capitalize">
                                                 {user?.subscription_tier?.replace('_', ' ') || 'Free'}
                                             </span>
-                                            <span className="text-xs text-gray-400">Member since Jan 2026</span>
+                                            <span className="text-xs text-gray-400">
+                                                Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '—'}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -210,88 +223,63 @@ export default function AccountSettingsPage() {
                                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
                                     <h2 className="text-xl font-bold text-gray-900 mb-6">Current Plan</h2>
 
-                                    <div className="flex items-start justify-between p-6 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl border border-primary/20">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <Crown className="text-primary" size={24} />
-                                                <h3 className="text-xl font-bold text-gray-900 capitalize">
-                                                    {user?.subscription_tier?.replace('_', ' ') || 'Free Plan'}
-                                                </h3>
+                                    {(() => {
+                                        const tier = (user?.subscription_tier as any) || 'free';
+                                        const tierData = (TIER_INFO as any)[tier] || TIER_INFO['free'];
+                                        const price = tierData.price_monthly;
+                                        return (
+                                            <div className="flex items-start justify-between p-6 bg-gradient-to-br from-primary/5 to-accent/5 rounded-2xl border border-primary/20">
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Crown className="text-primary" size={24} />
+                                                        <h3 className="text-xl font-bold text-gray-900">{tierData.name}</h3>
+                                                    </div>
+                                                    <p className="text-gray-500 text-sm mb-4">{tierData.description}</p>
+                                                    <div className="flex gap-3">
+                                                        <Link href="/checkout" className="px-4 py-2 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90">
+                                                            {price ? 'Change Plan' : 'Upgrade Plan'}
+                                                        </Link>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    {price ? (
+                                                        <>
+                                                            <p className="text-3xl font-black text-gray-900">${price}</p>
+                                                            <p className="text-sm text-gray-500">per month</p>
+                                                        </>
+                                                    ) : (
+                                                        <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-bold">Free</span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <p className="text-gray-600 mb-4">Billed monthly • Renews Jan 15, 2026</p>
-                                            <div className="flex gap-3">
-                                                <Link
-                                                    href="/checkout"
-                                                    className="px-4 py-2 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90"
-                                                >
-                                                    Upgrade Plan
-                                                </Link>
-                                                <button className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl font-medium text-sm">
-                                                    Cancel Subscription
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-3xl font-black text-gray-900">$24.99</p>
-                                            <p className="text-sm text-gray-500">per month</p>
-                                        </div>
-                                    </div>
+                                        );
+                                    })()}
                                 </div>
 
-                                {/* Payment Method */}
+                                {/* Payment Method — managed by PayPal */}
                                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <h2 className="text-xl font-bold text-gray-900">Payment Method</h2>
-                                        <button className="text-primary font-medium text-sm hover:underline">
-                                            Add New
-                                        </button>
-                                    </div>
-
-                                    <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl">
-                                        <div className="w-12 h-8 bg-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">
-                                            VISA
+                                    <h2 className="text-xl font-bold text-gray-900 mb-4">Payment Method</h2>
+                                    <div className="flex items-center gap-4 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                                        <div className="w-12 h-8 bg-[#003087] rounded flex items-center justify-center text-white text-xs font-black tracking-tight px-1">
+                                            PayPal
                                         </div>
                                         <div className="flex-1">
-                                            <p className="font-medium text-gray-900">•••• •••• •••• 4242</p>
-                                            <p className="text-sm text-gray-500">Expires 12/28</p>
+                                            <p className="font-medium text-gray-900">Managed via PayPal</p>
+                                            <p className="text-sm text-gray-500">Visit PayPal to update your billing details or cancel.</p>
                                         </div>
-                                        <button className="text-gray-400 hover:text-gray-600" aria-label="Edit payment method">
-                                            <Edit2 size={16} />
-                                        </button>
                                     </div>
                                 </div>
 
                                 {/* Billing History */}
                                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                                    <h2 className="text-xl font-bold text-gray-900 mb-6">Billing History</h2>
-
-                                    <div className="space-y-3">
-                                        {[
-                                            { date: 'Dec 15, 2025', amount: '$24.99', status: 'Paid' },
-                                            { date: 'Nov 15, 2025', amount: '$24.99', status: 'Paid' },
-                                            { date: 'Oct 15, 2025', amount: '$24.99', status: 'Paid' },
-                                        ].map((invoice, i) => (
-                                            <div key={i} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                                                        <Calendar size={18} className="text-gray-500" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="font-medium text-gray-900">{invoice.date}</p>
-                                                        <p className="text-sm text-gray-500">Legends Plus - Monthly</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-4">
-                                                    <span className="font-bold text-gray-900">{invoice.amount}</span>
-                                                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                                                        {invoice.status}
-                                                    </span>
-                                                    <button className="p-2 text-gray-400 hover:text-gray-600" aria-label="Download invoice">
-                                                        <Download size={16} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                    <h2 className="text-xl font-bold text-gray-900 mb-4">Billing History</h2>
+                                    <div className="text-center py-10 text-gray-400">
+                                        <Calendar size={32} className="mx-auto mb-3 opacity-30" />
+                                        <p className="font-medium text-sm">Billing history is managed through PayPal.</p>
+                                        <a href="https://www.paypal.com/myaccount/transactions" target="_blank" rel="noopener noreferrer"
+                                            className="mt-3 inline-block text-primary font-bold text-sm hover:underline">
+                                            View transactions on PayPal →
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -431,9 +419,15 @@ export default function AccountSettingsPage() {
                                     </div>
 
                                     <div className="space-y-4">
-                                        {(children.length > 0 ? children : [
-                                            { id: '1', first_name: 'Marcus', age: 6, age_track: 'big', total_xp: 1250, current_streak: 5 }
-                                        ]).map((child: any) => (
+                                        {children.length === 0 && (
+                                            <div className="text-center py-10 text-gray-400">
+                                                <p className="font-medium text-sm">No children added yet.</p>
+                                                <Link href="/onboarding/child" className="mt-2 inline-block text-primary font-bold text-sm hover:underline">
+                                                    Add your first Legend →
+                                                </Link>
+                                            </div>
+                                        )}
+                                        {children.map((child: any) => (
                                             <div key={child.id} className="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white text-xl font-bold">

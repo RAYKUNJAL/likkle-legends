@@ -21,7 +21,7 @@ import { AssessmentDashboard } from '@/components/portal/AssessmentDashboard';
 import { LibraryDashboard } from '@/components/dashboard/LibraryDashboard';
 
 export default function ParentDashboard() {
-    const { user, children, activeChild, isLoading, isSubscribed } = useUser();
+    const { user, children, activeChild, isLoading, isSubscribed, setActiveChild } = useUser();
     const [activities, setActivities] = useState<any[]>([]);
     const [missions, setMissions] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState<'overview' | 'assessment' | 'library'>('overview');
@@ -139,6 +139,7 @@ export default function ParentDashboard() {
                         {children.map((child) => (
                             <button
                                 key={child.id}
+                                onClick={() => setActiveChild(child.id)}
                                 className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${activeChild?.id === child.id ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
                             >
                                 {child.first_name}
