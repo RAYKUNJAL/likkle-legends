@@ -101,7 +101,7 @@ export default async function RootLayout({
         </Suspense>
         <CookieConsentBanner />
         <Toaster position="top-right" />
-        <UserProvider suppressHydrationWarning>
+        <UserProvider>
           <GeoProvider>
             {children}
           </GeoProvider>

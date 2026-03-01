@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
+import { createClient } from '@/lib/supabase/server';
 
 const client = supabaseAdmin;
 
@@ -15,8 +16,12 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Missing user_id' }, { status: 400 });
         }
 
-
-
+        // Verify the caller owns this user_id
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || user.id !== userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
         let query = client
             .from('notifications')
@@ -63,8 +68,12 @@ export async function PATCH(request: NextRequest) {
             return NextResponse.json({ error: 'Missing user_id' }, { status: 400 });
         }
 
-
-
+        // Verify the caller owns this user_id
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || user.id !== user_id) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
         if (mark_all) {
             // Mark all notifications as read
@@ -110,7 +119,12 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'Missing id or user_id' }, { status: 400 });
         }
 
-
+        // Verify the caller owns this user_id
+        const supabaseAuth = createClient();
+        const { data: { user } } = await supabaseAuth.auth.getUser();
+        if (!user || user.id !== userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
 
 
         const { error } = await client

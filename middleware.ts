@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
             path: '/',
             maxAge: 60 * 60 * 24 * 30, // 30 days
             sameSite: 'lax',
-            httpOnly: false // Allow client-side access if needed
+            httpOnly: true
         });
     }
 

@@ -26,6 +26,16 @@ export async function runStoryAgent(token: string, params: any) {
     }
 }
 
+export async function runSongAgent(token: string, params: any) {
+    try {
+        await verifyAdmin(token);
+        const { songGenerator } = await import('@/lib/ai-content-generator/generators/song-generator');
+        return await withTimeout(songGenerator.generateSong(params));
+    } catch (e: any) {
+        return { success: false, error: e.message };
+    }
+}
+
 export async function runPrintableAgent(token: string, params: any) {
     try {
         await verifyAdmin(token);

@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: '*',
             allow: '/',
-            disallow: ['/dashboard/', '/portal/', '/api/', '/checkout'],
+            disallow: ['/dashboard/', '/portal/', '/admin/', '/api/', '/checkout', '/account/', '/onboarding/'],
         },
         sitemap: 'https://www.likklelegends.com/sitemap.xml',
     };

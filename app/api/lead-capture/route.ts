@@ -109,17 +109,14 @@ export async function POST(request: NextRequest) {
                 ip_address: ip
             });
 
-            // Update lead magnet email capture count
-            await admin.rpc('increment', {
-                table_name: 'lead_magnets',
-                column_name: 'email_captures',
-                row_id: lead_magnet_id
-            }).catch(() => {
-                // Fallback if RPC doesn't exist
-                admin.from('lead_magnets')
-                    .update({ email_captures: admin.raw('email_captures + 1') })
-                    .eq('id', lead_magnet_id);
-            });
+            // Update lead magnet email capture count — silently skip if RPC not set up
+            await Promise.resolve(
+                admin.rpc('increment', {
+                    table_name: 'lead_magnets',
+                    column_name: 'email_captures',
+                    row_id: lead_magnet_id
+                })
+            ).catch(() => { /* RPC may not be configured */ });
         }
 
         // Queue welcome email

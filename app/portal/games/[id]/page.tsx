@@ -217,7 +217,7 @@ export default function GamePlayerPage() {
             case 'trivia':
                 return <IslandTrivia key={gameKey} onComplete={handleComplete} />;
             case 'mango-catch':
-                return <MangoCatch key={gameKey} onComplete={handleComplete} />;
+                return <MangoCatch key={gameKey} onComplete={(score) => handleComplete(score, 0, 0)} />;
             case 'color-match':
                 return <ColorMatch key={gameKey} onComplete={handleComplete} />;
             default:

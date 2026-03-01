@@ -35,8 +35,8 @@ async function verifyWebhookSignature(req: NextRequest, body: string): Promise<b
     const authAlgo = req.headers.get('paypal-auth-algo');
 
     if (!transmissionId || !transmissionSig || !transmissionTime || !certUrl || !authAlgo) {
-        console.warn('Missing PayPal webhook headers');
-        return process.env.NODE_ENV === 'development';
+        console.warn('Missing PayPal webhook headers — rejecting request');
+        return false;
     }
 
     if (!PAYPAL_WEBHOOK_ID) {

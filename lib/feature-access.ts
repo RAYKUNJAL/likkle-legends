@@ -3,7 +3,7 @@
  * Determines which subscription tiers have access to which features
  */
 
-export type SubscriptionTier = 'free' | 'starter_mailer' | 'legends_plus' | 'family_legacy' | 'admin';
+export type SubscriptionTier = 'free' | 'starter_mailer' | 'digital_legends' | 'legends_plus' | 'family_legacy' | 'admin';
 
 export interface FeatureAccess {
     name: string;
@@ -81,6 +81,7 @@ export const TIER_LEVELS: Record<string, number> = {
     // Internal names
     'free': 0,
     'starter_mailer': 1,
+    'digital_legends': 1,
     'legends_plus': 2,
     'family_legacy': 3,
     'admin': 10,
@@ -115,6 +116,20 @@ export const TIER_INFO: Record<SubscriptionTier, {
     'starter_mailer': {
         name: 'Mini Legend',
         description: 'Everything your child needs',
+        price_monthly: 4.99,
+        price_yearly: 49.99,
+        features: [
+            'Unlimited story builder',
+            'All premium games',
+            'Family leaderboard',
+            'Custom challenges',
+            'Monthly XP goals',
+            'Email progress reports'
+        ]
+    },
+    'digital_legends': {
+        name: 'Digital Legends',
+        description: 'Digital access for your little legend',
         price_monthly: 4.99,
         price_yearly: 49.99,
         features: [
@@ -216,6 +231,7 @@ export function getUpgradeTier(currentTier: SubscriptionTier): SubscriptionTier 
     const tierProgression: Record<SubscriptionTier, SubscriptionTier> = {
         'free': 'starter_mailer',
         'starter_mailer': 'legends_plus',
+        'digital_legends': 'legends_plus',
         'legends_plus': 'family_legacy',
         'family_legacy': 'family_legacy', // Already at max
         'admin': 'admin' // Admin stays admin
@@ -230,23 +246,36 @@ export async function checkStoryBuilderUsage(
     userId: string,
     userTier: SubscriptionTier
 ): Promise<{ allowed: boolean; remaining: number; resetDate: string }> {
-    // Free tier: 3 stories per calendar month
-    if (userTier === 'free') {
-        // TODO: Query user's story count for current month from database
-        // For now, return mock data
-        return {
-            allowed: true,
-            remaining: 2, // They've used 1 of 3
-            resetDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() // 5 days from now
-        };
+    // Paid tiers: unlimited
+    if (userTier !== 'free') {
+        return { allowed: true, remaining: Infinity, resetDate: '' };
     }
 
-    // Paid tiers: unlimited
-    return {
-        allowed: true,
-        remaining: Infinity,
-        resetDate: ''
-    };
+    // Free tier: 3 stories per calendar month
+    const FREE_LIMIT = 3;
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+
+    try {
+        const { createClient } = await import('@/lib/supabase/server');
+        const supabase = await createClient();
+        const { count } = await supabase
+            .from('storybooks')
+            .select('*', { count: 'exact', head: true })
+            .eq('created_by', userId)
+            .gte('created_at', monthStart)
+            .lt('created_at', monthEnd);
+
+        const used = count ?? 0;
+        const remaining = Math.max(0, FREE_LIMIT - used);
+        const resetDate = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
+
+        return { allowed: remaining > 0, remaining, resetDate };
+    } catch {
+        // Fail open: allow usage if we can't check
+        return { allowed: true, remaining: FREE_LIMIT, resetDate: '' };
+    }
 }
 
 /**

@@ -144,14 +144,12 @@ export async function claimReferralReward(refCode: string, newUserId: string): P
 // ============================================================
 export async function trackReferralClick(refCode: string): Promise<void> {
     const supabase = createClient();
-    await supabase
-        .from('referrals')
-        .update({ clicks: supabase.rpc ? undefined : 0 }) // raw increment via SQL
-        .eq('ref_code', refCode);
 
-    // Use a simple increment query
-    await supabase.rpc('increment_referral_clicks', { code: refCode }).catch(() => {
-        // If RPC not set up, silently skip — non-critical
+    // Use a simple increment query — silently skip if RPC not set up
+    await Promise.resolve(
+        supabase.rpc('increment_referral_clicks', { code: refCode })
+    ).catch(() => {
+        // Non-critical — RPC may not be configured
     });
 }
 

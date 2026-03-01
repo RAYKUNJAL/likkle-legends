@@ -57,6 +57,7 @@ interface Profile {
   parent_name?: string;
   marketing_opt_in?: boolean;
   is_admin?: boolean;
+  created_at?: string;
 }
 
 interface UserContextType {

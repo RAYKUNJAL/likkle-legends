@@ -61,13 +61,19 @@ export async function POST(request: NextRequest) {
 
         const purchaseUnit = captureData.purchase_units[0];
         const transaction = purchaseUnit.payments.captures[0];
-        const customId = JSON.parse(purchaseUnit.custom_id || '{}');
+        let customId: Record<string, unknown> = {};
+        try {
+            customId = JSON.parse(purchaseUnit.custom_id || '{}');
+        } catch {
+            console.error('Invalid custom_id JSON from PayPal:', purchaseUnit.custom_id);
+            return NextResponse.json({ error: 'Invalid order metadata' }, { status: 400 });
+        }
 
         // 3. Fulfill Order (DB Insert)
         if (transaction.status === 'COMPLETED') {
-            const productId = customId.productId; // e.g. single_track, streak_freeze
-            const contentId = customId.contentId; // song uuid
-            const childId = customId.childId; // for gamification products
+            const productId = customId.productId as string | undefined; // e.g. single_track, streak_freeze
+            const contentId = customId.contentId as string | undefined; // song uuid
+            const childId = customId.childId as string | undefined; // for gamification products
 
             if (productId === 'streak_freeze') {
                 // Add one streak freeze to inventory
@@ -126,7 +132,7 @@ export async function POST(request: NextRequest) {
                     });
             } else if (productId === 'track_bundle_5') {
                 // Insert one purchased_content row per selected song so each appears in the library
-                const selectedSongIds: string[] = customId.selectedSongIds || [];
+                const selectedSongIds: string[] = (customId.selectedSongIds as string[] | undefined) || [];
                 const rows = selectedSongIds.map((songId: string) => ({
                     user_id: user.id,
                     content_type: 'song',
@@ -175,7 +181,7 @@ export async function POST(request: NextRequest) {
                         subject: "Your Music is Ready! 🎵 | Likkle Legends",
                         html: MUSIC_PURCHASE_RECEIPT(
                             user.email?.split('@')[0] || 'Friend',
-                            [{ title: productId.includes('bundle') ? 'Island Jams Bundle' : 'Single Track', price: transaction.amount.value }],
+                            [{ title: (productId ?? '').includes('bundle') ? 'Island Jams Bundle' : 'Single Track', price: transaction.amount.value }],
                             transaction.amount.value
                         )
                     });
