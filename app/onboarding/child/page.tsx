@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, ChevronLeft, Sparkles, Check, Volume2, Globe, Heart, Star, Camera } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Sparkles, Volume2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { createChild } from '@/lib/database';
@@ -10,15 +10,46 @@ import { useUser } from '@/components/UserContext';
 import { getTantyVoice } from '@/app/actions/voice';
 
 const ISLANDS = [
-    { id: 'jamaica', name: 'Jamaica', flag: '🇯🇲', color: 'from-green-500 to-yellow-400', fact: 'Island of Reggae & Wood!' },
-    { id: 'trinidad', name: 'Trinidad & Tobago', flag: '🇹🇹', color: 'from-red-600 to-black', fact: 'Home of Steelpan & Soca!' },
-    { id: 'barbados', name: 'Barbados', flag: '🇧🇧', color: 'from-blue-600 to-yellow-400', fact: 'Land of Flying Fish!' },
-    { id: 'guyana', name: 'Guyana', flag: '🇬🇾', color: 'from-green-600 to-red-600', fact: 'Land of Many Waters!' },
-    { id: 'st_lucia', name: 'St. Lucia', flag: '🇱🇨', color: 'from-sky-400 to-yellow-400', fact: 'Home of the Piton Mountains!' },
-    { id: 'grenada', name: 'Grenada', flag: '🇬🇩', color: 'from-red-500 to-green-600', fact: 'The Island of Spice!' },
-    { id: 'bahamas', name: 'Bahamas', flag: '🇧🇸', color: 'from-cyan-400 to-yellow-300', fact: 'Crystal Clear Waters!' },
-    { id: 'antigua', name: 'Antigua & Barbuda', flag: '🇦🇬', color: 'from-red-500 to-blue-600', fact: '365 Beautiful Beaches!' },
-    { id: 'mixed', name: 'Island Explorer', flag: '🌴', color: 'from-primary to-accent', fact: 'Exploring all the islands!' },
+    // Popular / Big 4
+    { id: 'jamaica',            name: 'Jamaica',                    flag: '🇯🇲', color: 'from-green-500 to-yellow-400',  fact: 'Island of Reggae & Wood!' },
+    { id: 'trinidad',           name: 'Trinidad & Tobago',          flag: '🇹🇹', color: 'from-red-600 to-yellow-400',   fact: 'Home of Steelpan & Soca!' },
+    { id: 'barbados',           name: 'Barbados',                   flag: '🇧🇧', color: 'from-blue-600 to-yellow-400',  fact: 'Land of Flying Fish!' },
+    { id: 'guyana',             name: 'Guyana',                     flag: '🇬🇾', color: 'from-green-600 to-red-600',    fact: 'Land of Many Waters!' },
+    // Greater Antilles
+    { id: 'haiti',              name: 'Haiti',                      flag: '🇭🇹', color: 'from-blue-700 to-red-600',     fact: 'First Black Republic in the World!' },
+    { id: 'dominican_republic', name: 'Dominican Republic',         flag: '🇩🇴', color: 'from-blue-600 to-red-600',     fact: 'Land of Merengue & Mountains!' },
+    { id: 'cuba',               name: 'Cuba',                       flag: '🇨🇺', color: 'from-blue-600 to-red-600',     fact: 'Pearl of the Antilles!' },
+    { id: 'puerto_rico',        name: 'Puerto Rico',                flag: '🇵🇷', color: 'from-red-600 to-blue-600',     fact: 'Island of Enchantment!' },
+    // Eastern Caribbean
+    { id: 'st_lucia',           name: 'St. Lucia',                  flag: '🇱🇨', color: 'from-sky-400 to-yellow-400',  fact: 'Home of the Piton Mountains!' },
+    { id: 'grenada',            name: 'Grenada',                    flag: '🇬🇩', color: 'from-red-500 to-green-600',   fact: 'The Island of Spice!' },
+    { id: 'antigua',            name: 'Antigua & Barbuda',          flag: '🇦🇬', color: 'from-red-500 to-blue-600',    fact: '365 Beautiful Beaches!' },
+    { id: 'st_vincent',         name: 'St. Vincent & Grenadines',   flag: '🇻🇨', color: 'from-green-600 to-yellow-400', fact: 'Gems of the Caribbean!' },
+    { id: 'dominica',           name: 'Dominica',                   flag: '🇩🇲', color: 'from-green-700 to-red-500',   fact: 'Nature Isle of the Caribbean!' },
+    { id: 'st_kitts',           name: 'St. Kitts & Nevis',          flag: '🇰🇳', color: 'from-green-600 to-red-600',   fact: 'Cradle of the Caribbean!' },
+    { id: 'montserrat',         name: 'Montserrat',                 flag: '🇲🇸', color: 'from-blue-600 to-green-500',  fact: 'Emerald Isle of the Caribbean!' },
+    { id: 'anguilla',           name: 'Anguilla',                   flag: '🇦🇮', color: 'from-blue-500 to-sky-300',    fact: 'Longest Beaches in the Caribbean!' },
+    // Bahamas & Northern
+    { id: 'bahamas',            name: 'Bahamas',                    flag: '🇧🇸', color: 'from-cyan-400 to-yellow-300', fact: 'Crystal Clear Waters!' },
+    { id: 'cayman',             name: 'Cayman Islands',             flag: '🇰🇾', color: 'from-blue-500 to-green-400',  fact: 'World\'s Best Diving!' },
+    { id: 'turks_caicos',       name: 'Turks & Caicos',             flag: '🇹🇨', color: 'from-sky-300 to-yellow-300',  fact: 'Whitest Sands in the Caribbean!' },
+    { id: 'bermuda',            name: 'Bermuda',                    flag: '🇧🇲', color: 'from-pink-400 to-blue-400',   fact: 'The Pink Sand Island!' },
+    // Dutch Caribbean
+    { id: 'aruba',              name: 'Aruba',                      flag: '🇦🇼', color: 'from-sky-400 to-yellow-300',  fact: 'One Happy Island!' },
+    { id: 'curacao',            name: 'Curaçao',                    flag: '🇨🇼', color: 'from-blue-500 to-yellow-400', fact: 'Island of Colours!' },
+    { id: 'bonaire',            name: 'Bonaire',                    flag: '🇧🇶', color: 'from-blue-400 to-yellow-400', fact: 'Diver\'s Paradise!' },
+    // French Caribbean
+    { id: 'martinique',         name: 'Martinique',                 flag: '🇲🇶', color: 'from-blue-700 to-red-500',   fact: 'Flower of the Caribbean!' },
+    { id: 'guadeloupe',         name: 'Guadeloupe',                 flag: '🇬🇵', color: 'from-blue-700 to-red-500',   fact: 'The Butterfly Island!' },
+    { id: 'st_martin',          name: 'St. Martin / Sint Maarten',  flag: '🇸🇽', color: 'from-red-500 to-blue-600',   fact: 'Two Nations, One Island!' },
+    // Virgin Islands
+    { id: 'bvi',                name: 'British Virgin Islands',     flag: '🇻🇬', color: 'from-blue-700 to-green-500', fact: 'Sailing Capital of the World!' },
+    { id: 'usvi',               name: 'US Virgin Islands',          flag: '🇻🇮', color: 'from-blue-600 to-yellow-400', fact: 'America\'s Paradise!' },
+    // Central/South America
+    { id: 'belize',             name: 'Belize',                     flag: '🇧🇿', color: 'from-blue-700 to-red-500',   fact: 'Jewel of the Caribbean Coast!' },
+    { id: 'suriname',           name: 'Suriname',                   flag: '🇸🇷', color: 'from-green-600 to-red-500',  fact: 'The Rainforest Republic!' },
+    // Diaspora catch-all
+    { id: 'mixed',              name: 'Island Explorer',            flag: '🌴', color: 'from-primary to-accent',      fact: 'Exploring all the islands!' },
 ];
 
 const AVATARS = [
@@ -32,9 +63,10 @@ const AVATARS = [
 
 export default function ChildOnboardingPage() {
     const router = useRouter();
-    const { user, refreshChildren } = useUser();
+    const { user, isLoading: userLoading, refreshChildren } = useUser();
     const [step, setStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
     const [isSpeaking, setIsSpeaking] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -75,14 +107,36 @@ export default function ChildOnboardingPage() {
     };
 
     const handleSubmit = async () => {
-        if (!user?.id) {
-            // Session not ready — redirect to login
+        setSubmitError(null);
+
+        // If context is still loading, wait — don't redirect yet
+        if (userLoading) {
+            setSubmitError('Still loading your session — please try again in a moment.');
+            return;
+        }
+
+        // Get userId from context OR fall back to Supabase client directly
+        let userId = user?.id;
+        if (!userId) {
+            try {
+                const { createClient } = await import('@/lib/supabase/client');
+                const supabase = createClient();
+                const { data: { session } } = await supabase.auth.getSession();
+                userId = session?.user?.id;
+            } catch {
+                // ignore
+            }
+        }
+
+        if (!userId) {
+            // Genuinely no session — send to login
             router.push('/login?redirect=/onboarding/child');
             return;
         }
+
         setIsSubmitting(true);
         try {
-            const child = await createChild(user.id, {
+            const child = await createChild(userId, {
                 first_name: formData.first_name,
                 age: formData.age,
                 age_track: formData.age < 6 ? 'mini' : 'big',
@@ -91,8 +145,9 @@ export default function ChildOnboardingPage() {
             });
             await refreshChildren();
             router.push(`/onboarding/learning-goals?childId=${child.id}`);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Onboarding error:', error);
+            setSubmitError(error?.message || 'Could not save your profile. Please try again.');
             setIsSubmitting(false);
         }
     };
@@ -224,17 +279,25 @@ export default function ChildOnboardingPage() {
 
                         {/* Step 3: Island */}
                         {step === 3 && (
-                            <div className="grid grid-cols-3 gap-4">
-                                {ISLANDS.map(island => (
-                                    <button
-                                        key={island.id}
-                                        onClick={() => setFormData({ ...formData, primary_island: island.id })}
-                                        className={`p-4 rounded-3xl border-4 transition-all ${formData.primary_island === island.id ? 'border-primary bg-primary/5 scale-105 shadow-md' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`}
-                                    >
-                                        <div className="text-4xl mb-2">{island.flag}</div>
-                                        <p className="text-[10px] font-black text-blue-900 uppercase truncate">{island.name}</p>
-                                    </button>
-                                ))}
+                            <div>
+                                {formData.primary_island && (
+                                    <p className="text-center text-sm font-black text-primary mb-3 animate-pulse">
+                                        {ISLANDS.find(i => i.id === formData.primary_island)?.flag} {ISLANDS.find(i => i.id === formData.primary_island)?.fact}
+                                    </p>
+                                )}
+                                <div className="max-h-72 overflow-y-auto pr-1 grid grid-cols-3 gap-3 scrollbar-thin">
+                                    {ISLANDS.map(island => (
+                                        <button
+                                            key={island.id}
+                                            onClick={() => setFormData({ ...formData, primary_island: island.id })}
+                                            className={`p-3 rounded-2xl border-4 transition-all text-center ${formData.primary_island === island.id ? 'border-primary bg-primary/5 scale-105 shadow-md' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`}
+                                        >
+                                            <div className="text-3xl mb-1">{island.flag}</div>
+                                            <p className="text-[9px] font-black text-blue-900 uppercase leading-tight">{island.name}</p>
+                                        </button>
+                                    ))}
+                                </div>
+                                <p className="text-center text-xs text-blue-300 mt-2 font-medium">Scroll to see all 31 islands ↕</p>
                             </div>
                         )}
 
@@ -261,8 +324,15 @@ export default function ChildOnboardingPage() {
                     </motion.div>
                 </AnimatePresence>
 
+                {/* Error display */}
+                {submitError && (
+                    <div className="mt-6 p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-red-700 text-sm font-bold text-center">
+                        {submitError}
+                    </div>
+                )}
+
                 {/* Footer Nav */}
-                <div className="mt-16 flex items-center justify-between">
+                <div className="mt-8 flex items-center justify-between">
                     <button
                         onClick={handleBack}
                         className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest transition-all ${step === 1 ? 'opacity-0 pointer-events-none' : 'text-blue-300 hover:text-blue-500 hover:bg-blue-50'}`}
