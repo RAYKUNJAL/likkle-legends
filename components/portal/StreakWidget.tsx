@@ -59,7 +59,7 @@ export default function StreakWidget({ streakDay, freezeCount, childId, onFreeze
         setIsProcessing(true);
         try {
             // Create PayPal order for streak freeze
-            const authToken = await user.getIdToken?.() || '';
+            const authToken = await (user as any).getIdToken?.() || '';
             const orderResponse = await fetch('/api/payments/paypal/create-order', {
                 method: 'POST',
                 headers: {

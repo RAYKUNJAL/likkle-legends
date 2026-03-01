@@ -188,6 +188,8 @@ function LibraryItemCard({ item, type, onDelete }: { item: any, type: Tab, onDel
                     {item.user_id && (
                         <button
                             onClick={(e) => { e.preventDefault(); onDelete(); }}
+                            title="Delete item"
+                            aria-label="Delete item"
                             className="w-10 h-10 bg-white/90 backdrop-blur text-red-500 rounded-xl shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all z-20"
                         >
                             <Trash2 size={20} />

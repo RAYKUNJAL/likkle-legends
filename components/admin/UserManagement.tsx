@@ -99,6 +99,8 @@ export const UserManagement: React.FC = () => {
                                 <td className="p-8">
                                     {editingUser === user.id ? (
                                         <select
+                                            title="Subscription Tier"
+                                            aria-label="Subscription Tier"
                                             className="p-3 bg-white border border-slate-200 rounded-xl text-xs font-black outline-none shadow-premium animate-in zoom-in-95 duration-200"
                                             value={user.subscription_tier}
                                             onChange={(e) => handlePlanChange(user.id, e.target.value)}

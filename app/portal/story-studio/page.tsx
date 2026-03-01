@@ -111,6 +111,8 @@ export default function StoryStudioPage() {
                 <header className="flex items-center justify-between">
                     <button
                         onClick={() => router.back()}
+                        title="Go Back"
+                        aria-label="Go Back"
                         className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-deep/40 hover:text-primary transition-colors"
                     >
                         <ArrowLeft size={24} />

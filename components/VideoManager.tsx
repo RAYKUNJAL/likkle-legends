@@ -150,6 +150,8 @@ export const VideoManager: React.FC = () => {
                             onClick={() => fileInputRef.current?.click()}
                         >
                             <input
+                                title="Upload Video File"
+                                aria-label="Upload Video File"
                                 type="file"
                                 ref={fileInputRef}
                                 className="hidden"
@@ -196,6 +198,8 @@ export const VideoManager: React.FC = () => {
                             <div className="space-y-2">
                                 <label className="text-xs font-black uppercase text-blue-300 ml-2">Category</label>
                                 <select
+                                    title="Category"
+                                    aria-label="Category"
                                     className="w-full p-4 bg-blue-50 rounded-2xl font-bold text-blue-950 outline-none"
                                     value={category}
                                     onChange={e => setCategory(e.target.value)}
@@ -206,6 +210,8 @@ export const VideoManager: React.FC = () => {
                             <div className="space-y-2">
                                 <label className="text-xs font-black uppercase text-blue-300 ml-2">Access Tier</label>
                                 <select
+                                    title="Access Tier"
+                                    aria-label="Access Tier"
                                     className="w-full p-4 bg-blue-50 rounded-2xl font-bold text-blue-950 outline-none"
                                     value={tier}
                                     onChange={e => setTier(e.target.value)}

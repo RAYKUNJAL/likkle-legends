@@ -112,6 +112,8 @@ export default function StreakShareCard({ childId, streakDay, onClose }: StreakS
                     {/* Close button */}
                     <button
                         onClick={onClose}
+                        title="Close"
+                        aria-label="Close"
                         className="absolute top-6 right-6 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white hover:bg-white/30 z-10"
                     >
                         <X size={20} />

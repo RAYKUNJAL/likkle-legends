@@ -19,6 +19,8 @@ export default function ChooseYourBuddyPage() {
             <header className="p-6 flex items-center gap-4">
                 <button
                     onClick={() => router.push('/portal')}
+                    title="Back to portal"
+                    aria-label="Back to portal"
                     className="w-10 h-10 bg-white rounded-xl shadow flex items-center justify-center text-gray-500 hover:text-primary transition-colors"
                 >
                     <ArrowLeft size={20} />

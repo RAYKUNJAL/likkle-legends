@@ -75,7 +75,7 @@ export const DashboardOverview: React.FC = () => {
                 <div className="lg:col-span-2 bg-white p-8 rounded-[2.5rem] border-2 border-blue-50 shadow-sm">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-heading font-black text-xl text-blue-950">Growth Analytics</h3>
-                        <select className="bg-blue-50 border-none rounded-xl text-xs font-bold text-blue-900 px-4 py-2 outline-none">
+                        <select title="Time Range" aria-label="Time Range" className="bg-blue-50 border-none rounded-xl text-xs font-bold text-blue-900 px-4 py-2 outline-none">
                             <option>Last 30 Days</option>
                             <option>This Year</option>
                         </select>

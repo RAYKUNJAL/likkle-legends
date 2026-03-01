@@ -385,6 +385,8 @@ export default function AdminGameBuilderPage() {
                                         <input
                                             type="radio"
                                             name="correct"
+                                            title="Correct option"
+                                            aria-label={`Mark option ${i + 1} as correct`}
                                             checked={currentQuestion.correctIndex === i}
                                             onChange={() => setCurrentQuestion(prev => ({ ...prev, correctIndex: i }))}
                                             className="w-4 h-4 text-green-600"
@@ -477,6 +479,8 @@ export default function AdminGameBuilderPage() {
                                 />
                                 <button
                                     onClick={addCard}
+                                    title="Add card"
+                                    aria-label="Add memory card pair"
                                     disabled={!currentCard.symbol || !currentCard.name}
                                     className="px-6 py-3 bg-primary text-white rounded-xl font-bold disabled:opacity-50"
                                 >
@@ -835,6 +839,8 @@ export default function AdminGameBuilderPage() {
                                 <label className="block text-sm font-bold text-gray-700 mb-2">XP Reward</label>
                                 <input
                                     type="number"
+                                    title="XP Reward"
+                                    aria-label="XP Reward amount"
                                     value={gameConfig.xpReward}
                                     onChange={(e) => setGameConfig(prev => ({ ...prev, xpReward: parseInt(e.target.value) || 100 }))}
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl"

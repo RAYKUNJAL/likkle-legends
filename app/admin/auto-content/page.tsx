@@ -167,7 +167,7 @@ export default function AutonomousContentPage() {
                                         <p className="font-bold text-red-100">Generation Failed</p>
                                         <p className="text-xs text-red-200/70">{typeof lastModule === 'string' ? lastModule : "Agent encountered an unexpected error. Please check system logs."}</p>
                                     </div>
-                                    <button onClick={() => setLastModule(null)} className="ml-auto p-2 hover:bg-white/10 rounded-lg transition-colors"><Trash2 size={16} /></button>
+                                    <button onClick={() => setLastModule(null)} aria-label="Clear error banner" title="Clear Error" className="ml-auto p-2 hover:bg-white/10 rounded-lg transition-colors"><Trash2 size={16} /></button>
                                 </div>
                             )}
 
@@ -203,6 +203,8 @@ export default function AutonomousContentPage() {
                                         {objective && !isGenerating && (
                                             <button
                                                 onClick={() => setObjective('')}
+                                                aria-label="Clear mission brief"
+                                                title="Clear custom mission"
                                                 className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
                                             >
                                                 <div className="bg-white/10 rounded-full p-1"><Trash2 size={12} /></div>
@@ -362,7 +364,6 @@ export default function AutonomousContentPage() {
                                     <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                                         <div
                                             className={`h-full transition-all duration-1000 ${stat.level < 50 ? 'bg-amber-400' : 'bg-green-400'}`}
-                                            style={{ width: `${stat.level}%` }}
                                         />
                                     </div>
                                 </div>

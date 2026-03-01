@@ -218,7 +218,7 @@ export default function FamilyChallengesPanel() {
                         >
                             <div className="flex items-center justify-between mb-5">
                                 <h3 className="text-lg font-black text-zinc-900">New Challenge</h3>
-                                <button onClick={() => setShowCreate(false)} className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400">
+                                <button onClick={() => setShowCreate(false)} title="Close" aria-label="Close" className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400">
                                     <X size={16} />
                                 </button>
                             </div>

@@ -18,6 +18,7 @@ export interface AdminCharacter extends Character {
 
 export interface Character {
     name: string;
+    fullName?: string;
     role: string;
     tagline: string;
     description: string;

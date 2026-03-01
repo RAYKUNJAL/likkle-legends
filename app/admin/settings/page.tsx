@@ -128,6 +128,8 @@ export default function AdminSettingsPage() {
                                 </div>
                                 <button
                                     onClick={() => setConfig({ ...config, auto_publish: !config.auto_publish })}
+                                    title="Toggle Auto Publish"
+                                    aria-label="Toggle Auto Publish"
                                     className={`w-12 h-6 rounded-full relative cursor-pointer shadow-inner transition-colors ${config.auto_publish ? 'bg-primary' : 'bg-gray-300'}`}
                                 >
                                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all ${config.auto_publish ? 'right-1' : 'left-1'}`}></div>
@@ -212,6 +214,8 @@ export default function AdminSettingsPage() {
                                             ...config,
                                             notifications: { ...config.notifications, [key]: !config.notifications[key] }
                                         })}
+                                        title={`Toggle ${label}`}
+                                        aria-label={`Toggle ${label}`}
                                         className={`w-12 h-6 rounded-full relative cursor-pointer transition-colors ${config.notifications[key] ? 'bg-green-500' : 'bg-gray-200'}`}
                                     >
                                         <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${config.notifications[key] ? 'right-1' : 'left-1'}`}></div>

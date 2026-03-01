@@ -99,6 +99,8 @@ export default function StoryStudioLeadMagnet({ content }: { content: any }) {
                                                     />
                                                 ) : (
                                                     <select
+                                                        title={field.label}
+                                                        aria-label={field.label}
                                                         value={(formData as any)[field.id]}
                                                         onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
                                                         className="w-full px-5 py-3 rounded-2xl bg-zinc-50 border border-zinc-100 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all appearance-none cursor-pointer"

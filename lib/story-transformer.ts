@@ -43,7 +43,7 @@ export function transformToStoryBook(dbStory: any): StoryBook {
         },
 
         literacy_profile: {
-            primary_focus: dbStory.reading_level === 'emergent' ? 'phonics' : 'fluency',
+            primary_focus: dbStory.reading_level === 'emergent' ? 'phonics' : 'comprehension',
             skills: {
                 phonemic_awareness: {
                     enabled: dbStory.reading_level === 'emergent',
@@ -123,6 +123,13 @@ export function transformToStoryBook(dbStory: any): StoryBook {
                     pace: dbStory.reading_level === 'emergent' ? 'slow' : 'moderate'
                 }
             }))
+        },
+        assessment: {
+            after_story_questions: [],
+            home_connection: {
+                family_activity: 'Discuss the story together.',
+                language_flex: []
+            }
         }
     };
 }

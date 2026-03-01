@@ -387,6 +387,8 @@ export default function AdminAffiliatesPage() {
                                 <input
                                     type="text"
                                     readOnly
+                                    title="Referral link"
+                                    aria-label="Referral link"
                                     value={`https://likklelegends.com/?ref=${selectedPromoter.referral_code}`}
                                     className="flex-1 px-4 py-2 bg-gray-100 rounded-lg text-sm"
                                 />

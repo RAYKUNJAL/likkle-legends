@@ -30,9 +30,9 @@ async function main() {
 
         const results = {
             story: await databasePoster.postStory(module.content.story),
-            song: await databasePoster.postSong(module.content.song),
-            printable: await databasePoster.postPrintable(module.content.printable),
-            video: await databasePoster.postVideo(module.content.videoScript, {
+            song: await databasePoster.postSong((module.content as any).song),
+            printable: await databasePoster.postPrintable((module.content as any).printable),
+            video: await databasePoster.postVideo((module.content as any).videoScript, {
                 island: module.island,
                 ageGroup: module.ageGroup
             })

@@ -98,7 +98,7 @@ export default function StoryPlayerPage({ params }: StoryPlayerProps) {
             {/* Header */}
             <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-orange-100 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => window.history.back()} className="p-2 hover:bg-orange-50 rounded-full transition-colors">
+                    <button onClick={() => window.history.back()} aria-label="Go back" title="Go back" className="p-2 hover:bg-orange-50 rounded-full transition-colors">
                         <ArrowRight className="h-6 w-6 rotate-180 text-orange-600" />
                     </button>
                     <div>
@@ -126,6 +126,8 @@ export default function StoryPlayerPage({ params }: StoryPlayerProps) {
 
                     <Button
                         onClick={togglePlay}
+                        aria-label={isPlaying ? "Pause story" : "Play story"}
+                        title={isPlaying ? "Pause story" : "Play story"}
                         className={`rounded-full h-12 w-12 p-0 flex items-center justify-center shadow-lg transition-transform hover:scale-105 ${isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'}`}
                     >
                         {isPlaying ? <Pause className="h-6 w-6 text-white fill-current" /> : <Play className="h-6 w-6 text-white fill-current ml-1" />}
@@ -192,10 +194,10 @@ export default function StoryPlayerPage({ params }: StoryPlayerProps) {
                     </Swiper>
 
                     {/* Custom Nav Buttons */}
-                    <button className="swiper-button-prev-custom absolute left-6 top-1/2 -translate-y-1/2 z-20 h-14 w-14 bg-white/90 backdrop-blur rounded-full shadow-lg flex items-center justify-center text-orange-600 hover:bg-orange-500 hover:text-white transition-all">
+                    <button aria-label="Previous chapter" title="Previous chapter" className="swiper-button-prev-custom absolute left-6 top-1/2 -translate-y-1/2 z-20 h-14 w-14 bg-white/90 backdrop-blur rounded-full shadow-lg flex items-center justify-center text-orange-600 hover:bg-orange-500 hover:text-white transition-all">
                         <ArrowRight className="h-6 w-6 rotate-180" />
                     </button>
-                    <button className="swiper-button-next-custom absolute right-6 top-1/2 -translate-y-1/2 z-20 h-14 w-14 bg-white/90 backdrop-blur rounded-full shadow-lg flex items-center justify-center text-orange-600 hover:bg-orange-500 hover:text-white transition-all">
+                    <button aria-label="Next chapter" title="Next chapter" className="swiper-button-next-custom absolute right-6 top-1/2 -translate-y-1/2 z-20 h-14 w-14 bg-white/90 backdrop-blur rounded-full shadow-lg flex items-center justify-center text-orange-600 hover:bg-orange-500 hover:text-white transition-all">
                         <ArrowRight className="h-6 w-6" />
                     </button>
                 </div>

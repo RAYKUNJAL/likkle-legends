@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git stash pop:*)",
+      "Bash(printf:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(vercel:*)",
+      "Bash(ls:*)",
+      "Bash(git reset:*)",
+      "Bash(find:*)",
+      "Read(//c/Users/RAY/AppData/Local/Temp/claude/c--Users-RAY-OneDrive-Documents-GitHub-likkle-legends/tasks/**)",
+      "Bash(echo:*)",
+      "Bash(npx tsc:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\RAY\\.claude\\projects\\c--Users-RAY-OneDrive-Documents-GitHub-likkle-legends\\memory"
+    ]
+  }
+}

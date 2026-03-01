@@ -101,10 +101,12 @@ export default function PersonaPlexVoiceChat({ serverUrl = 'ws://localhost:8998'
                 </div>
 
                 <button
+                    title="Toggle Connection"
+                    aria-label="Toggle Connection"
                     onClick={toggleConnection}
                     className={`p-3 rounded-full transition-all ${state.status === 'connected'
-                            ? 'bg-red-500 hover:bg-red-600'
-                            : 'bg-green-500 hover:bg-green-600'
+                        ? 'bg-red-500 hover:bg-red-600'
+                        : 'bg-green-500 hover:bg-green-600'
                         }`}
                 >
                     <Power size={20} className="text-white" />
@@ -147,8 +149,8 @@ export default function PersonaPlexVoiceChat({ serverUrl = 'ws://localhost:8998'
                     state.textLog.map((msg, i) => (
                         <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm ${msg.sender === 'user'
-                                    ? 'bg-deep text-white rounded-br-none'
-                                    : 'bg-white border border-zinc-200 text-deep rounded-bl-none shadow-sm'
+                                ? 'bg-deep text-white rounded-br-none'
+                                : 'bg-white border border-zinc-200 text-deep rounded-bl-none shadow-sm'
                                 }`}>
                                 {msg.text}
                             </div>

@@ -143,7 +143,7 @@ export default function ChildPortalPage() {
         const fetchMissions = async () => {
             try {
                 const data = await getMissions(activeChild?.age_track);
-                setMissions(data as Mission[]);
+                setMissions(data as unknown as Mission[]);
             } finally {
                 setLoadingStates(prev => ({ ...prev, missions: false }));
             }
@@ -152,7 +152,7 @@ export default function ChildPortalPage() {
         const fetchVideos = async () => {
             try {
                 const data = await getVideos();
-                setVideos(data as Video[]);
+                setVideos(data as unknown as Video[]);
             } finally {
                 setLoadingStates(prev => ({ ...prev, videos: false }));
             }
@@ -368,6 +368,8 @@ export default function ChildPortalPage() {
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setIsSidebarOpen(true)}
+                        title="Open menu"
+                        aria-label="Open menu"
                         className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center"
                     >
                         <Menu size={24} />
@@ -437,6 +439,8 @@ export default function ChildPortalPage() {
                 `}>
                     <button
                         onClick={() => setIsSidebarOpen(false)}
+                        title="Close menu"
+                        aria-label="Close menu"
                         className="lg:hidden absolute top-8 right-6 w-10 h-10 bg-white/20 text-white rounded-full flex items-center justify-center hover:bg-white/40 transition-colors"
                     >
                         <X size={24} />
@@ -541,7 +545,11 @@ export default function ChildPortalPage() {
                                 </div>
                             </div>
                         )}
-                        <button className="w-14 h-14 bg-white rounded-2xl shadow-xl flex items-center justify-center text-gray-400 hover:text-primary hover:rotate-90 transition-all border-2 border-transparent hover:border-primary/20">
+                        <button
+                            title="Toggle view mode"
+                            aria-label="Toggle view mode"
+                            className="w-14 h-14 bg-white rounded-2xl shadow-xl flex items-center justify-center text-gray-400 hover:text-primary hover:rotate-90 transition-all border-2 border-transparent hover:border-primary/20"
+                        >
                             <Grid size={28} />
                         </button>
                         {/* Chest button */}

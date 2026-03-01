@@ -45,6 +45,8 @@ function VisualEditor({ initialData, onSave, label }: { initialData: any, onSave
                         <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">{key.replace(/_/g, ' ')} (Array)</h4>
                         <p className="text-[10px] text-amber-500 font-bold italic">Arrays still require JSON editing for safely adding/removing items for now.</p>
                         <textarea
+                            title={`${key} array`}
+                            aria-label={`${key} array JSON`}
                             value={JSON.stringify(value, null, 2)}
                             onChange={(e) => {
                                 try {
@@ -63,6 +65,8 @@ function VisualEditor({ initialData, onSave, label }: { initialData: any, onSave
                     <label className="text-xs font-bold text-gray-600 block px-1">{key.replace(/_/g, ' ')}</label>
                     {typeof value === 'string' && value.length > 100 ? (
                         <textarea
+                            title={key}
+                            aria-label={key}
                             value={value as string}
                             onChange={(e) => updateField(currentPath, e.target.value)}
                             className="w-full h-24 p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
@@ -70,6 +74,8 @@ function VisualEditor({ initialData, onSave, label }: { initialData: any, onSave
                     ) : (
                         <input
                             type={typeof value === 'number' ? 'number' : 'text'}
+                            title={key}
+                            aria-label={key}
                             value={value as string | number}
                             onChange={(e) => updateField(currentPath, typeof value === 'number' ? parseFloat(e.target.value) : e.target.value)}
                             className="w-full p-3 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"

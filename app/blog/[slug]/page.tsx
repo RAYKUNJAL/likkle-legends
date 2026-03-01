@@ -180,6 +180,7 @@ export default async function BlogPostPage({ params }: Props) {
                                 href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`https://likklelegends.com/blog/${post.slug}`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                title="Share on Twitter"
                                 className="w-10 h-10 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center hover:scale-110 transition-transform"
                             >
                                 <Twitter size={18} />
@@ -188,6 +189,7 @@ export default async function BlogPostPage({ params }: Props) {
                                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://likklelegends.com/blog/${post.slug}`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                title="Share on Facebook"
                                 className="w-10 h-10 rounded-full bg-[#4267B2] text-white flex items-center justify-center hover:scale-110 transition-transform"
                             >
                                 <Facebook size={18} />

@@ -103,7 +103,7 @@ export default function CustomSongRequestsPage() {
                                 <h3 className="text-xl font-black text-gray-900">Request for {selectedRequest.child_name}</h3>
                                 <p className="text-sm text-gray-500">ID: {selectedRequest.id}</p>
                             </div>
-                            <button onClick={() => setSelectedRequest(null)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setSelectedRequest(null)} title="Close request details" aria-label="Close request details" className="text-gray-400 hover:text-gray-600">
                                 <XCircle />
                             </button>
                         </div>

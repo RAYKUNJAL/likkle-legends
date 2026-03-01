@@ -36,20 +36,18 @@ export async function signupAction(formData: {
         console.log(`[AUTH] Starting signup: ${formData.email}, plan: ${formData.plan}`);
         const supabase = createClient(); // SSR client — sets auth cookies on response
 
-        // 1. Sign up via standard Supabase auth
-        //    - Email confirmations OFF in Dashboard → session created immediately (auto-login)
-        //    - Email confirmations ON → emailSent:true, show "check your inbox"
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        // 1. Sign up via Admin Auth to bypass email rate limits and auto-confirm
+        //    - Standard supabase.auth.signUp is subject to strict 3/hr rate limits on free tier
+        //    - We handle our own Welcome email via Resend, so we auto-confirm
+        const { data: signUpData, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
             email: formData.email,
             password: formData.password,
-            options: {
-                emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'}/api/auth/callback?next=/onboarding/welcome`,
-                data: {
-                    full_name: `Parent of ${formData.childName}`,
-                    child_name: formData.childName,
-                    chosen_plan: formData.plan,
-                    referral_source: formData.referral,
-                }
+            email_confirm: true,
+            user_metadata: {
+                full_name: `Parent of ${formData.childName}`,
+                child_name: formData.childName,
+                chosen_plan: formData.plan,
+                referral_source: formData.referral,
             }
         });
 
@@ -71,7 +69,19 @@ export async function signupAction(formData: {
         }
 
         const userId = signUpData.user.id;
-        const isAutoConfirmed = !!signUpData.session; // session exists = auto-confirmed
+
+        // Auto-login to set cookies on the server response
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password
+        });
+
+        if (signInError) {
+            console.warn("[AUTH] Auto-login warning:", signInError.message);
+            // It will force them to login manually next
+        }
+
+        const isAutoConfirmed = true; // Always true now because we bypassed email confirmation
 
         // 2. Persist COPPA parental consent (required by law for children's apps)
         Promise.resolve(

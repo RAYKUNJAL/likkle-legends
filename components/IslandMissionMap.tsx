@@ -106,10 +106,10 @@ export const IslandMissionMap: React.FC<IslandMissionMapProps> = ({ onComplete, 
                                     whileTap={!isLocked ? { scale: 0.95 } : {}}
                                     onClick={() => !isLocked && setSelectedQuest(quest)}
                                     className={`relative w-28 h-28 md:w-36 md:h-36 rounded-[2.5rem] flex flex-col items-center justify-center transition-all ${isCompleted
-                                            ? 'bg-gradient-to-br from-emerald-400 to-green-500 shadow-xl shadow-green-200'
-                                            : isLocked
-                                                ? 'bg-slate-200 opacity-50 grayscale cursor-not-allowed'
-                                                : 'bg-white shadow-2xl hover:shadow-primary/20 ring-4 ring-white'
+                                        ? 'bg-gradient-to-br from-emerald-400 to-green-500 shadow-xl shadow-green-200'
+                                        : isLocked
+                                            ? 'bg-slate-200 opacity-50 grayscale cursor-not-allowed'
+                                            : 'bg-white shadow-2xl hover:shadow-primary/20 ring-4 ring-white'
                                         }`}
                                 >
                                     <span className="text-5xl md:text-6xl mb-2">{quest.icon}</span>
@@ -149,6 +149,8 @@ export const IslandMissionMap: React.FC<IslandMissionMapProps> = ({ onComplete, 
                             className="bg-white w-full max-w-xl rounded-[4rem] overflow-hidden shadow-2xl relative border-8 border-white"
                         >
                             <button
+                                title="Close"
+                                aria-label="Close"
                                 onClick={() => setSelectedQuest(null)}
                                 className="absolute top-8 right-8 w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors z-20"
                             >

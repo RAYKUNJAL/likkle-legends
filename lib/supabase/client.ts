@@ -18,7 +18,7 @@ function getValidKey(): string {
 if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
     // Completely override the locks API to disable it
     if (navigator.locks) {
-        navigator.locks.request = async function(name: string, options: any, callback: any) {
+        navigator.locks.request = async function (name: string, options: any, callback: any) {
             // Skip the lock entirely - just run the callback immediately
             try {
                 const result = await callback({
@@ -27,7 +27,7 @@ if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
                 });
                 return result;
             } catch (err) {
-                console.warn('[Supabase] Lock bypassed, continuing', err?.message);
+                console.warn('[Supabase] Lock bypassed, continuing', (err as any)?.message);
                 return undefined;
             }
         } as any;
@@ -56,8 +56,10 @@ export const createClient = () => {
                     persistSession: true,
                     detectSessionInUrl: true,
                 },
-                headers: {
-                    'X-Client-Info': 'likkle-legends',
+                global: {
+                    headers: {
+                        'X-Client-Info': 'likkle-legends',
+                    }
                 }
             }
         );

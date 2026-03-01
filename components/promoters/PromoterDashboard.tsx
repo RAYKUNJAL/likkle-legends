@@ -121,6 +121,9 @@ export default function PromoterDashboard({ stats }: { stats: PromoterStats }) {
                                 <div className="flex flex-col md:flex-row gap-4">
                                     <div className="flex-1 relative">
                                         <input
+                                            title="Magic Link"
+                                            aria-label="Magic Link"
+                                            placeholder="Your referral link"
                                             type="text"
                                             value={stats.referralLink}
                                             readOnly
@@ -189,6 +192,9 @@ export default function PromoterDashboard({ stats }: { stats: PromoterStats }) {
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2">PayPal Email Address</label>
                                     <input
+                                        title="PayPal Email"
+                                        aria-label="PayPal Email"
+                                        placeholder="user@example.com"
                                         type="email"
                                         defaultValue="user@example.com"
                                         className="w-full md:w-1/2 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-medium focus:ring-2 focus:ring-primary/20"

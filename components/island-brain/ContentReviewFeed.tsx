@@ -154,6 +154,8 @@ export default function ContentReviewFeed() {
                                     <CheckCircle2 size={16} /> Approve Generation
                                 </button>
                                 <button
+                                    title="Reject Content"
+                                    aria-label="Reject Content"
                                     onClick={() => handleReject(item.content_id)}
                                     className="px-6 py-4 bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-2xl font-black transition-colors"
                                 >

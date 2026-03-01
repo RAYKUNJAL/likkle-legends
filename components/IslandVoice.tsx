@@ -59,11 +59,11 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
 
     const stopSession = () => {
         if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
-        if (audioContextInRef.current) { audioContextInRef.current.close().catch(() => {}); audioContextInRef.current = null; }
-        if (audioContextOutRef.current) { audioContextOutRef.current.close().catch(() => {}); audioContextOutRef.current = null; }
+        if (audioContextInRef.current) { audioContextInRef.current.close().catch(() => { }); audioContextInRef.current = null; }
+        if (audioContextOutRef.current) { audioContextOutRef.current.close().catch(() => { }); audioContextOutRef.current = null; }
         if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
         if (processorRef.current) { processorRef.current.disconnect(); processorRef.current = null; }
-        sourcesRef.current.forEach(s => { try { s.stop(); } catch {} });
+        sourcesRef.current.forEach(s => { try { s.stop(); } catch { } });
         sourcesRef.current.clear();
         isModelRespondingRef.current = false;
         setIsActive(false);
@@ -190,7 +190,7 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
     if (!process.env.NEXT_PUBLIC_GEMINI_API_KEY && !isActive) {
         return (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
-                <button onClick={onClose} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
+                <button title="Close" aria-label="Close" onClick={onClose} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
                     <X size={32} />
                 </button>
                 <div className="flex flex-col items-center justify-center w-full max-w-lg p-8 space-y-6 bg-white rounded-[3rem] shadow-2xl text-center">
@@ -210,18 +210,18 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
     const glowClass = status === 'speaking'
         ? `scale-150 opacity-50`
         : status === 'listening'
-        ? `scale-110 opacity-30 animate-pulse`
-        : `scale-100 opacity-10`;
+            ? `scale-110 opacity-30 animate-pulse`
+            : `scale-100 opacity-10`;
 
     const borderClass = status === 'speaking'
         ? 'border-orange-500 scale-105 shadow-2xl'
         : status === 'listening'
-        ? 'border-green-500 scale-105'
-        : 'border-white/30 shadow-xl';
+            ? 'border-green-500 scale-105'
+            : 'border-white/30 shadow-xl';
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in zoom-in duration-300">
-            <button onClick={onClose} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
+            <button title="Close" aria-label="Close" onClick={onClose} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
                 <X size={32} />
             </button>
 
@@ -260,8 +260,8 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
                         {status === 'idle'
                             ? `${persona.name} is Ready!`
                             : status === 'listening'
-                            ? "I'm Listening..."
-                            : `${persona.name} is Talking...`}
+                                ? "I'm Listening..."
+                                : `${persona.name} is Talking...`}
                     </h3>
                     <p className="text-slate-500 font-bold text-lg">
                         {status === 'idle' ? `Say a big HELLO to ${persona.name}!` : "Go ahead, Legend!"}

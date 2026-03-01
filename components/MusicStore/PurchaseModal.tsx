@@ -62,7 +62,7 @@ export default function PurchaseModal({
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                 <div className="bg-white rounded-3xl max-w-sm w-full relative overflow-hidden shadow-2xl animate-scale-in p-8 text-center">
-                    <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200"><X size={20} /></button>
+                    <button onClick={onClose} title="Close" aria-label="Close payment success modal" className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200"><X size={20} /></button>
 
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600">
                         <CheckCircle2 size={48} />
@@ -97,6 +97,8 @@ export default function PurchaseModal({
             <div className="bg-white rounded-3xl max-w-sm w-full relative overflow-hidden shadow-2xl animate-scale-in">
                 <button
                     onClick={onClose}
+                    title="Close"
+                    aria-label="Close purchase modal"
                     className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
                 >
                     <X size={20} />

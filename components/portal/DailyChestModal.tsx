@@ -77,6 +77,8 @@ export default function DailyChestModal({ childId, chestReady, onClose, onReward
                 >
                     {/* Close button */}
                     <button
+                        title="Close Modal"
+                        aria-label="Close Modal"
                         onClick={onClose}
                         className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 transition-colors text-zinc-400"
                     >

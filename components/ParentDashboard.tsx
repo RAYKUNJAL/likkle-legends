@@ -156,11 +156,11 @@ const ParentDashboard: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-textLight">Audio Narrations</span>
-                  <button className="w-10 h-6 bg-primary rounded-full relative"><div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div></button>
+                  <button title="Toggle Audio Narrations" aria-label="Toggle Audio Narrations" className="w-10 h-6 bg-primary rounded-full relative"><div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div></button>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-textLight">Patois Intensity</span>
-                  <select className="text-xs bg-gray-50 border-none rounded-lg p-1 font-bold">
+                  <select title="Patois Intensity" aria-label="Patois Intensity" className="text-xs bg-gray-50 border-none rounded-lg p-1 font-bold">
                     <option>Gentle</option>
                     <option>Full Flavor</option>
                   </select>

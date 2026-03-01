@@ -15,13 +15,13 @@ async function main() {
         const storyRes = await databasePoster.postStory(module.content.story);
         console.log('Story:', storyRes);
 
-        const songRes = await databasePoster.postSong(module.content.song);
+        const songRes = await databasePoster.postSong((module.content as any).song);
         console.log('Song:', songRes);
 
-        const printRes = await databasePoster.postPrintable(module.content.printable);
+        const printRes = await databasePoster.postPrintable((module.content as any).printable);
         console.log('Printable:', printRes);
 
-        const videoRes = await databasePoster.postVideo(module.content.videoScript, {
+        const videoRes = await databasePoster.postVideo((module.content as any).videoScript, {
             island: module.island,
             ageGroup: module.ageGroup
         });

@@ -6,7 +6,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // CRITICAL: Disable NavigatorLock before Supabase tries to use it
 if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
     if (navigator.locks) {
-        navigator.locks.request = async function(name: string, options: any, callback: any) {
+        navigator.locks.request = async function (name: string, options: any, callback: any) {
             try {
                 const result = await callback({
                     release: () => Promise.resolve(),
@@ -14,7 +14,7 @@ if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
                 });
                 return result;
             } catch (err) {
-                console.warn('[Supabase] Lock bypassed, continuing', err?.message);
+                console.warn('[Supabase] Lock bypassed, continuing', (err as any)?.message);
                 return undefined;
             }
         } as any;

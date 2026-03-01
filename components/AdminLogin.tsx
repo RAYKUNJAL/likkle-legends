@@ -65,6 +65,9 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                         <label className="text-xs font-black uppercase tracking-widest text-blue-900/40 px-2">Password</label>
                         <div className="relative">
                             <input
+                                title="Password"
+                                aria-label="Password"
+                                placeholder="Enter password"
                                 type={showPassword ? "text" : "password"}
                                 required
                                 className="w-full p-4 bg-blue-50 rounded-2xl font-bold text-blue-950 outline-none border-2 border-transparent focus:border-blue-200 transition-all pr-12"

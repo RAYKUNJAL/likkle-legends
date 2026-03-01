@@ -244,6 +244,8 @@ export default function BlogManagerView() {
                                     <div>
                                         <label className="block text-sm font-bold text-deep/60 mb-2">Category</label>
                                         <select
+                                            title="Category"
+                                            aria-label="Category"
                                             value={genForm.category}
                                             onChange={(e) => setGenForm({ ...genForm, category: e.target.value })}
                                             className="w-full px-4 py-3 rounded-xl border border-zinc-200"
@@ -256,6 +258,8 @@ export default function BlogManagerView() {
                                     <div>
                                         <label className="block text-sm font-bold text-deep/60 mb-2">Tone</label>
                                         <select
+                                            title="Tone"
+                                            aria-label="Tone"
                                             value={genForm.tone}
                                             onChange={(e) => setGenForm({ ...genForm, tone: e.target.value })}
                                             className="w-full px-4 py-3 rounded-xl border border-zinc-200"
@@ -341,8 +345,8 @@ export default function BlogManagerView() {
                             key={status}
                             onClick={() => setFilterStatus(status)}
                             className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${filterStatus === status
-                                    ? 'bg-deep text-white'
-                                    : 'bg-zinc-100 text-deep/60 hover:bg-zinc-200'
+                                ? 'bg-deep text-white'
+                                : 'bg-zinc-100 text-deep/60 hover:bg-zinc-200'
                                 }`}
                         >
                             {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -363,6 +367,8 @@ export default function BlogManagerView() {
                     </div>
                     <button
                         onClick={loadPosts}
+                        title="Refresh Posts"
+                        aria-label="Refresh Posts"
                         className="p-2 rounded-xl bg-zinc-100 hover:bg-zinc-200 transition-colors"
                     >
                         <RefreshCw size={18} className="text-deep/60" />
@@ -423,10 +429,10 @@ export default function BlogManagerView() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${post.status === 'published'
-                                                ? 'bg-green-100 text-green-700'
-                                                : post.status === 'draft'
-                                                    ? 'bg-amber-100 text-amber-700'
-                                                    : 'bg-zinc-100 text-zinc-600'
+                                            ? 'bg-green-100 text-green-700'
+                                            : post.status === 'draft'
+                                                ? 'bg-amber-100 text-amber-700'
+                                                : 'bg-zinc-100 text-zinc-600'
                                             }`}>
                                             {post.status}
                                         </span>

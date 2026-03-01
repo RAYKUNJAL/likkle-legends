@@ -179,6 +179,8 @@ export default function AdminPersonalityPage() {
                                             </div>
                                             <input
                                                 type="range"
+                                                title="Voice Stability"
+                                                aria-label="Voice Stability"
                                                 min="0" max="1" step="0.05"
                                                 value={personality.voice_settings?.stability || 0.5}
                                                 onChange={(e) => setPersonality({
@@ -195,6 +197,8 @@ export default function AdminPersonalityPage() {
                                             </div>
                                             <input
                                                 type="range"
+                                                title="Voice Clarity"
+                                                aria-label="Voice Clarity"
                                                 min="0" max="1" step="0.05"
                                                 value={personality.voice_settings?.clarity || 0.75}
                                                 onChange={(e) => setPersonality({

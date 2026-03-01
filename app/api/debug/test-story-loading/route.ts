@@ -4,6 +4,8 @@ import { getStoriesByTradition, getStoryBySlug } from '@/lib/stories-database';
 import { initializeStories } from '@/lib/init-stories';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     try {
         // Initialize stories before testing

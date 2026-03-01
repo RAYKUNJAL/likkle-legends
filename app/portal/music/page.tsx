@@ -444,6 +444,8 @@ export default function ParentMusicHub() {
                                             <div className="flex items-center gap-5">
                                                 <button
                                                     onClick={() => handlePlay(song)}
+                                                    title={isPlaying === song.id ? "Pause track" : "Play track"}
+                                                    aria-label={isPlaying === song.id ? "Pause track" : "Play track"}
                                                     className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all flex-shrink-0 ${isPlaying === song.id ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200'}`}
                                                 >
                                                     {isPlaying === song.id ? <Pause size={22} /> : <Play size={22} className="ml-1" />}
@@ -565,6 +567,8 @@ export default function ParentMusicHub() {
                                     <div className="flex items-center gap-6 bg-white/15 backdrop-blur-sm rounded-2xl p-5 border border-white/20">
                                         <button
                                             onClick={handleDemoPlay}
+                                            title={isDemoPlaying ? "Pause demo" : "Play demo"}
+                                            aria-label={isDemoPlaying ? "Pause demo" : "Play demo"}
                                             className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-[#FF6B00] shadow-xl hover:scale-105 transition-all flex-shrink-0"
                                         >
                                             {isDemoPlaying
@@ -631,6 +635,8 @@ export default function ParentMusicHub() {
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-4">Occasion *</label>
                                     <select
+                                        title="Occasion"
+                                        aria-label="Occasion"
                                         value={customEventType}
                                         onChange={e => setCustomEventType(e.target.value)}
                                         className="w-full px-6 py-4 bg-zinc-50 border border-transparent rounded-2xl focus:bg-white focus:border-primary transition-all font-bold text-deep outline-none"
@@ -702,7 +708,7 @@ export default function ParentMusicHub() {
                                     Choose any 5 from the catalogue. {bundleSelectedIds.length}/5 selected.
                                 </p>
                             </div>
-                            <button onClick={() => setIsBundlePickerOpen(false)} className="p-2 bg-zinc-100 rounded-full hover:bg-zinc-200 flex-shrink-0">
+                            <button onClick={() => setIsBundlePickerOpen(false)} title="Close menu" aria-label="Close menu" className="p-2 bg-zinc-100 rounded-full hover:bg-zinc-200 flex-shrink-0">
                                 <X size={20} />
                             </button>
                         </div>
@@ -724,15 +730,14 @@ export default function ParentMusicHub() {
                                                 key={song.id}
                                                 disabled={isOwned || isDisabled}
                                                 onClick={() => !isOwned && toggleBundleSong(song.id)}
-                                                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${
-                                                    isOwned
-                                                        ? 'border-zinc-100 bg-zinc-50 opacity-40 cursor-not-allowed'
-                                                        : isSelected
-                                                            ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10'
-                                                            : isDisabled
-                                                                ? 'border-zinc-100 bg-white opacity-40 cursor-not-allowed'
-                                                                : 'border-zinc-100 bg-white hover:border-primary/40 hover:bg-zinc-50'
-                                                }`}
+                                                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${isOwned
+                                                    ? 'border-zinc-100 bg-zinc-50 opacity-40 cursor-not-allowed'
+                                                    : isSelected
+                                                        ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10'
+                                                        : isDisabled
+                                                            ? 'border-zinc-100 bg-white opacity-40 cursor-not-allowed'
+                                                            : 'border-zinc-100 bg-white hover:border-primary/40 hover:bg-zinc-50'
+                                                    }`}
                                             >
                                                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-primary text-white' : 'bg-zinc-100 text-zinc-400'}`}>
                                                     {isSelected ? <CheckCircle2 size={20} /> : <Music size={20} />}

@@ -199,6 +199,9 @@ export const AudioTrackManager: React.FC = () => {
                             <label className="text-xs font-black uppercase text-blue-300 ml-2">Artist / Character</label>
                             <input
                                 type="text"
+                                title="Artist / Character"
+                                placeholder="Artist or character name"
+                                aria-label="Artist / Character"
                                 value={artist}
                                 onChange={e => setArtist(e.target.value)}
                                 className="w-full p-4 bg-blue-50 rounded-2xl font-bold text-blue-950 outline-none focus:ring-2 focus:ring-blue-200"
@@ -208,6 +211,8 @@ export const AudioTrackManager: React.FC = () => {
                             <div className="space-y-2">
                                 <label className="text-xs font-black uppercase text-blue-300 ml-2">Category</label>
                                 <select
+                                    title="Category"
+                                    aria-label="Category"
                                     value={category}
                                     onChange={e => setCategory(e.target.value)}
                                     className="w-full p-4 bg-blue-50 rounded-2xl font-bold text-blue-950 outline-none"
@@ -222,6 +227,8 @@ export const AudioTrackManager: React.FC = () => {
                             <div className="space-y-2">
                                 <label className="text-xs font-black uppercase text-blue-300 ml-2">Island</label>
                                 <select
+                                    title="Island"
+                                    aria-label="Island"
                                     value={island}
                                     onChange={e => setIsland(e.target.value)}
                                     className="w-full p-4 bg-blue-50 rounded-2xl font-bold text-blue-950 outline-none"
@@ -238,6 +245,8 @@ export const AudioTrackManager: React.FC = () => {
                         <div className="space-y-2">
                             <label className="text-xs font-black uppercase text-blue-300 ml-2">Access Tier</label>
                             <select
+                                title="Access Tier"
+                                aria-label="Access Tier"
                                 value={tier}
                                 onChange={e => setTier(e.target.value)}
                                 className="w-full p-4 bg-blue-50 rounded-2xl font-bold text-blue-950 outline-none"
@@ -256,6 +265,8 @@ export const AudioTrackManager: React.FC = () => {
                             <input
                                 ref={audioInputRef}
                                 type="file"
+                                title="Upload MP3 File"
+                                aria-label="Upload MP3 File"
                                 accept="audio/*"
                                 onChange={(e) => handleFileSelect(e, 'audio')}
                                 className="hidden"
@@ -279,6 +290,8 @@ export const AudioTrackManager: React.FC = () => {
                             <input
                                 ref={coverInputRef}
                                 type="file"
+                                title="Upload Cover Art Image"
+                                aria-label="Upload Cover Art Image"
                                 accept="image/*"
                                 onChange={(e) => handleFileSelect(e, 'cover')}
                                 className="hidden"
@@ -400,6 +413,8 @@ export const AudioTrackManager: React.FC = () => {
                     <span className="font-bold text-sm">Playing: {previewSong.title}</span>
                     <button
                         onClick={() => setPreviewSong(null)}
+                        title="Stop Preview"
+                        aria-label="Stop Preview"
                         className="ml-2 p-1 hover:text-orange-400 transition-colors"
                     >
                         <Pause size={16} />

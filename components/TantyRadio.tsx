@@ -318,13 +318,11 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
 
             {/* ── Channel tabs (full mode only) ─────────────────────────────── */}
             {!isLite && availableChannels.length > 1 && (
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-6" role="tablist">
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-6">
                     {availableChannels.map(ch => (
                         <button
                             key={ch.id}
                             type="button"
-                            role="tab"
-                            aria-selected={resolvedChannel === ch.id}
                             onClick={() => { setActiveChannel(ch.id); setCurrentTrackIndex(0); setIsPlaying(false); }}
                             className={`py-3 px-2 rounded-2xl flex flex-col items-center gap-1.5 border-2 transition-all text-center
                                 ${resolvedChannel === ch.id
@@ -460,7 +458,7 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
                                 className="w-10 h-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all disabled:opacity-20"
                                 aria-label="Previous Track"
                             >
-                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" /></svg>
                             </button>
 
                             <button
@@ -472,8 +470,8 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
                                 aria-label={isPlaying ? 'Pause' : 'Play'}
                             >
                                 {isPlaying
-                                    ? <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                                    : <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6 ml-0.5"><path d="M8 5v14l11-7z"/></svg>
+                                    ? <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+                                    : <svg viewBox="0 0 24 24" fill="white" className="w-6 h-6 ml-0.5"><path d="M8 5v14l11-7z" /></svg>
                                 }
                             </button>
 
@@ -484,7 +482,7 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
                                 className="w-10 h-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all disabled:opacity-20"
                                 aria-label="Next Track"
                             >
-                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/></svg>
+                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z" /></svg>
                             </button>
 
                             {/* Loading status text (non-blocking) */}

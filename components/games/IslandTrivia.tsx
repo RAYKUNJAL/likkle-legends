@@ -259,7 +259,7 @@ export default function IslandTrivia({
 
                 {/* Header */}
                 <div className="relative z-10 p-8 flex justify-between items-center">
-                    <button onClick={returnToMap} className="p-3 bg-white/10 rounded-xl hover:bg-white/20 text-white transition-colors">
+                    <button title="Go Back" aria-label="Go Back" onClick={returnToMap} className="p-3 bg-white/10 rounded-xl hover:bg-white/20 text-white transition-colors">
                         <ArrowLeft />
                     </button>
                     <div className="flex flex-col items-center">

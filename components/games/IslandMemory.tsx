@@ -131,7 +131,7 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
         <div className="h-full bg-[#1a2c4e] rounded-[3rem] p-8 flex flex-col relative overflow-hidden">
             {/* Header */}
             <div className="flex justify-between items-center mb-8 relative z-10">
-                <button onClick={() => router.push('/portal/games')} className="p-2 bg-white/10 rounded-xl text-white hover:bg-white/20"><ArrowLeft /></button>
+                <button title="Go Back" aria-label="Go Back" onClick={() => router.push('/portal/games')} className="p-2 bg-white/10 rounded-xl text-white hover:bg-white/20"><ArrowLeft /></button>
                 <div className="flex gap-4">
                     <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl text-white">
                         <Target size={18} className="text-primary" />
@@ -161,6 +161,8 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
                         {cards.map((card, index) => (
                             <button
                                 key={card.id}
+                                title={`Card ${index + 1}`}
+                                aria-label={`Card ${index + 1}`}
                                 onClick={() => handleCardClick(index)}
                                 className={`rounded-2xl text-4xl flex items-center justify-center transition-all duration-300 transform aspect-square ${card.isFlipped || card.isMatched
                                     ? 'bg-gradient-to-br from-cyan-400 to-blue-500 rotate-0 scale-100 shadow-lg shadow-cyan-500/40'

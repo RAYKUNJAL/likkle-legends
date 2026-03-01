@@ -277,6 +277,8 @@ export default function ParentDashboard() {
                                                 <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Live Learning Feed</p>
                                             </div>
                                             <button
+                                                title="Calendar View"
+                                                aria-label="View activity calendar"
                                                 className="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:text-primary transition-colors"
                                             >
                                                 <Calendar size={24} />

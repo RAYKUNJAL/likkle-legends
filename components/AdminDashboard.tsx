@@ -97,7 +97,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ userEmail, onLogout }) 
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-100 transition-all shadow-sm">
+                        <button title="Settings" aria-label="Settings" className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-100 transition-all shadow-sm">
                             <Settings size={18} />
                         </button>
                         <div className="h-8 w-px bg-slate-100"></div>

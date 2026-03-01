@@ -44,6 +44,8 @@ export const SettingsView: React.FC = () => {
         <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-blue-100">
             <span className="font-bold text-blue-950 text-sm">{label}</span>
             <button
+                title={`Toggle ${label}`}
+                aria-label={`Toggle ${label}`}
                 onClick={() => handleToggle(keyName)}
                 className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${settings[keyName] ? 'bg-green-500' : 'bg-gray-200'}`}
             >

@@ -230,8 +230,8 @@ export default function LeadCaptureModal({
                                             type="button"
                                             onClick={() => setUserType(type)}
                                             className={`py-2 px-3 rounded-xl border-2 text-sm font-bold capitalize transition-all ${userType === type
-                                                    ? 'border-primary bg-primary/10 text-primary'
-                                                    : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                                                ? 'border-primary bg-primary/10 text-primary'
+                                                : 'border-gray-200 text-gray-500 hover:border-gray-300'
                                                 }`}
                                         >
                                             {type}
@@ -245,6 +245,8 @@ export default function LeadCaptureModal({
                                     Caribbean Connection
                                 </label>
                                 <select
+                                    title="Caribbean Connection"
+                                    aria-label="Caribbean Connection"
                                     value={islandOrigin}
                                     onChange={(e) => setIslandOrigin(e.target.value)}
                                     className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none transition-colors"

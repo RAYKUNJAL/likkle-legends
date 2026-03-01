@@ -104,6 +104,8 @@ export default function VideoPlayer({ src, poster, onEnded, autoPlay = false }: 
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
                 {/* Progress Bar */}
                 <input
+                    title="Video Progress"
+                    aria-label="Video Progress"
                     type="range"
                     min="0"
                     max="100"

@@ -192,10 +192,6 @@ export default function StoryReader({ title, pages, onClose, onSave }: StoryRead
                 {/* Progress Bar */}
                 <div
                     className="h-4 bg-blue-50 w-full overflow-hidden"
-                    role="progressbar"
-                    aria-valuenow={Math.round(((currentPage + 1) / pages.length) * 100)}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
                     title={`Progress: ${Math.round(((currentPage + 1) / pages.length) * 100)}%`}
                 >
                     <div
