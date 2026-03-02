@@ -34,6 +34,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 *.log
+verify-*.json
+*_output*.txt
+git_*_output.txt
+git_log_secrets.txt
 
 # typescript
 *.tsbuildinfo

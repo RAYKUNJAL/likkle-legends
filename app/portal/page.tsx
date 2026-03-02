@@ -350,7 +350,7 @@ export default function ChildPortalPage() {
     };
 
     // CRO: called when a free user taps a locked content item
-    const handleLockedClick = useCallback((tier: string, featureName: string, featureDescription = '') => {
+    const handleLockedClick = (tier: string, featureName: string, featureDescription = '') => {
         const nextCount = lockedHitCount + 1;
         setLockedHitCount(nextCount);
         fireConversionEvent('view_item', { item_name: featureName, item_tier: tier, locked_hit: nextCount });
@@ -361,7 +361,7 @@ export default function ChildPortalPage() {
         } else {
             setUpgradeModal({ open: true, tier, feature: featureName });
         }
-    }, [lockedHitCount]);
+    };
 
     const currentLevel = activeChild ? calculateLevel(activeChild.total_xp) : LEVELS[0];
 

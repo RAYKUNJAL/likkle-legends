@@ -1,12 +1,17 @@
 
 const fetch = require('node-fetch');
 
-const API_KEY = process.env.ELEVENLABS_API_KEY || 'sk_a6d13d625a2cb1d95fc41ef29736b92cecd11b39351eb7c9';
+const API_KEY = process.env.ELEVENLABS_API_KEY;
 const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS';
 
 async function testElevenLabs() {
     console.log('Testing ElevenLabs API...');
     console.log('Voice ID:', VOICE_ID);
+    if (!API_KEY) {
+        console.error('ERROR: Missing ELEVENLABS_API_KEY env var.');
+        process.exitCode = 1;
+        return;
+    }
 
     try {
         const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {

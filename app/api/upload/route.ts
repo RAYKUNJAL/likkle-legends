@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { createClient as createServerClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase-client';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,6 +76,46 @@ interface UploadMetadata {
     is_active?: boolean;
 }
 
+async function requireAdmin(request: NextRequest) {
+    const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+
+    let user: { id: string } | null = null;
+    if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.replace('Bearer ', '');
+        const { data, error } = await supabaseAdmin.auth.getUser(token);
+
+        if (!error && data.user) {
+            user = { id: data.user.id };
+        }
+    }
+
+    if (!user) {
+        const supabase = createServerClient();
+        const { data } = await supabase.auth.getUser();
+        if (data.user) user = { id: data.user.id };
+    }
+
+    if (!user) {
+        return { ok: false, response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };
+    }
+
+    const { url: supabaseUrl, key: serviceRoleKey } = getSupabaseConfig();
+    const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+        auth: { persistSession: false, autoRefreshToken: false }
+    });
+    const { data: profile } = await adminClient
+        .from('profiles')
+        .select('role, is_admin')
+        .eq('id', user.id)
+        .single();
+
+    if (!(profile?.is_admin || profile?.role === 'admin')) {
+        return { ok: false, response: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) };
+    }
+
+    return { ok: true, userId: user.id };
+}
+
 function sanitizeFilename(name: string): string {
     const baseName = name.replace(/\.[^/.]+$/, "");
     const extension = name.split('.').pop()?.toLowerCase() || '';
@@ -94,6 +136,9 @@ function organizeByDateFolder(): string {
 
 export async function POST(request: NextRequest) {
     try {
+        const auth = await requireAdmin(request);
+        if (!auth.ok) return auth.response;
+
         // Validate service key
         const { url: supabaseUrl, key: serviceRoleKey } = getSupabaseConfig();
         if (!serviceRoleKey || !supabaseUrl) {
@@ -287,6 +332,9 @@ export async function POST(request: NextRequest) {
 // DELETE endpoint for removing files
 export async function DELETE(request: NextRequest) {
     try {
+        const auth = await requireAdmin(request);
+        if (!auth.ok) return auth.response;
+
         const { url: supabaseUrl, key: serviceRoleKey } = getSupabaseConfig();
         if (!serviceRoleKey || !supabaseUrl) {
             return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });

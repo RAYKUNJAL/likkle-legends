@@ -524,8 +524,7 @@ function CheckoutContent() {
 
                                                             return actions.subscription.create({
                                                                 plan_id: targetPlanId,
-                                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                                start_time: trialEndDate.toISOString() as any,
+                                                                start_time: trialEndDate.toISOString(),
                                                             });
                                                         }}
                                                         onApprove={async (data, _actions) => {
