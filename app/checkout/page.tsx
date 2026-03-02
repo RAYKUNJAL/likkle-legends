@@ -199,10 +199,24 @@ function CheckoutContent() {
                                             <span>$14.99</span>
                                         </div>
                                     )}
+                                    {formData.planKey !== 'plan_free_forever' && (
+                                        <div className="flex justify-between text-[11px] font-bold text-green-600 uppercase tracking-widest animate-pulse">
+                                            <span>7-Day Free Trial</span>
+                                            <span>-${calculateTotal()}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between text-lg font-black text-deep pt-2">
-                                        <span>Total Today</span>
-                                        <span>${calculateTotal()}</span>
+                                        <span>Due Today</span>
+                                        <span className="text-green-600">
+                                            {formData.planKey === 'plan_free_forever' ? `$${calculateTotal()}` : '$0.00'}
+                                        </span>
                                     </div>
+                                    {formData.planKey !== 'plan_free_forever' && (
+                                        <p className="text-[10px] text-deep/30 font-medium">
+                                            Then ${calculateTotal()}/month starting{' '}
+                                            {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -210,7 +224,7 @@ function CheckoutContent() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="flex items-center gap-3 p-4 bg-success/5 rounded-2xl border border-success/10">
                                     <ShieldCheck size={20} className="text-success" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-success/70">30-Day Guarantee</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-success/70">7-Day Free Trial</span>
                                 </div>
                                 <div className="flex items-center gap-3 p-4 bg-deep/5 rounded-2xl border border-deep/10">
                                     <Lock size={20} className="text-deep/40" />
@@ -480,8 +494,8 @@ function CheckoutContent() {
                                         className="space-y-8"
                                     >
                                         <div className="space-y-2">
-                                            <h3 className="text-2xl font-black text-deep tracking-tight">Secure Payment.</h3>
-                                            <p className="text-deep/40 text-sm font-medium">Start your 30-day risk-free trial today.</p>
+                                            <h3 className="text-2xl font-black text-deep tracking-tight">Start Free — Pay Later.</h3>
+                                            <p className="text-deep/40 text-sm font-medium">7-day free trial • $0 charged today • cancel anytime.</p>
                                         </div>
 
                                         <div className="bg-white rounded-2xl border border-zinc-100 p-6 space-y-6 shadow-sm">
@@ -503,10 +517,15 @@ function CheckoutContent() {
                                                         style={{ layout: "vertical", shape: "rect", borderRadius: 12, height: 48 }}
                                                         createSubscription={(_data, actions) => {
                                                             const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
-                                                            let targetPlanId = selectedPlan?.paypalPlanId || SUBSCRIPTION_PLANS.plan_mail_intro.paypalPlanId;
+                                                            const targetPlanId = selectedPlan?.paypalPlanId || SUBSCRIPTION_PLANS.plan_mail_intro.paypalPlanId;
+
+                                                            // 7-day free trial: delay first billing by 7 days
+                                                            const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
                                                             return actions.subscription.create({
-                                                                plan_id: targetPlanId
+                                                                plan_id: targetPlanId,
+                                                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                                start_time: trialEndDate.toISOString() as any,
                                                             });
                                                         }}
                                                         onApprove={async (data, _actions) => {

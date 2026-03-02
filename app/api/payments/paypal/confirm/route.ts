@@ -90,21 +90,30 @@ export async function POST(request: NextRequest) {
 
         const userIdToUpdate = user.id;
 
-        // Calculate next billing date based on cycle
+        // 7-day free trial: first billing is delayed by 7 days via start_time in PayPal SDK
+        const TRIAL_DAYS = 7;
+        const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
+        const isFree = tier === 'plan_free_forever';
+
+        // After trial, billing resumes on the normal cycle
         const daysToAdd = billingCycle === 'year' ? 365 : 30;
-        const nextBillingDate = new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000);
+        const nextBillingDate = isFree
+            ? new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000)
+            : trialEndsAt;
 
         // Update user profile with subscription info
         const { error: profileError } = await supabase
             .from('profiles')
             .update({
                 subscription_tier: tier,
-                subscription_status: 'active',
+                // Paid plans start in 'trialing' — upgrade to 'active' via webhook on first payment
+                subscription_status: isFree ? 'active' : 'trialing',
                 paypal_subscription_id: subscriptionId || null,
                 currency: currency || 'USD',
                 has_grandparent_dashboard: addGrandparent || false,
                 subscription_started_at: new Date().toISOString(),
                 next_billing_date: nextBillingDate.toISOString().split('T')[0],
+                trial_ends_at: isFree ? null : trialEndsAt.toISOString(),
             })
             .eq('id', userIdToUpdate);
 
@@ -143,7 +152,9 @@ export async function POST(request: NextRequest) {
         await supabase.from('notifications').insert({
             user_id: userIdToUpdate,
             title: '🎉 Welcome to Likkle Legends!',
-            body: `Your ${tier.replace('_', ' ')} subscription is now active. Let's set up your child's profile!`,
+            body: isFree
+                ? `Your free account is ready. Let's set up your child's profile!`
+                : `Your 7-day free trial has started! Explore everything — your first payment isn't until ${trialEndsAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.`,
             notification_type: 'subscription',
             action_url: '/onboarding/child',
         });

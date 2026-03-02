@@ -164,7 +164,7 @@ export default function FeatureUpgradeModal({
                     {/* Trust Badge */}
                     <div className="text-center">
                         <p className="text-xs text-gray-500 font-bold">
-                            ✓ Cancel anytime • No hidden fees • 7-day free trial
+                            ✓ 7-day free trial • $0 today • cancel anytime
                         </p>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
-import { sendEmail, SUBSCRIPTION_CONFIRMATION_TEMPLATE } from '@/lib/email';
+import { sendEmail, SUBSCRIPTION_CONFIRMATION_TEMPLATE, TRIAL_REMINDER_TEMPLATE } from '@/lib/email';
 
 const supabase = supabaseAdmin;
 
@@ -117,14 +117,13 @@ export async function POST(request: NextRequest) {
         console.log('PayPal webhook event:', eventType);
 
         switch (eventType) {
-            case 'BILLING.SUBSCRIPTION.ACTIVATED':
-            case 'BILLING.SUBSCRIPTION.RENEWED': {
+            case 'BILLING.SUBSCRIPTION.ACTIVATED': {
                 const subscriptionId = resource.id;
                 const subscriberEmail = resource.subscriber?.email_address;
 
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('id, parent_name, email')
+                    .select('id, parent_name, email, subscription_status')
                     .or(`paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`)
                     .single();
 
@@ -132,19 +131,120 @@ export async function POST(request: NextRequest) {
                     const planId = resource.plan_id;
                     const tier = PLAN_TO_TIER[planId] || 'starter_mailer';
 
+                    // Detect trial: if next_billing_time is more than 1 day away,
+                    // billing has been delayed (7-day free trial via start_time).
+                    const nextBillingTime = resource.billing_info?.next_billing_time;
+                    const isTrialing = nextBillingTime &&
+                        new Date(nextBillingTime).getTime() > Date.now() + 24 * 60 * 60 * 1000;
+
+                    // If confirm route already set 'trialing', don't downgrade to 'active'
+                    const alreadyTrialing = profile.subscription_status === 'trialing';
+                    const newStatus = (isTrialing || alreadyTrialing) ? 'trialing' : 'active';
+
+                    await supabase
+                        .from('profiles')
+                        .update({
+                            subscription_status: newStatus,
+                            subscription_tier: tier,
+                            paypal_subscription_id: subscriptionId,
+                            next_billing_date: nextBillingTime?.split('T')[0] ?? null,
+                            ...(isTrialing && { trial_ends_at: nextBillingTime }),
+                        })
+                        .eq('id', profile.id);
+
+                    console.log(`Subscription activated for ${profile.id} — tier: ${tier}, status: ${newStatus}`);
+
+                    // Only send confirmation email when actually going active (not trialing)
+                    if (newStatus === 'active') {
+                        const { data: child } = await supabase
+                            .from('children')
+                            .select('first_name')
+                            .eq('parent_id', profile.id)
+                            .limit(1)
+                            .maybeSingle();
+
+                        await sendEmail({
+                            to: profile.email || subscriberEmail,
+                            subject: "You're Officially in the Club! 🌴",
+                            html: SUBSCRIPTION_CONFIRMATION_TEMPLATE(
+                                profile.parent_name || "Legend Parent",
+                                tier.replace('_', ' ').toUpperCase(),
+                                child?.first_name || "your little legend"
+                            )
+                        });
+                    }
+                }
+                break;
+            }
+
+            case 'BILLING.SUBSCRIPTION.RENEWED':
+            case 'BILLING.SUBSCRIPTION.PAYMENT.COMPLETED': {
+                // First real payment after trial (or renewal) — promote to active
+                const subscriptionId = resource.id ?? resource.billing_agreement_id;
+                const subscriberEmail = resource.subscriber?.email_address;
+
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('id, parent_name, email, subscription_status, subscription_tier')
+                    .or(
+                        subscriberEmail
+                            ? `paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`
+                            : `paypal_subscription_id.eq.${subscriptionId}`
+                    )
+                    .single();
+
+                if (profile) {
+                    const wasTrialing = profile.subscription_status === 'trialing';
+                    const planId = resource.plan_id;
+                    const tier = planId ? (PLAN_TO_TIER[planId] || profile.subscription_tier) : profile.subscription_tier;
+
                     await supabase
                         .from('profiles')
                         .update({
                             subscription_status: 'active',
                             subscription_tier: tier,
-                            paypal_subscription_id: subscriptionId,
-                            next_billing_date: resource.billing_info?.next_billing_time?.split('T')[0],
+                            trial_ends_at: null,
+                            next_billing_date: resource.billing_info?.next_billing_time?.split('T')[0] ?? null,
                         })
                         .eq('id', profile.id);
 
-                    console.log(`Updated user ${profile.id} to tier ${tier}`);
+                    console.log(`Payment completed for ${profile.id} — tier: ${tier}, was trialing: ${wasTrialing}`);
 
-                    // Fetch child name for personalized email
+                    // Send confirmation email if this is the first payment after trial
+                    if (wasTrialing) {
+                        const { data: child } = await supabase
+                            .from('children')
+                            .select('first_name')
+                            .eq('parent_id', profile.id)
+                            .limit(1)
+                            .maybeSingle();
+
+                        await sendEmail({
+                            to: profile.email || subscriberEmail,
+                            subject: "You're Officially in the Club! 🌴",
+                            html: SUBSCRIPTION_CONFIRMATION_TEMPLATE(
+                                profile.parent_name || "Legend Parent",
+                                tier.replace('_', ' ').toUpperCase(),
+                                child?.first_name || "your little legend"
+                            )
+                        });
+                    }
+                }
+                break;
+            }
+
+            case 'BILLING.SUBSCRIPTION.TRIAL.ENDING': {
+                // PayPal sends this ~2 days before trial ends
+                const subscriptionId = resource.id;
+                const subscriberEmail = resource.subscriber?.email_address;
+
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('id, email, parent_name, subscription_tier')
+                    .or(`paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`)
+                    .single();
+
+                if (profile) {
                     const { data: child } = await supabase
                         .from('children')
                         .select('first_name')
@@ -152,16 +252,16 @@ export async function POST(request: NextRequest) {
                         .limit(1)
                         .maybeSingle();
 
-                    // Send Branded Confirmation Email
                     await sendEmail({
                         to: profile.email || subscriberEmail,
-                        subject: "You're Offially in the Club! 🌴",
-                        html: SUBSCRIPTION_CONFIRMATION_TEMPLATE(
+                        subject: "Your free trial ends soon 🌴 Keep the adventure going!",
+                        html: TRIAL_REMINDER_TEMPLATE(
                             profile.parent_name || "Legend Parent",
-                            tier.replace('_', ' ').toUpperCase(),
-                            child?.first_name || "your little legend"
+                            child?.first_name || "your little legend",
+                            profile.subscription_tier || 'starter_mailer'
                         )
                     });
+                    console.log(`Trial ending email sent to ${profile.id}`);
                 }
                 break;
             }

@@ -478,6 +478,53 @@ export const WEEKLY_DIGEST_TEMPLATE = (parentName: string, stats: any[]) => `
 </html>
 `;
 
+// 13. TRIAL ENDING REMINDER
+export const TRIAL_REMINDER_TEMPLATE = (parentName: string, childName: string, tier: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1e293b; background: white; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; border: 4px solid #F59E0B; border-radius: 40px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #FEF3C7, #FDE68A); padding: 40px; text-align: center; }
+        .btn { display: inline-block; padding: 20px 40px; background: #F59E0B; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <p style="font-size: 48px; margin: 0 0 12px;">🌴⏰</p>
+            <h1 style="margin: 0; font-size: 26px; font-weight: 900; color: #92400E;">Your free trial ends in 2 days!</h1>
+        </div>
+        <div style="padding: 40px;">
+            <p style="font-size: 17px; font-weight: 800;">Hey ${parentName}!</p>
+            <p style="font-size: 16px; color: #475569; line-height: 1.7;">
+                ${childName}'s 7-day free trial is almost up. After that, your <b>${tier.replace(/_/g, ' ')}</b> plan will begin and everything stays exactly the same — no interruption to the island adventure.
+            </p>
+            <div style="background: #FFFBEB; border: 2px solid #FDE68A; border-radius: 24px; padding: 24px; margin: 24px 0;">
+                <p style="margin: 0; font-weight: 900; font-size: 15px; color: #92400E;">What ${childName} gets to keep:</p>
+                <ul style="margin: 12px 0 0; padding-left: 20px; color: #78350F; font-size: 14px; font-weight: 600; line-height: 2;">
+                    <li>All stories, songs & cultural lessons</li>
+                    <li>Progress badges and XP streaks</li>
+                    <li>Personalised learning plan</li>
+                    <li>Daily island adventures</li>
+                </ul>
+            </div>
+            <p style="font-size: 15px; color: #475569; line-height: 1.7;">
+                If you want to cancel before you're charged, just visit your account settings. No hard feelings — but we think ${childName} will miss the islands! 🌊
+            </p>
+            <center style="margin: 32px 0;">
+                <a href="https://www.likklelegends.com/portal" class="btn">Continue the Adventure →</a>
+            </center>
+            <center>
+                <a href="https://www.likklelegends.com/account" style="font-size: 13px; color: #94a3b8; text-decoration: underline;">Manage my subscription</a>
+            </center>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
 // 12. STREAK PROTECTION (Phase 3 Retention)
 export const STREAK_PROTECTION_TEMPLATE = (parentName: string, childName: string, currentStreak: number) => `
 <!DOCTYPE html>
