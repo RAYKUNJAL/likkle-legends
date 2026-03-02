@@ -1,5 +1,3 @@
-"use server";
-
 import { getStoriesByTradition, getStoryBySlug } from '@/lib/stories-database';
 import { initializeStories } from '@/lib/init-stories';
 import { NextResponse } from 'next/server';
