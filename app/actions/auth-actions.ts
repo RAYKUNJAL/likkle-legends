@@ -1,30 +1,28 @@
-
 "use server";
 
 import { supabaseAdmin } from "@/lib/supabase-client";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE, RESET_PASSWORD_EMAIL_TEMPLATE, WELCOME_EMAIL_TEMPLATE } from "@/lib/email";
 import { claimReferralReward } from "@/app/actions/referrals";
-// Note: we intentionally use the SSR createClient (not supabaseAdmin) for signup
-// so it works regardless of whether the service role key matches the project URL.
 
 export interface SignupResult {
     success: boolean;
     error?: string;
     emailSent?: boolean;
     userId?: string;
+    requiresLogin?: boolean;
 }
 
-/**
- * Commercial-grade Signup Action
- * Handles user creation, branded confirmation email, and error reporting
- */
-/**
- * Commercial-grade Signup Action
- * Uses supabase.auth.signUp() so it works regardless of service role key config.
- * For frictionless onboarding: disable "Email Confirmations" in Supabase Dashboard
- * (Authentication → Email → Enable email confirmations = OFF)
- */
+function isDuplicateEmailError(message: string) {
+    const text = message.toLowerCase();
+    return (
+        text.includes("already registered") ||
+        text.includes("already exists") ||
+        text.includes("email address is already taken") ||
+        text.includes("user already registered")
+    );
+}
+
 export async function signupAction(formData: {
     email: string;
     password: string;
@@ -33,109 +31,119 @@ export async function signupAction(formData: {
     referral: string;
 }): Promise<SignupResult> {
     try {
-        console.log(`[AUTH] Starting signup: ${formData.email}, plan: ${formData.plan}`);
-        const supabase = createClient(); // SSR client — sets auth cookies on response
+        const email = formData.email.trim().toLowerCase();
+        const supabase = createClient();
+        const metadata = {
+            full_name: `Parent of ${formData.childName}`,
+            child_name: formData.childName,
+            chosen_plan: formData.plan,
+            referral_source: formData.referral,
+        };
 
-        // 1. Sign up via Admin Auth to bypass email rate limits and auto-confirm
-        //    - Standard supabase.auth.signUp is subject to strict 3/hr rate limits on free tier
-        //    - We handle our own Welcome email via Resend, so we auto-confirm
-        const { data: signUpData, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
-            email: formData.email,
-            password: formData.password,
-            email_confirm: true,
-            user_metadata: {
-                full_name: `Parent of ${formData.childName}`,
-                child_name: formData.childName,
-                chosen_plan: formData.plan,
-                referral_source: formData.referral,
-            }
-        });
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+        const canUseAdminAuth = !!serviceRoleKey && serviceRoleKey.length > 40 && serviceRoleKey !== "false";
 
-        if (signUpError) {
-            console.error("[AUTH] SignUp Error:", signUpError.message);
-            if (
-                signUpError.message.toLowerCase().includes('already registered') ||
-                signUpError.message.toLowerCase().includes('already exists') ||
-                signUpError.message.toLowerCase().includes('email address is already taken') ||
-                signUpError.message.toLowerCase().includes('user already registered')
-            ) {
-                return { success: false, error: "This email is already registered. Please log in." };
+        let userId: string | undefined;
+        let hasSession = false;
+        let emailConfirmationRequired = false;
+
+        if (canUseAdminAuth) {
+            const { data, error } = await supabaseAdmin.auth.admin.createUser({
+                email,
+                password: formData.password,
+                email_confirm: true,
+                user_metadata: metadata
+            });
+
+            if (error) {
+                if (isDuplicateEmailError(error.message)) {
+                    return { success: false, error: "This email is already registered. Please log in." };
+                }
+                console.error("[AUTH] Admin createUser failed, falling back to standard signup:", error.message);
+            } else {
+                userId = data.user?.id;
             }
-            return { success: false, error: signUpError.message };
         }
 
-        if (!signUpData.user) {
+        if (!userId) {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password: formData.password,
+                options: { data: metadata }
+            });
+
+            if (error) {
+                if (isDuplicateEmailError(error.message)) {
+                    return { success: false, error: "This email is already registered. Please log in." };
+                }
+                return { success: false, error: error.message };
+            }
+
+            userId = data.user?.id;
+            hasSession = !!data.session;
+            emailConfirmationRequired = !data.session;
+        }
+
+        if (!userId) {
             return { success: false, error: "Failed to create user record. Please try again." };
         }
 
-        const userId = signUpData.user.id;
+        if (!hasSession && !emailConfirmationRequired) {
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email,
+                password: formData.password
+            });
 
-        // Auto-login to set cookies on the server response
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password
-        });
-
-        if (signInError) {
-            console.warn("[AUTH] Auto-login warning:", signInError.message);
-            // It will force them to login manually next
+            if (signInError) {
+                console.warn("[AUTH] Auto-login warning:", signInError.message);
+            } else {
+                hasSession = true;
+            }
         }
 
-        const isAutoConfirmed = true; // Always true now because we bypassed email confirmation
-
-        // 2. Persist COPPA parental consent (required by law for children's apps)
         Promise.resolve(
-            supabaseAdmin.from('profiles').upsert({
+            supabaseAdmin.from("profiles").upsert({
                 id: userId,
                 is_coppa_designated_parent: true,
                 coppa_consent_date: new Date().toISOString(),
-            }, { onConflict: 'id' })
+            }, { onConflict: "id" })
         ).then(({ error }) => {
-            if (error) console.error('[AUTH] COPPA consent persist failed:', error.message);
-        }).catch(err => console.error('[AUTH] COPPA consent persist error:', err));
+            if (error) console.error("[AUTH] COPPA consent persist failed:", error.message);
+        }).catch(err => console.error("[AUTH] COPPA consent persist error:", err));
 
-        // 3. Send Welcome Email (fire-and-forget)
         sendEmail({
-            to: formData.email,
+            to: email,
             subject: "Welcome to Likkle Legends! 🌴",
             html: WELCOME_EMAIL_TEMPLATE(formData.childName || "Legend Family")
         }).catch(err => console.error("[AUTH] Welcome email failed:", err));
 
-        // 4. Referral reward (fire-and-forget — non-blocking)
         const refCode = formData.referral;
-        if (refCode && refCode !== 'direct' && refCode.startsWith('LL')) {
-            claimReferralReward(refCode, userId)
-                .catch(err => console.error('[AUTH] Referral claim failed:', err));
+        if (refCode && refCode !== "direct" && refCode.startsWith("LL")) {
+            claimReferralReward(refCode, userId).catch(err => console.error("[AUTH] Referral claim failed:", err));
         }
 
-        if (isAutoConfirmed) {
-            console.log(`[AUTH] Auto-confirmed signup success for: ${formData.email}`);
-            return { success: true, emailSent: false, userId };
+        if (emailConfirmationRequired) {
+            return { success: true, emailSent: true, userId };
         }
 
-        // 5. Email confirmation required
-        console.log(`[AUTH] Confirmation email sent to: ${formData.email}`);
-        return { success: true, emailSent: true, userId };
+        if (!hasSession) {
+            return { success: true, emailSent: false, userId, requiresLogin: true };
+        }
 
+        return { success: true, emailSent: false, userId };
     } catch (err: any) {
         console.error("[AUTH] Unexpected Signup Error:", err);
         return { success: false, error: err.message || "An unexpected error occurred during signup." };
     }
 }
 
-/**
- * Branded Forgot Password Action
- */
 export async function forgotPasswordAction(email: string): Promise<SignupResult> {
     try {
-        console.log(`[AUTH] Initiating branded password reset for: ${email}`);
-
-        // 1. Generate link
         const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-            type: 'recovery',
-            email: email,
+            type: "recovery",
+            email,
             options: {
-                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'}/api/auth/callback?next=/reset-password`
+                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "https://www.likklelegends.com"}/api/auth/callback?next=/reset-password`
             }
         });
 
@@ -144,7 +152,6 @@ export async function forgotPasswordAction(email: string): Promise<SignupResult>
         }
 
         if (data?.properties?.action_link) {
-            // 2. Send branded email
             const emailResult = await sendEmail({
                 to: email,
                 subject: "Reset your Likkle Legends Password 🔑",
@@ -164,18 +171,13 @@ export async function forgotPasswordAction(email: string): Promise<SignupResult>
     }
 }
 
-/**
- * Branded Magic Link Action
- */
 export async function sendMagicLinkAction(email: string): Promise<SignupResult> {
     try {
-        console.log(`[AUTH] Initiating branded magic link for: ${email}`);
-
         const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-            type: 'magiclink',
-            email: email,
+            type: "magiclink",
+            email,
             options: {
-                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com'}/api/auth/callback?next=/portal`
+                redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || "https://www.likklelegends.com"}/api/auth/callback?next=/portal`
             }
         });
 
@@ -203,14 +205,9 @@ export async function sendMagicLinkAction(email: string): Promise<SignupResult> 
     }
 }
 
-/**
- * Server Action for Password Sign In
- * Uses @supabase/ssr createServerClient to automatically set cookies on the response
- */
 export async function signInAction(email: string, password: string) {
     try {
         const supabase = createClient();
-
         const { data: signInData, error } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -221,18 +218,17 @@ export async function signInAction(email: string, password: string) {
             return { success: false, error: error.message };
         }
 
-        // Use user returned directly — no extra getSession() round trip
         if (signInData.user) {
             const { data: profile } = await supabase
-                .from('profiles')
-                .select('role, is_admin')
-                .eq('id', signInData.user.id)
+                .from("profiles")
+                .select("role, is_admin")
+                .eq("id", signInData.user.id)
                 .single();
 
             return {
                 success: true,
                 role: profile?.role,
-                isAdmin: profile?.is_admin || profile?.role === 'admin'
+                isAdmin: profile?.is_admin || profile?.role === "admin"
             };
         }
 
@@ -243,9 +239,6 @@ export async function signInAction(email: string, password: string) {
     }
 }
 
-/**
- * Server Action for Sign Out
- */
 export async function signOutAction() {
     try {
         const supabase = createClient();

@@ -46,12 +46,15 @@ export async function updateSession(request: NextRequest) {
 
     let user = null;
     try {
-        const authCookie = request.cookies.getAll().find(c => c.name.startsWith(cookiePrefix));
-        if (authCookie) {
-            user = { email: 'authenticated' };
+        const hasAuthCookie = request.cookies.getAll().some(c => c.name.startsWith(cookiePrefix));
+        if (hasAuthCookie) {
+            const { data, error } = await supabase.auth.getUser();
+            if (!error) {
+                user = data.user;
+            }
         }
-    } catch (e) {
-        console.debug('[Middleware] Auth check failed (expected during build)');
+    } catch {
+        user = null;
     }
 
     // Protected routes logic

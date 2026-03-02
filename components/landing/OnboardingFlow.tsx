@@ -60,6 +60,10 @@ export default function OnboardingFlow({ plan, referral }: OnboardingFlowProps) 
             });
 
             if (!result.success) throw new Error(result.error);
+            if (result.requiresLogin) {
+                router.push('/login?redirect=/portal');
+                return;
+            }
 
             trackEvent('ll_start_free', { country: formData.country });
             nextStep();

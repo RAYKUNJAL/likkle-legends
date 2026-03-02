@@ -94,6 +94,12 @@ function SignupForm() {
             if (result.emailSent) {
                 setIsEmailSent(true);
             } else {
+                if (result.requiresLogin) {
+                    const nextPath = `/onboarding/welcome?uid=${userId}&childName=${encodeURIComponent(formData.childName)}`;
+                    router.push(`/login?redirect=${encodeURIComponent(nextPath)}`);
+                    return;
+                }
+
                 // Determine redirect based on plan
                 const FREE_PLANS = ['free', 'mail_club', 'free_trial'];
                 const isFreePlan = FREE_PLANS.includes(plan);

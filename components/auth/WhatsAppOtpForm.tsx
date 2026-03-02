@@ -72,6 +72,13 @@ export default function WhatsAppOtpForm({ onSuccess, isSignup, initialData }: Wh
             } else if (result.magicLink) {
                 onSuccess?.(result);
                 router.push(result.magicLink);
+            } else if (result.redirectTo) {
+                onSuccess?.(result);
+                router.push(result.redirectTo);
+            } else if (result.requiresLogin) {
+                router.push('/login?redirect=/portal');
+            } else {
+                setError("Login succeeded but redirect could not be prepared. Please log in with email/password.");
             }
         } else {
             setError(result.error || "Invalid verification code.");
@@ -97,9 +104,18 @@ export default function WhatsAppOtpForm({ onSuccess, isSignup, initialData }: Wh
             referral: initialData?.referral
         });
 
-        if (result.success && result.magicLink) {
-            onSuccess?.(result);
-            router.push(result.magicLink);
+        if (result.success) {
+            if (result.magicLink) {
+                onSuccess?.(result);
+                router.push(result.magicLink);
+            } else if (result.redirectTo) {
+                onSuccess?.(result);
+                router.push(result.redirectTo);
+            } else if (result.requiresLogin) {
+                router.push('/login?redirect=/portal');
+            } else {
+                setError("Account created, but redirect failed. Please log in.");
+            }
         } else {
             setError(result.error || "Failed to finalize account.");
         }
