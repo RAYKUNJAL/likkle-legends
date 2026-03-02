@@ -14,24 +14,6 @@ function getValidKey(): string {
     return (key && key.length > 20 && key !== 'false') ? key : PLACEHOLDER_KEY;
 }
 
-// CRITICAL: Disable NavigatorLock before Supabase tries to use it
-if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
-    if (navigator.locks) {
-        navigator.locks.request = async function (_name: string, _options: any, callback: any) {
-            try {
-                const result = await callback({
-                    release: () => Promise.resolve(),
-                    signal: new AbortSignal(),
-                });
-                return result;
-            } catch (err) {
-                console.warn('[Supabase] Lock bypassed, continuing', (err as any)?.message);
-                return undefined;
-            }
-        } as any;
-    }
-}
-
 // Singleton browser client — uses @supabase/ssr createBrowserClient so it reads
 // from the same HTTP cookies that the SSR server client writes to.
 // This ensures sessions set by server actions are immediately visible client-side.
