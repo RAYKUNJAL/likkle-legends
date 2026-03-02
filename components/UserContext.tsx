@@ -386,15 +386,19 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       try {
         // Initial session check — reads from cookies (createBrowserClient)
         let { data: { session } } = await supabase.auth.getSession();
+        console.log('[AUTH INIT] getSession result:', session?.user?.email ?? 'NO SESSION');
 
         // Fallback: getSession() can return null on first render if cookies
         // haven't been fully processed yet. getUser() makes a real API call.
         if (!session?.user) {
-          const { data: { user: apiUser } } = await supabase.auth.getUser();
+          console.log('[AUTH INIT] getSession null — trying getUser() API call...');
+          const { data: { user: apiUser }, error: userErr } = await supabase.auth.getUser();
+          console.log('[AUTH INIT] getUser result:', apiUser?.email ?? 'NO USER', userErr?.message ?? '');
           if (apiUser) {
             // Re-read the session now that auth is confirmed
             const retry = await supabase.auth.getSession();
             session = retry.data.session;
+            console.log('[AUTH INIT] retry getSession:', session?.user?.email ?? 'STILL NULL');
           }
         }
 
