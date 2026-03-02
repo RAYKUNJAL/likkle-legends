@@ -384,8 +384,19 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       setIsLoading(true);
 
       try {
-        // Initial session check is fast
-        const { data: { session } } = await supabase.auth.getSession();
+        // Initial session check — reads from cookies (createBrowserClient)
+        let { data: { session } } = await supabase.auth.getSession();
+
+        // Fallback: getSession() can return null on first render if cookies
+        // haven't been fully processed yet. getUser() makes a real API call.
+        if (!session?.user) {
+          const { data: { user: apiUser } } = await supabase.auth.getUser();
+          if (apiUser) {
+            // Re-read the session now that auth is confirmed
+            const retry = await supabase.auth.getSession();
+            session = retry.data.session;
+          }
+        }
 
         if (session?.user && mounted) {
           // Sequential auth calls to avoid lock contention
@@ -416,12 +427,14 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
       console.log(`[AUTH] Event: ${event}`);
 
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
         const userId = session?.user?.id;
         if (event === 'SIGNED_IN' && userId) {
           await mergeAnonymousData(userId);
         }
-        await refreshUser();
+        if (session?.user) {
+          await refreshUser();
+        }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setChildren([]);
