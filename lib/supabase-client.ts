@@ -2,6 +2,7 @@
 // Production-ready with retry logic, connection pooling, and fallbacks
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
 // CRITICAL: Disable NavigatorLock before Supabase tries to use it
 if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
@@ -74,16 +75,16 @@ class SupabaseClientManager {
         }
 
 
-        const isServer = typeof window === 'undefined';
+        // Browser: use createBrowserClient (@supabase/ssr) so this client reads from
+        // the same HTTP cookies that signupAction/signInAction write to via the SSR client.
+        // This ensures all DB operations (createChild, etc.) are authenticated.
+        if (typeof window !== 'undefined') {
+            return createBrowserClient(url, anonKey) as unknown as SupabaseClient;
+        }
 
+        // Server-side: plain client, no session persistence needed
         return createClient(url, anonKey, {
-            auth: {
-                persistSession: !isServer,
-                autoRefreshToken: !isServer,
-                detectSessionInUrl: !isServer,
-                flowType: 'pkce',
-                storageKey: 'sb-likkle-auth'
-            }
+            auth: { persistSession: false, autoRefreshToken: false }
         });
     }
 
