@@ -48,13 +48,13 @@ export const metadata: Metadata = {
     siteName: 'Likkle Legends',
     locale: 'en_US',
     type: 'website',
-    images: [{ url: '/images/logo.png', width: 800, height: 600, alt: 'Likkle Legends' }],
+    images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: siteContent.meta.title,
     description: siteContent.meta.description,
-    images: ['/images/logo.png'],
+    images: ['/images/og-image.jpg'],
   },
   alternates: {
     canonical: 'https://www.likklelegends.com',
