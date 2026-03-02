@@ -33,6 +33,7 @@ const features = [
 function WelcomeContent() {
     const searchParams = useSearchParams();
     const childName = searchParams.get('childName');
+    const uid = searchParams.get('uid');
 
     return (
         <div className="min-h-screen bg-[#FFFDF7] bg-grid-pattern relative overflow-hidden font-sans text-deep">
@@ -105,7 +106,7 @@ function WelcomeContent() {
                             Create your first child profile to unlock personalized stories and the immersive learning portal.
                         </p>
 
-                        <Link href="/onboarding/child">
+                        <Link href={`/onboarding/child${uid ? `?uid=${uid}` : ''}`}>
                             <button className="relative z-10 bg-white text-deep text-xl font-black py-5 px-10 rounded-2xl hover:bg-zinc-100 hover:scale-105 active:scale-95 transition-all w-full sm:w-auto shadow-lg flex items-center justify-center gap-3 mx-auto">
                                 Create Child Profile <ArrowRight className="w-6 h-6" />
                             </button>

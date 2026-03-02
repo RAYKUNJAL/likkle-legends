@@ -1,5 +1,5 @@
 
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
 const PLACEHOLDER_URL = 'https://placeholder.supabase.co';
 const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MTY0MDMyMjUsImV4cCI6MTkzMTk3OTIyNX0.placeholder';
@@ -16,10 +16,8 @@ function getValidKey(): string {
 
 // CRITICAL: Disable NavigatorLock before Supabase tries to use it
 if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
-    // Completely override the locks API to disable it
     if (navigator.locks) {
-        navigator.locks.request = async function (name: string, options: any, callback: any) {
-            // Skip the lock entirely - just run the callback immediately
+        navigator.locks.request = async function (_name: string, _options: any, callback: any) {
             try {
                 const result = await callback({
                     release: () => Promise.resolve(),
@@ -34,35 +32,20 @@ if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
     }
 }
 
-// Singleton client for browser - using direct client without SSR wrapper to avoid lock issues
-let browserClient: any;
+// Singleton browser client — uses @supabase/ssr createBrowserClient so it reads
+// from the same HTTP cookies that the SSR server client writes to.
+// This ensures sessions set by server actions are immediately visible client-side.
+let browserClient: ReturnType<typeof createBrowserClient> | null = null;
 
 export const createClient = () => {
     if (typeof window === 'undefined') {
-        // Server-side: use direct client
-        return createSupabaseClient(getValidUrl(), getValidKey());
+        // Server-side (e.g. called from a shared util): return a fresh instance
+        // Note: prefer using lib/supabase/server.ts in server components/actions
+        return createBrowserClient(getValidUrl(), getValidKey());
     }
 
     if (!browserClient) {
-        // Browser-side: use direct client with simple storage (no NavigatorLock issues)
-        browserClient = createSupabaseClient(
-            getValidUrl(),
-            getValidKey(),
-            {
-                auth: {
-                    storageKey: 'sb-likkle-auth',
-                    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-                    autoRefreshToken: true,
-                    persistSession: true,
-                    detectSessionInUrl: true,
-                },
-                global: {
-                    headers: {
-                        'X-Client-Info': 'likkle-legends',
-                    }
-                }
-            }
-        );
+        browserClient = createBrowserClient(getValidUrl(), getValidKey());
     }
     return browserClient;
-}
+};

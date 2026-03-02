@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronRight, ChevronLeft, Sparkles, Volume2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
@@ -62,7 +62,17 @@ const AVATARS = [
 ];
 
 export default function ChildOnboardingPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#F0F9FF] flex items-center justify-center"><div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+            <ChildOnboardingContent />
+        </Suspense>
+    );
+}
+
+function ChildOnboardingContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const uidFromUrl = searchParams.get('uid');
     const { user, isLoading: userLoading, refreshChildren } = useUser();
     const [step, setStep] = useState(1);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -126,6 +136,11 @@ export default function ChildOnboardingPage() {
             } catch {
                 // ignore
             }
+        }
+
+        // Last resort: use the uid passed from signup via URL param
+        if (!userId && uidFromUrl) {
+            userId = uidFromUrl;
         }
 
         if (!userId) {
