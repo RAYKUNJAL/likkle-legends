@@ -1,4 +1,3 @@
-
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
@@ -24,7 +23,7 @@ export async function updateSession(request: NextRequest) {
                     return request.cookies.getAll()
                 },
                 setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value, options }) =>
+                    cookiesToSet.forEach(({ name, value }) =>
                         request.cookies.set(name, value)
                     )
                     response = NextResponse.next({
@@ -38,15 +37,22 @@ export async function updateSession(request: NextRequest) {
         }
     )
 
-    // Derive the real project ref from the Supabase URL so we match the actual
-    // cookie name @supabase/ssr sets: sb-[project-ref]-auth-token[.chunk]
-    // cookieOptions.name is NOT supported in @supabase/ssr 0.x — always uses project ref.
-    const projectRef = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1] ?? '';
-    const cookiePrefix = projectRef ? `sb-${projectRef}-auth-token` : 'sb-';
+    const pathname = request.nextUrl.pathname;
+
+    const isAuthCookieName = (name: string) =>
+        /^sb-[^-]+-auth-token(?:\.\d+)?$/.test(name) || /^sb-[^-]+-auth-token-code-verifier$/.test(name);
+
+    const sanitizeRedirectPath = (value: string | null) => {
+        if (!value || !value.startsWith('/') || value.startsWith('//')) return '/portal';
+        if (value === '/login' || value.startsWith('/login?') || value === '/signup' || value.startsWith('/signup?')) {
+            return '/portal';
+        }
+        return value;
+    };
 
     let user = null;
     try {
-        const hasAuthCookie = request.cookies.getAll().some(c => c.name.startsWith(cookiePrefix));
+        const hasAuthCookie = request.cookies.getAll().some(c => isAuthCookieName(c.name));
         if (hasAuthCookie) {
             const { data, error } = await supabase.auth.getUser();
             if (!error) {
@@ -57,14 +63,12 @@ export async function updateSession(request: NextRequest) {
         user = null;
     }
 
-    // Protected routes logic
-    const isPortal = request.nextUrl.pathname.startsWith('/portal');
-    const isAdmin = request.nextUrl.pathname.startsWith('/admin') && request.nextUrl.pathname !== '/admin/central' && request.nextUrl.pathname !== '/admin';
+    const isPortal = pathname.startsWith('/portal');
+    const isAdmin = pathname.startsWith('/admin') && pathname !== '/admin/central' && pathname !== '/admin';
 
-    // Auth routes logic (redirect if already logged in)
-    if (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup') {
+    if (pathname === '/login' || pathname === '/signup') {
         if (user) {
-            const redirectTo = request.nextUrl.searchParams.get('redirect') || '/portal';
+            const redirectTo = sanitizeRedirectPath(request.nextUrl.searchParams.get('redirect'));
             const redirectResponse = NextResponse.redirect(new URL(redirectTo, request.url));
 
             const cookies = response.cookies.getAll();
@@ -76,10 +80,11 @@ export async function updateSession(request: NextRequest) {
         }
     }
 
-    // Protected routes logic (redirect if not logged in)
     if (isPortal || isAdmin) {
         if (!user) {
-            const redirectResponse = NextResponse.redirect(new URL('/login', request.url));
+            const loginUrl = new URL('/login', request.url);
+            loginUrl.searchParams.set('redirect', pathname);
+            const redirectResponse = NextResponse.redirect(loginUrl);
 
             const cookies = response.cookies.getAll();
             cookies.forEach(cookie => {
