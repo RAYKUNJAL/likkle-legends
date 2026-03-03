@@ -30,6 +30,8 @@ type Category = 'all' | 'story' | 'lullaby' | 'culture' | 'learning' | 'calm';
 // Leave as '' to hide the demo player until then.
 const DEMO_SONG_URL = '';
 
+const normalizeCategory = (cat?: string) => (cat || '').toLowerCase() as Category;
+
 function formatDuration(seconds?: number): string {
     if (!seconds || seconds === 0) return '—';
     const m = Math.floor(seconds / 60);
@@ -110,6 +112,11 @@ export default function ParentMusicHub() {
         const audio = audioRef.current;
         if (!audio) return;
 
+        if (!song.audio_url) {
+            toast.error('No audio file found for this track.');
+            return;
+        }
+
         if (isPlaying === song.id) {
             audio.pause();
             setIsPlaying(null);
@@ -185,12 +192,12 @@ export default function ParentMusicHub() {
         setIsPurchaseModalOpen(true);
     };
 
-    const premiumTracks = songs.filter(s => s.metadata?.is_premium && !purchases.includes(s.id));
-    const ownedTracks = songs.filter(s => purchases.includes(s.id) || !s.metadata?.is_premium);
+const premiumTracks = songs.filter(s => s.metadata?.is_premium && !purchases.includes(s.id));
+const ownedTracks = songs.filter(s => purchases.includes(s.id) || !s.metadata?.is_premium);
 
-    const filteredPremiumTracks = activeCategory === 'all'
-        ? premiumTracks
-        : premiumTracks.filter(s => s.category === activeCategory);
+const filteredPremiumTracks = activeCategory === 'all'
+    ? premiumTracks
+    : premiumTracks.filter(s => normalizeCategory(s.category) === activeCategory);
 
     const CATEGORIES: { id: Category; label: string }[] = [
         { id: 'all', label: 'All' },
