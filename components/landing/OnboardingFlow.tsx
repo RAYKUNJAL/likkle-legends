@@ -6,6 +6,7 @@ import { Mail, ArrowRight, ArrowLeft, Check, Sparkles, User, Globe, Heart, Rocke
 import { trackEvent } from '@/lib/analytics';
 import { signupAction } from '@/app/actions/auth-actions';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 
 interface OnboardingFlowProps {
     plan: string;
@@ -60,6 +61,15 @@ export default function OnboardingFlow({ plan, referral }: OnboardingFlowProps) 
             });
 
             if (!result.success) throw new Error(result.error);
+            try {
+                const supabase = createClient();
+                await supabase.auth.signInWithPassword({
+                    email: formData.email,
+                    password: formData.password
+                });
+            } catch (e) {
+                console.warn('Client sign-in after onboarding signup failed', e);
+            }
             if (result.requiresLogin) {
                 router.push('/login?redirect=/portal');
                 return;

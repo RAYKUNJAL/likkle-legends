@@ -96,6 +96,20 @@ interface UserContextType {
   verifyAge: () => Promise<boolean>;
 }
 
+function normalizeChildName<T extends Record<string, any>>(child: T): T {
+  const resolvedFirstName =
+    child.first_name ||
+    child.full_name ||
+    child.name ||
+    child.child_name ||
+    '';
+
+  return {
+    ...child,
+    first_name: resolvedFirstName,
+  };
+}
+
 // ==========================================
 // CONTEXT
 // ==========================================
@@ -211,16 +225,17 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
         .order('created_at', { ascending: true });
 
       if (data) {
-        setChildren(data as Child[]);
+        const normalized = (data as Child[]).map((c) => normalizeChildName(c)) as Child[];
+        setChildren(normalized);
 
         // Restore active child from localStorage or set first child as active
         const savedChildId = localStorage.getItem('activeChildId');
-        const savedChild = data.find((c: Child) => c.id === savedChildId);
+        const savedChild = normalized.find((c: Child) => c.id === savedChildId);
 
         if (savedChild) {
           setActiveChildState(savedChild as Child);
-        } else if (data.length > 0) {
-          setActiveChildState(data[0] as Child);
+        } else if (normalized.length > 0) {
+          setActiveChildState(normalized[0] as Child);
         }
       }
     } catch (error) {

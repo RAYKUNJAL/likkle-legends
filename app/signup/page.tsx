@@ -9,6 +9,7 @@ import { signupAction } from '@/app/actions/auth-actions';
 import { trackEvent } from '@/lib/analytics';
 import { MessageSquare } from 'lucide-react';
 import WhatsAppOtpForm from '@/components/auth/WhatsAppOtpForm';
+import { createClient } from '@/lib/supabase/client';
 
 // Signup Form Component
 function SignupForm() {
@@ -89,6 +90,17 @@ function SignupForm() {
 
             const userId = result.userId;
             trackEvent('signup_initiated', { userId, plan });
+
+            // Defensive: ensure a session exists client-side
+            try {
+                const supabase = createClient();
+                await supabase.auth.signInWithPassword({
+                    email: formData.email,
+                    password: formData.password
+                });
+            } catch (e) {
+                console.warn('Client sign-in after signup failed', e);
+            }
 
             // 3. Handle State
             if (result.emailSent) {
