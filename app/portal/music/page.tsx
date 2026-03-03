@@ -32,6 +32,45 @@ const DEMO_SONG_URL = '';
 
 const normalizeCategory = (cat?: string) => (cat || '').toLowerCase() as Category;
 
+const STARTER_SONGS: Song[] = [
+    {
+        id: 'starter-1',
+        title: 'Island Dawn',
+        artist: 'Likkle Legends Band',
+        audio_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+        category: 'culture',
+        duration_seconds: 70,
+        metadata: { is_premium: false, price: 0 },
+    },
+    {
+        id: 'starter-2',
+        title: 'Bedtime Breeze',
+        artist: 'Tanty Spice',
+        audio_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
+        category: 'lullaby',
+        duration_seconds: 65,
+        metadata: { is_premium: false, price: 0 },
+    },
+    {
+        id: 'starter-3',
+        title: 'Counting Coconuts',
+        artist: 'R.O.T.I.',
+        audio_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
+        category: 'learning',
+        duration_seconds: 62,
+        metadata: { is_premium: false, price: 0 },
+    },
+    {
+        id: 'starter-4',
+        title: 'Carnival Jump',
+        artist: 'Dilly Doubles',
+        audio_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
+        category: 'story',
+        duration_seconds: 78,
+        metadata: { is_premium: false, price: 0 },
+    },
+];
+
 function formatDuration(seconds?: number): string {
     if (!seconds || seconds === 0) return '—';
     const m = Math.floor(seconds / 60);
@@ -82,7 +121,16 @@ export default function ParentMusicHub() {
                 .eq('is_active', true)
                 .order('display_order', { ascending: true });
 
-            setSongs(allSongs || []);
+            let combined = allSongs || [];
+            // Ensure at least 4 free starter tracks for all users
+            const hasMinimumFree = combined.filter(s => !s.metadata?.is_premium).length >= 4;
+            if (!hasMinimumFree) {
+                const existingIds = new Set(combined.map(s => s.id));
+                const startersToAdd = STARTER_SONGS.filter(s => !existingIds.has(s.id));
+                combined = [...combined, ...startersToAdd];
+            }
+
+            setSongs(combined);
 
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
@@ -307,6 +355,47 @@ const filteredPremiumTracks = activeCategory === 'all'
                 {/* ── MARKET TAB ── */}
                 {activeTab === 'market' && (
                     <div className="space-y-10 animate-fade-in">
+
+                        {/* Starter Free Tracks */}
+                        <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-zinc-100">
+                            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                                <div>
+                                    <h3 className="text-2xl font-black text-deep">Free Starter Tracks</h3>
+                                    <p className="text-zinc-400 font-medium text-sm">Every family gets 4 songs for free. Tap play to listen.</p>
+                                </div>
+                            </div>
+                            <div className="divide-y divide-zinc-50">
+                                {STARTER_SONGS.map(song => (
+                                    <div key={song.id} className="py-4 flex items-center justify-between gap-4">
+                                        <div className="flex items-center gap-4">
+                                            <button
+                                                onClick={() => handlePlay(song)}
+                                                title={isPlaying === song.id ? "Pause track" : "Play track"}
+                                                aria-label={isPlaying === song.id ? "Pause track" : "Play track"}
+                                                className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${isPlaying === song.id ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200'}`}
+                                            >
+                                                {isPlaying === song.id ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
+                                            </button>
+                                            <div>
+                                                <h4 className="font-black text-deep text-base leading-tight">{song.title}</h4>
+                                                <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-0.5">{song.artist} · {song.category}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-xs font-black text-zinc-300">{formatDuration(song.duration_seconds)}</span>
+                                            <a
+                                                href={song.audio_url}
+                                                download
+                                                className="p-3 bg-zinc-100 text-zinc-400 rounded-xl hover:bg-primary hover:text-white transition-all"
+                                                title="Download Track"
+                                            >
+                                                <Download size={16} />
+                                            </a>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
 
                         {/* Bundle Upsell Banner */}
                         <div className="bg-gradient-to-r from-deep to-deep/80 rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
