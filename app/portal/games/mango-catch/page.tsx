@@ -14,13 +14,14 @@ export default function MangoCatchPage() {
     const handleComplete = async (score: number) => {
         if (!user || !activeChild) return;
         try {
+            const xp = Math.min(Math.max(score, 50), 250);
             // Log the game activity with the score as XP (or a calculated amount)
             await logActivity(
                 user.id,
                 activeChild.id,
                 'game',
                 'mango-catch',
-                score, // XP earned
+                xp,
                 0,
                 { title: 'Mango Catch Adventure' }
             );

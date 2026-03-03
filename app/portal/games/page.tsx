@@ -87,18 +87,18 @@ const FEATURED_GAMES = [
         isPopular: false,
     },
     {
-        id: 'story-adventure',
-        title: 'My Island Story',
-        description: 'Create your own Caribbean adventure!',
+        id: 'story-library',
+        title: 'Story Library Adventure',
+        description: 'Read guided Caribbean adventures with Tanty and R.O.T.I.!',
         emoji: '📚',
         gradient: 'from-purple-400 via-pink-500 to-rose-600',
-        tier: 'starter_mailer',
+        tier: 'free',
         category: 'adventure',
-        xp: 200,
-        time: '10 min',
-        learningFocus: 'Creative writing and storytelling',
-        isNew: true,
-        isPopular: false,
+        xp: 160,
+        time: '8-12 min',
+        learningFocus: 'Reading fluency, vocabulary, and comprehension',
+        isNew: false,
+        isPopular: true,
     },
     {
         id: 'cultural-quiz',
@@ -332,36 +332,36 @@ export default function GamesHubPage() {
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                                 <span className="px-3 py-1 bg-white/20 rounded-full text-xs font-bold uppercase tracking-wider">
-                                    AI Powered
+                                    R.O.T.I. Guided
                                 </span>
                                 <span className="px-3 py-1 bg-green-500/30 text-green-300 rounded-full text-xs font-bold uppercase tracking-wider">
-                                    New!
+                                    Kid Favorite
                                 </span>
                             </div>
-                            <h2 className="text-3xl font-black mb-2">AI Story Adventure</h2>
+                            <h2 className="text-3xl font-black mb-2">Story Library Adventure</h2>
                             <p className="text-white/80 text-lg mb-4">
-                                Create your own personalized Caribbean adventure with AI-generated stories!
+                                Jump into island stories with guided reading, fun vocabulary, and cultural lessons.
                             </p>
                             <div className="flex items-center gap-6 text-sm">
                                 <span className="flex items-center gap-1.5">
                                     <Zap className="text-yellow-300" size={16} />
-                                    <span className="font-bold">200 XP</span>
+                                    <span className="font-bold">160 XP</span>
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                     <Clock size={16} className="text-white/60" />
-                                    <span>10-15 min</span>
+                                    <span>8-12 min</span>
                                 </span>
                                 <span className="flex items-center gap-1.5">
                                     <Wand2 size={16} className="text-white/60" />
-                                    <span>AI Generated</span>
+                                    <span>Read & Learn</span>
                                 </span>
                             </div>
                         </div>
                         <Link
-                            href="/portal/story-studio"
+                            href="/portal/stories"
                             className="px-8 py-4 bg-white text-primary rounded-2xl font-black text-lg shadow-xl hover:scale-105 transition-transform flex items-center gap-2"
                         >
-                            <Play size={22} /> Play Now
+                            <Play size={22} /> Start Reading
                         </Link>
                     </div>
                 </div>
@@ -469,7 +469,7 @@ export default function GamesHubPage() {
                                         {/* Play Button */}
                                         {!isLocked && (
                                             <Link
-                                                href={game.id === 'story-adventure' ? '/portal/story-studio' : `/portal/games/${game.id}`}
+                                                href={game.id === 'story-library' ? '/portal/stories' : `/portal/games/${game.id}`}
                                                 className="w-full py-3.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-2xl font-bold text-center transition-all flex items-center justify-center gap-2 border border-white/20"
                                             >
                                                 <Play size={18} /> Play Now

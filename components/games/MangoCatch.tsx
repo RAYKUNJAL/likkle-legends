@@ -1,95 +1,127 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { Heart, Trophy, Target, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 
-interface Fruit {
-    id: number;
+type FruitKey = 'mango' | 'banana' | 'pineapple' | 'coconut';
+
+type FruitDef = {
+    key: FruitKey;
     emoji: string;
-    x: number;
-    y: number;
-    points: number;
-    isObstacle: boolean;
+    name: string;
+    colorHint: string;
+};
+
+type FruitTile = {
+    id: string;
+    fruit: FruitDef;
+    isTapped: boolean;
+};
+
+const FRUITS: FruitDef[] = [
+    { key: 'mango', emoji: '??', name: 'Mango', colorHint: 'yellow-orange' },
+    { key: 'banana', emoji: '??', name: 'Banana', colorHint: 'yellow' },
+    { key: 'pineapple', emoji: '??', name: 'Pineapple', colorHint: 'golden' },
+    { key: 'coconut', emoji: '??', name: 'Coconut', colorHint: 'brown' },
+];
+
+const TOTAL_ROUNDS = 6;
+const ROUND_TARGET_COUNT = 4;
+
+function shuffle<T>(arr: T[]) {
+    return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function createBoard(target: FruitDef, seed: number): FruitTile[] {
+    const tiles: FruitTile[] = [];
+    const distractors = FRUITS.filter((f) => f.key !== target.key);
+
+    for (let i = 0; i < ROUND_TARGET_COUNT; i += 1) {
+        tiles.push({ id: `t-${seed}-${i}`, fruit: target, isTapped: false });
+    }
+
+    for (let i = 0; i < 8; i += 1) {
+        const fruit = distractors[i % distractors.length];
+        tiles.push({ id: `d-${seed}-${i}`, fruit, isTapped: false });
+    }
+
+    return shuffle(tiles);
 }
 
 export default function MangoCatch({ onComplete }: { onComplete?: (score: number) => void }) {
     const [gameState, setGameState] = useState<'start' | 'playing' | 'won' | 'lost'>('start');
+    const [round, setRound] = useState(1);
     const [score, setScore] = useState(0);
     const [lives, setLives] = useState(3);
-    const [level, setLevel] = useState(1);
-    const [fruits, setFruits] = useState<Fruit[]>([]);
-    const [caughtCount, setCaughtCount] = useState(0);
+    const [boardSeed, setBoardSeed] = useState(1);
+    const [targetFruit, setTargetFruit] = useState<FruitDef>(FRUITS[0]);
+    const [caughtTarget, setCaughtTarget] = useState(0);
+    const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
 
-    const FRUITS = [
-        { emoji: '🥭', points: 10, isObstacle: false },
-        { emoji: '🍍', points: 15, isObstacle: false },
-        { emoji: '🍌', points: 10, isObstacle: false },
-        { emoji: '🧤', points: -30, isObstacle: true },
-    ];
+    const board = useMemo(() => createBoard(targetFruit, boardSeed), [targetFruit, boardSeed]);
+    const [tiles, setTiles] = useState<FruitTile[]>(board);
+
+    React.useEffect(() => {
+        setTiles(board);
+    }, [board]);
+
+    const startRound = (newRound: number, keepScore: number, keepLives: number) => {
+        const nextTarget = shuffle(FRUITS)[0];
+        setRound(newRound);
+        setScore(keepScore);
+        setLives(keepLives);
+        setTargetFruit(nextTarget);
+        setCaughtTarget(0);
+        setFeedback(null);
+        setBoardSeed((s) => s + 1);
+    };
 
     const startGame = () => {
         setGameState('playing');
-        setScore(0);
-        setLives(3);
-        setLevel(1);
-        setFruits([]);
-        setCaughtCount(0);
-        spawnFruits(1);
+        startRound(1, 0, 3);
     };
 
-    const spawnFruits = (lvl: number) => {
-        const newFruits: Fruit[] = [];
-        const fruitCount = 3 + lvl;
-
-        for (let i = 0; i < fruitCount; i++) {
-            const fruit = FRUITS[Math.floor(Math.random() * FRUITS.length)];
-            newFruits.push({
-                id: Date.now() + i,
-                emoji: fruit.emoji,
-                x: Math.random() * 85 + 5, // percentage
-                y: Math.random() * 70 + 10,
-                points: fruit.points,
-                isObstacle: fruit.isObstacle,
-            });
-        }
-
-        setFruits(newFruits);
+    const endWin = (finalScore: number) => {
+        setGameState('won');
+        confetti({ particleCount: 140, spread: 75, origin: { y: 0.6 } });
+        onComplete?.(finalScore);
     };
 
-    const catchFruit = (id: number) => {
-        const fruit = fruits.find((f) => f.id === id);
-        if (!fruit) return;
+    const handleTileTap = (id: string) => {
+        if (gameState !== 'playing') return;
 
-        if (fruit.isObstacle) {
-            // Hit obstacle!
-            if (lives <= 1) {
-                setGameState('lost');
-            } else {
-                setLives(lives - 1);
+        const tile = tiles.find((t) => t.id === id);
+        if (!tile || tile.isTapped) return;
+
+        setTiles((prev) => prev.map((t) => (t.id === id ? { ...t, isTapped: true } : t)));
+
+        if (tile.fruit.key === targetFruit.key) {
+            const nextCaught = caughtTarget + 1;
+            const gained = 25 + (round - 1) * 5;
+            const nextScore = score + gained;
+
+            setCaughtTarget(nextCaught);
+            setScore(nextScore);
+            setFeedback({ ok: true, text: `Great! You found a ${targetFruit.name}.` });
+
+            if (nextCaught >= ROUND_TARGET_COUNT) {
+                if (round >= TOTAL_ROUNDS) {
+                    endWin(nextScore);
+                } else {
+                    window.setTimeout(() => {
+                        startRound(round + 1, nextScore, lives);
+                    }, 700);
+                }
             }
         } else {
-            // Caught good fruit!
-            setScore(score + fruit.points);
-            setCaughtCount(caughtCount + 1);
-        }
+            const nextLives = lives - 1;
+            setLives(nextLives);
+            setFeedback({ ok: false, text: `Oops, that's ${tile.fruit.name}. Find ${targetFruit.name}.` });
 
-        // Remove fruit
-        setFruits(fruits.filter((f) => f.id !== id));
-
-        // Check if level complete
-        if (caughtCount + 1 >= 3 + level) {
-            if (level >= 3) {
-                // Win!
-                setGameState('won');
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                if (onComplete) onComplete(score + fruit.points);
-            } else {
-                // Next level
-                const nextLevel = level + 1;
-                setLevel(nextLevel);
-                setCaughtCount(0);
-                spawnFruits(nextLevel);
+            if (nextLives <= 0) {
+                setGameState('lost');
             }
         }
     };
@@ -97,20 +129,19 @@ export default function MangoCatch({ onComplete }: { onComplete?: (score: number
     if (gameState === 'start') {
         return (
             <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-8 bg-gradient-to-b from-orange-200 to-amber-100 rounded-[3rem]">
-                <div className="text-9xl animate-bounce">🥭</div>
+                <div className="text-8xl">??</div>
                 <div>
-                    <h1 className="text-5xl font-black text-orange-900 mb-4">
-                        Mango Catch!
-                    </h1>
-                    <p className="text-xl text-orange-700 max-w-2xl mx-auto">
-                        Tap the fruits to catch them! Avoid the old mangoes! 🎯
+                    <h1 className="text-5xl font-black text-orange-900 mb-4">Mango Catch Learning Quest</h1>
+                    <p className="text-xl text-orange-700 max-w-2xl mx-auto mb-2">
+                        Catch the target fruit, count your catches, and build island vocabulary.
                     </p>
+                    <p className="text-sm font-bold text-orange-600">Best for ages 3-9</p>
                 </div>
                 <button
                     onClick={startGame}
-                    className="px-12 py-6 bg-orange-500 hover:bg-orange-600 text-white rounded-[2rem] font-black text-2xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all"
+                    className="px-12 py-5 bg-orange-500 hover:bg-orange-600 text-white rounded-[2rem] font-black text-2xl shadow-xl hover:shadow-2xl transition-all"
                 >
-                    Start Catching! 🚀
+                    Start Game
                 </button>
             </div>
         );
@@ -118,23 +149,16 @@ export default function MangoCatch({ onComplete }: { onComplete?: (score: number
 
     if (gameState === 'won') {
         return (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-8 bg-gradient-to-b from-green-400 to-emerald-300 rounded-[3rem]">
-                <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1, rotate: [0, 10, -10, 0] }}
-                    className="text-9xl"
-                >
-                    🏆
-                </motion.div>
-                <h1 className="text-5xl font-black text-white drop-shadow-lg">Fruit Master!</h1>
-                <div className="bg-white/30 p-8 rounded-3xl backdrop-blur-sm">
-                    <p className="text-3xl font-black text-white">
-                        Final Score: <span className="text-yellow-300">{score}</span> 🥭
-                    </p>
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-7 bg-gradient-to-b from-green-400 to-emerald-300 rounded-[3rem]">
+                <div className="text-8xl">??</div>
+                <h2 className="text-5xl font-black text-white">Fruit Champion!</h2>
+                <div className="bg-white/30 p-7 rounded-3xl backdrop-blur-sm">
+                    <p className="text-3xl font-black text-white">Final Score: <span className="text-yellow-200">{score}</span></p>
+                    <p className="text-lg text-white/90 mt-2">You completed all {TOTAL_ROUNDS} learning rounds.</p>
                 </div>
                 <button
                     onClick={() => setGameState('start')}
-                    className="px-8 py-4 bg-white text-green-600 rounded-2xl font-black text-lg hover:scale-105 transition-transform"
+                    className="px-8 py-4 bg-white text-green-700 rounded-2xl font-black text-lg hover:scale-105 transition-transform"
                 >
                     Play Again
                 </button>
@@ -144,28 +168,18 @@ export default function MangoCatch({ onComplete }: { onComplete?: (score: number
 
     if (gameState === 'lost') {
         return (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-8 bg-gradient-to-b from-red-400 to-orange-300 rounded-[3rem]">
-                <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="text-9xl"
-                >
-                    😅
-                </motion.div>
-                <h1 className="text-5xl font-black text-white drop-shadow-lg">Game Over!</h1>
-                <div className="bg-white/30 p-8 rounded-3xl backdrop-blur-sm">
-                    <p className="text-3xl font-black text-white">
-                        You caught: <span className="text-yellow-300">{caughtCount}</span> fruits
-                    </p>
-                    <p className="text-2xl font-bold text-white mt-2">
-                        Score: <span className="text-yellow-300">{score}</span>
-                    </p>
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center space-y-7 bg-gradient-to-b from-red-400 to-orange-300 rounded-[3rem]">
+                <div className="text-8xl">??</div>
+                <h2 className="text-5xl font-black text-white">Try Again!</h2>
+                <div className="bg-white/30 p-7 rounded-3xl backdrop-blur-sm">
+                    <p className="text-3xl font-black text-white">Score: <span className="text-yellow-200">{score}</span></p>
+                    <p className="text-lg text-white/90 mt-2">Round reached: {round}/{TOTAL_ROUNDS}</p>
                 </div>
                 <button
                     onClick={() => setGameState('start')}
-                    className="px-8 py-4 bg-white text-red-600 rounded-2xl font-black text-lg hover:scale-105 transition-transform"
+                    className="px-8 py-4 bg-white text-red-700 rounded-2xl font-black text-lg hover:scale-105 transition-transform"
                 >
-                    Try Again
+                    Restart
                 </button>
             </div>
         );
@@ -173,59 +187,51 @@ export default function MangoCatch({ onComplete }: { onComplete?: (score: number
 
     return (
         <div className="h-full flex flex-col p-6 bg-gradient-to-b from-orange-50 to-amber-100 rounded-[3rem]">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-wrap justify-between items-center gap-3 mb-5">
                 <div>
-                    <p className="text-2xl font-black text-orange-900">Level {level}/3</p>
-                    <p className="text-lg text-orange-700">Caught: {caughtCount}/{3 + level}</p>
+                    <p className="text-2xl font-black text-orange-900">Round {round}/{TOTAL_ROUNDS}</p>
+                    <p className="text-lg text-orange-700">Catch {ROUND_TARGET_COUNT} {targetFruit.name}s ({targetFruit.colorHint})</p>
                 </div>
-                <div>
-                    <p className="text-2xl font-black text-orange-900">Score: {score}</p>
-                    <div className="flex gap-1 mt-1">
-                        {Array(3)
-                            .fill(0)
-                            .map((_, i) => (
-                                <span key={i} className={`text-2xl ${i < lives ? '❤️' : '🩶'}`}>
-                                </span>
-                            ))}
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1 text-orange-800 font-black">
+                        <Target size={18} /> {caughtTarget}/{ROUND_TARGET_COUNT}
+                    </div>
+                    <div className="flex items-center gap-1 text-orange-800 font-black">
+                        <Trophy size={18} /> {score}
+                    </div>
+                    <div className="flex items-center gap-1">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                            <Heart key={i} size={18} className={i < lives ? 'text-red-500 fill-red-500' : 'text-gray-400'} />
+                        ))}
                     </div>
                 </div>
             </div>
 
-            {/* Game Area */}
-            <div className="flex-1 relative bg-white/40 rounded-3xl overflow-hidden backdrop-blur-sm border-4 border-orange-200">
-                {fruits.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-center">
-                        <p className="text-3xl font-bold text-orange-700">Spawning fruits...</p>
-                    </div>
-                ) : (
-                    fruits.map((fruit) => (
-                        <motion.button
-                            key={fruit.id}
-                            onClick={() => catchFruit(fruit.id)}
-                            initial={{ scale: 0, y: -20, opacity: 0 }}
-                            animate={{ scale: 1, y: 0, opacity: 1 }}
-                            exit={{ scale: 0 }}
-                            whileHover={{ scale: 1.2 }}
-                            whileTap={{ scale: 0.8 }}
-                            style={{
-                                position: 'absolute',
-                                left: `${fruit.x}%`,
-                                top: `${fruit.y}%`,
-                                transform: 'translate(-50%, -50%)',
-                            }}
-                            className="text-6xl cursor-pointer hover:scale-125 transition-transform drop-shadow-lg"
-                        >
-                            {fruit.emoji}
-                        </motion.button>
-                    ))
-                )}
+            {feedback && (
+                <div className={`mb-4 p-3 rounded-xl font-bold flex items-center gap-2 ${feedback.ok ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {feedback.ok ? <CheckCircle2 size={18} /> : <XCircle size={18} />} {feedback.text}
+                </div>
+            )}
+
+            <div className="flex-1 grid grid-cols-3 md:grid-cols-4 gap-4 bg-white/50 rounded-3xl p-5 border-2 border-orange-200">
+                {tiles.map((tile) => (
+                    <motion.button
+                        key={tile.id}
+                        onClick={() => handleTileTap(tile.id)}
+                        whileHover={!tile.isTapped ? { scale: 1.05 } : {}}
+                        whileTap={!tile.isTapped ? { scale: 0.95 } : {}}
+                        disabled={tile.isTapped}
+                        className={`aspect-square rounded-2xl text-5xl md:text-6xl flex items-center justify-center border-2 transition-all ${tile.isTapped ? 'bg-gray-100 border-gray-200 opacity-50' : 'bg-white border-orange-200 hover:border-orange-400'}`}
+                        aria-label={`Fruit ${tile.fruit.name}`}
+                        title={tile.fruit.name}
+                    >
+                        {tile.fruit.emoji}
+                    </motion.button>
+                ))}
             </div>
 
-            {/* Instructions */}
-            <div className="text-center mt-6 text-sm font-bold text-orange-700 bg-orange-100 p-3 rounded-2xl">
-                <p>🥭 Tap fruits to catch them!</p>
-                <p>🧤 Avoid the old mangoes!</p>
+            <div className="text-center mt-4 text-sm font-bold text-orange-700 bg-orange-100 p-3 rounded-2xl flex items-center justify-center gap-2">
+                <RefreshCw size={14} /> Learning tip: say each fruit name out loud when you tap it.
             </div>
         </div>
     );
