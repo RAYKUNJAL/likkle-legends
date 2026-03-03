@@ -3,8 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
     X, Play, Pause, Volume2, VolumeX,
-    Maximize, ChevronLeft, ChevronRight,
-    Star, Heart, Loader2, Sparkles, Trophy
+    Maximize, Loader2, Sparkles, Trophy
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
@@ -21,6 +20,31 @@ interface PremiumVideoPlayerProps {
     onComplete: (xp: number) => void;
 }
 
+/** Returns true if the URL is a YouTube link */
+function isYouTubeUrl(url: string): boolean {
+    return /youtube\.com|youtu\.be/.test(url);
+}
+
+/** Converts any YouTube URL to a nocookie embed URL with JS API enabled */
+function toYouTubeEmbed(url: string): string {
+    // Already an embed URL
+    if (url.includes('/embed/')) {
+        const base = url.split('?')[0];
+        return `${base}?enablejsapi=1&rel=0&modestbranding=1&autoplay=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+    }
+    // youtu.be short link
+    const shortMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+    if (shortMatch) {
+        return `https://www.youtube-nocookie.com/embed/${shortMatch[1]}?enablejsapi=1&rel=0&modestbranding=1&autoplay=1`;
+    }
+    // youtube.com/watch?v=
+    const watchMatch = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+    if (watchMatch) {
+        return `https://www.youtube-nocookie.com/embed/${watchMatch[1]}?enablejsapi=1&rel=0&modestbranding=1&autoplay=1`;
+    }
+    return url;
+}
+
 export default function PremiumVideoPlayer({ video, onClose, onComplete }: PremiumVideoPlayerProps) {
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
@@ -31,6 +55,36 @@ export default function PremiumVideoPlayer({ video, onClose, onComplete }: Premi
 
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const videoUrl = video.video_url || '';
+    const isYT = isYouTubeUrl(videoUrl);
+    const ytEmbedUrl = isYT ? toYouTubeEmbed(videoUrl) : '';
+
+    // YouTube IFrame API: listen for video end via postMessage
+    useEffect(() => {
+        if (!isYT) return;
+        setIsLoading(false); // iframe handles its own loading
+
+        const handleMessage = (event: MessageEvent) => {
+            if (!event.origin.includes('youtube')) return;
+            try {
+                const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                // YT state 0 = ended, 1 = playing, 2 = paused
+                if (data?.event === 'onStateChange') {
+                    if (data.info === 1) { setIsPlaying(true); setIsLoading(false); }
+                    if (data.info === 2) setIsPlaying(false);
+                    if (data.info === 0 && !isCompleted) handleComplete();
+                }
+                if (data?.event === 'onReady') setIsLoading(false);
+            } catch {
+                // non-JSON postMessage — ignore
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isYT, isCompleted]);
 
     const togglePlay = () => {
         if (videoRef.current) {
@@ -44,24 +98,15 @@ export default function PremiumVideoPlayer({ video, onClose, onComplete }: Premi
         if (videoRef.current) {
             const p = (videoRef.current.currentTime / videoRef.current.duration) * 100;
             setProgress(p);
-
-            // Auto complete at 90%
-            if (p > 90 && !isCompleted) {
-                handleComplete();
-            }
+            if (p > 90 && !isCompleted) handleComplete();
         }
     };
 
     const handleComplete = () => {
+        if (isCompleted) return;
         setIsCompleted(true);
-        confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-        });
-        setTimeout(() => {
-            onComplete(video.reward_xp || 50);
-        }, 3000);
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+        setTimeout(() => { onComplete(video.reward_xp || 50); }, 3000);
     };
 
     const handleMouseMove = () => {
@@ -71,9 +116,7 @@ export default function PremiumVideoPlayer({ video, onClose, onComplete }: Premi
     };
 
     useEffect(() => {
-        return () => {
-            if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
-        };
+        return () => { if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current); };
     }, []);
 
     return (
@@ -81,117 +124,140 @@ export default function PremiumVideoPlayer({ video, onClose, onComplete }: Premi
             className="fixed inset-0 z-[2000] bg-black flex items-center justify-center overflow-hidden select-none"
             onMouseMove={handleMouseMove}
         >
-            <div className="relative w-full h-full max-w-[1920px] aspect-video">
-                <video
-                    ref={videoRef}
-                    src={video.video_url || "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"}
-                    className="w-full h-full object-contain"
-                    onTimeUpdate={handleTimeUpdate}
-                    onWaiting={() => setIsLoading(true)}
-                    onPlaying={() => { setIsLoading(false); setIsPlaying(true); }}
-                    onCanPlay={() => setIsLoading(false)}
-                    onClick={togglePlay}
-                />
+            <div className="relative w-full h-full max-w-[1920px] flex items-center justify-center">
 
-                {/* Loading Overlay */}
-                {isLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                        <Loader2 className="text-white animate-spin" size={64} />
+                {/* ── YouTube Embed ── */}
+                {isYT ? (
+                    <div className="relative w-full aspect-video max-h-screen">
+                        {isLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+                                <Loader2 className="text-white animate-spin" size={64} />
+                            </div>
+                        )}
+                        <iframe
+                            src={ytEmbedUrl}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                            allowFullScreen
+                            onLoad={() => setIsLoading(false)}
+                            title={video.title}
+                        />
+
+                        {/* Top Bar for YouTube */}
+                        <AnimatePresence>
+                            {showControls && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent flex items-center justify-between p-6 pointer-events-none"
+                                >
+                                    <button
+                                        onClick={onClose}
+                                        className="pointer-events-auto w-14 h-14 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white transition-all shadow-xl"
+                                        title="Close"
+                                    >
+                                        <X size={28} />
+                                    </button>
+                                    <div className="text-center">
+                                        <p className="text-white/60 font-black uppercase tracking-widest text-xs mb-1">Village Cinema</p>
+                                        <h2 className="text-xl font-black text-white tracking-tight">{video.title}</h2>
+                                    </div>
+                                    <div className="pointer-events-auto bg-white/10 backdrop-blur-md px-5 py-2 rounded-2xl flex items-center gap-2 border border-white/20">
+                                        <Sparkles className="text-yellow-400" size={18} />
+                                        <span className="text-white font-black text-sm">+{video.reward_xp || 50} XP</span>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                ) : (
+                    /* ── HTML5 Video ── */
+                    <div className="relative w-full h-full max-w-[1920px] aspect-video">
+                        <video
+                            ref={videoRef}
+                            src={videoUrl || "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"}
+                            className="w-full h-full object-contain"
+                            onTimeUpdate={handleTimeUpdate}
+                            onWaiting={() => setIsLoading(true)}
+                            onPlaying={() => { setIsLoading(false); setIsPlaying(true); }}
+                            onCanPlay={() => setIsLoading(false)}
+                            muted={isMuted}
+                            onClick={togglePlay}
+                        />
+
+                        {isLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                                <Loader2 className="text-white animate-spin" size={64} />
+                            </div>
+                        )}
+
+                        <AnimatePresence>
+                            {showControls && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 flex flex-col justify-between p-8"
+                                >
+                                    {/* Top Bar */}
+                                    <div className="flex items-center justify-between">
+                                        <button
+                                            onClick={onClose}
+                                            className="w-16 h-16 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white transition-all shadow-xl"
+                                            title="Close Lesson"
+                                        >
+                                            <X size={32} />
+                                        </button>
+                                        <div className="text-center">
+                                            <p className="text-white/60 font-black uppercase tracking-widest text-xs mb-1">Lesson In Progress</p>
+                                            <h2 className="text-2xl font-black text-white tracking-tight">{video.title}</h2>
+                                        </div>
+                                        <div className="w-16" />
+                                    </div>
+
+                                    {!isPlaying && !isLoading && (
+                                        <button
+                                            onClick={togglePlay}
+                                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
+                                        >
+                                            <Play size={64} className="ml-2" />
+                                        </button>
+                                    )}
+
+                                    {/* Bottom Controls */}
+                                    <div className="space-y-6">
+                                        <div className="relative h-4 bg-white/20 rounded-full overflow-hidden">
+                                            <motion.div
+                                                className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-accent rounded-full"
+                                                style={{ width: `${progress}%` }}
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-6">
+                                                <button onClick={togglePlay} className="text-white hover:scale-110 transition-transform">
+                                                    {isPlaying ? <Pause size={48} /> : <Play size={48} />}
+                                                </button>
+                                                <button onClick={() => setIsMuted(!isMuted)} className="text-white/80 hover:text-white">
+                                                    {isMuted ? <VolumeX size={32} /> : <Volume2 size={32} />}
+                                                </button>
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <div className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl flex items-center gap-2 border border-white/20">
+                                                    <Sparkles className="text-yellow-400" size={20} />
+                                                    <span className="text-white font-black">+{video.reward_xp || 50} XP</span>
+                                                </div>
+                                                <button className="text-white/80 hover:text-white"><Maximize size={32} /></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 )}
 
-                {/* HUD Controls */}
-                <AnimatePresence>
-                    {showControls && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 flex flex-col justify-between p-8"
-                        >
-                            {/* Top Bar */}
-                            <div className="flex items-center justify-between">
-                                <button
-                                    onClick={onClose}
-                                    className="w-16 h-16 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white transition-all shadow-xl"
-                                    title="Close Lesson"
-                                    aria-label="Close Video Lesson"
-                                >
-                                    <X size={32} />
-                                </button>
-
-                                <div className="text-center">
-                                    <p className="text-white/60 font-black uppercase tracking-widest text-xs mb-1">Lesson In Progress</p>
-                                    <h2 className="text-2xl font-black text-white tracking-tight">{video.title}</h2>
-                                </div>
-
-                                <div className="w-16" /> {/* Spacer */}
-                            </div>
-
-                            {/* Middle Play Button Overlay (Visible when paused) */}
-                            {!isPlaying && !isLoading && (
-                                <button
-                                    onClick={togglePlay}
-                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
-                                    title="Play Video"
-                                    aria-label="Play Video Lesson"
-                                >
-                                    <Play size={64} className="ml-2" />
-                                </button>
-                            )}
-
-                            {/* Bottom Controls */}
-                            <div className="space-y-6">
-                                {/* Progress Bar */}
-                                <div className="relative h-4 bg-white/20 rounded-full overflow-hidden cursor-pointer group/progress">
-                                    <motion.div
-                                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-primary to-accent rounded-full"
-                                        style={{ width: `${progress}%` }}
-                                    />
-                                    <div className="absolute inset-0 opacity-0 group-hover/progress:opacity-30 bg-white" />
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-6">
-                                        <button
-                                            onClick={togglePlay}
-                                            className="text-white hover:scale-110 transition-transform"
-                                            title={isPlaying ? "Pause" : "Play"}
-                                            aria-label={isPlaying ? "Pause Video" : "Play Video"}
-                                        >
-                                            {isPlaying ? <Pause size={48} /> : <Play size={48} />}
-                                        </button>
-
-                                        <button
-                                            onClick={() => setIsMuted(!isMuted)}
-                                            className="text-white/80 hover:text-white"
-                                            title={isMuted ? "Unmute" : "Mute"}
-                                            aria-label={isMuted ? "Unmute Video" : "Mute Video"}
-                                        >
-                                            {isMuted ? <VolumeX size={32} /> : <Volume2 size={32} />}
-                                        </button>
-                                    </div>
-
-                                    <div className="flex items-center gap-4">
-                                        <div className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl flex items-center gap-2 border border-white/20">
-                                            <Sparkles className="text-yellow-400" size={20} />
-                                            <span className="text-white font-black">+{video.reward_xp || 50} XP</span>
-                                        </div>
-                                        <button
-                                            className="text-white/80 hover:text-white"
-                                            title="Maximize Video"
-                                            aria-label="Maximize Video to Fullscreen"
-                                        >
-                                            <Maximize size={32} />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-                {/* Completion Modal */}
+                {/* Completion Modal — same for both YouTube + HTML5 */}
                 <AnimatePresence>
                     {isCompleted && (
                         <motion.div

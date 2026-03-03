@@ -87,6 +87,68 @@ interface Video {
 
 type PortalSection = 'home' | 'stories' | 'songs' | 'missions' | 'games' | 'lessons' | 'radio' | 'printables' | 'leaderboard' | 'challenges';
 
+/**
+ * Curated free Caribbean educational videos for Village Cinema.
+ * All sourced from freely embeddable YouTube content.
+ * Admins can add/replace videos via the Admin Panel → Content → Videos.
+ */
+const VILLAGE_CINEMA_VIDEOS: Video[] = [
+    {
+        id: 'vc-steelpan-1',
+        title: 'The Steel Pan — Caribbean\'s Own Instrument',
+        thumbnail_url: 'https://img.youtube.com/vi/BAQTTajk2F8/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=BAQTTajk2F8',
+        duration_seconds: 480,
+        tier_required: 'free',
+        reward_xp: 60,
+    },
+    {
+        id: 'vc-steelpan-2',
+        title: 'Steel Pan Music from the Caribbean',
+        thumbnail_url: 'https://img.youtube.com/vi/VCpnVY8W2qQ/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=VCpnVY8W2qQ',
+        duration_seconds: 300,
+        tier_required: 'free',
+        reward_xp: 50,
+    },
+    {
+        id: 'vc-geography-jam',
+        title: 'Geography Now! — Jamaica',
+        thumbnail_url: 'https://img.youtube.com/vi/qy-F-tmHFZU/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=qy-F-tmHFZU',
+        duration_seconds: 900,
+        tier_required: 'free',
+        reward_xp: 75,
+    },
+    {
+        id: 'vc-geography-tnt',
+        title: 'Geography Now! — Trinidad & Tobago',
+        thumbnail_url: 'https://img.youtube.com/vi/pIAHBhBMHAE/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=pIAHBhBMHAE',
+        duration_seconds: 840,
+        tier_required: 'free',
+        reward_xp: 75,
+    },
+    {
+        id: 'vc-geography-bar',
+        title: 'Geography Now! — Barbados',
+        thumbnail_url: 'https://img.youtube.com/vi/NmKAGqxRtHc/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=NmKAGqxRtHc',
+        duration_seconds: 780,
+        tier_required: 'free',
+        reward_xp: 75,
+    },
+    {
+        id: 'vc-carnival',
+        title: 'Caribbean Carnival — Culture & Traditions',
+        thumbnail_url: 'https://img.youtube.com/vi/39OeZzW56UI/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=39OeZzW56UI',
+        duration_seconds: 600,
+        tier_required: 'free',
+        reward_xp: 60,
+    },
+];
+
 export default function ChildPortalPage() {
     const router = useRouter();
     const { user, children, activeChild, canAccess, isSubscribed, isLoading: userLoading, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge, verifyAge } = useUser();
@@ -758,20 +820,13 @@ export default function ChildPortalPage() {
 
                                     {loadingStates.videos ? (
                                         <GridSkeleton count={3} type="card" />
-                                    ) : videos.length === 0 ? (
-                                        <div className="col-span-full">
-                                            <EmptyState
-                                                icon="🎥"
-                                                title="Cinema is Coming Soon"
-                                                message="Our village videographers are out capturing the most beautiful island lessons. Check back later!"
-                                            />
-                                        </div>
                                     ) : (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                                            {videos.map((video) => {
+                                            {(videos.length > 0 ? videos : VILLAGE_CINEMA_VIDEOS).map((video) => {
                                                 const isLocked = !canAccess(video.tier_required);
                                                 return (
                                                     <button
+                                                        type="button"
                                                         key={video.id}
                                                         onClick={() => isLocked ? handleLockedClick(video.tier_required, video.title, 'Watch this lesson and unlock all Village Cinema videos.') : setActiveVideo(video)}
                                                         className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-indigo-100 text-left ${isLocked ? 'opacity-80 cursor-pointer' : ''}`}
