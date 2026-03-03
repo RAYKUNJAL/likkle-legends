@@ -30,6 +30,7 @@ interface Game {
     time?: string;
     isNew?: boolean;
     isPopular?: boolean;
+    learningFocus?: string;
 }
 
 const GAME_CATEGORIES = [
@@ -53,6 +54,7 @@ const FEATURED_GAMES = [
         category: 'memory',
         xp: 100,
         time: '5 min',
+        learningFocus: 'Visual memory and island vocabulary',
         isNew: false,
         isPopular: true,
     },
@@ -66,6 +68,7 @@ const FEATURED_GAMES = [
         category: 'word',
         xp: 80,
         time: '5 min',
+        learningFocus: 'Jamaican Patois and reading comprehension',
         isNew: false,
         isPopular: false,
     },
@@ -79,6 +82,7 @@ const FEATURED_GAMES = [
         category: 'trivia',
         xp: 150,
         time: '8 min',
+        learningFocus: 'Geography, culture facts, and recall',
         isNew: true,
         isPopular: false,
     },
@@ -92,6 +96,7 @@ const FEATURED_GAMES = [
         category: 'adventure',
         xp: 200,
         time: '10 min',
+        learningFocus: 'Creative writing and storytelling',
         isNew: true,
         isPopular: false,
     },
@@ -105,6 +110,7 @@ const FEATURED_GAMES = [
         category: 'trivia',
         xp: 250,
         time: '10 min',
+        learningFocus: 'Traditions, festivals, and identity',
         isNew: false,
         isPopular: true,
     },
@@ -118,6 +124,7 @@ const FEATURED_GAMES = [
         category: 'adventure',
         xp: 300,
         time: '15 min',
+        learningFocus: 'Exploration and cultural landmarks',
         isNew: false,
         isPopular: false,
     },
@@ -132,6 +139,7 @@ const FEATURED_GAMES = [
         category: 'adventure',
         xp: 150,
         time: '3-10 min',
+        learningFocus: 'Reaction speed and food recognition',
         isNew: true,
         isPopular: true,
     },
@@ -145,6 +153,7 @@ const FEATURED_GAMES = [
         category: 'creative',
         xp: 100,
         time: '5 min',
+        learningFocus: 'Color recognition and object grouping',
         isNew: true,
         isPopular: false,
     },
@@ -158,6 +167,7 @@ const FEATURED_GAMES = [
         category: 'adventure',
         xp: 250,
         time: '5-15 min',
+        learningFocus: 'Problem solving and language play',
         isNew: true,
         isPopular: true,
     },
@@ -171,6 +181,7 @@ const FEATURED_GAMES = [
         category: 'trivia',
         xp: 200,
         time: '10 min',
+        learningFocus: 'Country identification and map literacy',
         isNew: true,
         isPopular: false,
     },
@@ -184,6 +195,7 @@ const FEATURED_GAMES = [
         category: 'creative',
         xp: 200,
         time: '8-12 min',
+        learningFocus: 'Listening memory and rhythm patterns',
         isNew: true,
         isPopular: true,
     },
@@ -436,6 +448,11 @@ export default function GamesHubPage() {
                                         {/* Text */}
                                         <h3 className="text-xl font-black mb-2">{game.title}</h3>
                                         <p className="text-white/70 text-sm mb-4 flex-1">{game.description}</p>
+                                        {game.learningFocus && (
+                                            <p className="text-white/85 text-xs font-bold mb-3">
+                                                Learning Focus: {game.learningFocus}
+                                            </p>
+                                        )}
 
                                         {/* Meta */}
                                         <div className="flex items-center gap-4 text-xs text-white/60 mb-4">
