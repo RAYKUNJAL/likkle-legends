@@ -487,10 +487,10 @@ export default function GamesHubPage() {
             <div className="relative z-10 max-w-7xl mx-auto px-4 pb-12">
                 <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-3xl p-8 text-center backdrop-blur-sm">
                     <Wand2 className="mx-auto mb-4 text-purple-400" size={40} />
-                    <h3 className="text-2xl font-black mb-2">More AI Games Coming Soon!</h3>
+                    <h3 className="text-2xl font-black mb-2">More R.O.T.I. Adventures Coming Soon!</h3>
                     <p className="text-white/60 max-w-md mx-auto">
-                        Our AI is crafting new educational adventures featuring Caribbean culture,
-                        music, and traditions. Stay tuned for weekly game drops!
+                        New educational island games from the Likkle Legends universe are on the way,
+                        guided by R.O.T.I. and the crew. Stay tuned for weekly game drops.
                     </p>
                 </div>
             </div>
