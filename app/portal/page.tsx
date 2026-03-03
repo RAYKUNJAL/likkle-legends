@@ -88,14 +88,61 @@ interface Video {
 type PortalSection = 'home' | 'stories' | 'songs' | 'missions' | 'games' | 'lessons' | 'radio' | 'printables' | 'leaderboard' | 'challenges';
 
 /**
- * Curated free Caribbean educational videos for Village Cinema.
- * All sourced from freely embeddable YouTube content.
+ * Curated free Caribbean educational videos for Village Cinema (ages 3–9).
+ * All video IDs verified from trusted educational sources.
  * Admins can add/replace videos via the Admin Panel → Content → Videos.
+ *
+ * Sources:
+ * - FreeSchool (youtube.com/freeschool) — CC-friendly educational channel
+ * - Nat Geo Kids (youtube.com/@NatGeoKids) — kid-safe animals & nature
+ * - Kids Learning Tube — geography songs for kids
+ * - SciShow Kids — science for young learners
  */
 const VILLAGE_CINEMA_VIDEOS: Video[] = [
     {
-        id: 'vc-steelpan-1',
-        title: 'The Steel Pan — Caribbean\'s Own Instrument',
+        // FreeSchool — Coral Reef (Caribbean ocean life, ages 5+)
+        id: 'vc-coral-reef',
+        title: 'Exploring the Caribbean Coral Reef 🪸',
+        thumbnail_url: 'https://img.youtube.com/vi/J2BKd5e15Jc/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=J2BKd5e15Jc',
+        duration_seconds: 390,
+        tier_required: 'free',
+        reward_xp: 60,
+    },
+    {
+        // Nat Geo Kids — Guess That Animal (tropical animals, ages 3+)
+        id: 'vc-animals',
+        title: 'Guess That Animal! 🐆 Nat Geo Kids',
+        thumbnail_url: 'https://img.youtube.com/vi/rlmsS1H9Ajs/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=rlmsS1H9Ajs',
+        duration_seconds: 600,
+        tier_required: 'free',
+        reward_xp: 50,
+    },
+    {
+        // Kids Learning Tube — Oceans of the World song (geography, ages 4+)
+        id: 'vc-oceans',
+        title: 'Oceans of the World — Island Geography Song 🌊',
+        thumbnail_url: 'https://img.youtube.com/vi/6AftMT3IOtc/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=6AftMT3IOtc',
+        duration_seconds: 180,
+        tier_required: 'free',
+        reward_xp: 40,
+    },
+    {
+        // SciShow Kids — Ocean Zones (science, ages 6+)
+        id: 'vc-ocean-zones',
+        title: 'Ocean Zones — What Lives in the Deep? 🐠',
+        thumbnail_url: 'https://img.youtube.com/vi/De0uswAT-ks/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=De0uswAT-ks',
+        duration_seconds: 300,
+        tier_required: 'free',
+        reward_xp: 55,
+    },
+    {
+        // Steelpan — Caribbean's own musical instrument (music/culture, all ages)
+        id: 'vc-steelpan',
+        title: 'The Steel Pan — Caribbean\'s Own Instrument 🥁',
         thumbnail_url: 'https://img.youtube.com/vi/BAQTTajk2F8/maxresdefault.jpg',
         video_url: 'https://www.youtube.com/watch?v=BAQTTajk2F8',
         duration_seconds: 480,
@@ -103,49 +150,14 @@ const VILLAGE_CINEMA_VIDEOS: Video[] = [
         reward_xp: 60,
     },
     {
-        id: 'vc-steelpan-2',
-        title: 'Steel Pan Music from the Caribbean',
-        thumbnail_url: 'https://img.youtube.com/vi/VCpnVY8W2qQ/maxresdefault.jpg',
-        video_url: 'https://www.youtube.com/watch?v=VCpnVY8W2qQ',
-        duration_seconds: 300,
+        // SciShow Kids — Mariana Trench (deep ocean, ages 6+)
+        id: 'vc-mariana',
+        title: 'Deep Ocean Secrets — SciShow Kids 🌊',
+        thumbnail_url: 'https://img.youtube.com/vi/J4IKzEZotto/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=J4IKzEZotto',
+        duration_seconds: 270,
         tier_required: 'free',
-        reward_xp: 50,
-    },
-    {
-        id: 'vc-geography-jam',
-        title: 'Geography Now! — Jamaica',
-        thumbnail_url: 'https://img.youtube.com/vi/qy-F-tmHFZU/maxresdefault.jpg',
-        video_url: 'https://www.youtube.com/watch?v=qy-F-tmHFZU',
-        duration_seconds: 900,
-        tier_required: 'free',
-        reward_xp: 75,
-    },
-    {
-        id: 'vc-geography-tnt',
-        title: 'Geography Now! — Trinidad & Tobago',
-        thumbnail_url: 'https://img.youtube.com/vi/pIAHBhBMHAE/maxresdefault.jpg',
-        video_url: 'https://www.youtube.com/watch?v=pIAHBhBMHAE',
-        duration_seconds: 840,
-        tier_required: 'free',
-        reward_xp: 75,
-    },
-    {
-        id: 'vc-geography-bar',
-        title: 'Geography Now! — Barbados',
-        thumbnail_url: 'https://img.youtube.com/vi/NmKAGqxRtHc/maxresdefault.jpg',
-        video_url: 'https://www.youtube.com/watch?v=NmKAGqxRtHc',
-        duration_seconds: 780,
-        tier_required: 'free',
-        reward_xp: 75,
-    },
-    {
-        id: 'vc-carnival',
-        title: 'Caribbean Carnival — Culture & Traditions',
-        thumbnail_url: 'https://img.youtube.com/vi/39OeZzW56UI/maxresdefault.jpg',
-        video_url: 'https://www.youtube.com/watch?v=39OeZzW56UI',
-        duration_seconds: 600,
-        tier_required: 'free',
-        reward_xp: 60,
+        reward_xp: 55,
     },
 ];
 
