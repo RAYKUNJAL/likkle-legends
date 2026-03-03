@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import {
     X, Volume2, VolumeX, ChevronLeft, ChevronRight,
@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { getTantyVoice } from '@/app/actions/voice';
+import { generateCharacterAudioWithMetadata } from '@/app/actions/voice';
 import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
 import BadgeUnlockModal from './gamification/BadgeUnlockModal';
@@ -34,27 +34,65 @@ interface Story {
     reading_time_minutes: number;
 }
 
+type GuideId = 'tanty' | 'roti' | 'dilly';
+
 interface PremiumStoryReaderProps {
     story: Story;
     onClose: () => void;
     onComplete: (xpEarned: number) => void;
 }
 
+const GUIDE_META: Record<GuideId, { name: string; avatar: string; tagline: string }> = {
+    tanty: {
+        name: 'Tanty Spice',
+        avatar: '/images/tanty_spice_avatar.jpg',
+        tagline: 'Warm island storytelling',
+    },
+    roti: {
+        name: 'R.O.T.I.',
+        avatar: '/images/roti-new.jpg',
+        tagline: 'Curious learning buddy',
+    },
+    dilly: {
+        name: 'Dilly Doubles',
+        avatar: '/images/dilly-doubles.jpg',
+        tagline: 'Rhythm and reading',
+    },
+};
+
+function buildTextTokens(text: string) {
+    const parts = text.split(/(\s+)/);
+    let wordIndex = 0;
+    return parts.map((part) => {
+        if (/^\s+$/.test(part)) {
+            return { text: part, isWord: false, wordIndex: null as number | null };
+        }
+        const token = { text: part, isWord: true, wordIndex };
+        wordIndex += 1;
+        return token;
+    });
+}
+
 export default function PremiumStoryReader({ story, onClose, onComplete }: PremiumStoryReaderProps) {
     const { user, activeChild, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge } = useUser();
     const [currentPage, setCurrentPage] = useState(0);
     const [readingMode, setReadingMode] = useState<'read-to-me' | 'read-by-myself'>('read-to-me');
+    const [guide, setGuide] = useState<GuideId>('tanty');
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoadingAudio, setIsLoadingAudio] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
     const [showGlossary, setShowGlossary] = useState(false);
     const [showCompletion, setShowCompletion] = useState(false);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+    const [currentWordIndex, setCurrentWordIndex] = useState<number | null>(null);
 
     // Audio refs
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const wordTimingsRef = useRef<{ text: string; start: number; end: number }[]>([]);
+    const lastWordIndexRef = useRef(0);
     const pages = story.content_json?.pages || [];
     const currentPageData = pages[currentPage] || { text: '', pageNumber: 1 };
+    const textTokens = useMemo(() => buildTextTokens(currentPageData.text || ''), [currentPageData.text]);
 
     const stopAudio = useCallback(() => {
         if (audioRef.current) {
@@ -62,6 +100,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             audioRef.current.currentTime = 0;
             setIsPlaying(false);
         }
+        setCurrentWordIndex(null);
     }, []);
 
     const handleComplete = useCallback(() => {
@@ -112,7 +151,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
         setIsLoadingAudio(true);
         try {
-            const res = await getTantyVoice(currentPageData?.text || "");
+            const res = await generateCharacterAudioWithMetadata(currentPageData?.text || "", guide);
             if (res.success && res.audio) {
                 // If it's a base64 string, we need to handle it properly
                 const audioSrc = res.audio.startsWith('data:') ? res.audio : `data:audio/mp3;base64,${res.audio}`;
@@ -126,8 +165,35 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
                 audio.onended = () => {
                     setIsPlaying(false);
+                    setCurrentWordIndex(null);
                     if (isAutoPlaying && currentPage < pages.length - 1) {
                         setTimeout(nextPage, 1500); // Pause before next page
+                    }
+                };
+
+                if (res.words && res.words.length > 0) {
+                    wordTimingsRef.current = res.words;
+                    lastWordIndexRef.current = 0;
+                    setCurrentWordIndex(0);
+                } else {
+                    wordTimingsRef.current = [];
+                    lastWordIndexRef.current = 0;
+                    setCurrentWordIndex(null);
+                }
+
+                audio.ontimeupdate = () => {
+                    const timings = wordTimingsRef.current;
+                    if (!timings.length) return;
+                    const currentTime = audio.currentTime;
+                    let idx = lastWordIndexRef.current;
+                    if (currentTime < timings[idx]?.start) idx = 0;
+                    while (idx < timings.length && currentTime > timings[idx].end) {
+                        idx += 1;
+                    }
+                    if (idx >= timings.length) idx = timings.length - 1;
+                    if (idx !== lastWordIndexRef.current) {
+                        lastWordIndexRef.current = idx;
+                        setCurrentWordIndex(idx);
                     }
                 };
 
@@ -138,7 +204,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             console.error("Narration error:", error);
             setIsLoadingAudio(false);
         }
-    }, [isPlaying, currentPageData?.text, isMuted, isAutoPlaying, currentPage, pages.length, nextPage, stopAudio]);
+    }, [isPlaying, currentPageData?.text, isMuted, isAutoPlaying, currentPage, pages.length, nextPage, stopAudio, guide]);
 
     // Auto-start narration on page change if in "Read to Me" mode
     useEffect(() => {
@@ -146,7 +212,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             playNarration();
         }
         return () => stopAudio();
-    }, [currentPage, readingMode, showCompletion, playNarration]);
+    }, [currentPage, readingMode, showCompletion, playNarration, stopAudio]);
 
     return (
         <div className="fixed inset-0 z-[1000] bg-sky-950 flex items-center justify-center p-0 md:p-8 select-none">
@@ -218,7 +284,14 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
                             <div className="flex items-center gap-2 md:gap-4 bg-blue-50 p-2 rounded-2xl">
                                 <button
-                                    onClick={() => setReadingMode(readingMode === 'read-to-me' ? 'read-by-myself' : 'read-to-me')}
+                                    onClick={() => {
+                                        if (readingMode === 'read-to-me') {
+                                            stopAudio();
+                                            setReadingMode('read-by-myself');
+                                        } else {
+                                            setReadingMode('read-to-me');
+                                        }
+                                    }}
                                     className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-2 ${readingMode === 'read-to-me' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-400'}`}
                                     title={readingMode === 'read-to-me' ? 'Switch to Read by Myself' : 'Switch to Read to Me'}
                                     aria-label={readingMode === 'read-to-me' ? 'Switch to Read by Myself' : 'Switch to Read to Me'}
@@ -234,6 +307,23 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                 >
                                     {isAutoPlaying ? 'Auto-Turn ON' : 'Auto-Turn OFF'}
                                 </button>
+                                <div className="hidden lg:flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-blue-100">
+                                    <span className="text-[10px] font-black uppercase text-blue-500 tracking-widest">Guide</span>
+                                    {(['tanty', 'roti', 'dilly'] as GuideId[]).map((id) => (
+                                        <button
+                                            key={id}
+                                            onClick={() => {
+                                                setGuide(id);
+                                                stopAudio();
+                                            }}
+                                            className={`px-3 py-1 rounded-lg text-[11px] font-black uppercase transition-all ${guide === id ? 'bg-blue-600 text-white' : 'text-blue-400 hover:text-blue-600'}`}
+                                            title={`Switch to ${GUIDE_META[id].name}`}
+                                            aria-label={`Switch to ${GUIDE_META[id].name}`}
+                                        >
+                                            {GUIDE_META[id].name}
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
@@ -280,8 +370,8 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                 <div className="absolute top-10 right-10 flex items-center gap-3">
                                     <div className={`relative w-16 h-16 rounded-full border-4 ${isPlaying ? 'border-green-400 animate-pulse' : 'border-blue-100'}`}>
                                         <Image
-                                            src="/images/tanty_spice_avatar.jpg"
-                                            alt="Tanty Spice"
+                                            src={GUIDE_META[guide].avatar}
+                                            alt={GUIDE_META[guide].name}
                                             fill
                                             className="rounded-full object-cover"
                                         />
@@ -293,11 +383,29 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                     </div>
                                     <div className="bg-blue-50 p-3 rounded-2xl hidden md:block">
                                         <p className="text-[10px] font-black text-blue-900 uppercase">Listening Guide</p>
-                                        <p className="text-[12px] font-bold text-blue-400">Tanty Spice</p>
+                                        <p className="text-[12px] font-bold text-blue-400">{GUIDE_META[guide].name}</p>
+                                        <p className="text-[10px] font-bold text-blue-300">{GUIDE_META[guide].tagline}</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-10">
+                                    <div className="lg:hidden flex flex-wrap items-center gap-2 bg-blue-50 p-3 rounded-2xl border border-blue-100">
+                                        <span className="text-[10px] font-black uppercase text-blue-500 tracking-widest">Guide</span>
+                                        {(['tanty', 'roti', 'dilly'] as GuideId[]).map((id) => (
+                                            <button
+                                                key={id}
+                                                onClick={() => {
+                                                    setGuide(id);
+                                                    stopAudio();
+                                                }}
+                                                className={`px-3 py-1 rounded-lg text-[11px] font-black uppercase transition-all ${guide === id ? 'bg-blue-600 text-white' : 'text-blue-400 hover:text-blue-600'}`}
+                                                title={`Switch to ${GUIDE_META[id].name}`}
+                                                aria-label={`Switch to ${GUIDE_META[id].name}`}
+                                            >
+                                                {GUIDE_META[id].name}
+                                            </button>
+                                        ))}
+                                    </div>
                                     <AnimatePresence mode="wait">
                                         <motion.div
                                             key={currentPage}
@@ -306,8 +414,21 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                             exit={{ opacity: 0, y: -20 }}
                                             className="min-h-[200px]"
                                         >
-                                            <h3 className={`text-4xl md:text-5xl font-black leading-[1.3] tracking-tight ${isPlaying ? 'text-blue-900 underline decoration-primary/30 decoration-8 underline-offset-8' : 'text-blue-900/80'}`}>
-                                                {currentPageData.text}
+                                            <h3 className={`text-4xl md:text-5xl font-black leading-[1.3] tracking-tight whitespace-pre-wrap ${isPlaying ? 'text-blue-900 underline decoration-primary/30 decoration-8 underline-offset-8' : 'text-blue-900/80'}`}>
+                                                {textTokens.map((token, i) => {
+                                                    if (!token.isWord) {
+                                                        return <span key={`space-${i}`}>{token.text}</span>;
+                                                    }
+                                                    const isActive = currentWordIndex !== null && token.wordIndex === currentWordIndex;
+                                                    return (
+                                                        <span
+                                                            key={`word-${i}`}
+                                                            className={isActive ? 'bg-yellow-200 text-blue-900 rounded-md px-1 shadow-sm' : ''}
+                                                        >
+                                                            {token.text}
+                                                        </span>
+                                                    );
+                                                })}
                                             </h3>
                                         </motion.div>
                                     </AnimatePresence>

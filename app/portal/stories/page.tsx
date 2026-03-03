@@ -10,6 +10,7 @@ import {
 import { useUser } from '@/components/UserContext';
 import { getStorybooks } from '@/lib/database';
 import AdventureCreator from '@/components/AdventureCreator';
+import { STARTER_STORIES } from '@/lib/story-starter-pack';
 
 interface Story {
     id: string;
@@ -63,9 +64,36 @@ export default function StoriesPage() {
                     completed: false
                 }));
 
-                setStories(mappedStories);
+                setStories(mappedStories.length > 0 ? mappedStories : STARTER_STORIES.map((sb) => ({
+                    id: sb.id,
+                    title: sb.title,
+                    description: sb.summary,
+                    cover_image: sb.cover_image_url,
+                    island_origin: 'Caribbean',
+                    age_track: 'mini',
+                    tier_required: sb.tier_required,
+                    reading_time: sb.reading_time_minutes,
+                    page_count: sb.content_json.pages.length,
+                    rating: 5,
+                    read_count: 0,
+                    completed: false
+                })));
             } catch (error) {
                 console.error('Failed to load stories:', error);
+                setStories(STARTER_STORIES.map((sb) => ({
+                    id: sb.id,
+                    title: sb.title,
+                    description: sb.summary,
+                    cover_image: sb.cover_image_url,
+                    island_origin: 'Caribbean',
+                    age_track: 'mini',
+                    tier_required: sb.tier_required,
+                    reading_time: sb.reading_time_minutes,
+                    page_count: sb.content_json.pages.length,
+                    rating: 5,
+                    read_count: 0,
+                    completed: false
+                })));
             } finally {
                 setIsLoading(false);
             }

@@ -8,6 +8,7 @@ import { useUser } from '@/components/UserContext';
 import { supabase } from '@/lib/storage';
 import { logActivity } from '@/lib/database';
 import PremiumStoryReader from '@/components/PremiumStoryReader';
+import { STARTER_STORIES } from '@/lib/story-starter-pack';
 
 interface StoryPage {
     pageNumber: number;
@@ -53,9 +54,18 @@ export default function StoryReaderPage() {
                 .single();
 
             if (error) throw error;
+            if (!data?.content_json || !data.content_json.pages?.length) {
+                const fallback = STARTER_STORIES.find(s => s.id === storyId) || STARTER_STORIES[0];
+                setStory(fallback as unknown as Story);
+                return;
+            }
             setStory(data as Story);
         } catch (error) {
             console.error('Failed to load story:', error);
+            const fallback = STARTER_STORIES.find(s => s.id === storyId) || STARTER_STORIES[0];
+            if (fallback) {
+                setStory(fallback as unknown as Story);
+            }
         } finally {
             setIsLoading(false);
         }
