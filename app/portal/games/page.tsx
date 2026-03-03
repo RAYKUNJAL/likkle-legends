@@ -204,7 +204,7 @@ const FEATURED_GAMES = [
 import { EmptyState } from '@/components/EmptyState';
 
 export default function GamesHubPage() {
-    const { activeChild, canAccess, isSubscribed } = useUser();
+    const { activeChild } = useUser();
     const [games, setGames] = useState<Game[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('all');
@@ -229,13 +229,15 @@ export default function GamesHubPage() {
 
     const displayGames = games.length > 0 ? games : FEATURED_GAMES;
 
+    const canPlayGame = (_tier?: string) => true;
+
     const filteredGames = (activeCategory === 'all'
         ? displayGames
         : displayGames.filter(g => (g as any).category === activeCategory)
-    ).filter(g => !showOnlyAccessible || canAccess((g as any).tier_required || (g as any).tier));
+    ).filter(g => !showOnlyAccessible || canPlayGame((g as any).tier_required || (g as any).tier));
 
     const totalXP = activeChild?.total_xp || 0;
-    const unlockedGames = filteredGames.filter(g => canAccess((g as any).tier_required || (g as any).tier));
+    const unlockedGames = filteredGames.filter(g => canPlayGame((g as any).tier_required || (g as any).tier));
 
     return (
         <div className="min-h-screen bg-[#0a0a1a] text-white overflow-hidden">
@@ -397,7 +399,7 @@ export default function GamesHubPage() {
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredGames.map((game) => {
                             const tier = (game as any).tier_required || (game as any).tier;
-                            const isLocked = !canAccess(tier);
+                            const isLocked = !canPlayGame(tier);
 
                             return (
                                 <div
