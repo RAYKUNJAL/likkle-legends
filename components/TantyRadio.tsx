@@ -9,16 +9,21 @@ import { getGlobalPlaylist } from '../services/storageService';
 interface TantyRadioProps {
     isLite?: boolean;
     featuredTracks?: Track[];   // If provided, skips DB fetch and uses these tracks directly
-    defaultChannel?: string;    // Channel to activate on mount (default: 'story')
+    defaultChannel?: string;    // Channel to activate on mount
 }
 
-const TantySnippets = ["Eh-eh!", "Mmm-hmmm!", "Irie!", "Sweet!", "Yes, suh!", "Look at me star!", "Turn up de tunes!"];
+const DJ_SNIPPETS: Record<string, string[]> = {
+    tanty_spice: ["Eh-eh!", "Mmm-hmmm!", "Irie!", "Bless up, family!", "Turn up de tunes!"],
+    roti: ["Systems green.", "Ready to learn!", "Legend mode activated.", "Math and rhythm together!"],
+    dilly_doubles: ["Energy up!", "Big flavor, big vibes!", "Dance break incoming!", "We outside!"],
+    steelpan_sam: ["Feel de rhythm.", "Tap the pan and follow me.", "Heartbeat on tempo.", "Steelpan magic time!"],
+};
 
 const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks, defaultChannel }) => {
     // Start empty to prevent flash of defaults if user has cleared playlist
     const [allTracks, setAllTracks] = useState<Track[]>(featuredTracks ?? []);
     const [isInitializing, setIsInitializing] = useState(!featuredTracks);
-    const [activeChannel, setActiveChannel] = useState(defaultChannel ?? 'story');
+    const [activeChannel, setActiveChannel] = useState(defaultChannel ?? RADIO_CHANNELS[0]?.id ?? 'tanty_spice');
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingStatus, setLoadingStatus] = useState('');
@@ -69,6 +74,7 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
         : (availableChannels[0]?.id ?? activeChannel);
 
     const channelTracks = allTracks.filter(t => t.channel === resolvedChannel);
+    const activeSegment = RADIO_CHANNELS.find((segment) => segment.id === resolvedChannel) ?? RADIO_CHANNELS[0];
     const safeIndex = currentTrackIndex >= channelTracks.length ? 0 : currentTrackIndex;
     const currentTrack = channelTracks[safeIndex]; // Can be undefined if list empty
     const isVideo = currentTrack?.url?.toLowerCase().includes('.mp4') || currentTrack?.url?.includes('video');
@@ -279,7 +285,8 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
 
         setIsNarrating(true);
         try {
-            const phrase = TantySnippets[Math.floor(Math.random() * TantySnippets.length)];
+            const bank = DJ_SNIPPETS[resolvedChannel] || DJ_SNIPPETS.tanty_spice;
+            const phrase = bank[Math.floor(Math.random() * bank.length)];
             const buffer = await narrateText(phrase);
 
             if (snippetSourceRef.current) {
@@ -314,7 +321,7 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
     }
 
     return (
-        <div className="max-w-3xl mx-auto" role="region" aria-label="Tanty Spice Radio">
+        <div className="max-w-3xl mx-auto" role="region" aria-label="Likkle Legends Radio">
 
             {/* ── Channel tabs (full mode only) ─────────────────────────────── */}
             {!isLite && availableChannels.length > 1 && (
@@ -342,10 +349,10 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
                 {/* Header bar */}
                 <div className="flex items-center justify-between px-5 py-3.5" style={{ background: 'linear-gradient(90deg, #c2410c, #991b1b)' }}>
                     <div className="flex items-center gap-2.5">
-                        <span className="text-xl" aria-hidden="true">🌶️</span>
+                        <span className="text-xl" aria-hidden="true">{activeSegment?.icon || 'DJ'}</span>
                         <div>
-                            <p className="text-white font-black text-sm uppercase tracking-[0.15em] leading-none">Tanty Spice Radio</p>
-                            <p className="text-orange-200/80 text-[9px] font-bold uppercase tracking-widest mt-0.5">Caribbean Vibes for Kids</p>
+                            <p className="text-white font-black text-sm uppercase tracking-[0.15em] leading-none">Likkle Legends Radio</p>
+                            <p className="text-orange-200/80 text-[9px] font-bold uppercase tracking-widest mt-0.5">{activeSegment?.label || 'Live Segment'}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -386,7 +393,7 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
                         {/* Tanty mascot overlay */}
                         {!isVideo && (
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
-                                <span className={`text-5xl drop-shadow-lg ${isPlaying ? 'animate-bounce' : ''}`} aria-hidden="true">🌶️</span>
+                                <span className={`text-5xl drop-shadow-lg ${isPlaying ? 'animate-bounce' : ''}`} aria-hidden="true">{activeSegment?.icon || 'DJ'}</span>
                                 {!isPlaying && (
                                     <p className="text-white/30 text-[8px] font-black uppercase tracking-[0.2em]">Tap Play</p>
                                 )}
@@ -508,3 +515,5 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
 };
 
 export default TantyRadio;
+
+

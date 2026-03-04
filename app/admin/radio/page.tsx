@@ -100,7 +100,7 @@ export default function AdminRadioPage() {
                     title: file.name.replace(/\.[^/.]+$/, ""),
                     audio_url: result.url,
                     artist: "Likkle Legends",
-                    category: "culture",
+                    category: "tanty_spice",
                     is_active: true
                 }));
             }
@@ -165,12 +165,12 @@ export default function AdminRadioPage() {
             <header className="bg-white border-b border-gray-100 px-8 py-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black text-gray-900">Tanty Radio & Marketplace</h1>
-                        <p className="text-gray-500">Manage the global rotation and digital music sales</p>
+                        <h1 className="text-3xl font-black text-gray-900">Likkle Legends Radio Control Room</h1>
+                        <p className="text-gray-500">Manage DJ segments, track rotation, and digital music sales</p>
                     </div>
                     <button
                         onClick={() => {
-                            setEditingSong({ is_active: true, category: 'culture', artist: 'Likkle Legends' });
+                            setEditingSong({ is_active: true, category: 'tanty_spice', artist: 'Likkle Legends' });
                             setIsModalOpen(true);
                         }}
                         className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-all"
@@ -283,17 +283,19 @@ export default function AdminRadioPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase text-gray-400 ml-2">Category</label>
+                            <label className="text-[10px] font-black uppercase text-gray-400 ml-2">DJ Segment</label>
                             <select
-                                value={editingSong?.category || 'culture'}
+                                value={editingSong?.category || 'tanty_spice'}
                                 onChange={e => setEditingSong({ ...editingSong, category: e.target.value })}
                                 className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-primary transition-all"
                             >
-                                <option value="story">Story</option>
-                                <option value="lullaby">Lullaby</option>
-                                <option value="culture">Culture</option>
-                                <option value="learning">Learning</option>
-                                <option value="calm">Calm</option>
+                                <option value="tanty_spice">Tanty Spice Show</option>
+                                <option value="roti">R.O.T.I Learning Lab</option>
+                                <option value="dilly_doubles">Dilly Vibes</option>
+                                <option value="steelpan_sam">Steelpan Sam Stage</option>
+                                <option value="story">Legacy: Story</option>
+                                <option value="learning">Legacy: Learning</option>
+                                <option value="culture">Legacy: Culture</option>
                             </select>
                         </div>
                         <div className="space-y-1">

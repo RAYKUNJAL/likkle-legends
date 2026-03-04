@@ -43,6 +43,7 @@ export const NavbarV2 = () => {
                         <Link href="#features" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">Digital Magic</Link>
                         <Link href="#envelope" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">The Envelope</Link>
                         <Link href="#pricing" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">Pricing</Link>
+                        <Link href="/radio" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">Free Radio</Link>
 
                         <div className="flex items-center gap-3 ml-4 pl-4 border-l border-zinc-100">
                             {isLoggedIn ? (
@@ -90,6 +91,7 @@ export const NavbarV2 = () => {
                         <Link href="#features" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors">Digital Magic</Link>
                         <Link href="#envelope" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors">The Envelope</Link>
                         <Link href="#pricing" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors">Pricing</Link>
+                        <Link href="/radio" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors">Free Radio</Link>
 
                         <div className="pt-5 sm:pt-8 border-t border-zinc-50 flex flex-col gap-3 sm:gap-4">
                             {isLoggedIn ? (

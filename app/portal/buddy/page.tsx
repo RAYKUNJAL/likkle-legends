@@ -74,11 +74,13 @@ export default function ChooseYourBuddyPage() {
                                                 height={80}
                                                 className="w-full h-full object-cover"
                                                 onError={(e) => {
-                                                    // Fallback: show emoji if image missing
-                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                    const img = e.currentTarget as HTMLImageElement;
+                                                    img.style.display = 'none';
+                                                    const fallback = img.nextElementSibling as HTMLElement | null;
+                                                    if (fallback) fallback.classList.remove('hidden');
                                                 }}
                                             />
-                                            <div className="w-full h-full flex items-center justify-center text-4xl -mt-20 pointer-events-none select-none">
+                                            <div className="hidden w-full h-full items-center justify-center text-4xl pointer-events-none select-none">
                                                 {config.visual.emoji}
                                             </div>
                                         </div>

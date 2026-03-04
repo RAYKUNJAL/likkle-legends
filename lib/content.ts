@@ -253,8 +253,8 @@ export const siteContent = {
         subtitle: "A safe listening space for kids—nursery rhymes, island sounds, and learning songs.",
         tagline: "Now Available",
         cta: {
-            label: "Preview Island Radio",
-            href: "/portal/radio"
+            label: "Listen to Free Radio",
+            href: "/radio"
         },
         benefits: [
             { label: 'Ad-free', description: 'No interruptions or ads', icon: 'shield' },

@@ -71,14 +71,14 @@ export const getGlobalPlaylist = async (): Promise<Track[] | null> => {
 
             if (songs && songs.length > 0) {
                 return songs.map((s: any) => {
-                    // Map DB category to Radio Channel
-                    // Channel IDs: story, lullaby, culture, calm, learning, vip
-                    let channel = s.category || 'story';
+                    // Map legacy DB categories to the DJ segment model.
+                    // Segment IDs: tanty_spice, roti, dilly_doubles, steelpan_sam
+                    let channel = s.category || 'tanty_spice';
 
-                    if (channel === 'educational' || channel === 'lesson') channel = 'learning';
-                    if (channel === 'cultural') channel = 'culture';
-                    if (channel === 'general' || channel === 'music') channel = 'story'; // Fallback
-                    if (channel === 'sleep') channel = 'lullaby';
+                    if (channel === 'story' || channel === 'lullaby' || channel === 'calm' || channel === 'culture' || channel === 'tanty') channel = 'tanty_spice';
+                    if (channel === 'educational' || channel === 'lesson' || channel === 'learning') channel = 'roti';
+                    if (channel === 'dilly' || channel === 'food') channel = 'dilly_doubles';
+                    if (channel === 'music' || channel === 'soca' || channel === 'steelpan' || channel === 'vip') channel = 'steelpan_sam';
 
                     return {
                         id: s.id,

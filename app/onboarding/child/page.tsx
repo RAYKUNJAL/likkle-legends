@@ -125,8 +125,10 @@ function ChildOnboardingContent() {
             return;
         }
 
-        // Get userId from context OR fall back to Supabase client directly
+        // Require authenticated session for child creation.
+        // Never trust URL uid for write operations.
         let userId = user?.id;
+        const redirectTarget = `/onboarding/child${uidFromUrl ? `?uid=${encodeURIComponent(uidFromUrl)}` : ''}`;
         if (!userId) {
             try {
                 const { createClient } = await import('@/lib/supabase/client');
@@ -138,14 +140,8 @@ function ChildOnboardingContent() {
             }
         }
 
-        // Last resort: use the uid passed from signup via URL param
-        if (!userId && uidFromUrl) {
-            userId = uidFromUrl;
-        }
-
         if (!userId) {
-            // Genuinely no session — send to login
-            router.push('/login?redirect=/onboarding/child');
+            router.push(`/login?redirect=${encodeURIComponent(redirectTarget)}`);
             return;
         }
 

@@ -3,7 +3,8 @@ import { TANTY_ISLAND_ENGINE } from '@/services/tantyConfig';
 
 export interface GeminiTTSOptions {
     voiceName?: string;
-    character?: 'tanty' | 'roti';
+    character?: 'tanty' | 'roti' | 'dilly';
+    model?: string;
 }
 
 const VOICE_PROFILES = {
@@ -14,6 +15,10 @@ const VOICE_PROFILES = {
     roti: {
         voiceName: "Puck",
         direction: "Tone: Friendly, energetic robot companion. Emotion: Excited and curious. Speed: Slightly fast."
+    },
+    dilly: {
+        voiceName: "Fenrir",
+        direction: "Tone: Youthful, energetic island buddy. Emotion: Upbeat and encouraging."
     }
 };
 
@@ -26,7 +31,7 @@ export async function generateGeminiSpeech(
     options: GeminiTTSOptions = {}
 ): Promise<ArrayBuffer | null> {
     const { character = 'tanty' } = options;
-    const profile = VOICE_PROFILES[character];
+    const profile = VOICE_PROFILES[character] || VOICE_PROFILES.tanty;
 
     // Allow override, otherwise use profile default
     const voiceName = options.voiceName || profile.voiceName;
@@ -40,25 +45,46 @@ export async function generateGeminiSpeech(
 
     try {
         const ai = new GoogleGenAI({ apiKey });
+        const candidates = [
+            options.model,
+            process.env.GEMINI_TTS_MODEL,
+            "models/gemini-2.5-flash-preview-tts",
+            "models/gemini-2.0-flash"
+        ].filter(Boolean) as string[];
 
-        const response = await ai.models.generateContent({
-            model: "models/gemini-2.0-flash",
-            contents: [{
-                parts: [{
-                    text: `[Voice Direction: ${profile.direction}] ${text}`
-                }]
-            }],
-            config: {
-                responseModalities: [Modality.AUDIO],
-                speechConfig: {
-                    voiceConfig: {
-                        prebuiltVoiceConfig: {
-                            voiceName: voiceName
+        let response: any = null;
+        let lastError: any = null;
+        for (const modelName of candidates) {
+            try {
+                response = await ai.models.generateContent({
+                    model: modelName,
+                    contents: [{
+                        parts: [{
+                            text: `[Voice Direction: ${profile.direction}] ${text}`
+                        }]
+                    }],
+                    config: {
+                        responseModalities: [Modality.AUDIO],
+                        speechConfig: {
+                            voiceConfig: {
+                                prebuiltVoiceConfig: {
+                                    voiceName: voiceName
+                                }
+                            },
                         }
                     },
-                },
-            },
-        });
+                });
+                if (response?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
+                    break;
+                }
+            } catch (err) {
+                lastError = err;
+            }
+        }
+
+        if (!response) {
+            throw lastError || new Error('No Gemini TTS response');
+        }
 
         const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
 

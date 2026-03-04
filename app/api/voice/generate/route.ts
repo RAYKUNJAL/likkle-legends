@@ -6,7 +6,7 @@ import { supabase } from '@/lib/storage';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { text, voice = 'tanty_spice' } = body;
+        const { text, voice = 'tanty_spice', voiceName, provider = 'auto' } = body;
 
         if (!text) {
             return NextResponse.json({ error: 'Text is required' }, { status: 400 });
@@ -35,9 +35,11 @@ export async function POST(request: NextRequest) {
         let audioBuffer: ArrayBuffer | null = null;
         let contentType = 'audio/mpeg';
 
-        // 1. Try ElevenLabs first (Premium - Custom Caribbean Voices)
+        const useGeminiFirst = provider === 'gemini';
+
+        // 1. Try ElevenLabs first (unless explicit Gemini-first requested)
         const elevenApiKey = process.env.ELEVENLABS_API_KEY;
-        if (elevenApiKey) {
+        if (!useGeminiFirst && elevenApiKey) {
             console.log('Voice API: Using ElevenLabs');
             const voiceId = voice as VoiceCharacter;
             // Map 'steelpan_sam' to 'roti' if needed
@@ -49,10 +51,14 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // 2. Fallback to Gemini TTS if ElevenLabs fails or unavailable
+        // 2. Gemini TTS (primary for buddy mode, fallback for all)
         if (!audioBuffer) {
             console.log('Voice API: Falling back to Gemini TTS');
-            audioBuffer = await generateGeminiSpeech(text);
+            const character =
+                (voice as string) === 'roti' || (voice as string) === 'steelpan_sam' ? 'roti'
+                    : (voice as string) === 'dilly_doubles' ? 'dilly'
+                        : 'tanty';
+            audioBuffer = await generateGeminiSpeech(text, { voiceName, character });
             if (audioBuffer) {
                 contentType = 'audio/wav'; // Gemini returns PCM/WAV
             }

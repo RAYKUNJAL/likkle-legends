@@ -102,12 +102,18 @@ function SignupForm() {
                 console.warn('Client sign-in after signup failed', e);
             }
 
+            // Require a real client session before onboarding.
+            // This avoids pushing users into protected onboarding pages without auth.
+            const supabase = createClient();
+            const { data: { session } } = await supabase.auth.getSession();
+            const hasClientSession = !!session?.user;
+
             // 3. Handle State
             if (result.emailSent) {
                 setIsEmailSent(true);
             } else {
-                if (result.requiresLogin) {
-                    const nextPath = `/onboarding/welcome?uid=${userId}&childName=${encodeURIComponent(formData.childName)}`;
+                const nextPath = `/onboarding/welcome?uid=${userId}&childName=${encodeURIComponent(formData.childName)}`;
+                if (result.requiresLogin || !hasClientSession) {
                     router.push(`/login?redirect=${encodeURIComponent(nextPath)}`);
                     return;
                 }
