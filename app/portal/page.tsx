@@ -31,7 +31,7 @@ const PremiumMusicPlayer = dynamic(() => import('@/components/PremiumMusicPlayer
 const LeaderboardPanel = dynamic(() => import('@/components/portal/LeaderboardPanel'), { ssr: false });
 const FamilyChallengesPanel = dynamic(() => import('@/components/portal/FamilyChallengesPanel'), { ssr: false });
 const CultureQuests = dynamic(() => import('@/components/CultureQuests').then(m => ({ default: m.CultureQuests })), { ssr: false });
-const IslandMissionMap = dynamic(() => import('@/components/IslandMissionMap').then(m => ({ default: m.IslandMissionMap })), { ssr: false });
+const CraftCorner = dynamic(() => import('@/components/portal/CraftCorner').then(m => ({ default: m.CraftCorner })), { ssr: false });
 const PrintablesSection = dynamic(() => import('@/components/PrintablesSection').then(m => ({ default: m.PrintablesSection })), { ssr: false });
 
 // Modals — only rendered when triggered, so lazy load them too
@@ -444,7 +444,7 @@ export default function ChildPortalPage() {
         { id: 'stories', label: 'Stories', icon: BookOpen, color: 'from-blue-500 to-cyan-500' },
         { id: 'lessons', label: 'Lessons', icon: Video, color: 'from-indigo-500 to-purple-500' },
         { id: 'songs', label: 'Songs', icon: Music, color: 'from-purple-500 to-pink-500' },
-        { id: 'missions', label: 'Missions', icon: Target, color: 'from-orange-500 to-red-500' },
+        { id: 'missions', label: 'Craft Corner', icon: Palette, color: 'from-amber-500 to-orange-500' },
         { id: 'games', label: 'Games', icon: Palette, color: 'from-green-500 to-emerald-500' },
         { id: 'leaderboard', label: 'Legends', icon: Trophy, color: 'from-amber-500 to-yellow-500' },
         { id: 'challenges', label: 'Challenges', icon: Crown, color: 'from-red-500 to-pink-500' },
@@ -969,21 +969,12 @@ export default function ChildPortalPage() {
                                 </section>
                             )}
 
-                            {/* Missions & Radio Sections (Simplified for now to match high-premium look) */}
+                            {/* Craft Corner */}
                             {(activeSection === 'missions') && (
-                                <div className="max-w-4xl mx-auto space-y-8">
-                                    <div className="flex items-center gap-5 mb-10">
-                                        <div className="w-16 h-16 bg-orange-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner">🎯</div>
-                                        <div>
-                                            <h2 className="text-4xl font-black text-blue-900 tracking-tight">Mission Hub</h2>
-                                            <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">Complete quests, earn badges</p>
-                                        </div>
-                                    </div>
-                                    <IslandMissionMap
-                                        completedIds={activeChild?.cultural_milestones || []}
-                                        onComplete={handleMissionComplete}
-                                    />
-                                </div>
+                                <CraftCorner
+                                    completedIds={activeChild?.cultural_milestones || []}
+                                    onComplete={(xp, craftId) => handleMissionComplete(xp, craftId)}
+                                />
                             )}
 
                             {(activeSection === 'leaderboard') && (
