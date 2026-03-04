@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
     ArrowLeft, Gamepad2, Star, Lock, Play, Trophy, Clock,
@@ -31,6 +31,7 @@ interface Game {
     isNew?: boolean;
     isPopular?: boolean;
     learningFocus?: string;
+    reward_xp?: number;
 }
 
 const GAME_CATEGORIES = [
@@ -116,15 +117,15 @@ const FEATURED_GAMES = [
     },
     {
         id: 'island-explorer',
-        title: 'Island Explorer VR',
-        description: 'Take a virtual tour of the Caribbean!',
+        title: 'Caribbean Flag Explorer',
+        description: 'Explore real Caribbean flags and learn each island!',
         emoji: '🌴',
         gradient: 'from-cyan-400 via-teal-500 to-green-600',
         tier: 'legends_plus',
         category: 'adventure',
         xp: 300,
-        time: '15 min',
-        learningFocus: 'Exploration and cultural landmarks',
+        time: '8-10 min',
+        learningFocus: 'Flag recognition and country knowledge',
         isNew: false,
         isPopular: false,
     },
@@ -205,36 +206,77 @@ import { EmptyState } from '@/components/EmptyState';
 
 export default function GamesHubPage() {
     const { activeChild } = useUser();
-    const [games, setGames] = useState<Game[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [games, setGames] = useState<Game[]>(FEATURED_GAMES as Game[]);
     const [activeCategory, setActiveCategory] = useState('all');
-    const [hoveredGame, setHoveredGame] = useState<string | null>(null);
     const [showOnlyAccessible, setShowOnlyAccessible] = useState(false);
 
-    const loadGames = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const data = await getGames();
-            setGames(data as Game[]);
-        } catch (error) {
-            console.error('Failed to load games:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
     useEffect(() => {
-        loadGames();
-    }, [loadGames]);
+        let cancelled = false;
+        let idleHandle: number | null = null;
+        let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
 
-    const displayGames = games.length > 0 ? games : FEATURED_GAMES;
+        const featuredById = new Map((FEATURED_GAMES as Game[]).map((game) => [game.id, game]));
+
+        const hydrateGames = async () => {
+            try {
+                const data = await Promise.race([
+                    getGames() as Promise<Game[]>,
+                    new Promise<Game[]>((resolve) => setTimeout(() => resolve([]), 1200)),
+                ]);
+
+                if (cancelled || !Array.isArray(data) || data.length === 0) {
+                    return;
+                }
+
+                const enriched = data.map((game) => {
+                    const featured = featuredById.get(game.id);
+                    return {
+                        ...featured,
+                        ...game,
+                        emoji: game.emoji ?? featured?.emoji ?? '🎮',
+                        gradient: game.gradient ?? featured?.gradient ?? 'from-primary to-accent',
+                        xp: game.xp ?? featured?.xp ?? game.reward_xp ?? 100,
+                        time: game.time ?? featured?.time ?? game.estimated_time ?? '5 min',
+                        learningFocus: game.learningFocus ?? featured?.learningFocus,
+                    };
+                });
+
+                setGames(enriched);
+            } catch (error) {
+                console.error('Failed to hydrate games:', error);
+            }
+        };
+
+        const runWhenIdle = () => {
+            void hydrateGames();
+        };
+
+        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+            idleHandle = window.requestIdleCallback(runWhenIdle, { timeout: 1500 });
+        } else {
+            timeoutHandle = setTimeout(runWhenIdle, 250);
+        }
+
+        return () => {
+            cancelled = true;
+            if (idleHandle !== null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
+                window.cancelIdleCallback(idleHandle);
+            }
+            if (timeoutHandle !== null) {
+                clearTimeout(timeoutHandle);
+            }
+        };
+    }, []);
 
     const canPlayGame = (_tier?: string) => true;
 
-    const filteredGames = (activeCategory === 'all'
-        ? displayGames
-        : displayGames.filter(g => (g as any).category === activeCategory)
-    ).filter(g => !showOnlyAccessible || canPlayGame((g as any).tier_required || (g as any).tier));
+    const filteredGames = useMemo(() => {
+        const categoryFiltered = activeCategory === 'all'
+            ? games
+            : games.filter(g => (g as any).category === activeCategory);
+
+        return categoryFiltered.filter(g => !showOnlyAccessible || canPlayGame((g as any).tier_required || (g as any).tier));
+    }, [activeCategory, games, showOnlyAccessible]);
 
     const totalXP = activeChild?.total_xp || 0;
     const unlockedGames = filteredGames.filter(g => canPlayGame((g as any).tier_required || (g as any).tier));
@@ -379,13 +421,7 @@ export default function GamesHubPage() {
                     </h2>
                 </div>
 
-                {isLoading ? (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {[1, 2, 3, 4, 5, 6].map(i => (
-                            <div key={i} className="bg-white/5 rounded-3xl h-72 animate-pulse border border-white/5" />
-                        ))}
-                    </div>
-                ) : filteredGames.length === 0 ? (
+                {filteredGames.length === 0 ? (
                     <div className="py-20">
                         <EmptyState
                             icon="🎮"
@@ -404,10 +440,7 @@ export default function GamesHubPage() {
                             return (
                                 <div
                                     key={game.id}
-                                    onMouseEnter={() => setHoveredGame(game.id)}
-                                    onMouseLeave={() => setHoveredGame(null)}
-                                    className={`group relative bg-gradient-to-br ${(game as any).gradient || 'from-primary to-accent'} rounded-3xl overflow-hidden transition-all duration-300 ${hoveredGame === game.id ? 'scale-105 shadow-2xl z-10' : 'shadow-lg'
-                                        } ${isLocked ? 'opacity-70' : ''}`}
+                                    className={`group relative bg-gradient-to-br ${(game as any).gradient || 'from-primary to-accent'} rounded-3xl overflow-hidden transition-all duration-300 shadow-lg hover:scale-105 hover:shadow-2xl hover:z-10 ${isLocked ? 'opacity-70' : ''}`}
                                 >
                                     {/* Glass overlay */}
                                     <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors" />
@@ -471,7 +504,16 @@ export default function GamesHubPage() {
                                         {/* Play Button */}
                                         {!isLocked && (
                                             <Link
-                                                href={game.id === 'story-library' ? '/portal/stories' : `/portal/games/${game.id}`}
+                                                prefetch={false}
+                                                href={
+                                                    game.id === 'story-library'
+                                                        ? '/portal/stories'
+                                                        : game.id === 'island-explorer'
+                                                            ? '/portal/games/flag-match'
+                                                            : game.id === 'cultural-quiz'
+                                                                ? '/portal/games/island-trivia'
+                                                            : `/portal/games/${game.id}`
+                                                }
                                                 className="w-full py-3.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-2xl font-bold text-center transition-all flex items-center justify-center gap-2 border border-white/20"
                                             >
                                                 <Play size={18} /> Play Now

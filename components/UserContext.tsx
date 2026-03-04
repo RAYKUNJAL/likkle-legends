@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { usePathname } from 'next/navigation';
 import { BADGES, BadgeId } from '@/lib/gamification';
 
 const supabase = createClient();
@@ -130,6 +131,7 @@ const TIER_LEVELS: Record<string, number> = {
 // ==========================================
 
 export function UserProvider({ children: childrenNodes }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [user, setUser] = useState<Profile | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [activeChild, setActiveChildState] = useState<Child | null>(null);
@@ -390,6 +392,20 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     setDialectMode(prev => prev === 'standard' ? 'localized' : 'standard');
   }, []);
 
+  const shouldHydrateAuth = React.useMemo(() => {
+    const path = pathname || '/';
+    return (
+      path.startsWith('/portal') ||
+      path.startsWith('/parent') ||
+      path.startsWith('/account') ||
+      path.startsWith('/messages') ||
+      path.startsWith('/analytics') ||
+      path.startsWith('/dashboard') ||
+      path.startsWith('/onboarding') ||
+      path.startsWith('/admin')
+    );
+  }, [pathname]);
+
   // Initialize on mount with improved protection
   useEffect(() => {
     let mounted = true;
@@ -398,24 +414,13 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       if (!mounted) return;
       setIsLoading(true);
 
-      try {
-        // Initial session check — reads from cookies (createBrowserClient)
-        let { data: { session } } = await supabase.auth.getSession();
-        console.log('[AUTH INIT] getSession result:', session?.user?.email ?? 'NO SESSION');
+      if (!shouldHydrateAuth) {
+        setIsLoading(false);
+        return;
+      }
 
-        // Fallback: getSession() can return null on first render if cookies
-        // haven't been fully processed yet. getUser() makes a real API call.
-        if (!session?.user) {
-          console.log('[AUTH INIT] getSession null — trying getUser() API call...');
-          const { data: { user: apiUser }, error: userErr } = await supabase.auth.getUser();
-          console.log('[AUTH INIT] getUser result:', apiUser?.email ?? 'NO USER', userErr?.message ?? '');
-          if (apiUser) {
-            // Re-read the session now that auth is confirmed
-            const retry = await supabase.auth.getSession();
-            session = retry.data.session;
-            console.log('[AUTH INIT] retry getSession:', session?.user?.email ?? 'STILL NULL');
-          }
-        }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
 
         if (session?.user && mounted) {
           // Sequential auth calls to avoid lock contention
@@ -424,14 +429,6 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
           } catch (err) {
             console.error("refreshUser failed:", err);
           }
-
-          if (mounted) {
-            try {
-              await refreshChildren();
-            } catch (err) {
-              console.error("refreshChildren failed:", err);
-            }
-          }
         }
       } catch (err) {
         console.error("Auth initialization failed:", err);
@@ -439,12 +436,16 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
         if (mounted) setIsLoading(false);
       }
     };
+    void initialize();
 
-    initialize();
+    if (!shouldHydrateAuth) {
+      return () => {
+        mounted = false;
+      };
+    }
 
     // Listen for ALL auth changes to keep context synced
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
-      console.log(`[AUTH] Event: ${event}`);
 
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
         const userId = session?.user?.id;
@@ -466,13 +467,12 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [refreshUser, refreshChildren]);
+  }, [refreshUser, mergeAnonymousData, shouldHydrateAuth]);
 
   // Load children when user changes
   useEffect(() => {
     if (user?.id) {
-      refreshChildren();
-      refreshNotifications();
+      void Promise.all([refreshChildren(), refreshNotifications()]);
 
       // Child state is handled inside refreshChildren
     }

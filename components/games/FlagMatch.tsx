@@ -5,22 +5,23 @@ import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
 interface FlagCard {
+    flagCode: string;
     emoji: string;
     island: string;
     fact: string;
 }
 
 const FLAG_CARDS: FlagCard[] = [
-    { emoji: '\u{1F1EF}\u{1F1F2}', island: 'Jamaica', fact: 'Home of reggae music! \u{1F3B5}' },
-    { emoji: '\u{1F1F9}\u{1F1F9}', island: 'Trinidad & Tobago', fact: 'Land of steel pan drums! \u{1F941}' },
-    { emoji: '\u{1F1E7}\u{1F1E7}', island: 'Barbados', fact: 'Beautiful beaches everywhere! \u{1F3D6}\u{FE0F}' },
-    { emoji: '\u{1F1EC}\u{1F1FE}', island: 'Guyana', fact: 'Land of many waters! \u{1F4A7}' },
-    { emoji: '\u{1F1EC}\u{1F1E9}', island: 'Grenada', fact: 'The spice island! \u{1F336}\u{FE0F}' },
-    { emoji: '\u{1F1E7}\u{1F1F8}', island: 'Bahamas', fact: '700+ islands to explore! \u{1F3DD}\u{FE0F}' },
-    { emoji: '\u{1F1F0}\u{1F1F3}', island: 'St. Kitts & Nevis', fact: 'Historic sugar plantations! \u{1F342}' },
-    { emoji: '\u{1F1F1}\u{1F1E8}', island: 'Saint Lucia', fact: 'Twin mountain peaks! \u{26F0}\u{FE0F}' },
-    { emoji: '\u{1F1FB}\u{1F1E8}', island: 'St. Vincent & the Grenadines', fact: 'Sailing paradise! \u{26F5}' },
-    { emoji: '\u{1F1E6}\u{1F1EC}', island: 'Antigua & Barbuda', fact: '365 beaches - one per day! \u{1F3D6}\u{FE0F}' },
+    { flagCode: 'jm', emoji: '\u{1F1EF}\u{1F1F2}', island: 'Jamaica', fact: 'Home of reggae music! \u{1F3B5}' },
+    { flagCode: 'tt', emoji: '\u{1F1F9}\u{1F1F9}', island: 'Trinidad & Tobago', fact: 'Land of steel pan drums! \u{1F941}' },
+    { flagCode: 'bb', emoji: '\u{1F1E7}\u{1F1E7}', island: 'Barbados', fact: 'Beautiful beaches everywhere! \u{1F3D6}\u{FE0F}' },
+    { flagCode: 'gy', emoji: '\u{1F1EC}\u{1F1FE}', island: 'Guyana', fact: 'Land of many waters! \u{1F4A7}' },
+    { flagCode: 'gd', emoji: '\u{1F1EC}\u{1F1E9}', island: 'Grenada', fact: 'The spice island! \u{1F336}\u{FE0F}' },
+    { flagCode: 'bs', emoji: '\u{1F1E7}\u{1F1F8}', island: 'Bahamas', fact: '700+ islands to explore! \u{1F3DD}\u{FE0F}' },
+    { flagCode: 'kn', emoji: '\u{1F1F0}\u{1F1F3}', island: 'St. Kitts & Nevis', fact: 'Historic sugar plantations! \u{1F342}' },
+    { flagCode: 'lc', emoji: '\u{1F1F1}\u{1F1E8}', island: 'Saint Lucia', fact: 'Twin mountain peaks! \u{26F0}\u{FE0F}' },
+    { flagCode: 'vc', emoji: '\u{1F1FB}\u{1F1E8}', island: 'St. Vincent & the Grenadines', fact: 'Sailing paradise! \u{26F5}' },
+    { flagCode: 'ag', emoji: '\u{1F1E6}\u{1F1EC}', island: 'Antigua & Barbuda', fact: '365 beaches - one per day! \u{1F3D6}\u{FE0F}' },
 ];
 
 export default function FlagMatch({ onComplete }: { onComplete?: (score: number) => void }) {
@@ -32,6 +33,7 @@ export default function FlagMatch({ onComplete }: { onComplete?: (score: number)
     const [options, setOptions] = useState<FlagCard[]>([]);
     const [showFact, setShowFact] = useState(false);
     const [selectedIsland, setSelectedIsland] = useState<string | null>(null);
+    const [imageErrorByCode, setImageErrorByCode] = useState<Record<string, boolean>>({});
 
     const startGame = () => {
         setGameState('playing');
@@ -178,7 +180,7 @@ export default function FlagMatch({ onComplete }: { onComplete?: (score: number)
                             whileHover={!selectedIsland ? { scale: 1.08 } : {}}
                             whileTap={!selectedIsland ? { scale: 0.95 } : {}}
                             animate={isSelected ? (isCorrect ? { scale: 1.15, rotate: 6 } : { x: [-8, 8, -8, 0] }) : {}}
-                            className={`w-28 h-28 rounded-2xl shadow-lg flex items-center justify-center transition-all font-black text-6xl cursor-pointer ${
+                            className={`w-28 h-28 rounded-2xl shadow-lg flex items-center justify-center transition-all cursor-pointer overflow-hidden ${
                                 isSelected
                                     ? isCorrect
                                         ? 'bg-green-300 border-4 border-green-600'
@@ -187,7 +189,22 @@ export default function FlagMatch({ onComplete }: { onComplete?: (score: number)
                             }`}
                             aria-label={`Flag option ${card.island}`}
                         >
-                            {card.emoji}
+                            {imageErrorByCode[card.flagCode] ? (
+                                <span className="font-black text-5xl">{card.emoji}</span>
+                            ) : (
+                                <img
+                                    src={`https://flagcdn.com/w160/${card.flagCode}.png`}
+                                    alt={`Flag of ${card.island}`}
+                                    className="w-full h-full object-cover"
+                                    loading="lazy"
+                                    onError={() =>
+                                        setImageErrorByCode((prev) => ({
+                                            ...prev,
+                                            [card.flagCode]: true,
+                                        }))
+                                    }
+                                />
+                            )}
                         </motion.button>
                     );
                 })}
