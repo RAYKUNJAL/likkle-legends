@@ -130,34 +130,34 @@ const VILLAGE_CINEMA_VIDEOS: Video[] = [
         reward_xp: 40,
     },
     {
-        // SciShow Kids — Ocean Zones (science, ages 6+)
-        id: 'vc-ocean-zones',
-        title: 'Ocean Zones — What Lives in the Deep? 🐠',
-        thumbnail_url: 'https://img.youtube.com/vi/De0uswAT-ks/maxresdefault.jpg',
-        video_url: 'https://www.youtube.com/watch?v=De0uswAT-ks',
-        duration_seconds: 300,
+        // Kids Learning Tube — Fruits & Veggies song (tropical food, ages 3+)
+        id: 'vc-fruits-veggies',
+        title: 'Tropical Fruits & Veggies Song 🥭🍍',
+        thumbnail_url: 'https://img.youtube.com/vi/1u5HOURq7kQ/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=1u5HOURq7kQ',
+        duration_seconds: 180,
         tier_required: 'free',
-        reward_xp: 55,
+        reward_xp: 40,
     },
     {
-        // Steelpan — Caribbean's own musical instrument (music/culture, all ages)
-        id: 'vc-steelpan',
-        title: 'The Steel Pan — Caribbean\'s Own Instrument 🥁',
-        thumbnail_url: 'https://img.youtube.com/vi/BAQTTajk2F8/maxresdefault.jpg',
-        video_url: 'https://www.youtube.com/watch?v=BAQTTajk2F8',
-        duration_seconds: 480,
+        // Ackee Walk — Jamaican kids TV show ages 3-9 (Caribbean culture & community)
+        id: 'vc-ackee-walk',
+        title: 'Ackee Walk — Jamaican Kids Show 🇯🇲',
+        thumbnail_url: 'https://img.youtube.com/vi/mZQtb-2YapY/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=mZQtb-2YapY',
+        duration_seconds: 600,
         tier_required: 'free',
-        reward_xp: 60,
+        reward_xp: 65,
     },
     {
-        // SciShow Kids — Mariana Trench (deep ocean, ages 6+)
-        id: 'vc-mariana',
-        title: 'Deep Ocean Secrets — SciShow Kids 🌊',
-        thumbnail_url: 'https://img.youtube.com/vi/J4IKzEZotto/maxresdefault.jpg',
-        video_url: 'https://www.youtube.com/watch?v=J4IKzEZotto',
-        duration_seconds: 270,
+        // Nat Geo Kids — Amazing Animals compilation (tropical wildlife, ages 3+)
+        id: 'vc-amazing-animals',
+        title: 'Amazing Animals! 🦜 Nat Geo Kids',
+        thumbnail_url: 'https://img.youtube.com/vi/eUunYTYia3I/maxresdefault.jpg',
+        video_url: 'https://www.youtube.com/watch?v=eUunYTYia3I',
+        duration_seconds: 3600,
         tier_required: 'free',
-        reward_xp: 55,
+        reward_xp: 75,
     },
 ];
 
