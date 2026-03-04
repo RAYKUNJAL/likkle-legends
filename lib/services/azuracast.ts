@@ -1,6 +1,13 @@
 const AZURACAST_BASE_URL = process.env.AZURACAST_BASE_URL?.trim() || '';
 const AZURACAST_API_KEY = process.env.AZURACAST_API_KEY?.trim() || '';
 
+export const AZURACAST_SEGMENT_STATIONS = {
+    tanty_spice: process.env.AZURACAST_STATION_TANTY_SPICE?.trim() || '',
+    roti: process.env.AZURACAST_STATION_ROTI?.trim() || '',
+    dilly_doubles: process.env.AZURACAST_STATION_DILLY_DOUBLES?.trim() || '',
+    steelpan_sam: process.env.AZURACAST_STATION_STEELPAN_SAM?.trim() || '',
+} as const;
+
 function getHeaders() {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -41,4 +48,3 @@ export async function getNowPlaying(stationShortcode?: string) {
     }
     return fetchAzuraCast('/api/nowplaying');
 }
-

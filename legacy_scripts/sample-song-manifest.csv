@@ -1,0 +1,4 @@
+file,title,artist,description,category,tier_required,is_premium,is_active,duration_seconds,island_origin,age_track,display_order,cover_image_url,thumbnail_url
+track-01.mp3,Tanty Morning Mix,Likkle Legends,Island morning vibes,tanty_spice,free,false,true,180,Caribbean,all,1,,
+track-02.mp3,ROTI Learning Beat,Likkle Legends,Educational rhythm for kids,roti,free,false,true,150,Caribbean,all,2,,
+track-03.mp3,Dilly Dance Time,Likkle Legends,High-energy carnival groove,dilly_doubles,starter_mailer,true,true,200,Trinidad & Tobago,all,3,,

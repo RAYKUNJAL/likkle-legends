@@ -1,6 +1,7 @@
 
 import { Track, StudioContent, AdminCharacter } from "../lib/types";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { mapLegacyRadioCategory } from "@/lib/radio-stations";
 
 // Local Storage Keys
 const PLAYLIST_KEY = 'tanty_radio_playlist';
@@ -73,12 +74,7 @@ export const getGlobalPlaylist = async (): Promise<Track[] | null> => {
                 return songs.map((s: any) => {
                     // Map legacy DB categories to the DJ segment model.
                     // Segment IDs: tanty_spice, roti, dilly_doubles, steelpan_sam
-                    let channel = s.category || 'tanty_spice';
-
-                    if (channel === 'story' || channel === 'lullaby' || channel === 'calm' || channel === 'culture' || channel === 'tanty') channel = 'tanty_spice';
-                    if (channel === 'educational' || channel === 'lesson' || channel === 'learning') channel = 'roti';
-                    if (channel === 'dilly' || channel === 'food') channel = 'dilly_doubles';
-                    if (channel === 'music' || channel === 'soca' || channel === 'steelpan' || channel === 'vip') channel = 'steelpan_sam';
+                    const channel = mapLegacyRadioCategory(s.category);
 
                     return {
                         id: s.id,

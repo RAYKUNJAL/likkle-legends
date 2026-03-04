@@ -50,7 +50,7 @@ export const FooterV2 = () => {
                                     {[
                                         { name: 'Digital Magic', href: '#features' },
                                         { name: 'The Envelope', href: '#envelope' },
-                                        { name: 'Island Radio', href: '#radio' },
+                                        { name: 'Island Radio', href: '/radio' },
                                         { name: 'Story Studio', href: '/portal' }
                                     ].map(item => (
                                         <li key={item.name}><Link href={item.href} className="text-white/40 hover:text-white font-bold transition-all text-sm uppercase tracking-widest">{item.name}</Link></li>

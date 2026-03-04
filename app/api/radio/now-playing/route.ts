@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getNowPlaying, isAzuraCastConfigured } from '@/lib/services/azuracast';
+import { AZURACAST_SEGMENT_STATIONS, getNowPlaying, isAzuraCastConfigured } from '@/lib/services/azuracast';
+import { mapLegacyRadioCategory } from '@/lib/radio-stations';
 
 export async function GET(request: NextRequest) {
     try {
@@ -10,9 +11,13 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const station = request.nextUrl.searchParams.get('station') || undefined;
-        const data = await getNowPlaying(station);
-        return NextResponse.json({ success: true, data });
+        const stationFromQuery = request.nextUrl.searchParams.get('station') || undefined;
+        const segment = request.nextUrl.searchParams.get('segment');
+        const segmentId = segment ? mapLegacyRadioCategory(segment) : undefined;
+        const segmentStation = segmentId ? AZURACAST_SEGMENT_STATIONS[segmentId] : '';
+        const resolvedStation = stationFromQuery || segmentStation || undefined;
+        const data = await getNowPlaying(resolvedStation);
+        return NextResponse.json({ success: true, data, station: resolvedStation || null, segment: segmentId || null });
     } catch (error: any) {
         return NextResponse.json(
             { success: false, error: error?.message || 'Failed to fetch now playing' },
@@ -20,4 +25,3 @@ export async function GET(request: NextRequest) {
         );
     }
 }
-
