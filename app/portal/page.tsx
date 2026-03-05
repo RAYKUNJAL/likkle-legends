@@ -1030,7 +1030,7 @@ export default function ChildPortalPage() {
                                         </div>
                                     </div>
                                     <div className="bg-white rounded-[5rem] p-1 shadow-2xl border-8 border-orange-50 overflow-hidden">
-                                        <TantyRadio featuredTracks={RADIO_TRACKS} defaultChannel="learning" />
+                                        <TantyRadio featuredTracks={RADIO_TRACKS} defaultChannel="roti" />
                                     </div>
                                 </div>
                             )}
