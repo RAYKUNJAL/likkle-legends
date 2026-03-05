@@ -40,7 +40,6 @@ interface SongInsert {
   cover_image_url: string | null;
   thumbnail_url: string | null;
   is_active: boolean;
-  metadata: Record<string, unknown>;
 }
 
 interface CliOptions {
@@ -399,7 +398,6 @@ async function main(): Promise<void> {
 
     const category = row.category || options.defaultCategory;
     const tier = row.tier_required || options.defaultTier;
-    const isPremium = row.is_premium ?? tier !== "free";
     const storageName = `${Date.now()}-${sanitizeFileName(path.basename(row.file))}`;
     const storagePath = `${options.folder.replace(/\/+$/, "")}/${storageName}`;
 
@@ -417,11 +415,6 @@ async function main(): Promise<void> {
       cover_image_url: row.cover_image_url || null,
       thumbnail_url: row.thumbnail_url || null,
       is_active: row.is_active ?? true,
-      metadata: {
-        is_premium: isPremium,
-        imported_at: new Date().toISOString(),
-        import_source: "batch-song-importer",
-      },
     };
 
     console.log(`[${i + 1}/${rows.length}] ${title} -> ${storagePath}`);
