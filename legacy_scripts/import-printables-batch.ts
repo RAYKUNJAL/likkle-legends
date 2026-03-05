@@ -30,9 +30,6 @@ interface PrintableInsert {
   pdf_url: string;
   preview_url: string | null;
   is_active: boolean;
-  age_track: "all" | "mini" | "big";
-  island_origin: string;
-  display_order: number;
 }
 
 interface CliOptions {
@@ -237,15 +234,16 @@ function parseJsonManifest(content: string): PrintableManifestRow[] {
 
 function discoverPrintables(folder: string, includeImagesAsPreview: boolean): PrintableManifestRow[] {
   const entries = fs.readdirSync(folder, { withFileTypes: true }).filter((entry) => entry.isFile());
-  const pdfs = entries.filter((entry) => path.extname(entry.name).toLowerCase() === ".pdf");
+  const printableExts = new Set([".pdf", ".png", ".jpg", ".jpeg", ".webp"]);
+  const printables = entries.filter((entry) => printableExts.has(path.extname(entry.name).toLowerCase()));
   const images = new Set(
     entries
       .filter((entry) => [".png", ".jpg", ".jpeg", ".webp"].includes(path.extname(entry.name).toLowerCase()))
       .map((entry) => entry.name.toLowerCase()),
   );
 
-  return pdfs.map((entry, index) => {
-    const baseName = path.basename(entry.name, ".pdf");
+  return printables.map((entry, index) => {
+    const baseName = path.basename(entry.name, path.extname(entry.name));
     const previewFile = includeImagesAsPreview
       ? [".png", ".jpg", ".jpeg", ".webp"]
           .map((ext) => `${baseName}${ext}`.toLowerCase())
@@ -367,8 +365,9 @@ async function main(): Promise<void> {
       continue;
     }
 
-    if (path.extname(filePath).toLowerCase() !== ".pdf") {
-      console.error(`[${i + 1}/${rows.length}] Unsupported printable (must be PDF): ${filePath}`);
+    const mainExt = path.extname(filePath).toLowerCase();
+    if (![".pdf", ".png", ".jpg", ".jpeg", ".webp"].includes(mainExt)) {
+      console.error(`[${i + 1}/${rows.length}] Unsupported printable format: ${filePath}`);
       failed += 1;
       continue;
     }
@@ -414,9 +413,6 @@ async function main(): Promise<void> {
       pdf_url: "",
       preview_url: null,
       is_active: row.is_active ?? true,
-      age_track: row.age_track || "all",
-      island_origin: row.island_origin?.trim() || "Caribbean",
-      display_order: row.display_order ?? i,
     };
 
     console.log(`[${i + 1}/${rows.length}] ${title} -> ${pdfStoragePath}`);
@@ -430,7 +426,7 @@ async function main(): Promise<void> {
       const { data: uploadedPdf, error: uploadPdfError } = await supabase.storage
         .from(options.bucket)
         .upload(pdfStoragePath, pdfBuffer, {
-          contentType: "application/pdf",
+          contentType: getMimeForFile(filePath),
           upsert: options.upsertFile,
         });
 
