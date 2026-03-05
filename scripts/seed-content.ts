@@ -409,6 +409,120 @@ const STORIES = [
         }
     },
     {
+        title: "Kumina Queen: Grandma's Drumming Lesson",
+        summary: "Little Maya discovers that the African rhythms her grandmother drums every Sunday hold a secret code that teaches counting, patterns, and where her family comes from.",
+        cover_image_url: "/images/logo.png",
+        age_track: "mini",
+        tier_required: "free",
+        island_theme: "Jamaica",
+        reading_time_minutes: 5,
+        word_count: 310,
+        difficulty_level: 1,
+        is_active: true,
+        display_order: 9,
+        content_json: {
+            pages: [
+                {
+                    pageNumber: 1,
+                    text: "Every Sunday morning, Maya woke up to the sound of drumming. BOOM-boom-boom-boom. BOOM-boom-boom-boom. It was Grandma in the yard, playing the Kbandu drum — a drum her own grandmother brought from West Africa long, long ago.",
+                    imagePrompt: "Young girl waking up in a colourful Caribbean bedroom, looking out the window at her grandmother playing a large drum in a sunny yard"
+                },
+                {
+                    pageNumber: 2,
+                    text: "'Grandma, what does the pattern mean?' Maya asked. Grandma smiled and tapped slowly. 'Count with me, pickney. One-two-three-four, one-two-three-four. Can you hear the four?' Maya listened very carefully. Then she nodded — she could hear it! A group of four beats, over and over.",
+                    imagePrompt: "Grandmother and grandchild sitting together with drums, grandmother pointing to the drum, child concentrating and counting on fingers"
+                },
+                {
+                    pageNumber: 3,
+                    text: "'This is Kumina — our African drumming tradition,' Grandma said. 'Our ancestors brought these rhythms from the Congo. Music was how they kept their culture alive when they were far from home.' Maya touched the drum skin gently. It felt warm, like it was breathing.",
+                    imagePrompt: "Close-up of hands on a traditional Kbandu drum, soft golden light, African patterns around the drum's edge"
+                },
+                {
+                    pageNumber: 4,
+                    text: "Grandma taught Maya a new pattern: BOOM-boom, BOOM-boom-boom. 'How many beats?' she asked. Maya counted on her fingers. 'Two and three! That's five!' 'Correct!' said Grandma. 'And when you put the two-pattern and the three-pattern together, you get five. That is how African music teaches mathematics.'",
+                    imagePrompt: "Child's hands with five fingers raised, drum in the background, numbers 2 and 3 floating like butterflies around her"
+                },
+                {
+                    pageNumber: 5,
+                    text: "By the end of the morning, Maya could play three whole Kumina patterns. She drummed while Grandma danced. The neighbours clapped. Maya felt something deep inside her chest — like a door had been opened to a room that had always been there, just waiting for her to come in.",
+                    imagePrompt: "Girl playing drum confidently while grandmother dances and neighbours clap in a Caribbean yard, flowers blooming around them, joyful scene"
+                }
+            ],
+            moral: "Our ancestors hid wisdom in music. When we learn our cultural traditions, we unlock a piece of who we truly are.",
+            parentNote: {
+                whyItHelps: "Links African-Caribbean cultural heritage to early maths concepts (counting, patterns, grouping). Builds cultural pride and musical awareness simultaneously.",
+                offlineFollowup: "Clap simple rhythm patterns together — 2 claps, 3 claps, 4 claps. Can your child identify the pattern and count the beats? Try a 2+3 pattern as in the story.",
+                whatToSayAfter: "What music or traditions does YOUR family have that connect you to where you come from?"
+            },
+            metadata: {
+                ageTrack: "mini",
+                islandTheme: "Jamaica",
+                readingTimeMinutes: 5,
+                difficultyLevel: 1,
+                tierRequired: "free",
+                characterId: "dilly_doubles",
+                culturalElements: ["Kumina", "African heritage", "drumming", "Jamaica", "rhythm patterns", "counting", "maths through music"]
+            }
+        }
+    },
+    {
+        title: "The Hurricane and the Hummingbird",
+        summary: "When a massive hurricane tears through the island, a tiny hummingbird teaches a boy that resilience, community, and nature's power are all part of island life.",
+        cover_image_url: "/images/logo.png",
+        age_track: "big",
+        tier_required: "free",
+        island_theme: "Caribbean",
+        reading_time_minutes: 8,
+        word_count: 510,
+        difficulty_level: 2,
+        is_active: true,
+        display_order: 10,
+        content_json: {
+            pages: [
+                {
+                    pageNumber: 1,
+                    text: "Marcus had lived through hurricanes before — everyone on the island had. But Hurricane Edna was different. It was a Category 4, with winds strong enough to uproot silk-cotton trees. Three days before it hit, the whole village got to work boarding up windows and stocking supplies. This was island life.",
+                    imagePrompt: "Caribbean village community boarding up windows and helping each other before a storm, dark dramatic clouds building on the horizon"
+                },
+                {
+                    pageNumber: 2,
+                    text: "When the storm arrived, it roared. The wind sounded like a freight train made of water. Marcus pressed his face to the window glass and watched the mango trees bend almost to the ground. His mother sat beside him. 'The island has survived a thousand storms,' she said quietly. 'And so will we.'",
+                    imagePrompt: "Boy watching through a rattling window as the hurricane bends trees and rain comes sideways, mother's hand on his shoulder, warm lamplight inside"
+                },
+                {
+                    pageNumber: 3,
+                    text: "The morning after, Marcus stepped outside into strange quiet. Branches covered the road. The old guava tree had fallen. But the sky was a brilliant, washed blue — the clearest blue Marcus had ever seen. Then he spotted something tiny in the wreckage. A hummingbird. It sat on a broken branch, its emerald feathers perfect and dry.",
+                    imagePrompt: "Post-hurricane Caribbean morning, bright blue sky, debris on the ground, tiny vivid green hummingbird perched on a broken branch gleaming in the sun"
+                },
+                {
+                    pageNumber: 4,
+                    text: "'How did you survive?' Marcus whispered. He learned later that hummingbirds enter torpor during storms — their heart rate drops from 1,200 beats per minute to just 50, and they hold on tight, letting the storm pass through them rather than fighting it. They don't resist the hurricane. They simply endure it.",
+                    imagePrompt: "Split illustration: hummingbird clinging to a branch in a storm on one side, and a heart rate monitor showing slow calm beats on the other"
+                },
+                {
+                    pageNumber: 5,
+                    text: "Over the next week, the whole community cleared the roads together. New plants were already sprouting from the storm-washed soil. Marcus understood now: hurricanes don't destroy an island — they change it. And the people who live there change with it, season after season, storm after storm, generation after generation. That is what it means to be from the Caribbean.",
+                    imagePrompt: "Community working together to clear debris, new green shoots emerging from the ground, hummingbird flying overhead, bright hopeful Caribbean sky"
+                }
+            ],
+            moral: "Resilience is not about refusing to bend — it is about knowing you will always grow back stronger.",
+            parentNote: {
+                whyItHelps: "Teaches Caribbean environmental science (hurricane formation, animal adaptations) alongside emotional resilience and community values. Addresses climate anxiety in an empowering way.",
+                offlineFollowup: "Look up the Caribbean hurricane season together (June–November). What do the category numbers (1–5) mean? Can you find a news story about how a community rebuilt after a hurricane?",
+                whatToSayAfter: "The hummingbird survived by letting the storm pass through instead of fighting it. Can you think of a time when it helped to wait and be patient instead of fighting something?"
+            },
+            metadata: {
+                ageTrack: "big",
+                islandTheme: "Caribbean",
+                readingTimeMinutes: 8,
+                difficultyLevel: 2,
+                tierRequired: "free",
+                characterId: "benny_of_shadows",
+                culturalElements: ["Caribbean resilience", "hurricane season", "island ecology", "animal adaptations", "community spirit", "environmental science"]
+            }
+        }
+    },
+    {
         title: "The Haitian Revolution: How a Nation Won Its Freedom",
         summary: "The true, incredible story of how enslaved people in Haiti did what no one in history had ever done — and changed the world forever.",
         cover_image_url: "/images/logo.png",

@@ -5,13 +5,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-    Sparkles, BookOpen, Music, Palette, Target, Star, Play,
+    Sparkles, BookOpen, Palette, Target, Star, Play,
     Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video, Radio,
     Map as MapIcon, Grid, Wand2, LogOut, Download, Menu, X, ShoppingBag, LayoutDashboard, MessageCircle
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useUser } from '@/components/UserContext';
-import { getSongs, getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
+import { getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
 import { calculateLevel, LEVELS } from '@/lib/gamification';
 import { RADIO_TRACKS } from '@/lib/constants';
 import { EmptyState } from '@/components/EmptyState';
@@ -27,7 +27,6 @@ import type { LearningPlan, PlanActivity } from '@/app/actions/generate-plan';
 const TantyRadio = dynamic(() => import('@/components/TantyRadio'), { ssr: false });
 const IslandVillageMap = dynamic(() => import('@/components/IslandVillageMap'), { ssr: false });
 const PremiumVideoPlayer = dynamic(() => import('@/components/PremiumVideoPlayer'), { ssr: false });
-const PremiumMusicPlayer = dynamic(() => import('@/components/PremiumMusicPlayer'), { ssr: false });
 const LeaderboardPanel = dynamic(() => import('@/components/portal/LeaderboardPanel'), { ssr: false });
 const FamilyChallengesPanel = dynamic(() => import('@/components/portal/FamilyChallengesPanel'), { ssr: false });
 const CultureQuests = dynamic(() => import('@/components/CultureQuests').then(m => ({ default: m.CultureQuests })), { ssr: false });
@@ -47,16 +46,6 @@ const MangoGiftModal = dynamic(() => import('@/components/portal/MangoGiftModal'
 const FeatureUpgradeModal = dynamic(() => import('@/components/FeatureUpgradeModal'), { ssr: false });
 import { FreeTierBanner } from '@/components/portal/FreeTierBanner';
 import { fireConversionEvent } from '@/lib/analytics';
-
-interface Song {
-    id: string;
-    title: string;
-    artist: string;
-    thumbnail_url: string;
-    audio_url?: string;
-    tier_required: string;
-    reward_xp?: number;
-}
 
 interface Storybook {
     id: string;
@@ -85,7 +74,7 @@ interface Video {
     reward_xp?: number;
 }
 
-type PortalSection = 'home' | 'stories' | 'songs' | 'missions' | 'games' | 'lessons' | 'radio' | 'printables' | 'leaderboard' | 'challenges';
+type PortalSection = 'home' | 'stories' | 'missions' | 'games' | 'lessons' | 'radio' | 'printables' | 'leaderboard' | 'challenges';
 
 /**
  * Curated free Caribbean educational videos for Village Cinema (ages 3–9).
@@ -164,13 +153,11 @@ const VILLAGE_CINEMA_VIDEOS: Video[] = [
 export default function ChildPortalPage() {
     const router = useRouter();
     const { user, children, activeChild, canAccess, isSubscribed, isLoading: userLoading, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge, verifyAge } = useUser();
-    const [songs, setSongs] = useState<Song[]>([]);
     const [stories, setStories] = useState<Storybook[]>([]);
     const [missions, setMissions] = useState<Mission[]>([]);
     const [videos, setVideos] = useState<Video[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [loadingStates, setLoadingStates] = useState({
-        songs: true,
         stories: true,
         missions: true,
         videos: true
@@ -181,7 +168,6 @@ export default function ChildPortalPage() {
 
     // Media States
     const [activeVideo, setActiveVideo] = useState<Video | null>(null);
-    const [activeSong, setActiveSong] = useState<Song | null>(null);
     const [isCoppaModalOpen, setIsCoppaModalOpen] = useState(false);
     const [pendingRoute, setPendingRoute] = useState<string | null>(null);
     const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; tier?: string; feature?: string }>({ open: false });
@@ -205,15 +191,6 @@ export default function ChildPortalPage() {
 
     const loadPortalData = useCallback(async () => {
         // Individual fetchers to avoid Promise.all bottleneck
-        const fetchSongs = async () => {
-            try {
-                const data = await getSongs();
-                setSongs(data as Song[]);
-            } finally {
-                setLoadingStates(prev => ({ ...prev, songs: false }));
-            }
-        };
-
         const fetchStories = async () => {
             try {
                 const data = await getStorybooks();
@@ -242,11 +219,10 @@ export default function ChildPortalPage() {
         };
 
         setIsLoading(true);
-        setLoadingStates({ songs: true, stories: true, missions: true, videos: true });
+        setLoadingStates({ stories: true, missions: true, videos: true });
 
         // Fire all but don't await all together
         Promise.allSettled([
-            fetchSongs(),
             fetchStories(),
             fetchMissions(),
             fetchVideos()
@@ -399,21 +375,12 @@ export default function ChildPortalPage() {
         }
     };
 
-    const handleMediaComplete = async (type: 'video' | 'song', id: string, xp: number) => {
+    const handleMediaComplete = async (type: 'video', id: string, xp: number) => {
         if (!user || !activeChild) return;
 
         try {
-            await handleActivityLog(
-                type,
-                id,
-                type === 'video' ? activeVideo?.title : activeSong?.title,
-                xp
-            );
-
-            // Close player after a bit (the player component usually handles its own close but we clean up state)
+            await handleActivityLog(type, id, activeVideo?.title, xp);
             if (type === 'video') setActiveVideo(null);
-            else setActiveSong(null);
-
         } catch (err) {
             console.error("Failed to log activity:", err);
         }
@@ -443,7 +410,6 @@ export default function ChildPortalPage() {
         { id: 'home', label: 'Village', icon: MapIcon, color: 'from-primary to-accent' },
         { id: 'stories', label: 'Stories', icon: BookOpen, color: 'from-blue-500 to-cyan-500' },
         { id: 'lessons', label: 'Lessons', icon: Video, color: 'from-indigo-500 to-purple-500' },
-        { id: 'songs', label: 'Songs', icon: Music, color: 'from-purple-500 to-pink-500' },
         { id: 'missions', label: 'Craft Corner', icon: Palette, color: 'from-amber-500 to-orange-500' },
         { id: 'games', label: 'Games', icon: Palette, color: 'from-green-500 to-emerald-500' },
         { id: 'leaderboard', label: 'Legends', icon: Trophy, color: 'from-amber-500 to-yellow-500' },
@@ -701,7 +667,7 @@ export default function ChildPortalPage() {
                                                 onStart={(a) => {
                                                     const sectionMap: Record<string, string> = {
                                                         lesson_micro: 'lessons', quiz_micro: 'missions',
-                                                        story_short: 'stories', song_video_script: 'songs',
+                                                        story_short: 'stories', song_video_script: 'radio',
                                                         printable: 'printables', game: 'games',
                                                     };
                                                     setActiveSection((sectionMap[a.type] || 'home') as PortalSection);
@@ -888,87 +854,6 @@ export default function ChildPortalPage() {
                                 </section>
                             )}
 
-                            {/* Songs Section */}
-                            {(activeSection === 'songs') && (
-                                <section className="space-y-8 animate-in fade-in slide-in-from-bottom-5">
-                                    <CharacterGuideBanner
-                                        character="dilly_doubles"
-                                        message="Lesss gooo, Legend! Dilly Doubles is cranking up the vibes — let's move!"
-                                    />
-                                    <div className="flex items-center gap-5">
-                                        <div className="w-16 h-16 bg-pink-100 rounded-[2rem] flex items-center justify-center text-4xl shadow-inner">🎵</div>
-                                        <div>
-                                            <h2 className="text-4xl font-black text-blue-900 tracking-tight">Music Studio</h2>
-                                            <p className="text-blue-700/60 font-bold uppercase text-xs tracking-widest">rhythms of the caribbean</p>
-                                        </div>
-                                        <button
-                                            onClick={() => router.push('/portal/music')}
-                                            className="ml-auto px-6 py-3 bg-pink-500 text-white rounded-2xl font-black text-sm hover:scale-105 transition-all shadow-lg active:scale-95 flex items-center gap-2"
-                                        >
-                                            <ShoppingBag size={18} /> Get New Songs
-                                        </button>
-                                    </div>
-
-                                    {loadingStates.songs ? (
-                                        <GridSkeleton count={4} type="circle" />
-                                    ) : songs.length === 0 ? (
-                                        <div className="col-span-full">
-                                            <EmptyState
-                                                icon="🎵"
-                                                title="Tuning the Drums"
-                                                message="The steel pans are being tuned! We'll have island beats ready for you very soon."
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
-                                            {songs.map((song) => {
-                                                const isLocked = !canAccess(song.tier_required);
-                                                return (
-                                                    <button
-                                                        key={song.id}
-                                                        onClick={() => isLocked ? handleLockedClick(song.tier_required, song.title, 'Listen to this track and unlock the full Music Studio.') : setActiveSong(song)}
-                                                        className={`bg-white rounded-[2rem] sm:rounded-[3.5rem] p-4 sm:p-6 shadow-lg sm:shadow-xl hover:shadow-2xl transition-all group border-2 sm:border-4 border-transparent hover:border-pink-100 text-left ${isLocked ? 'opacity-80 cursor-pointer' : ''}`}
-                                                    >
-                                                        <div className="relative aspect-square bg-pink-50 rounded-full mb-4 sm:mb-6 overflow-hidden shadow-xl ring-2 sm:ring-4 ring-white group-hover:ring-pink-100 transition-all">
-                                                            {song.thumbnail_url ? (
-                                                                <Image
-                                                                    src={song.thumbnail_url}
-                                                                    alt={song.title}
-                                                                    fill
-                                                                    className="object-cover group-hover:scale-110 transition-transform duration-700"
-                                                                />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-6xl opacity-10">🎵</div>
-                                                            )}
-
-                                                            {!isLocked && (
-                                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                                    <div className="w-16 h-16 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all">
-                                                                        <Play className="text-pink-600 ml-1" size={32} fill="currentColor" />
-                                                                    </div>
-                                                                </div>
-                                                            )}
-
-                                                            {isLocked && (
-                                                                <div className="absolute inset-0 bg-pink-900/40 backdrop-blur-[2px] flex items-center justify-center">
-                                                                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-pink-900 shadow-2xl">
-                                                                        <Lock size={24} />
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <div className="text-center px-2">
-                                                            <h3 className="text-xl font-black text-blue-900 mb-1 truncate">{song.title}</h3>
-                                                            <p className="text-sm text-pink-500 font-bold uppercase tracking-widest">{song.artist}</p>
-                                                        </div>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </section>
-                            )}
-
                             {/* Craft Corner */}
                             {(activeSection === 'missions') && (
                                 <CraftCorner
@@ -1048,13 +933,6 @@ export default function ChildPortalPage() {
                 />
             )}
 
-            {activeSong && (
-                <PremiumMusicPlayer
-                    song={activeSong}
-                    onClose={() => setActiveSong(null)}
-                    onComplete={(xp) => handleMediaComplete('song', activeSong.id, xp)}
-                />
-            )}
             {/* Badge Unlock Celebration */}
             <BadgeUnlockModal
                 badge={unlockedBadge}
