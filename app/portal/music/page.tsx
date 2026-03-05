@@ -1,237 +1,93 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
-    Music, ShoppingBag, Download, Star, Sparkles,
-    Gift, Play, Pause, ChevronRight, ChevronLeft, Clock,
-    Heart, AudioLines, Package, Zap, Globe, CheckCircle2, X
+    Music, Play, Pause, ChevronLeft, ChevronRight,
+    Heart, Sparkles, Gift, Crown, Star, CheckCircle2, Zap, Download
 } from 'lucide-react';
 import Link from 'next/link';
-import toast from 'react-hot-toast';
-import { supabase } from '@/lib/storage';
 import PurchaseModal from '@/components/MusicStore/PurchaseModal';
+import { RADIO_TRACKS, RADIO_CHANNELS } from '@/lib/constants';
 
-interface Song {
-    id: string;
-    title: string;
-    artist: string;
-    audio_url: string;
-    category: string;
-    duration_seconds?: number;
-    metadata?: {
-        is_premium?: boolean;
-        price?: number;
-    };
-}
-
-type Category = 'all' | 'story' | 'lullaby' | 'culture' | 'learning' | 'calm';
-
-// Swap this URL for your real demo MP3 when it's ready.
-// Leave as '' to hide the demo player until then.
-const DEMO_SONG_URL = '';
-
-const normalizeCategory = (cat?: string) => (cat || '').toLowerCase() as Category;
-
-const STARTER_SONGS: Song[] = [
-    {
-        id: 'starter-1',
-        title: 'Island Dawn',
-        artist: 'Likkle Legends Band',
-        audio_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-        category: 'culture',
-        duration_seconds: 70,
-        metadata: { is_premium: false, price: 0 },
-    },
-    {
-        id: 'starter-2',
-        title: 'Bedtime Breeze',
-        artist: 'Tanty Spice',
-        audio_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-        category: 'lullaby',
-        duration_seconds: 65,
-        metadata: { is_premium: false, price: 0 },
-    },
-    {
-        id: 'starter-3',
-        title: 'Counting Coconuts',
-        artist: 'R.O.T.I.',
-        audio_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-        category: 'learning',
-        duration_seconds: 62,
-        metadata: { is_premium: false, price: 0 },
-    },
-    {
-        id: 'starter-4',
-        title: 'Carnival Jump',
-        artist: 'Dilly Doubles',
-        audio_url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
-        category: 'story',
-        duration_seconds: 78,
-        metadata: { is_premium: false, price: 0 },
-    },
-];
+// ── Channel metadata ──────────────────────────────────────────────────────────
+const CHANNEL_META: Record<string, { emoji: string; color: string; bg: string }> = {
+    roti:          { emoji: '🤖', color: 'text-blue-600',   bg: 'bg-blue-50'   },
+    tanty_spice:   { emoji: '🌶️', color: 'text-orange-600', bg: 'bg-orange-50' },
+    dilly_doubles: { emoji: '🎵', color: 'text-pink-600',   bg: 'bg-pink-50'   },
+    steelpan_sam:  { emoji: '🥁', color: 'text-amber-600',  bg: 'bg-amber-50'  },
+};
 
 function formatDuration(seconds?: number): string {
-    if (!seconds || seconds === 0) return '—';
+    if (!seconds) return '—';
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-export default function ParentMusicHub() {
-    const [activeTab, setActiveTab] = useState<'market' | 'library' | 'custom'>('market');
-    const [songs, setSongs] = useState<Song[]>([]);
-    const [purchases, setPurchases] = useState<string[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+const PLANS = [
+    {
+        id: 'plan_digital_legends',
+        name: 'Legends',
+        price: '$4.99',
+        period: '/mo',
+        color: 'from-blue-500 to-cyan-500',
+        icon: '🌟',
+        features: ['All radio channels', 'Stories & lullabies', '20 printables', 'Ad-free listening'],
+    },
+    {
+        id: 'plan_legends_plus',
+        name: 'Legends Plus',
+        price: '$19.99',
+        period: '/mo',
+        color: 'from-orange-500 to-red-500',
+        icon: '👑',
+        badge: 'Most Popular',
+        features: ['Everything in Legends', 'Games & quizzes', 'AI story creator', 'Unlimited printables', '2 child profiles'],
+    },
+    {
+        id: 'plan_family_legacy',
+        name: 'Family Legacy',
+        price: '$34.99',
+        period: '/mo',
+        color: 'from-purple-500 to-pink-500',
+        icon: '🏆',
+        features: ['Everything in Legends+', '5 child profiles', 'Family challenges', 'Priority support', 'Custom song credit'],
+    },
+];
+
+export default function MusicHub() {
+    const [activeTab, setActiveTab] = useState<'music' | 'upgrade' | 'custom'>('music');
     const [isPlaying, setIsPlaying] = useState<string | null>(null);
-    const [activeCategory, setActiveCategory] = useState<Category>('all');
+    const [activeChannel, setActiveChannel] = useState<string>('all');
 
-    // Audio
-    const audioRef = useRef<HTMLAudioElement>(null);
-    const [isDemoPlaying, setIsDemoPlaying] = useState(false);
-
-    // Purchase Modal
-    const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState<any>(null);
-    const [selectedSong, setSelectedSong] = useState<Song | null>(null);
-    const [customMetadata, setCustomMetadata] = useState<any>(null);
-
-    // Custom song form state
+    // Custom song
     const [customChildName, setCustomChildName] = useState('');
     const [customEventType, setCustomEventType] = useState('birthday');
     const [customInstructions, setCustomInstructions] = useState('');
+    const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+    const [customMetadata, setCustomMetadata] = useState<any>(null);
 
-    // Bundle picker state
-    const [isBundlePickerOpen, setIsBundlePickerOpen] = useState(false);
-    const [bundleSelectedIds, setBundleSelectedIds] = useState<string[]>([]);
+    const audioRef = useRef<HTMLAudioElement>(null);
 
-    // Custom song orders for library
-    const [customOrders, setCustomOrders] = useState<any[]>([]);
-
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
-        setIsLoading(true);
-        try {
-            const { data: allSongs } = await supabase
-                .from('songs')
-                .select('*')
-                .eq('is_active', true)
-                .order('display_order', { ascending: true });
-
-            let combined = allSongs || [];
-            // Ensure at least 4 free starter tracks for all users
-            const hasMinimumFree = combined.filter(s => !s.metadata?.is_premium).length >= 4;
-            if (!hasMinimumFree) {
-                const existingIds = new Set(combined.map(s => s.id));
-                const startersToAdd = STARTER_SONGS.filter(s => !existingIds.has(s.id));
-                combined = [...combined, ...startersToAdd];
-            }
-
-            setSongs(combined);
-
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const [{ data: myPurchases }, { data: myCustomOrders }] = await Promise.all([
-                    supabase
-                        .from('purchased_content')
-                        .select('content_id')
-                        .eq('user_id', session.user.id),
-                    supabase
-                        .from('custom_song_orders')
-                        .select('*')
-                        .eq('user_id', session.user.id)
-                        .order('created_at', { ascending: false }),
-                ]);
-
-                setPurchases(myPurchases?.map(p => p.content_id).filter(Boolean) || []);
-                setCustomOrders(myCustomOrders || []);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handlePlay = (song: Song) => {
+    const handlePlay = (trackId: string, url: string) => {
         const audio = audioRef.current;
         if (!audio) return;
-
-        if (!song.audio_url) {
-            toast.error('No audio file found for this track.');
-            return;
-        }
-
-        if (isPlaying === song.id) {
+        if (isPlaying === trackId) {
             audio.pause();
             setIsPlaying(null);
         } else {
-            audio.src = song.audio_url;
-            audio.play().catch(() => toast.error('Could not play this track.'));
-            setIsPlaying(song.id);
-            setIsDemoPlaying(false);
+            audio.src = url;
+            audio.play().catch(() => setIsPlaying(null));
+            setIsPlaying(trackId);
         }
     };
 
-    const handleDemoPlay = () => {
-        const audio = audioRef.current;
-        if (!audio || !DEMO_SONG_URL) return;
-
-        if (isDemoPlaying) {
-            audio.pause();
-            setIsDemoPlaying(false);
-        } else {
-            audio.src = DEMO_SONG_URL;
-            audio.play().catch(() => toast.error('Could not play demo.'));
-            setIsDemoPlaying(true);
-            setIsPlaying(null);
-        }
-    };
-
-    const handlePurchaseInitiate = (song: Song) => {
-        setSelectedSong(song);
-        setSelectedProduct('single_track');
-        setCustomMetadata(null);
-        setIsPurchaseModalOpen(true);
-    };
-
-    const handleBundleInitiate = () => {
-        setBundleSelectedIds([]);
-        setIsBundlePickerOpen(true);
-    };
-
-    const toggleBundleSong = (id: string) => {
-        setBundleSelectedIds(prev =>
-            prev.includes(id)
-                ? prev.filter(x => x !== id)
-                : prev.length < 5 ? [...prev, id] : prev
-        );
-    };
-
-    const handleBundleConfirm = () => {
-        setIsBundlePickerOpen(false);
-        setSelectedSong(null);
-        setSelectedProduct('track_bundle_5');
-        setCustomMetadata({ selectedSongIds: bundleSelectedIds });
-        setIsPurchaseModalOpen(true);
-    };
-
-    const handlePurchaseSuccess = () => {
-        if (selectedSong) {
-            setPurchases(prev => [...prev, selectedSong.id]);
-        }
-        setIsPurchaseModalOpen(false);
-        toast.success('Purchase successful! Added to your library.');
-        loadData();
-    };
+    const filteredTracks = activeChannel === 'all'
+        ? RADIO_TRACKS
+        : RADIO_TRACKS.filter(t => t.channel === activeChannel);
 
     const handleCustomSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setSelectedSong(null);
-        setSelectedProduct('custom_song_request');
         setCustomMetadata({
             child_name: customChildName,
             event_type: customEventType,
@@ -240,33 +96,13 @@ export default function ParentMusicHub() {
         setIsPurchaseModalOpen(true);
     };
 
-const premiumTracks = songs.filter(s => s.metadata?.is_premium && !purchases.includes(s.id));
-const ownedTracks = songs.filter(s => purchases.includes(s.id) || !s.metadata?.is_premium);
-
-const filteredPremiumTracks = activeCategory === 'all'
-    ? premiumTracks
-    : premiumTracks.filter(s => normalizeCategory(s.category) === activeCategory);
-
-    const CATEGORIES: { id: Category; label: string }[] = [
-        { id: 'all', label: 'All' },
-        { id: 'story', label: 'Story' },
-        { id: 'lullaby', label: 'Lullaby' },
-        { id: 'culture', label: 'Culture' },
-        { id: 'learning', label: 'Learning' },
-        { id: 'calm', label: 'Calm' },
-    ];
-
     return (
-        <div className="min-h-screen bg-[#FDFCF6] pb-20">
+        <div className="min-h-screen bg-[#FDFCF6] pb-24">
             {/* Hidden audio element */}
             <audio
                 ref={audioRef}
-                onEnded={() => { setIsPlaying(null); setIsDemoPlaying(false); }}
-                onError={() => {
-                    toast.error('Could not load audio.');
-                    setIsPlaying(null);
-                    setIsDemoPlaying(false);
-                }}
+                onEnded={() => setIsPlaying(null)}
+                onError={() => setIsPlaying(null)}
             />
 
             {/* Hero */}
@@ -282,21 +118,21 @@ const filteredPremiumTracks = activeCategory === 'all'
                     </Link>
                     <div className="max-w-3xl">
                         <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-[10px] font-black uppercase tracking-widest mb-6 border border-white/20">
-                            <Star size={12} className="fill-white" /> 500+ Families Streaming Daily
+                            <Star size={12} className="fill-white" /> Caribbean Music for Little Legends
                         </span>
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-5 leading-tight tracking-tighter">
-                            Give Your Likkle Legend a<br />
-                            <span className="italic underline decoration-wavy decoration-yellow-300">Soundtrack for Life.</span>
+                            Likkle Legends<br />
+                            <span className="italic underline decoration-wavy decoration-yellow-300">Music Hub</span>
                         </h1>
                         <p className="text-white/85 text-lg font-medium mb-10 leading-relaxed max-w-2xl">
-                            Premium Caribbean music, stories & lullabies — crafted by island voices, built for little ears. Own tracks forever for just <strong className="text-white">$0.99</strong>, or commission a personalised song made just for your child.
+                            Play all 9 island tracks right now — or order a personalised song made just for your child, delivered in 24 hours.
                         </p>
                         <div className="flex flex-wrap gap-4">
                             <button
-                                onClick={() => { setActiveTab('market'); }}
+                                onClick={() => setActiveTab('music')}
                                 className="px-8 py-4 bg-white text-[#FF6B00] rounded-2xl font-black uppercase tracking-widest flex items-center gap-3 shadow-xl hover:scale-105 transition-all text-sm"
                             >
-                                <ShoppingBag size={18} /> Browse Tracks — $0.99 each
+                                <Music size={18} /> Listen Now — Free
                             </button>
                             <button
                                 onClick={() => setActiveTab('custom')}
@@ -309,38 +145,24 @@ const filteredPremiumTracks = activeCategory === 'all'
                 </div>
             </section>
 
-            {/* Value Strip */}
-            <div className="container mx-auto px-6 -mt-6 mb-4 relative z-10">
-                <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                    {[
-                        { icon: <Music size={14} />, label: 'Own it forever' },
-                        { icon: <Gift size={14} />, label: 'Perfect as a gift' },
-                        { icon: <Globe size={14} />, label: 'Caribbean-made' },
-                        { icon: <CheckCircle2 size={14} />, label: 'Child-safe & ad-free' },
-                    ].map(({ icon, label }) => (
-                        <span key={label} className="inline-flex items-center gap-2 px-4 py-2 bg-white shadow-md rounded-full text-xs font-black text-deep border border-zinc-100">
-                            <span className="text-primary">{icon}</span> {label}
-                        </span>
-                    ))}
-                </div>
-            </div>
-
             {/* Tab Bar */}
-            <div className="container mx-auto -mt-4 px-6 mb-0">
+            <div className="container mx-auto px-6 -mt-6 mb-0 relative z-10">
                 <div className="bg-white rounded-3xl p-2 shadow-xl border border-zinc-100 flex items-center max-w-fit gap-2">
                     {[
-                        { id: 'market', label: 'Market', icon: ShoppingBag },
-                        { id: 'library', label: 'My Library', icon: AudioLines },
-                        { id: 'custom', label: 'Custom Song', icon: Sparkles }
+                        { id: 'music',   label: 'Music Hub',   icon: Music },
+                        { id: 'upgrade', label: 'Upgrade',     icon: Crown },
+                        { id: 'custom',  label: 'Custom Song', icon: Sparkles },
                     ].map((tab) => {
                         const Icon = tab.icon;
                         return (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === tab.id
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                    : 'text-zinc-400 hover:text-deep hover:bg-zinc-50'}`}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
+                                    activeTab === tab.id
+                                        ? 'bg-[#FF6B00] text-white shadow-lg shadow-orange-500/30'
+                                        : 'text-zinc-400 hover:text-zinc-700 hover:bg-zinc-50'
+                                }`}
                             >
                                 <Icon size={16} /> {tab.label}
                             </button>
@@ -349,368 +171,211 @@ const filteredPremiumTracks = activeCategory === 'all'
                 </div>
             </div>
 
-            {/* Content */}
             <div className="container mx-auto px-6 py-10">
 
-                {/* ── MARKET TAB ── */}
-                {activeTab === 'market' && (
-                    <div className="space-y-10 animate-fade-in">
+                {/* ── MUSIC HUB TAB ── */}
+                {activeTab === 'music' && (
+                    <div className="space-y-8 animate-fade-in">
 
-                        {/* Starter Free Tracks */}
-                        <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-zinc-100">
-                            <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                                <div>
-                                    <h3 className="text-2xl font-black text-deep">Free Starter Tracks</h3>
-                                    <p className="text-zinc-400 font-medium text-sm">Every family gets 4 songs for free. Tap play to listen.</p>
-                                </div>
-                            </div>
-                            <div className="divide-y divide-zinc-50">
-                                {STARTER_SONGS.map(song => (
-                                    <div key={song.id} className="py-4 flex items-center justify-between gap-4">
-                                        <div className="flex items-center gap-4">
-                                            <button
-                                                onClick={() => handlePlay(song)}
-                                                title={isPlaying === song.id ? "Pause track" : "Play track"}
-                                                aria-label={isPlaying === song.id ? "Pause track" : "Play track"}
-                                                className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${isPlaying === song.id ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200'}`}
-                                            >
-                                                {isPlaying === song.id ? <Pause size={20} /> : <Play size={20} className="ml-1" />}
-                                            </button>
-                                            <div>
-                                                <h4 className="font-black text-deep text-base leading-tight">{song.title}</h4>
-                                                <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-0.5">{song.artist} · {song.category}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className="text-xs font-black text-zinc-300">{formatDuration(song.duration_seconds)}</span>
-                                            <a
-                                                href={song.audio_url}
-                                                download
-                                                className="p-3 bg-zinc-100 text-zinc-400 rounded-xl hover:bg-primary hover:text-white transition-all"
-                                                title="Download Track"
-                                            >
-                                                <Download size={16} />
-                                            </a>
-                                        </div>
+                        {/* Now Playing bar */}
+                        {isPlaying && (() => {
+                            const track = RADIO_TRACKS.find(t => t.id === isPlaying);
+                            const meta = CHANNEL_META[track?.channel || ''] || { emoji: '🎵', color: 'text-orange-600', bg: 'bg-orange-50' };
+                            return track ? (
+                                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-zinc-900 text-white rounded-2xl px-6 py-4 flex items-center gap-4 shadow-2xl min-w-[320px] max-w-[90vw]">
+                                    <span className="text-2xl">{meta.emoji}</span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-black text-sm truncate">{track.title}</p>
+                                        <p className="text-zinc-400 text-xs font-medium truncate">{track.artist}</p>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Bundle Upsell Banner */}
-                        <div className="bg-gradient-to-r from-deep to-deep/80 rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
-                            <div className="flex items-center gap-5">
-                                <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-                                    <Package size={32} className="text-primary" />
+                                    <div className="flex items-end gap-0.5 h-6 mx-2 flex-shrink-0">
+                                        <div className="w-1 h-3 bg-orange-500 rounded-full animate-bounce" />
+                                        <div className="w-1 h-5 bg-orange-500 rounded-full animate-bounce delay-75" />
+                                        <div className="w-1 h-4 bg-orange-500 rounded-full animate-bounce delay-100" />
+                                        <div className="w-1 h-6 bg-orange-500 rounded-full animate-bounce delay-150" />
+                                        <div className="w-1 h-3 bg-orange-500 rounded-full animate-bounce delay-200" />
+                                        <div className="w-1 h-5 bg-orange-500 rounded-full animate-bounce delay-300" />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => handlePlay(isPlaying, track.url)}
+                                        className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center hover:bg-orange-400 transition-colors flex-shrink-0"
+                                        aria-label="Pause"
+                                    >
+                                        <Pause size={18} />
+                                    </button>
                                 </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Best Value</p>
-                                    <h3 className="text-2xl font-black text-white leading-tight">5 Tracks for $3.99</h3>
-                                    <p className="text-white/60 text-sm font-medium">Save $0.96 vs buying individually. Perfect starter library.</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={handleBundleInitiate}
-                                className="flex-shrink-0 px-8 py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-xl shadow-primary/40 flex items-center gap-3 whitespace-nowrap"
-                            >
-                                <Zap size={18} /> Grab the Bundle
-                            </button>
-                        </div>
+                            ) : null;
+                        })()}
 
-                        {/* Section Header */}
-                        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                            <div>
-                                <h2 className="text-3xl font-black text-deep">Premium Tracks</h2>
-                                <p className="text-zinc-400 font-medium">Own high-quality Caribbean education tracks forever — $0.99 each.</p>
-                            </div>
-                        </div>
-
-                        {/* Category Filters */}
+                        {/* Channel filter */}
                         <div className="flex flex-wrap gap-2">
-                            {CATEGORIES.map(cat => (
+                            {[{ id: 'all', label: 'All Tracks', emoji: '🎶' }, ...RADIO_CHANNELS.map(ch => ({ id: ch.id, label: ch.label, emoji: CHANNEL_META[ch.id]?.emoji || '🎵' }))].map(ch => (
                                 <button
-                                    key={cat.id}
-                                    onClick={() => setActiveCategory(cat.id)}
-                                    className={`px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all border ${activeCategory === cat.id
-                                        ? 'bg-primary text-white border-primary shadow-lg shadow-primary/30'
-                                        : 'bg-white text-zinc-400 border-zinc-200 hover:border-primary hover:text-primary'}`}
+                                    key={ch.id}
+                                    onClick={() => setActiveChannel(ch.id)}
+                                    className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all border ${
+                                        activeChannel === ch.id
+                                            ? 'bg-zinc-900 text-white border-zinc-900 shadow-lg'
+                                            : 'bg-white text-zinc-400 border-zinc-200 hover:border-zinc-400 hover:text-zinc-700'
+                                    }`}
                                 >
-                                    {cat.label}
+                                    <span>{ch.emoji}</span> {ch.label}
                                 </button>
                             ))}
                         </div>
 
-                        {/* Track Grid */}
-                        {isLoading ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="bg-zinc-100 rounded-[2.5rem] h-72 animate-pulse" />
-                                ))}
-                            </div>
-                        ) : filteredPremiumTracks.length > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {filteredPremiumTracks.map(song => (
-                                    <div key={song.id} className="bg-white rounded-[2.5rem] p-6 shadow-xl border border-zinc-50 group hover:scale-[1.02] transition-all">
-                                        <div className="relative h-44 bg-gradient-to-br from-zinc-50 to-zinc-100 rounded-3xl mb-6 overflow-hidden flex items-center justify-center border border-zinc-50">
-                                            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg text-primary transform group-hover:scale-110 transition-transform">
-                                                <Music size={36} />
-                                            </div>
-                                            <div className="absolute top-4 left-4">
-                                                <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-[10px] font-black uppercase tracking-widest text-primary shadow-sm">
-                                                    {song.category}
+                        {/* Track list */}
+                        <div className="bg-white rounded-[2.5rem] shadow-xl border border-zinc-100 overflow-hidden">
+                            {filteredTracks.length === 0 ? (
+                                <div className="py-20 text-center text-zinc-400 font-medium">No tracks in this channel yet.</div>
+                            ) : (
+                                <div className="divide-y divide-zinc-50">
+                                    {filteredTracks.map((track, i) => {
+                                        const meta = CHANNEL_META[track.channel] || { emoji: '🎵', color: 'text-orange-600', bg: 'bg-orange-50' };
+                                        const playing = isPlaying === track.id;
+                                        return (
+                                            <div
+                                                key={track.id}
+                                                className={`flex items-center gap-4 px-6 py-5 transition-colors ${playing ? 'bg-orange-50' : 'hover:bg-zinc-50/60'}`}
+                                            >
+                                                {/* Track number */}
+                                                <span className="text-[11px] font-black text-zinc-300 tabular-nums w-5 text-right flex-shrink-0">
+                                                    {playing ? <Pause size={14} className="text-orange-500 mx-auto" /> : i + 1}
+                                                </span>
+
+                                                {/* Play button */}
+                                                <button
+                                                    onClick={() => handlePlay(track.id, track.url)}
+                                                    aria-label={playing ? 'Pause' : 'Play'}
+                                                    className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all flex-shrink-0 ${
+                                                        playing
+                                                            ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30'
+                                                            : `${meta.bg} ${meta.color} hover:bg-orange-500 hover:text-white`
+                                                    }`}
+                                                >
+                                                    {playing ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
+                                                </button>
+
+                                                {/* Info */}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={`font-black text-base leading-tight truncate ${playing ? 'text-orange-600' : 'text-zinc-900'}`}>
+                                                        {track.title}
+                                                    </p>
+                                                    <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-0.5 truncate">
+                                                        {meta.emoji} {track.artist}
+                                                    </p>
+                                                </div>
+
+                                                {/* Channel badge */}
+                                                <span className={`hidden sm:block text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex-shrink-0 ${meta.bg} ${meta.color}`}>
+                                                    {RADIO_CHANNELS.find(c => c.id === track.channel)?.label || track.channel}
                                                 </span>
                                             </div>
-                                        </div>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <h3 className="text-xl font-black text-deep group-hover:text-primary transition-colors leading-tight">{song.title}</h3>
-                                                <p className="text-zinc-400 text-sm font-medium mt-1">{song.artist}</p>
-                                            </div>
-                                            <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
-                                                <div className="flex items-center gap-2 text-zinc-400">
-                                                    <Clock size={14} />
-                                                    <span className="text-xs font-bold">{formatDuration(song.duration_seconds)}</span>
-                                                </div>
-                                                <button
-                                                    onClick={() => handlePurchaseInitiate(song)}
-                                                    className="px-6 py-3 bg-deep text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary hover:shadow-lg transition-all"
-                                                >
-                                                    Unlock $0.99
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-20 bg-white rounded-[2.5rem] border border-zinc-100 shadow-sm">
-                                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <Music size={32} className="text-primary" />
+                                        );
+                                    })}
                                 </div>
-                                <h3 className="text-xl font-black text-deep mb-2">More Tracks Dropping Soon</h3>
-                                <p className="text-zinc-400 font-medium mb-6">New Caribbean sounds are on their way. In the meantime, grab the bundle!</p>
-                                <button
-                                    onClick={handleBundleInitiate}
-                                    className="px-8 py-3 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all"
-                                >
-                                    Get 5 Tracks for $3.99
-                                </button>
-                            </div>
-                        )}
+                            )}
+                        </div>
 
-                        {/* Subscription Upsell */}
-                        <div className="bg-gradient-to-r from-primary/10 to-orange-50 border border-primary/20 rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+                        {/* Upgrade upsell */}
+                        <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
                             <div className="flex items-center gap-5">
-                                <div className="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-                                    <Heart size={28} className="text-primary" />
+                                <div className="w-14 h-14 bg-orange-500/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                    <Heart size={28} className="text-orange-400" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-deep">Upgrade to Legends Club</h3>
-                                    <p className="text-zinc-500 text-sm font-medium">Get every track, story & game included — from $4.99/mo.</p>
+                                    <h3 className="text-xl font-black text-white leading-tight">Unlock the Full Legends Experience</h3>
+                                    <p className="text-zinc-400 text-sm font-medium mt-1">Stories, games, printables & more — from $4.99/mo</p>
                                 </div>
                             </div>
-                            <Link
-                                href="/parent"
-                                className="flex-shrink-0 px-8 py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-lg shadow-primary/30 flex items-center gap-2 whitespace-nowrap"
+                            <button
+                                onClick={() => setActiveTab('upgrade')}
+                                className="flex-shrink-0 px-8 py-4 bg-orange-500 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-xl shadow-orange-500/30 flex items-center gap-3 whitespace-nowrap"
                             >
-                                Upgrade & Save <ChevronRight size={18} />
-                            </Link>
+                                See Plans <ChevronRight size={18} />
+                            </button>
                         </div>
                     </div>
                 )}
 
-                {/* ── LIBRARY TAB ── */}
-                {activeTab === 'library' && (
-                    <div className="space-y-8 animate-fade-in">
-                        <div>
-                            <h2 className="text-3xl font-black text-deep">My Music Library</h2>
-                            <p className="text-zinc-400 font-medium">Stream or download your unlocked tracks.</p>
+                {/* ── UPGRADE TAB ── */}
+                {activeTab === 'upgrade' && (
+                    <div className="max-w-5xl mx-auto animate-fade-in space-y-10">
+                        <div className="text-center">
+                            <h2 className="text-4xl font-black text-zinc-900 mb-3 tracking-tight">Choose Your Plan</h2>
+                            <p className="text-zinc-400 font-medium text-lg">Everything your Likkle Legend needs to thrive — pick the plan that fits.</p>
                         </div>
 
-                        {isLoading ? (
-                            <div className="space-y-3">
-                                {[1, 2, 3].map(i => <div key={i} className="bg-zinc-100 rounded-2xl h-20 animate-pulse" />)}
-                            </div>
-                        ) : ownedTracks.length > 0 ? (
-                            <div className="bg-white rounded-[2.5rem] shadow-xl border border-zinc-50 overflow-hidden">
-                                <div className="divide-y divide-zinc-50">
-                                    {ownedTracks.map(song => (
-                                        <div key={song.id} className="p-6 flex items-center justify-between hover:bg-zinc-50/50 transition-colors">
-                                            <div className="flex items-center gap-5">
-                                                <button
-                                                    onClick={() => handlePlay(song)}
-                                                    title={isPlaying === song.id ? "Pause track" : "Play track"}
-                                                    aria-label={isPlaying === song.id ? "Pause track" : "Play track"}
-                                                    className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all flex-shrink-0 ${isPlaying === song.id ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-zinc-100 text-zinc-400 hover:bg-zinc-200'}`}
-                                                >
-                                                    {isPlaying === song.id ? <Pause size={22} /> : <Play size={22} className="ml-1" />}
-                                                </button>
-                                                <div>
-                                                    <h4 className="font-black text-deep text-lg leading-tight">{song.title}</h4>
-                                                    <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-0.5">{song.artist} · {song.category}</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <span className="text-xs font-black text-zinc-300">{formatDuration(song.duration_seconds)}</span>
-                                                <a
-                                                    href={song.audio_url}
-                                                    download
-                                                    className="p-3 bg-zinc-100 text-zinc-400 rounded-xl hover:bg-primary hover:text-white transition-all"
-                                                    title="Download Track"
-                                                >
-                                                    <Download size={18} />
-                                                </a>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-center py-20 bg-white rounded-[2.5rem] border border-zinc-100 shadow-sm">
-                                <div className="w-16 h-16 bg-zinc-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                    <AudioLines size={32} className="text-zinc-300" />
-                                </div>
-                                <h3 className="text-xl font-black text-deep mb-2">Your Library is Empty</h3>
-                                <p className="text-zinc-400 font-medium mb-6">Unlock your first track from the marketplace to get started.</p>
-                                <button
-                                    onClick={() => setActiveTab('market')}
-                                    className="px-8 py-3 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 transition-all"
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {PLANS.map((plan) => (
+                                <div
+                                    key={plan.id}
+                                    className={`relative bg-white rounded-[2.5rem] p-8 shadow-xl border-2 flex flex-col ${plan.badge ? 'border-orange-400 shadow-orange-100' : 'border-zinc-100'}`}
                                 >
-                                    Browse Tracks
-                                </button>
-                            </div>
-                        )}
-
-                        {/* Custom Song Orders in Library */}
-                        {customOrders.length > 0 && (
-                            <div className="space-y-4">
-                                <div>
-                                    <h3 className="text-xl font-black text-deep">Custom Songs</h3>
-                                    <p className="text-zinc-400 text-sm font-medium">Songs ordered specially for your Likkle Legend.</p>
-                                </div>
-                                <div className="bg-white rounded-[2.5rem] shadow-xl border border-zinc-50 overflow-hidden">
-                                    <div className="divide-y divide-zinc-50">
-                                        {customOrders.map(order => {
-                                            const STATUS_STYLES: Record<string, string> = {
-                                                paid: 'bg-yellow-50 text-yellow-600',
-                                                in_progress: 'bg-blue-50 text-blue-600',
-                                                delivered: 'bg-green-50 text-green-600',
-                                            };
-                                            const STATUS_LABELS: Record<string, string> = {
-                                                paid: 'In Queue',
-                                                in_progress: 'Being Made',
-                                                delivered: 'Ready',
-                                            };
-                                            return (
-                                                <div key={order.id} className="p-6 flex items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors">
-                                                    <div className="flex items-center gap-5">
-                                                        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                                            <Gift size={24} className="text-primary" />
-                                                        </div>
-                                                        <div>
-                                                            <h4 className="font-black text-deep text-base leading-tight">
-                                                                Song for {order.child_name || 'Your Legend'}
-                                                            </h4>
-                                                            <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-0.5 capitalize">
-                                                                {(order.event_type || 'Custom').replace(/_/g, ' ')}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-3 flex-shrink-0">
-                                                        <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${STATUS_STYLES[order.status] || 'bg-zinc-100 text-zinc-400'}`}>
-                                                            {STATUS_LABELS[order.status] || order.status}
-                                                        </span>
-                                                        {order.final_audio_url && (
-                                                            <a
-                                                                href={order.final_audio_url}
-                                                                download
-                                                                className="p-3 bg-green-100 text-green-600 rounded-xl hover:bg-green-600 hover:text-white transition-all"
-                                                                title="Download Your Song"
-                                                            >
-                                                                <Download size={18} />
-                                                            </a>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
+                                    {plan.badge && (
+                                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-black uppercase tracking-widest px-5 py-1.5 rounded-full shadow-lg whitespace-nowrap">
+                                            {plan.badge}
+                                        </div>
+                                    )}
+                                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${plan.color} flex items-center justify-center text-3xl shadow-lg mb-6`}>
+                                        {plan.icon}
                                     </div>
+                                    <h3 className="text-2xl font-black text-zinc-900 mb-1">{plan.name}</h3>
+                                    <div className="flex items-end gap-1 mb-6">
+                                        <span className="text-4xl font-black text-zinc-900">{plan.price}</span>
+                                        <span className="text-zinc-400 font-bold mb-1">{plan.period}</span>
+                                    </div>
+                                    <ul className="space-y-3 flex-1 mb-8">
+                                        {plan.features.map(f => (
+                                            <li key={f} className="flex items-start gap-3">
+                                                <CheckCircle2 size={18} className="text-green-500 flex-shrink-0 mt-0.5" />
+                                                <span className="text-sm font-bold text-zinc-600">{f}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <Link
+                                        href={`/checkout?plan=${plan.id}`}
+                                        className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-center transition-all hover:scale-105 shadow-lg ${
+                                            plan.badge
+                                                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-orange-200'
+                                                : 'bg-zinc-900 text-white'
+                                        }`}
+                                    >
+                                        Get {plan.name}
+                                    </Link>
                                 </div>
-                            </div>
-                        )}
+                            ))}
+                        </div>
+
+                        <div className="bg-zinc-50 border border-zinc-100 rounded-[2rem] p-8 text-center">
+                            <p className="text-zinc-400 text-sm font-bold">
+                                Already subscribed? <Link href="/portal" className="text-orange-500 underline hover:text-orange-600">Go to your portal</Link> to access all your content.
+                            </p>
+                            <p className="text-zinc-300 text-xs font-medium mt-2">Cancel anytime. No hidden fees. 100% Caribbean-made content.</p>
+                        </div>
                     </div>
                 )}
 
-                {/* ── CUSTOM ORDERS TAB ── */}
+                {/* ── CUSTOM SONG TAB ── */}
                 {activeTab === 'custom' && (
                     <div className="max-w-4xl mx-auto animate-fade-in space-y-8">
-
-                        {/* Demo Song Player — hidden until DEMO_SONG_URL is set */}
-                        {DEMO_SONG_URL && (
-                            <div className="bg-gradient-to-br from-[#FF9D00] to-[#FF6B00] rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden shadow-2xl">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
-                                <div className="relative">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-white/70 mb-3">Real Example · Made by Our Team</p>
-                                    <h3 className="text-3xl md:text-4xl font-black text-white mb-3 leading-tight tracking-tight">
-                                        Hear Your Child's Name<br />in a Song
-                                    </h3>
-                                    <p className="text-white/80 font-medium mb-8 max-w-lg leading-relaxed">
-                                        This is exactly what we create — a personalised Caribbean track with your child's name woven into every verse. Press play and imagine it's theirs.
-                                    </p>
-
-                                    {/* Player */}
-                                    <div className="flex items-center gap-6 bg-white/15 backdrop-blur-sm rounded-2xl p-5 border border-white/20">
-                                        <button
-                                            onClick={handleDemoPlay}
-                                            title={isDemoPlaying ? "Pause demo" : "Play demo"}
-                                            aria-label={isDemoPlaying ? "Pause demo" : "Play demo"}
-                                            className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-[#FF6B00] shadow-xl hover:scale-105 transition-all flex-shrink-0"
-                                        >
-                                            {isDemoPlaying
-                                                ? <Pause size={28} />
-                                                : <Play size={28} className="ml-1" />}
-                                        </button>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-black text-white text-lg leading-tight">"Happy Birthday, Amara!"</p>
-                                            <p className="text-white/70 text-sm font-medium mt-0.5">Likkle Legends Music Team · Caribbean Pop</p>
-                                        </div>
-                                        {isDemoPlaying && (
-                                            <div className="flex items-end gap-0.5 h-8 flex-shrink-0">
-                                                {[3, 5, 4, 6, 3, 5, 4].map((h, i) => (
-                                                    <div
-                                                        key={i}
-                                                        className="w-1.5 bg-white/70 rounded-full animate-bounce"
-                                                        style={{ height: `${h * 4}px`, animationDelay: `${i * 80}ms` }}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <p className="text-white/60 text-sm font-medium mt-6 italic text-center">
-                                        "Imagine hearing your child's name in a song like this on their birthday morning."
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-
                         <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-zinc-100 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-8 opacity-20">
-                                <Sparkles size={80} className="text-primary" />
+                            <div className="absolute top-0 right-0 p-8 opacity-10">
+                                <Sparkles size={100} className="text-orange-500" />
                             </div>
 
                             <div className="text-center mb-10">
-                                <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                                    <Gift size={40} className="text-primary" />
+                                <div className="w-20 h-20 bg-orange-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl shadow-inner">
+                                    🎤
                                 </div>
-                                <h2 className="text-4xl font-black text-deep mb-3 tracking-tight">A Song Made Just for Them</h2>
+                                <h2 className="text-4xl font-black text-zinc-900 mb-3 tracking-tight">A Song Made Just for Them</h2>
                                 <p className="text-zinc-400 text-lg font-medium max-w-xl mx-auto leading-relaxed">
-                                    Tell us about your Likkle Legend and our AI Sound Team — Tanty & Suno — will craft a unique Caribbean song personalised to your child. Delivered in 24–48 hours.
+                                    Tell us about your Likkle Legend and our team will craft a unique Caribbean song with their name woven in. Delivered in 24–48 hours.
                                 </p>
                                 <div className="flex flex-wrap gap-3 justify-center mt-6">
-                                    {['Birthday songs', 'New baby arrivals', 'First day of school', 'Graduation', 'Just because'].map(tag => (
-                                        <span key={tag} className="px-4 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-black uppercase tracking-widest">
+                                    {['🎂 Birthday songs', '👶 New baby', '🏫 First day of school', '🎓 Graduation', '💛 Just because'].map(tag => (
+                                        <span key={tag} className="px-4 py-1.5 bg-orange-50 text-orange-600 rounded-full text-xs font-black">
                                             {tag}
                                         </span>
                                     ))}
@@ -724,7 +389,7 @@ const filteredPremiumTracks = activeCategory === 'all'
                                         value={customChildName}
                                         onChange={e => setCustomChildName(e.target.value)}
                                         placeholder="Who is this song for?"
-                                        className="w-full px-6 py-4 bg-zinc-50 border border-transparent rounded-2xl focus:bg-white focus:border-primary transition-all font-bold text-deep outline-none"
+                                        className="w-full px-6 py-4 bg-zinc-50 border border-transparent rounded-2xl focus:bg-white focus:border-orange-400 transition-all font-bold text-zinc-900 outline-none"
                                         required
                                     />
                                 </div>
@@ -732,17 +397,17 @@ const filteredPremiumTracks = activeCategory === 'all'
                                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-4">Occasion *</label>
                                     <select
                                         title="Occasion"
-                                        aria-label="Occasion"
                                         value={customEventType}
                                         onChange={e => setCustomEventType(e.target.value)}
-                                        className="w-full px-6 py-4 bg-zinc-50 border border-transparent rounded-2xl focus:bg-white focus:border-primary transition-all font-bold text-deep outline-none"
+                                        className="w-full px-6 py-4 bg-zinc-50 border border-transparent rounded-2xl focus:bg-white focus:border-orange-400 transition-all font-bold text-zinc-900 outline-none"
                                         required
                                     >
                                         <option value="birthday_1st">1st Birthday</option>
                                         <option value="birthday">Birthday (General)</option>
                                         <option value="graduation">Graduation</option>
                                         <option value="new_born">New Baby Arrival</option>
-                                        <option value="first_day">First Day of School / Encouragement</option>
+                                        <option value="first_day">First Day of School</option>
+                                        <option value="just_because">Just Because 💛</option>
                                     </select>
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
@@ -751,7 +416,7 @@ const filteredPremiumTracks = activeCategory === 'all'
                                         value={customInstructions}
                                         onChange={e => setCustomInstructions(e.target.value)}
                                         placeholder="Tell us their favourite food, toy, island, cartoon character, or anything that makes them unique — we'll weave it into the lyrics!"
-                                        className="w-full px-6 py-4 bg-zinc-50 border border-transparent rounded-2xl focus:bg-white focus:border-primary transition-all font-bold text-deep outline-none h-32 resize-none"
+                                        className="w-full px-6 py-4 bg-zinc-50 border border-transparent rounded-2xl focus:bg-white focus:border-orange-400 transition-all font-bold text-zinc-900 outline-none h-32 resize-none"
                                         required
                                     />
                                 </div>
@@ -759,12 +424,12 @@ const filteredPremiumTracks = activeCategory === 'all'
                                 <div className="md:col-span-2 pt-4">
                                     <button
                                         type="submit"
-                                        className="w-full py-6 bg-primary text-white rounded-[2rem] font-black uppercase tracking-widest shadow-2xl shadow-primary/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-4 text-lg"
+                                        className="w-full py-6 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-[2rem] font-black uppercase tracking-widest shadow-2xl shadow-orange-300 hover:scale-[1.02] transition-all flex items-center justify-center gap-4 text-lg"
                                     >
                                         <Gift size={24} /> Order Custom Song — $24.99
                                     </button>
                                     <p className="text-center text-[10px] font-black text-zinc-300 uppercase tracking-widest mt-5">
-                                        Secure Payment via PayPal · Delivered in 24–48 hours · 100% Satisfaction
+                                        Secure Payment via PayPal · Delivered in 24–48 hrs · 100% Satisfaction Guaranteed
                                     </p>
                                 </div>
                             </form>
@@ -774,13 +439,13 @@ const filteredPremiumTracks = activeCategory === 'all'
                                 <h4 className="text-center text-xs font-black uppercase tracking-widest text-zinc-300 mb-6">What's Included</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {[
-                                        { icon: <Music size={20} />, title: 'Personalised Lyrics', desc: "Your child's name & favourite things woven into every verse" },
-                                        { icon: <Sparkles size={20} />, title: 'Caribbean Sound', desc: 'Steelpan, calypso & island rhythms — crafted by our AI composers' },
-                                        { icon: <Download size={20} />, title: 'MP3 Download', desc: 'High-quality audio file yours to keep and play forever' },
+                                        { icon: '🎶', title: 'Personalised Lyrics', desc: "Their name & favourite things woven into every verse" },
+                                        { icon: '🏝️', title: 'Caribbean Sound', desc: 'Steelpan, calypso & island rhythms — crafted for little ears' },
+                                        { icon: '📥', title: 'MP3 Download', desc: 'High-quality audio file yours to keep forever' },
                                     ].map(({ icon, title, desc }) => (
                                         <div key={title} className="bg-zinc-50 rounded-2xl p-5 text-center">
-                                            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3 text-primary">{icon}</div>
-                                            <h5 className="font-black text-deep text-sm mb-1">{title}</h5>
+                                            <div className="text-3xl mb-3">{icon}</div>
+                                            <h5 className="font-black text-zinc-900 text-sm mb-1">{title}</h5>
                                             <p className="text-zinc-400 text-xs font-medium leading-relaxed">{desc}</p>
                                         </div>
                                     ))}
@@ -791,95 +456,15 @@ const filteredPremiumTracks = activeCategory === 'all'
                 )}
             </div>
 
-            {/* Bundle Song Picker Modal */}
-            {isBundlePickerOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                        {/* Header */}
-                        <div className="p-7 border-b border-zinc-100 flex items-start justify-between gap-4">
-                            <div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">5-Track Bundle · $3.99</p>
-                                <h2 className="text-2xl font-black text-deep leading-tight">Pick Your 5 Tracks</h2>
-                                <p className="text-zinc-400 text-sm font-medium mt-1">
-                                    Choose any 5 from the catalogue. {bundleSelectedIds.length}/5 selected.
-                                </p>
-                            </div>
-                            <button onClick={() => setIsBundlePickerOpen(false)} title="Close menu" aria-label="Close menu" className="p-2 bg-zinc-100 rounded-full hover:bg-zinc-200 flex-shrink-0">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {/* Song List */}
-                        <div className="overflow-y-auto flex-1 p-4">
-                            {songs.length === 0 ? (
-                                <div className="text-center py-12 text-zinc-400 font-medium">
-                                    No tracks available yet — check back soon!
-                                </div>
-                            ) : (
-                                <div className="space-y-2">
-                                    {songs.map(song => {
-                                        const isSelected = bundleSelectedIds.includes(song.id);
-                                        const isOwned = purchases.includes(song.id);
-                                        const isDisabled = !isSelected && bundleSelectedIds.length >= 5;
-                                        return (
-                                            <button
-                                                key={song.id}
-                                                disabled={isOwned || isDisabled}
-                                                onClick={() => !isOwned && toggleBundleSong(song.id)}
-                                                className={`w-full flex items-center gap-4 p-4 rounded-2xl border-2 transition-all text-left ${isOwned
-                                                    ? 'border-zinc-100 bg-zinc-50 opacity-40 cursor-not-allowed'
-                                                    : isSelected
-                                                        ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10'
-                                                        : isDisabled
-                                                            ? 'border-zinc-100 bg-white opacity-40 cursor-not-allowed'
-                                                            : 'border-zinc-100 bg-white hover:border-primary/40 hover:bg-zinc-50'
-                                                    }`}
-                                            >
-                                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? 'bg-primary text-white' : 'bg-zinc-100 text-zinc-400'}`}>
-                                                    {isSelected ? <CheckCircle2 size={20} /> : <Music size={20} />}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="font-black text-deep text-sm leading-tight truncate">{song.title}</p>
-                                                    <p className="text-xs text-zinc-400 font-medium mt-0.5 truncate">{song.artist} · <span className="capitalize">{song.category}</span></p>
-                                                </div>
-                                                <div className="flex items-center gap-2 flex-shrink-0">
-                                                    {isOwned && <span className="text-[10px] font-black text-zinc-300 uppercase">Owned</span>}
-                                                    <span className="text-xs font-bold text-zinc-300">{formatDuration(song.duration_seconds)}</span>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Footer CTA */}
-                        <div className="p-6 border-t border-zinc-100">
-                            <button
-                                onClick={handleBundleConfirm}
-                                disabled={bundleSelectedIds.length !== 5}
-                                className="w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/30 hover:scale-[1.02] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100 flex items-center justify-center gap-3"
-                            >
-                                <Package size={18} />
-                                {bundleSelectedIds.length === 5 ? 'Checkout — $3.99' : `Select ${5 - bundleSelectedIds.length} more track${5 - bundleSelectedIds.length !== 1 ? 's' : ''}`}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Purchase Modal */}
-            {selectedProduct && (
-                <PurchaseModal
-                    isOpen={isPurchaseModalOpen}
-                    onClose={() => setIsPurchaseModalOpen(false)}
-                    productKey={selectedProduct}
-                    contentId={selectedSong?.id}
-                    contentTitle={selectedSong?.title}
-                    onSuccess={handlePurchaseSuccess}
-                    metadata={customMetadata}
-                />
-            )}
+            {/* Custom Song Purchase Modal */}
+            <PurchaseModal
+                isOpen={isPurchaseModalOpen}
+                onClose={() => setIsPurchaseModalOpen(false)}
+                productKey="custom_song_request"
+                contentTitle={customChildName ? `Custom Song for ${customChildName}` : 'Custom Song Request'}
+                onSuccess={() => setIsPurchaseModalOpen(false)}
+                metadata={customMetadata}
+            />
         </div>
     );
 }
