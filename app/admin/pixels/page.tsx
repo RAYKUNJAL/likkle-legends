@@ -60,7 +60,7 @@ export default function AdminPixelsPage() {
     };
 
     return (
-        <AdminLayout activeSection="verify">
+        <AdminLayout activeSection="pixels">
             <header className="bg-white border-b border-gray-100 px-8 py-6">
                 <div className="flex items-center justify-between">
                     <div>

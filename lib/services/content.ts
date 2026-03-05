@@ -151,11 +151,34 @@ export async function getGames() {
     if (!isSupabaseConfigured()) {
         return [];
     }
-    const { data } = await supabase
+    // Primary source: dedicated games table used by admin game builder
+    const { data: gameRows, error: gameError } = await supabase
+        .from('games')
+        .select('id, title, description, game_type, thumbnail_url, tier_required, estimated_time, age_track, reward_xp, game_url, is_active')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+    if (!gameError && gameRows && gameRows.length > 0) {
+        return gameRows.map((g: any) => ({
+            ...g,
+            category: g.game_type || 'adventure',
+            time: g.estimated_time || '5 min',
+            xp: g.reward_xp || 100,
+        }));
+    }
+
+    // Fallback: older content_items model
+    const { data: contentRows, error: contentError } = await supabase
         .from('content_items')
         .select('id, title, description, thumbnail_url, tier_required, age_track, metadata, game_config, reward_xp, slug')
         .eq('content_type', 'game');
-    return data || [];
+
+    if (contentError) {
+        console.warn('Games Fetch Warning:', contentError.message);
+        return [];
+    }
+
+    return contentRows || [];
 }
 
 export const createCharacter = (data: any) => upsertContent({ ...data, content_type: 'character' });

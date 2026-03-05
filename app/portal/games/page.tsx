@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
     ArrowLeft, Gamepad2, Star, Lock, Play, Trophy, Clock,
     Users, Sparkles, Brain, Palette, Zap, Crown, Gift, Wand2,
-    Puzzle, Music, BookOpen, Map, Heart, Target, CheckCircle
+    Puzzle, Music, BookOpen, Map as MapIcon, Heart, Target, CheckCircle
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { getGames } from '@/lib/database';
@@ -39,7 +39,7 @@ const GAME_CATEGORIES = [
     { id: 'trivia', label: 'Trivia', icon: Brain, color: 'from-purple-500 to-indigo-600', emoji: '🧠' },
     { id: 'memory', label: 'Memory', icon: Puzzle, color: 'from-green-500 to-emerald-600', emoji: '🧩' },
     { id: 'word', label: 'Words', icon: BookOpen, color: 'from-blue-500 to-cyan-600', emoji: '📖' },
-    { id: 'adventure', label: 'Adventure', icon: Map, color: 'from-orange-500 to-amber-600', emoji: '🗺️' },
+    { id: 'adventure', label: 'Adventure', icon: MapIcon, color: 'from-orange-500 to-amber-600', emoji: '🗺️' },
     { id: 'creative', label: 'Creative', icon: Palette, color: 'from-pink-500 to-rose-600', emoji: '🎨' },
 ];
 
