@@ -3,6 +3,111 @@
 import { createAdminClient } from "@/lib/admin";
 import { supabase } from "@/lib/storage";
 
+type ModelPrice = {
+    inputPer1M: number;
+    outputPer1M: number;
+    cachedInputPer1M?: number;
+};
+
+export type AICostControls = {
+    monthlyBudgetUSD: number;
+    warnThresholdPct: number;
+    hardStopThresholdPct: number;
+    taskRouting: Record<string, string>;
+    modelPricesUSDPer1M: Record<string, ModelPrice>;
+};
+
+export type AICostSnapshot = {
+    windowDays: number;
+    usageEvents: number;
+    aiUsageEvents: number;
+    tokensIn: number;
+    tokensOut: number;
+    estimatedCostUSD: number;
+    estimatedCostMonthlyUSD: number;
+    budget: {
+        monthlyBudgetUSD: number;
+        warnThresholdPct: number;
+        hardStopThresholdPct: number;
+        pctUsed: number;
+        status: 'ok' | 'warn' | 'over';
+    };
+    byModel: Array<{
+        model: string;
+        calls: number;
+        tokensIn: number;
+        tokensOut: number;
+        estimatedCostUSD: number;
+    }>;
+    notes: string[];
+    controls: AICostControls;
+};
+
+const DEFAULT_AI_COST_CONTROLS: AICostControls = {
+    monthlyBudgetUSD: 300,
+    warnThresholdPct: 80,
+    hardStopThresholdPct: 100,
+    taskRouting: {
+        classification: 'gemini-3.1-flash-preview',
+        extraction: 'gemini-3.1-flash-preview',
+        moderation: 'gemini-3.1-flash-preview',
+        chat: 'gemini-3.1-flash-preview',
+        creative: 'gemini-3.1-pro-preview',
+        long_form: 'gemini-3.1-pro-preview',
+        coding: 'gpt-5-codex',
+    },
+    modelPricesUSDPer1M: {
+        'gpt-5-codex': { inputPer1M: 1.25, outputPer1M: 10, cachedInputPer1M: 0.125 },
+        'gemini-3.1-flash-preview': { inputPer1M: 0, outputPer1M: 0 },
+        'gemini-3.1-pro-preview': { inputPer1M: 0, outputPer1M: 0 },
+    },
+};
+
+function mergeCostControls(raw: unknown): AICostControls {
+    if (!raw || typeof raw !== 'object') {
+        return DEFAULT_AI_COST_CONTROLS;
+    }
+    const c = raw as Partial<AICostControls>;
+    return {
+        monthlyBudgetUSD: Number(c.monthlyBudgetUSD ?? DEFAULT_AI_COST_CONTROLS.monthlyBudgetUSD),
+        warnThresholdPct: Number(c.warnThresholdPct ?? DEFAULT_AI_COST_CONTROLS.warnThresholdPct),
+        hardStopThresholdPct: Number(c.hardStopThresholdPct ?? DEFAULT_AI_COST_CONTROLS.hardStopThresholdPct),
+        taskRouting: { ...DEFAULT_AI_COST_CONTROLS.taskRouting, ...(c.taskRouting || {}) },
+        modelPricesUSDPer1M: { ...DEFAULT_AI_COST_CONTROLS.modelPricesUSDPer1M, ...(c.modelPricesUSDPer1M || {}) },
+    };
+}
+
+function estimateCostForModel(
+    controls: AICostControls,
+    model: string,
+    inputTokens: number,
+    outputTokens: number
+): number {
+    const pricing = controls.modelPricesUSDPer1M[model];
+    if (!pricing) return 0;
+    const inputCost = (Math.max(0, inputTokens) / 1_000_000) * pricing.inputPer1M;
+    const outputCost = (Math.max(0, outputTokens) / 1_000_000) * pricing.outputPer1M;
+    return inputCost + outputCost;
+}
+
+function resolveModelFromUsageRow(row: any): string {
+    const explicitModel =
+        row?.model ||
+        row?.metadata?.model ||
+        row?.metadata?.model_name ||
+        row?.metadata?.ai_model;
+    if (typeof explicitModel === 'string' && explicitModel.trim()) return explicitModel.trim();
+
+    const tier =
+        row?.model_tier_used ||
+        row?.metadata?.model_tier_used ||
+        row?.metadata?.tier;
+
+    if (tier === 'tier_2_strong') return 'gemini-3.1-pro-preview';
+    if (tier === 'tier_1_mid' || tier === 'tier_0_low_cost') return 'gemini-3.1-flash-preview';
+    return 'unknown';
+}
+
 // Helper to verify admin access
 export async function verifyAdmin(token: string) {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -598,6 +703,113 @@ export async function getStoreAnalytics(token: string) {
         console.error("💥 getStoreAnalytics failure:", e.message);
         throw e;
     }
+}
+
+export async function getAICostSnapshot(token: string, windowDays = 30): Promise<AICostSnapshot> {
+    const admin = await verifyAdmin(token);
+    const days = Math.max(1, Math.min(365, Number(windowDays) || 30));
+    const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
+    const [{ data: usageLogs, error: usageError }, { data: aiUsageRows, error: aiUsageError }, { data: controlsRow }] = await Promise.all([
+        admin
+            .from('usage_logs')
+            .select('*')
+            .gte('created_at', since)
+            .order('created_at', { ascending: false }),
+        admin
+            .from('ai_usage')
+            .select('*')
+            .gte('used_at', since)
+            .order('used_at', { ascending: false }),
+        admin
+            .from('site_settings')
+            .select('content')
+            .eq('key', 'ai_cost_controls')
+            .maybeSingle(),
+    ]);
+
+    if (usageError) throw usageError;
+    if (aiUsageError) throw aiUsageError;
+
+    const controls = mergeCostControls(controlsRow?.content);
+
+    const modelMap = new Map<string, { model: string; calls: number; tokensIn: number; tokensOut: number; estimatedCostUSD: number }>();
+    let tokensIn = 0;
+    let tokensOut = 0;
+    let estimatedCostUSD = 0;
+
+    for (const row of usageLogs || []) {
+        const model = resolveModelFromUsageRow(row);
+        const inTok = Number(row?.tokens_in_est || 0);
+        const outTok = Number(row?.tokens_out_est || 0);
+        const explicitCost = Number(row?.cost_estimate || 0);
+        const rowCost = explicitCost > 0 ? explicitCost : estimateCostForModel(controls, model, inTok, outTok);
+
+        tokensIn += inTok;
+        tokensOut += outTok;
+        estimatedCostUSD += rowCost;
+
+        const existing = modelMap.get(model) || { model, calls: 0, tokensIn: 0, tokensOut: 0, estimatedCostUSD: 0 };
+        existing.calls += 1;
+        existing.tokensIn += inTok;
+        existing.tokensOut += outTok;
+        existing.estimatedCostUSD += rowCost;
+        modelMap.set(model, existing);
+    }
+
+    const byModel = [...modelMap.values()].sort((a, b) => b.estimatedCostUSD - a.estimatedCostUSD);
+    const estimatedCostMonthlyUSD = (estimatedCostUSD / days) * 30;
+    const pctUsed = controls.monthlyBudgetUSD > 0 ? (estimatedCostMonthlyUSD / controls.monthlyBudgetUSD) * 100 : 0;
+    const status: 'ok' | 'warn' | 'over' =
+        pctUsed >= controls.hardStopThresholdPct ? 'over' :
+            pctUsed >= controls.warnThresholdPct ? 'warn' : 'ok';
+
+    const notes: string[] = [];
+    if (byModel.some((m) => m.model === 'unknown')) {
+        notes.push('Some calls are missing model metadata and are grouped as "unknown".');
+    }
+    const zeroPriced = Object.entries(controls.modelPricesUSDPer1M)
+        .filter(([, p]) => Number(p.inputPer1M) === 0 && Number(p.outputPer1M) === 0)
+        .map(([model]) => model);
+    if (zeroPriced.length > 0) {
+        notes.push(`These models are priced at 0 in controls: ${zeroPriced.join(', ')}.`);
+    }
+    notes.push('Codex work done in chat sessions outside this app is not automatically backfilled into these tables.');
+
+    return {
+        windowDays: days,
+        usageEvents: usageLogs?.length || 0,
+        aiUsageEvents: aiUsageRows?.length || 0,
+        tokensIn,
+        tokensOut,
+        estimatedCostUSD: Number(estimatedCostUSD.toFixed(4)),
+        estimatedCostMonthlyUSD: Number(estimatedCostMonthlyUSD.toFixed(4)),
+        budget: {
+            monthlyBudgetUSD: controls.monthlyBudgetUSD,
+            warnThresholdPct: controls.warnThresholdPct,
+            hardStopThresholdPct: controls.hardStopThresholdPct,
+            pctUsed: Number(pctUsed.toFixed(2)),
+            status,
+        },
+        byModel: byModel.map((m) => ({
+            ...m,
+            estimatedCostUSD: Number(m.estimatedCostUSD.toFixed(4)),
+        })),
+        notes,
+        controls,
+    };
+}
+
+export async function saveAICostControls(token: string, controls: Partial<AICostControls>) {
+    const admin = await verifyAdmin(token);
+    const merged = mergeCostControls(controls);
+    const { error } = await admin.from('site_settings').upsert({
+        key: 'ai_cost_controls',
+        content: merged,
+        updated_at: new Date().toISOString(),
+    });
+    if (error) throw error;
+    return { success: true, controls: merged };
 }
 
 // Added for compatibility with older admin dashboard

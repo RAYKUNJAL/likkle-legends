@@ -92,6 +92,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
             label: 'Growth',
             items: [
                 { id: 'commercial', label: 'Commercial Ops', icon: TrendingUp, href: '/admin/commercial' },
+                { id: 'ai-costs', label: 'AI Cost Tracker', icon: DollarSign, href: '/admin/ai-costs' },
                 { id: 'email-engine', label: 'Growth Agent', icon: Zap, href: '/admin/email-engine' },
                 { id: 'pixels', label: 'Launch Pixels', icon: Target, href: '/admin/pixels' },
                 { id: 'announcements', label: 'Announcements', icon: Megaphone, href: '/admin/announcements' },

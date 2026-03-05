@@ -68,6 +68,15 @@ export const DashboardOverview: React.FC = () => {
                             <p className="text-xs text-white/70 mt-0.5">Approve or reject AI-generated content</p>
                         </div>
                     </Link>
+                    <Link href="/admin/ai-costs" className="group flex items-center gap-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-5 rounded-2xl hover:from-emerald-700 hover:to-teal-700 transition-all shadow-md hover:shadow-lg">
+                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform">
+                            💸
+                        </div>
+                        <div>
+                            <p className="font-black text-base">Track AI Spend</p>
+                            <p className="text-xs text-white/70 mt-0.5">Model routing, token totals, and budget alerts</p>
+                        </div>
+                    </Link>
                 </div>
             </div>
 

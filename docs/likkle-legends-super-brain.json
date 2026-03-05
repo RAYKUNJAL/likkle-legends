@@ -1,0 +1,300 @@
+{
+  "project_name": "Likkle Legends AI Learning Platform",
+  "version": "2.0",
+  "updated_at": "2026-03-05",
+  "mission": "Build a Caribbean-focused educational ecosystem for children ages 3-10 using AI-generated content, interactive learning tools, storytelling, music, and crafts.",
+  "north_star_goal": "Create the world's first Caribbean AI-powered children's educational universe combining storytelling, music, coding, crafts, and culture.",
+  "core_characters": [
+    {
+      "name": "R.O.T.I",
+      "role": "AI Tech Guide",
+      "teaches": ["coding", "technology", "problem solving", "phonics"]
+    },
+    {
+      "name": "Tanty Spice",
+      "role": "Storytelling Grandma",
+      "teaches": ["stories", "culture", "life lessons", "heritage kitchen"]
+    },
+    {
+      "name": "Steelpan Sam",
+      "role": "Music Teacher",
+      "teaches": ["rhythm", "music", "Caribbean instruments"]
+    },
+    {
+      "name": "Mango Moko",
+      "role": "Carnival Spirit",
+      "teaches": ["culture", "festival traditions", "dance"]
+    },
+    {
+      "name": "Dilly Doubles",
+      "role": "Food Explorer",
+      "teaches": ["Caribbean foods", "nutrition", "cooking", "creative arts"]
+    }
+  ],
+  "platform_modules": {
+    "scholar_suite": {
+      "name": "The Scholar Suite",
+      "led_by": "R.O.T.I",
+      "sub_features": ["phonics", "letters", "math_workbooks", "flashcards"],
+      "routes": ["/features/scholar-suite", "/portal/lessons", "/portal/printables", "/portal/games"]
+    },
+    "creative_carnival": {
+      "name": "The Creative Carnival",
+      "led_by": ["Dilly Doubles", "Steelpan Sam"],
+      "sub_features": ["coloring_books", "arts_and_crafts", "step_by_step_drawing", "rhythm_and_music"],
+      "routes": ["/features/creative-carnival", "/portal/printables", "/portal/music", "/portal/lessons"]
+    },
+    "adventure_alley": {
+      "name": "Adventure Alley",
+      "led_by": ["Mango Moko", "Benny", "Scorcha"],
+      "sub_features": ["folklore_stories", "game_portal", "island_geography", "mini_storybooks"],
+      "routes": ["/features/adventure-alley", "/portal/stories", "/portal/games"]
+    },
+    "heritage_kitchen": {
+      "name": "Heritage Kitchen",
+      "led_by": ["Tanty Spice", "Benny"],
+      "sub_features": ["kid_friendly_recipes", "ingredient_fun_facts", "culture_bites"],
+      "routes": ["/features/heritage-kitchen"]
+    },
+    "radio_station": {
+      "name": "Likkle Legends Radio",
+      "software": "AzuraCast",
+      "routes": ["/portal/radio", "/api/radio/stations", "/api/radio/now-playing"],
+      "features": [
+        "24/7 streaming",
+        "playlist auto-DJ",
+        "character hosted segments",
+        "free loop with premium upsell",
+        "station analytics"
+      ]
+    },
+    "story_world": {
+      "name": "Likkle Legends Story Adventures",
+      "routes": ["/portal/stories", "/portal/story-studio", "/api/story/generate", "/api/library/stories"],
+      "features": ["interactive stories", "AI generated narratives", "voice narration", "illustrated scenes"]
+    }
+  },
+  "tech_stack": {
+    "frontend": ["Next.js App Router", "React", "Tailwind CSS", "Framer Motion"],
+    "backend": ["Next.js Route Handlers", "Server Actions", "Supabase"],
+    "database": "PostgreSQL via Supabase",
+    "media_storage": "Supabase Storage",
+    "ai_services": ["OpenAI", "Google Gemini", "ElevenLabs", "Suno", "Runway", "NotebookLM"],
+    "streaming": ["AzuraCast"]
+  },
+  "database_schema": {
+    "core_domains": {
+      "identity_and_accounts": ["profiles", "children", "users", "educator_accounts", "admin_users", "otp_codes"],
+      "content_library": ["stories", "storybooks", "stories_library", "songs", "videos", "printables", "games", "content_items", "content_localizations"],
+      "learning_and_progress": ["activities", "learning_plans", "child_learning_state", "child_character_sessions", "daily_logins", "xp_events", "badge_earnings", "reward_chests", "streak_freezes", "family_challenges", "challenge_participants", "mango_gifts"],
+      "commerce_and_subscriptions": ["orders", "purchases", "purchased_content", "subscriptions", "custom_song_orders", "custom_song_requests"],
+      "crm_growth_referrals": ["leads", "waitlist", "lead_magnets", "lead_magnet_downloads", "referrals", "referral_clicks", "referral_conversions", "referral_credits", "promoters", "campaign_settings", "subscription_nurture"],
+      "communication": ["messages", "notifications", "support_messages", "email_queue", "announcements"],
+      "ai_and_ops": ["ai_usage", "ai_personality", "agent_memory_facts", "agent_memory_summaries", "generated_content", "story_usage", "usage_logs", "site_settings", "system_logs", "user_activity"]
+    },
+    "storage_buckets": ["characters", "songs", "videos", "storybooks", "printables", "avatars", "vr-assets", "ar-models"]
+  },
+  "api_routes": {
+    "auth_and_users": [
+      "/api/auth/callback",
+      "/api/children/[id]"
+    ],
+    "ai_and_story": [
+      "/api/brain/chat",
+      "/api/character-chat",
+      "/api/roti-chat",
+      "/api/tanty-spice",
+      "/api/story/generate",
+      "/api/story-data",
+      "/api/library/stories",
+      "/api/island-brain/generate",
+      "/api/island-brain/monthly-drop/generate",
+      "/api/features/generate"
+    ],
+    "voice_and_media": [
+      "/api/voice/generate",
+      "/api/elevenlabs-tts",
+      "/api/roti-voice",
+      "/api/upload"
+    ],
+    "gamification_and_learning": [
+      "/api/gamification/xp",
+      "/api/learning-plan",
+      "/api/messages",
+      "/api/notifications"
+    ],
+    "radio": [
+      "/api/radio/stations",
+      "/api/radio/now-playing"
+    ],
+    "payments_and_webhooks": [
+      "/api/payments/paypal/create-order",
+      "/api/payments/paypal/confirm",
+      "/api/payments/paypal/capture-order",
+      "/api/payments/paypal/webhooks",
+      "/api/webhooks/paypal"
+    ],
+    "growth_and_marketing": [
+      "/api/lead-capture",
+      "/api/lead-magnets",
+      "/api/waitlist",
+      "/api/growth/log-click",
+      "/api/send-email"
+    ],
+    "admin_and_cron": [
+      "/api/admin/blog/generate",
+      "/api/admin/blog/batch",
+      "/api/admin/seed-cms",
+      "/api/cron/content-generation",
+      "/api/cron/generate-blog",
+      "/api/cron/nurture",
+      "/api/cron/process-emails",
+      "/api/cron/streak-freeze"
+    ],
+    "ops": ["/api/health", "/api/debug/test-story-loading", "/api/test-story"]
+  },
+  "ai_content_pipeline": {
+    "knowledge_engine": {
+      "system": "NotebookLM + internal lore registries",
+      "sources": [
+        "Caribbean folklore",
+        "education standards",
+        "children books",
+        "culture documents",
+        "Likkle Legends lore"
+      ]
+    },
+    "generator_stack": {
+      "story_generation": "Gemini/OpenAI",
+      "music_generation": "Suno",
+      "voice_generation": "ElevenLabs",
+      "image_generation": ["OpenAI Images", "Leonardo AI"],
+      "video_generation": "Runway",
+      "lesson_generation": "LLM lesson planner",
+      "interactive_content": "H5P-compatible lesson objects"
+    },
+    "orchestration": {
+      "module_manager_agent": "Builds story + printable + video script bundles",
+      "database_poster": "Publishes generated assets to Supabase",
+      "cron_automation": "Schedules daily/weekly generation jobs"
+    }
+  },
+  "agent_workflows": [
+    {
+      "name": "Suite Module Generator",
+      "trigger": "POST /api/features/generate",
+      "steps": [
+        "Validate suite and age group",
+        "Build objective prompt from suite curriculum",
+        "Run ModuleManager agent",
+        "Return story + printable + lesson script",
+        "Fallback to safe template when AI unavailable"
+      ]
+    },
+    {
+      "name": "Game XP Tracker",
+      "trigger": "Game completion events",
+      "steps": [
+        "Write activity record",
+        "Apply XP multiplier",
+        "Update child total_xp + streak",
+        "Check badge unlocks",
+        "Refresh learning plan when progress threshold reached"
+      ]
+    },
+    {
+      "name": "Story Personalization",
+      "trigger": "Story creation request",
+      "steps": [
+        "Read child profile + learning state",
+        "Generate culturally grounded story",
+        "Attach readability and age track metadata",
+        "Persist story and surface in portal"
+      ]
+    },
+    {
+      "name": "Commercial Ops Agent",
+      "trigger": "Admin dashboard usage",
+      "steps": [
+        "Aggregate leads, conversions, and retention signals",
+        "Surface recommended campaigns",
+        "Queue follow-up communications",
+        "Track outcomes in CRM tables"
+      ]
+    }
+  ],
+  "personalized_learning_engine": {
+    "input_questions": ["child age", "learning goals", "favorite topics", "learning style", "difficulty preference"],
+    "output": "custom weekly curriculum",
+    "weekly_template": [
+      { "day": "Monday", "activity": "Counting with coconuts", "guide": "R.O.T.I" },
+      { "day": "Tuesday", "activity": "Anansi storytelling", "guide": "Tanty Spice" },
+      { "day": "Wednesday", "activity": "Steelpan rhythm lesson", "guide": "Steelpan Sam" },
+      { "day": "Thursday", "activity": "Carnival culture craft", "guide": "Mango Moko" },
+      { "day": "Friday", "activity": "Island cooking activity", "guide": "Dilly Doubles" }
+    ]
+  },
+  "reward_system": {
+    "name": "Legend Points",
+    "earn_points_for": [
+      "listening to songs",
+      "completing crafts",
+      "finishing lessons",
+      "playing coding games",
+      "daily streak check-ins"
+    ],
+    "unlockables": ["new songs", "special stories", "printable books", "avatar upgrades", "character voice messages"]
+  },
+  "user_roles": {
+    "children": ["listen to radio", "play learning games", "complete crafts", "watch stories", "earn rewards"],
+    "parents": ["child progress dashboard", "custom learning plans", "lesson recommendations", "subscription controls"],
+    "teachers": ["classroom tools", "lesson downloads", "student progress tracking", "group analytics"],
+    "admins": ["content operations", "commercial dashboards", "campaign controls", "AI generation tools"]
+  },
+  "automation_pipelines": {
+    "daily": [
+      "Generate new story/song candidates",
+      "Process nurture emails",
+      "Recompute streak safety checks",
+      "Sync radio now-playing metadata"
+    ],
+    "weekly": [
+      "Publish feature modules per suite",
+      "Refresh recommendation models",
+      "Run engagement cohort analysis"
+    ],
+    "monthly": [
+      "Island themed content drop",
+      "Retention and conversion audit",
+      "Curriculum quality review"
+    ]
+  },
+  "delivery_phases": [
+    {
+      "phase": "Phase 1",
+      "focus": "Core reliability",
+      "outcomes": ["signup/onboarding stability", "XP tracking integrity", "CTA route correctness"]
+    },
+    {
+      "phase": "Phase 2",
+      "focus": "Content depth",
+      "outcomes": ["full suite pages", "AI module generation", "curriculum packs"]
+    },
+    {
+      "phase": "Phase 3",
+      "focus": "Commercial operations",
+      "outcomes": ["parent/teacher reporting", "CRM automations", "campaign orchestration"]
+    },
+    {
+      "phase": "Phase 4",
+      "focus": "Scale",
+      "outcomes": ["global localization", "multi-tenant schools", "advanced AI copilots"]
+    }
+  ],
+  "success_metrics": {
+    "education": ["weekly active learners", "lesson completion rate", "reading progression", "math mastery progression"],
+    "engagement": ["daily streak retention", "session length", "radio listen time", "games completed"],
+    "business": ["trial-to-paid conversion", "monthly recurring revenue", "parent referral rate", "teacher account growth"],
+    "quality": ["onboarding success rate", "API error rate", "content moderation pass rate", "generation latency"]
+  }
+}

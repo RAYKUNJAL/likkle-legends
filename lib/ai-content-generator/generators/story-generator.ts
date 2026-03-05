@@ -47,6 +47,7 @@ export interface StoryGenerationParams {
     theme?: string;
     characterId?: string;
     customPrompt?: string;
+    model?: string;
 }
 
 export class StoryGenerator {
@@ -164,7 +165,8 @@ export class StoryGenerator {
         // Generate JSON
         const rawContent = await contentGenerator.generateJSON<any>(prompt, storySchema, {
             systemInstruction,
-            temperature: 0.7 // Slightly lower for more coherent stories
+            temperature: 0.7, // Slightly lower for more coherent stories
+            model: params.model,
         });
 
         // Run Quality Gates

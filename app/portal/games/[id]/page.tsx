@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { useUser } from '@/components/UserContext';
 import confetti from 'canvas-confetti';
 import { getGameById } from '@/lib/database';
+import { logActivity } from '@/lib/database';
 
 // Dynamic Imports with Loaders
 const MangoCatch = dynamic(() => import('@/components/games/MangoCatch'), { loading: () => <LoadingGame /> });
@@ -130,9 +131,7 @@ export default function GamePlayerPage() {
     const params = useParams();
     const router = useRouter();
     const gameId = (params?.id as string) || '';
-
-    // We can use the user context if needed for XP, etc, but keeping it simple for now
-    // const { activeChild } = useUser();
+    const { user, activeChild, refreshChildren } = useUser();
 
     const [isComplete, setIsComplete] = useState(false);
     const [score, setScore] = useState(0);
@@ -161,7 +160,45 @@ export default function GamePlayerPage() {
         fetchGame();
     }, [gameId]);
 
+    const getGameTitle = () => {
+        if (dbGame) return dbGame.title;
+        switch (gameId) {
+            case 'island-match': return 'Island Memory Match';
+            case 'patois-puzzle': return 'Patois Word Wizard';
+            case 'ai-trivia': return 'AI Island Trivia';
+            case 'trivia': return 'Caribbean Trivia';
+            case 'mango-catch': return 'Mango Catch Adventure';
+            case 'color-match': return 'Island Color Match';
+            default: return 'Island Game';
+        }
+    };
+
     const handleComplete = (earnedScore: number, correct: number, total: number) => {
+        if (user && activeChild) {
+            const calculatedFromScore = Math.max(Math.floor(earnedScore / 10), 0);
+            const xp = Math.min(dbGame?.reward_xp ?? calculatedFromScore, 400);
+            const contentId = dbGame?.id || gameId;
+            const accuracy = total > 0 ? Math.round((correct / total) * 100) : null;
+
+            void logActivity(
+                user.id,
+                activeChild.id,
+                'game',
+                contentId,
+                xp,
+                0,
+                {
+                    title: dbGame?.title || getGameTitle(),
+                    score: earnedScore,
+                    correct_answers: correct,
+                    total_questions: total,
+                    accuracy,
+                }
+            ).then(() => refreshChildren()).catch((error) => {
+                console.error('Failed to log game activity:', error);
+            });
+        }
+
         setScore(earnedScore);
         setCorrectAnswers(correct);
         setTotalQuestions(total);
@@ -174,19 +211,6 @@ export default function GamePlayerPage() {
         setCorrectAnswers(0);
         setTotalQuestions(0);
         setGameKey(prev => prev + 1);
-    };
-
-    const getGameTitle = () => {
-        if (dbGame) return dbGame.title;
-        switch (gameId) {
-            case 'island-match': return 'Island Memory Match';
-            case 'patois-puzzle': return 'Patois Word Wizard';
-            case 'ai-trivia': return 'AI Island Trivia';
-            case 'trivia': return 'Caribbean Trivia';
-            case 'mango-catch': return 'Mango Catch Adventure';
-            case 'color-match': return 'Island Color Match';
-            default: return 'Island Game';
-        }
     };
 
     const renderGame = () => {

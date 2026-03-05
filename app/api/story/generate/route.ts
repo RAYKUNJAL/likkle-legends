@@ -6,6 +6,7 @@ import { VOICES } from '@/lib/services/elevenlabs';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { createClient } from '@/lib/supabase/server';
 import { CONTENT_CONFIG } from '@/lib/ai-content-generator/config';
+import type { AICostControls } from '@/app/actions/admin';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300; // Increased to 5 mins for Gemini Story Maker image generation overhead
@@ -82,11 +83,26 @@ export async function POST(req: Request) {
         The story must be engaging, age-appropriate, and rooted in Caribbean culture.
         `;
 
+        // Resolve model from admin cost controls routing rules (fallback to default flow)
+        let selectedModel: string | undefined;
+        try {
+            const { data: costControls } = await supabaseAdmin
+                .from('site_settings')
+                .select('content')
+                .eq('key', 'ai_cost_controls')
+                .maybeSingle();
+            const controls = costControls?.content as Partial<AICostControls> | undefined;
+            selectedModel = controls?.taskRouting?.creative || controls?.taskRouting?.long_form;
+        } catch {
+            // non-blocking
+        }
+
         // Call the generator
         let story = await storyGenerator.generateStory({
             customPrompt,
             ageTrack: tier === 'starter_mailer' ? 'mini' : 'big',
-            theme: topic
+            theme: topic,
+            model: selectedModel,
         });
 
         let storyId: string | undefined;
@@ -104,7 +120,15 @@ export async function POST(req: Request) {
             await supabaseAdmin.from('ai_usage').insert({
                 user_id: user.id,
                 feature: 'story_studio',
-                metadata: { story_id: storyId, tier }
+                metadata: {
+                    story_id: storyId,
+                    tier,
+                    model: selectedModel || 'default',
+                    input_tokens_est: Math.round(customPrompt.length / 4),
+                    output_tokens_est: Math.round(
+                        (story.pages?.reduce((acc, page) => acc + (page.text?.length || 0), 0) || 0) / 4
+                    ),
+                }
             });
 
             // 2. Generate Audio (Voice)

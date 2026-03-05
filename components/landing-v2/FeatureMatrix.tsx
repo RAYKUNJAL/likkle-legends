@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Bot, Radio, Music, Map, Leaf, Gamepad2, BookOpen, Calculator, Mic, Palette, CookingPot, Scissors, Headphones, BookOpenText, Baby, Sparkles, ArrowRight, Compass, BookMarked, Globe, Cherry, Lightbulb, Drum } from "lucide-react";
 import TantyRadio from "@/components/TantyRadio";
 import Image from "next/image";
+import Link from "next/link";
 
 const categories = [
     {
@@ -13,11 +14,12 @@ const categories = [
         color: "#89C741",
         icon: Bot,
         features: [
-            { name: "Phonics", icon: Mic, desc: "Voice-friendly reading practice with R.O.T.I." },
-            { name: "Letters", icon: BookOpen, desc: "Handwriting, tracing, and letter recognition" },
-            { name: "Math Workbooks", icon: Calculator, desc: "Interactive math games & printable worksheets" },
-            { name: "Flashcards", icon: BookMarked, desc: "Caribbean-themed vocabulary & sight words" },
-        ]
+            { name: "Phonics", icon: Mic, desc: "Voice-friendly reading practice with R.O.T.I.", href: "/features/scholar-suite#phonics" },
+            { name: "Letters", icon: BookOpen, desc: "Handwriting, tracing, and letter recognition", href: "/features/scholar-suite#letters" },
+            { name: "Math Workbooks", icon: Calculator, desc: "Interactive math games & printable worksheets", href: "/features/scholar-suite#math-workbooks" },
+            { name: "Flashcards", icon: BookMarked, desc: "Caribbean-themed vocabulary & sight words", href: "/features/scholar-suite#flashcards" },
+        ],
+        suiteHref: "/features/scholar-suite",
     },
     {
         name: "Tanty Radio",
@@ -26,10 +28,11 @@ const categories = [
         color: "#FF6B00",
         icon: Radio,
         features: [
-            { name: "Island Rhythms", icon: Headphones, desc: "Always-on Caribbean music, safe & ad-free" },
-            { name: "Ad-Free Stories", icon: BookOpenText, desc: "Tanty narrates original bedtime stories" },
-            { name: "Nursery Rhymes", icon: Baby, desc: "Traditional & original Caribbean nursery rhymes" },
-        ]
+            { name: "Island Rhythms", icon: Headphones, desc: "Always-on Caribbean music, safe & ad-free", href: "/portal/radio" },
+            { name: "Ad-Free Stories", icon: BookOpenText, desc: "Tanty narrates original bedtime stories", href: "/portal/stories" },
+            { name: "Nursery Rhymes", icon: Baby, desc: "Traditional & original Caribbean nursery rhymes", href: "/portal/songs" },
+        ],
+        suiteHref: "/portal/radio",
     },
     {
         name: "The Creative Carnival",
@@ -38,11 +41,12 @@ const categories = [
         color: "#FF3FB4",
         icon: Music,
         features: [
-            { name: "Coloring Books", icon: Palette, desc: "Digital & printable coloring with island themes" },
-            { name: "Arts & Crafts", icon: Scissors, desc: "Paper crafts, mask-making & carnival projects" },
-            { name: "Step-by-Step Drawing", icon: Sparkles, desc: "Guided drawing lessons for young artists" },
-            { name: "Rhythm & Music", icon: Drum, desc: "Beat games and simple instruments" },
-        ]
+            { name: "Coloring Books", icon: Palette, desc: "Digital & printable coloring with island themes", href: "/features/creative-carnival#coloring-books" },
+            { name: "Arts & Crafts", icon: Scissors, desc: "Paper crafts, mask-making & carnival projects", href: "/features/creative-carnival#arts-crafts" },
+            { name: "Step-by-Step Drawing", icon: Sparkles, desc: "Guided drawing lessons for young artists", href: "/features/creative-carnival#step-by-step-drawing" },
+            { name: "Rhythm & Music", icon: Drum, desc: "Beat games and simple instruments", href: "/features/creative-carnival#rhythm-music" },
+        ],
+        suiteHref: "/features/creative-carnival",
     },
     {
         name: "Adventure Alley",
@@ -51,11 +55,12 @@ const categories = [
         color: "#E85D04",
         icon: Compass,
         features: [
-            { name: "Folklore Stories", icon: BookOpenText, desc: "Caribbean legends and tales brought to life" },
-            { name: "Game Portal", icon: Gamepad2, desc: "Learning games tied to island adventures" },
-            { name: "Island Geography", icon: Globe, desc: "Maps, flags, and facts about each island" },
-            { name: "Mini Storybooks", icon: BookMarked, desc: "Short illustrated stories for independent reading" },
-        ]
+            { name: "Folklore Stories", icon: BookOpenText, desc: "Caribbean legends and tales brought to life", href: "/features/adventure-alley#folklore-stories" },
+            { name: "Game Portal", icon: Gamepad2, desc: "Learning games tied to island adventures", href: "/features/adventure-alley#game-portal" },
+            { name: "Island Geography", icon: Globe, desc: "Maps, flags, and facts about each island", href: "/features/adventure-alley#island-geography" },
+            { name: "Mini Storybooks", icon: BookMarked, desc: "Short illustrated stories for independent reading", href: "/features/adventure-alley#mini-storybooks" },
+        ],
+        suiteHref: "/features/adventure-alley",
     },
     {
         name: "Heritage Kitchen",
@@ -64,10 +69,11 @@ const categories = [
         color: "#386641",
         icon: Leaf,
         features: [
-            { name: "Kid-Friendly Recipes", icon: CookingPot, desc: "Step-by-step Caribbean cooking for kids" },
-            { name: "Ingredient Fun Facts", icon: Cherry, desc: "Learn about Caribbean spices, fruits & herbs" },
-            { name: "Culture Bites", icon: Lightbulb, desc: "Food traditions and their island origins" },
-        ]
+            { name: "Kid-Friendly Recipes", icon: CookingPot, desc: "Step-by-step Caribbean cooking for kids", href: "/features/heritage-kitchen#kid-friendly-recipes" },
+            { name: "Ingredient Fun Facts", icon: Cherry, desc: "Learn about Caribbean spices, fruits & herbs", href: "/features/heritage-kitchen#ingredient-fun-facts" },
+            { name: "Culture Bites", icon: Lightbulb, desc: "Food traditions and their island origins", href: "/features/heritage-kitchen#culture-bites" },
+        ],
+        suiteHref: "/features/heritage-kitchen",
     },
 ];
 
@@ -129,6 +135,13 @@ export const FeatureMatrix = () => {
                                         Led by {cat.lead}
                                     </p>
                                 </div>
+                                <Link
+                                    href={cat.suiteHref}
+                                    className="sm:ml-auto inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-wider text-white hover:bg-white/20"
+                                >
+                                    Explore
+                                    <ArrowRight size={14} />
+                                </Link>
                             </div>
 
                             {/* Embed Interactive Elements for specific zones */}
@@ -145,8 +158,9 @@ export const FeatureMatrix = () => {
                             {/* Feature Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4">
                                 {cat.features.map(feat => (
-                                    <div
+                                    <Link
                                         key={feat.name}
+                                        href={feat.href}
                                         className="bg-white/[0.08] rounded-2xl p-5 sm:p-5 border border-white/[0.1] hover:bg-white/[0.12] transition-all"
                                     >
                                         <div className="flex items-center gap-4 mb-3">
@@ -157,7 +171,7 @@ export const FeatureMatrix = () => {
                                             <h4 className="font-extrabold text-white text-xl sm:text-lg tracking-tight leading-tight">{feat.name}</h4>
                                         </div>
                                         <p className="text-lg leading-relaxed font-medium">{feat.desc}</p>
-                                    </div>
+                                    </Link>
                                 ))}
                             </div>
                         </motion.div>
