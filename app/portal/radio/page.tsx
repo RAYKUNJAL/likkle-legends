@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Radio as RadioIcon, Sparkles, Mic2, Broadcast, Music4 } from 'lucide-react';
+import { ArrowLeft, Radio as RadioIcon, Sparkles, Mic2, Music4 } from 'lucide-react';
 import TantyRadio from '@/components/TantyRadio';
 
 export default function RadioPortalPage() {
@@ -89,7 +89,7 @@ export default function RadioPortalPage() {
                     <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[3rem] p-10 text-white shadow-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
                         <h3 className="text-2xl font-heading font-black mb-4 flex items-center gap-3 relative z-10">
-                            <Broadcast className="text-white" /> AzuraCast Ready
+                            <RadioIcon className="text-white" /> AzuraCast Ready
                         </h3>
                         <p className="text-white/80 font-medium mb-6 relative z-10">
                             This hub is structured for station-grade streaming. Next step: connect each host segment
