@@ -48,8 +48,8 @@ export const FooterV2 = () => {
                                 <h4 className="text-primary font-black uppercase tracking-[0.3em] text-xs">Universe</h4>
                                 <ul className="space-y-3 sm:space-y-6">
                                     {[
-                                        { name: 'Digital Magic', href: '#features' },
-                                        { name: 'The Envelope', href: '#envelope' },
+                                        { name: 'Digital Magic', href: '/#what-you-get' },
+                                        { name: 'The Envelope', href: '/#how-it-works' },
                                         { name: 'Island Radio', href: '/radio' },
                                         { name: 'Story Studio', href: '/portal' }
                                     ].map(item => (
@@ -74,7 +74,7 @@ export const FooterV2 = () => {
                                 <h4 className="text-secondary font-black uppercase tracking-[0.3em] text-xs">Legals</h4>
                                 <ul className="space-y-3 sm:space-y-6">
                                     {[
-                                        { name: 'Guarantee', href: '#guarantee' },
+                                        { name: 'Guarantee', href: '/guarantee' },
                                         { name: 'Privacy', href: '/privacy' },
                                         { name: 'Terms', href: '/terms' },
                                         { name: 'Contact', href: '/contact' }
@@ -118,7 +118,7 @@ export const FooterV2 = () => {
                         {/* Halo Effect */}
                         <div className="absolute inset-0 bg-primary-gradient rounded-full blur-[20px] opacity-40 group-hover:opacity-80 transition-opacity animate-neural-halo"></div>
 
-                        <Link href="#pricing" className="relative flex items-center gap-2 sm:gap-4 bg-white px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-premium-xl border-2 sm:border-4 border-primary">
+                        <Link href="/pricing" className="relative flex items-center gap-2 sm:gap-4 bg-white px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-premium-xl border-2 sm:border-4 border-primary">
                             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center text-white shadow-lg">
                                 <Sparkles size={16} className="group-hover:rotate-12 transition-transform" />
                             </div>

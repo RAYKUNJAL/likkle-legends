@@ -26,13 +26,13 @@ export default function Footer() {
 
                     {/* Social Icons - Branding Fix */}
                     <div className="flex items-center gap-4">
-                        <a href="#" title="Instagram" aria-label="Instagram" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
+                        <a href="https://www.instagram.com/likklelegends" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
                             <Instagram size={20} />
                         </a>
-                        <a href="#" title="Facebook" aria-label="Facebook" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
+                        <a href="https://www.facebook.com/likklelegends" target="_blank" rel="noopener noreferrer" title="Facebook" aria-label="Facebook" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
                             <Facebook size={20} />
                         </a>
-                        <a href="#" title="Twitter" aria-label="Twitter" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
+                        <a href="https://twitter.com/likklelegends" target="_blank" rel="noopener noreferrer" title="Twitter" aria-label="Twitter" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
                             <Twitter size={20} />
                         </a>
                         <a href="mailto:hello@likklelegends.com" title="Email" aria-label="Email" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
