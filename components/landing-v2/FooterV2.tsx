@@ -48,8 +48,8 @@ export const FooterV2 = () => {
                                 <h4 className="text-primary font-black uppercase tracking-[0.3em] text-xs">Universe</h4>
                                 <ul className="space-y-3 sm:space-y-6">
                                     {[
-                                        { name: 'Digital Magic', href: '/#what-you-get' },
-                                        { name: 'The Envelope', href: '/#how-it-works' },
+                                        { name: 'Digital Magic', href: '/#features' },
+                                        { name: 'The Envelope', href: '/#envelope' },
                                         { name: 'Island Radio', href: '/radio' },
                                         { name: 'Story Studio', href: '/portal' }
                                     ].map(item => (
