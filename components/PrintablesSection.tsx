@@ -167,6 +167,7 @@ export function PrintablesSection() {
 function PrintableCard({ item, isLocked, idx }: { item: Printable; isLocked: boolean; idx: number }) {
     const placeholder = CATEGORY_PLACEHOLDERS[item.category] || CATEGORY_PLACEHOLDERS.default;
     const realPreview = hasRealPreview(item.preview_url);
+    const hasLink = !!item.pdf_url && !item.pdf_url.includes('placeholder');
 
     return (
         <motion.div
@@ -219,7 +220,7 @@ function PrintableCard({ item, isLocked, idx }: { item: Printable; isLocked: boo
                 )}
 
                 {/* Hover print action */}
-                {!isLocked && (
+                {!isLocked && hasLink && (
                     <a
                         href={item.pdf_url}
                         target="_blank"
@@ -251,7 +252,11 @@ function PrintableCard({ item, isLocked, idx }: { item: Printable; isLocked: boo
                     {item.title}
                 </h3>
 
-                {!isLocked ? (
+                {isLocked ? (
+                    <div className="mt-2 w-full py-2.5 bg-slate-50 text-slate-400 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
+                        🔒 Locked
+                    </div>
+                ) : hasLink ? (
                     <a
                         href={item.pdf_url}
                         target="_blank"
@@ -262,7 +267,7 @@ function PrintableCard({ item, isLocked, idx }: { item: Printable; isLocked: boo
                     </a>
                 ) : (
                     <div className="mt-2 w-full py-2.5 bg-slate-50 text-slate-400 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 cursor-not-allowed">
-                        🔒 Locked
+                        🕐 Coming Soon
                     </div>
                 )}
             </div>
