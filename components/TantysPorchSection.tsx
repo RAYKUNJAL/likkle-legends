@@ -257,9 +257,9 @@ export default function TantysPorchSection() {
                             {isLoading && (
                                 <div className="flex justify-start">
                                     <div className="bg-white p-4 rounded-3xl rounded-bl-none border border-amber-100 shadow-sm flex gap-2 items-center">
-                                        <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce delay-[0ms]" />
-                                        <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce delay-[150ms]" />
-                                        <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce delay-[300ms]" />
+                                        <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                                        <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                                        <div className="w-2.5 h-2.5 bg-orange-400 rounded-full animate-bounce [animation-delay:300ms]" />
                                     </div>
                                 </div>
                             )}

@@ -232,7 +232,7 @@ export default function MusicHub() {
                             ) : (
                                 <div className="divide-y divide-zinc-50">
                                     {filteredTracks.map((track, i) => {
-                                        const meta = CHANNEL_META[track.channel] || { emoji: '🎵', color: 'text-orange-600', bg: 'bg-orange-50' };
+                                        const meta = CHANNEL_META[track?.channel || ''] || { emoji: '🎵', color: 'text-orange-600', bg: 'bg-orange-50' };
                                         const playing = isPlaying === track.id;
                                         return (
                                             <div
