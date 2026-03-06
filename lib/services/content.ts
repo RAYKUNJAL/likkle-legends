@@ -90,8 +90,7 @@ export async function getPrintables() {
         console.warn('Printables Fetch Warning:', error.message);
         return [];
     }
-    // Map thumbnail_url → preview_url so the portal UI finds it
-    return (data || []).map((p: any) => ({ ...p, preview_url: p.thumbnail_url }));
+    return data || [];
 }
 
 // Admin Operations
