@@ -1,3 +1,4 @@
+import React from 'react';
 import { notFound } from 'next/navigation';
 import { PrintButton } from './PrintButton';
 
@@ -710,6 +711,532 @@ function CaribbeanWeatherJournal() {
     );
 }
 
+/* ─── Additional Worksheets (batch 2) ───────────────────────────── */
+
+function CaribbeanHandwritingPractice() {
+    const words = [
+        { word: 'Mango', fact: 'a sweet tropical fruit' },
+        { word: 'Coconut', fact: 'has water inside!' },
+        { word: 'Anansi', fact: 'the trickster spider' },
+        { word: 'Carnival', fact: 'a colourful festival' },
+        { word: 'Hibiscus', fact: 'Jamaica\'s national flower' },
+        { word: 'Cricket', fact: 'the Caribbean\'s favourite sport' },
+        { word: 'Dasheen', fact: 'a root vegetable' },
+        { word: 'Rainbow', fact: 'after the island rain' },
+    ];
+    return (
+        <>
+            <WorksheetHeader
+                emoji="✏️"
+                title="Caribbean Handwriting Practice"
+                subtitle="Likkle Legends Learning — Island Words"
+                instructions="Trace the dotted word, then write it yourself on the blank line below!"
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {words.map((item, i) => (
+                    <div key={i} style={{
+                        background: i % 2 === 0 ? '#fffbeb' : '#f0fdf4',
+                        border: `2px solid ${i % 2 === 0 ? '#fde68a' : '#bbf7d0'}`,
+                        borderRadius: '10px', padding: '10px 14px'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+                            <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600, fontStyle: 'italic' }}>
+                                {item.word} = {item.fact}
+                            </span>
+                        </div>
+                        {/* Dotted trace line */}
+                        <div style={{
+                            fontFamily: 'serif', fontSize: '1.6rem', fontWeight: 400,
+                            color: '#cbd5e1', letterSpacing: '0.15em',
+                            borderBottom: '2px dashed #e2e8f0', paddingBottom: '4px', marginBottom: '8px',
+                            textDecoration: 'none'
+                        }}>
+                            {item.word.split('').join('·')}
+                        </div>
+                        {/* Write yourself */}
+                        <div style={{ borderBottom: '2px solid #cbd5e1', height: '32px', background: 'white', borderRadius: '4px 4px 0 0' }} />
+                        <p style={{ margin: '2px 0 0', fontSize: '0.55rem', color: '#94a3b8' }}>↑ Write it yourself!</p>
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+}
+
+function SeaCreaturesWordSearch() {
+    // 12×12 grid with 9 hidden words
+    const grid = [
+        ['T','U','R','T','L','E','W','K','P','Z','X','C'],
+        ['V','J','B','Q','M','F','D','Y','N','I','G','R'],
+        ['S','S','T','I','N','G','R','A','Y','K','L','A'],
+        ['E','X','W','P','Q','J','M','V','Z','F','B','B'],
+        ['A','K','D','O','L','P','H','I','N','W','Q','T'],
+        ['H','Y','Z','B','J','V','U','R','C','H','I','N'],
+        ['O','F','M','X','C','O','R','A','L','P','Q','W'],
+        ['R','N','K','J','Z','B','Y','D','V','X','G','M'],
+        ['S','W','M','A','N','A','T','E','E','Q','F','J'],
+        ['E','P','X','K','V','Z','J','W','B','D','N','Y'],
+        ['Q','G','F','L','O','B','S','T','E','R','M','V'],
+        ['K','T','J','Z','X','P','W','N','B','Y','Q','H'],
+    ];
+    const words = ['TURTLE','STINGRAY','SEAHORSE','DOLPHIN','URCHIN','CORAL','MANATEE','LOBSTER','CRAB'];
+    return (
+        <>
+            <WorksheetHeader
+                emoji="🐠"
+                title="Caribbean Sea Creatures Word Search"
+                subtitle="Likkle Legends Learning — Ocean Life"
+                instructions="Find and circle all 9 Caribbean sea creatures hidden in the grid! Words go across ➡ or down ⬇"
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '16px', alignItems: 'start' }}>
+                {/* Grid */}
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ borderCollapse: 'collapse', fontFamily: 'monospace', fontSize: '1rem', fontWeight: 700 }}>
+                        <tbody>
+                            {grid.map((row, r) => (
+                                <tr key={r}>
+                                    {row.map((cell, c) => (
+                                        <td key={c} style={{
+                                            width: '28px', height: '28px', textAlign: 'center',
+                                            border: '1px solid #e2e8f0',
+                                            color: '#1e293b',
+                                            background: r % 2 === 0 ? '#fffbeb' : 'white',
+                                            fontSize: '0.85rem'
+                                        }}>
+                                            {cell}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                {/* Words to find */}
+                <div style={{ minWidth: '120px' }}>
+                    <p style={{ margin: '0 0 8px', fontSize: '0.72rem', fontWeight: 900, color: '#475569', textTransform: 'uppercase' }}>Find these:</p>
+                    {words.map(w => (
+                        <div key={w} style={{
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            marginBottom: '6px', fontSize: '0.72rem', fontWeight: 700, color: '#1e293b'
+                        }}>
+                            <div style={{ width: '14px', height: '14px', border: '2px solid #fbbf24', borderRadius: '3px', flexShrink: 0 }} />
+                            {w}
+                        </div>
+                    ))}
+                    <div style={{ marginTop: '12px', background: '#fef3c7', border: '2px solid #fbbf24', borderRadius: '8px', padding: '8px' }}>
+                        <p style={{ margin: 0, fontSize: '0.62rem', fontWeight: 700, color: '#92400e' }}>🌊 Fun Fact</p>
+                        <p style={{ margin: '3px 0 0', fontSize: '0.58rem', color: '#78350f' }}>The Caribbean Sea is home to over 500 species of fish and some of the world&apos;s most beautiful coral reefs!</p>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}
+
+function IslandMarketMath() {
+    const problems = [
+        { emoji: '🥭', text: 'Miss Millie has 8 mangoes. She sells 3 to Marcus. How many mangoes does she have left?', lines: 1 },
+        { emoji: '🥥', text: 'A coconut costs $2. Jamaal buys 4 coconuts. How much does he pay in total?', lines: 1 },
+        { emoji: '🍌', text: 'There are 5 bunches of bananas. Each bunch has 6 bananas. How many bananas altogether?', lines: 1 },
+        { emoji: '🐟', text: 'Mr. Henry caught 15 fish on Monday and 9 fish on Tuesday. How many fish did he catch in total?', lines: 1 },
+        { emoji: '🌺', text: 'Kezia picked 20 hibiscus flowers. She gave equal amounts to 4 friends. How many did each friend get?', lines: 1 },
+        { emoji: '🥕', text: 'A bag of sweet potatoes weighs 3 kg. Mummy needs 12 kg for the big pot. How many bags does she need?', lines: 1 },
+        { emoji: '🎉', text: 'For Carnival, 24 children want to march. They stand in rows of 6. How many rows are there?', lines: 1 },
+        { emoji: '💧', text: 'It rained for 3 hours on Monday, 5 hours on Wednesday, and 2 hours on Friday. How many hours of rain in total?', lines: 1 },
+    ];
+    return (
+        <>
+            <WorksheetHeader
+                emoji="🛒"
+                title="Island Market Maths"
+                subtitle="Likkle Legends Learning — Word Problems"
+                instructions="Read each problem carefully, show your working, and write your answer!"
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {problems.map((p, i) => (
+                    <div key={i} style={{
+                        border: '2px solid #e2e8f0', borderRadius: '10px',
+                        padding: '10px', background: i % 2 === 0 ? '#fffbeb' : '#f0fdf4'
+                    }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                            <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>{p.emoji}</span>
+                            <p style={{ margin: 0, fontSize: '0.7rem', color: '#1e293b', fontWeight: 600, lineHeight: 1.4 }}>{p.text}</p>
+                        </div>
+                        <div style={{ marginTop: '8px' }}>
+                            <p style={{ margin: '0 0 2px', fontSize: '0.6rem', color: '#94a3b8', fontWeight: 600 }}>My working:</p>
+                            <div style={{ border: '1px dashed #cbd5e1', borderRadius: '4px', height: '30px', background: 'white', marginBottom: '4px' }} />
+                            <p style={{ margin: '0 0 2px', fontSize: '0.6rem', color: '#94a3b8', fontWeight: 600 }}>Answer:</p>
+                            <div style={{ border: '2px solid #fbbf24', borderRadius: '4px', height: '24px', background: 'white' }} />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+}
+
+function MangoMathShapes() {
+    const shapes = [
+        { name: 'Circle', emoji: '🥥', object: 'Coconut', colour: '#fbbf24', sides: 0, fact: 'No corners, no sides — perfectly round!' },
+        { name: 'Triangle', emoji: '🐟', object: 'Fish fin', colour: '#60a5fa', sides: 3, fact: '3 sides and 3 corners' },
+        { name: 'Rectangle', emoji: '🍌', object: 'Banana bunch', colour: '#4ade80', sides: 4, fact: '4 sides — opposite sides are equal' },
+        { name: 'Square', emoji: '🧇', object: 'Roti piece', colour: '#f97316', sides: 4, fact: '4 equal sides and 4 corners' },
+        { name: 'Diamond', emoji: '💎', object: 'Sugar crystal', colour: '#a78bfa', sides: 4, fact: 'Also called a rhombus!' },
+        { name: 'Oval', emoji: '🥭', object: 'Mango', colour: '#fb7185', sides: 0, fact: 'Like a stretched circle!' },
+    ];
+    const sortItems = [
+        { emoji: '🔴', label: 'Red' }, { emoji: '🟡', label: 'Yellow' }, { emoji: '🟢', label: 'Green' },
+        { emoji: '🟠', label: 'Orange' }, { emoji: '🔵', label: 'Blue' }, { emoji: '🟣', label: 'Purple' },
+    ];
+    return (
+        <>
+            <WorksheetHeader
+                emoji="🥭"
+                title="Mango Maths — Shapes & Sorting"
+                subtitle="Likkle Legends Learning — Geometry"
+                instructions="Learn shapes using Caribbean things, then complete the sorting activity below!"
+            />
+            {/* Shapes grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '16px' }}>
+                {shapes.map(s => (
+                    <div key={s.name} style={{
+                        border: `3px solid ${s.colour}`, borderRadius: '12px',
+                        padding: '10px', textAlign: 'center', background: '#fffbeb'
+                    }}>
+                        <span style={{ fontSize: '2rem' }}>{s.emoji}</span>
+                        <p style={{ margin: '4px 0 2px', fontWeight: 900, fontSize: '0.85rem', color: '#1e293b' }}>{s.name}</p>
+                        <p style={{ margin: '0 0 4px', fontSize: '0.6rem', color: '#64748b' }}>{s.fact}</p>
+                        <p style={{ margin: '0', fontSize: '0.58rem', color: '#94a3b8', fontStyle: 'italic' }}>{s.object}</p>
+                        <div style={{ borderBottom: '2px solid #e2e8f0', marginTop: '6px', height: '18px' }} />
+                        <p style={{ margin: '2px 0 0', fontSize: '0.55rem', color: '#94a3b8' }}>Draw the shape ↑</p>
+                    </div>
+                ))}
+            </div>
+            {/* Sorting activity */}
+            <div style={{ background: '#f8fafc', border: '2px solid #e2e8f0', borderRadius: '12px', padding: '12px' }}>
+                <p style={{ margin: '0 0 8px', fontSize: '0.75rem', fontWeight: 900, color: '#475569' }}>🌈 Sorting Activity: Colour Sort!</p>
+                <p style={{ margin: '0 0 8px', fontSize: '0.68rem', color: '#64748b' }}>Draw or write 2 Caribbean fruits or vegetables in each colour group:</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                    {sortItems.map(item => (
+                        <div key={item.label} style={{ border: '2px solid #e2e8f0', borderRadius: '8px', padding: '8px', background: 'white', textAlign: 'center' }}>
+                            <span style={{ fontSize: '1.2rem' }}>{item.emoji}</span>
+                            <p style={{ margin: '2px 0 4px', fontSize: '0.65rem', fontWeight: 700, color: '#475569' }}>{item.label}</p>
+                            <div style={{ border: '1px dashed #cbd5e1', borderRadius: '4px', height: '36px' }} />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </>
+    );
+}
+
+function FeelingsBoard() {
+    const emotions = [
+        { name: 'Happy 😊', colour: '#fbbf24', bg: '#fffbeb', prompt: 'I feel happy when...' },
+        { name: 'Sad 😢', colour: '#60a5fa', bg: '#eff6ff', prompt: 'I feel sad when...' },
+        { name: 'Excited 🎉', colour: '#4ade80', bg: '#f0fdf4', prompt: 'I feel excited when...' },
+        { name: 'Worried 😟', colour: '#f97316', bg: '#fff7ed', prompt: 'I feel worried when...' },
+        { name: 'Proud 🌟', colour: '#a78bfa', bg: '#faf5ff', prompt: 'I feel proud when...' },
+        { name: 'Calm 🌊', colour: '#34d399', bg: '#ecfdf5', prompt: 'I feel calm when...' },
+    ];
+    return (
+        <>
+            <WorksheetHeader
+                emoji="💛"
+                title="My Feelings Board"
+                subtitle="Likkle Legends Learning — Emotions & Wellbeing"
+                instructions="Draw your face for each feeling, then finish the sentence about when you feel that way!"
+            />
+            <div style={{ background: '#fef3c7', border: '2px solid #fbbf24', borderRadius: '8px', padding: '8px 12px', marginBottom: '14px', fontSize: '0.72rem', color: '#78350f' }}>
+                🌴 It is okay to have ALL kinds of feelings! Strong feelings are normal. Talking about them helps us feel better.
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                {emotions.map(e => (
+                    <div key={e.name} style={{
+                        border: `3px solid ${e.colour}`, borderRadius: '14px',
+                        overflow: 'hidden', background: e.bg
+                    }}>
+                        <div style={{ background: e.colour + '33', padding: '8px 12px', borderBottom: `2px solid ${e.colour}` }}>
+                            <p style={{ margin: 0, fontWeight: 900, fontSize: '0.9rem', color: '#1e293b' }}>{e.name}</p>
+                        </div>
+                        <div style={{ padding: '10px' }}>
+                            {/* Face drawing box */}
+                            <div style={{ border: `2px dashed ${e.colour}`, borderRadius: '50%', width: '60px', height: '60px', margin: '0 auto 8px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ fontSize: '0.55rem', color: '#94a3b8', fontWeight: 600, textAlign: 'center' }}>Draw your face</span>
+                            </div>
+                            {/* Sentence prompt */}
+                            <p style={{ margin: '0 0 4px', fontSize: '0.68rem', fontWeight: 700, color: '#475569' }}>{e.prompt}</p>
+                            <div style={{ borderBottom: `2px solid ${e.colour}`, height: '22px', background: 'white', borderRadius: '4px 4px 0 0' }} />
+                            <div style={{ borderBottom: `2px solid ${e.colour}`, height: '22px', marginTop: '4px', background: 'white', borderRadius: '4px 4px 0 0' }} />
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <div style={{ marginTop: '12px', background: '#f0fdf4', border: '2px solid #86efac', borderRadius: '8px', padding: '10px' }}>
+                <p style={{ margin: '0 0 4px', fontSize: '0.72rem', fontWeight: 700, color: '#166534' }}>🌟 Today I am feeling...</p>
+                <div style={{ border: '2px dashed #86efac', borderRadius: '6px', height: '40px', background: 'white' }} />
+            </div>
+        </>
+    );
+}
+
+function HealthyCaribbeanPlate() {
+    const foodGroups = [
+        { label: 'Grains & Starches', colour: '#fbbf24', examples: 'Rice, roti, plantain, breadfruit', angle: 0 },
+        { label: 'Vegetables', colour: '#4ade80', examples: 'Callaloo, pumpkin, dasheen', angle: 90 },
+        { label: 'Proteins', colour: '#f97316', examples: 'Fish, chicken, lentils, beans', angle: 180 },
+        { label: 'Fruits', colour: '#fb7185', examples: 'Mango, papaya, guava, lime', angle: 270 },
+    ];
+    return (
+        <>
+            <WorksheetHeader
+                emoji="🍽️"
+                title="My Healthy Caribbean Plate"
+                subtitle="Likkle Legends Learning — Health & Nutrition"
+                instructions="Draw and label a healthy Caribbean meal on the plate! Fill each section with a different food group."
+            />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'start' }}>
+                {/* Plate SVG */}
+                <div>
+                    <p style={{ margin: '0 0 6px', fontSize: '0.72rem', fontWeight: 700, color: '#475569' }}>🍽️ Draw your meal here:</p>
+                    <div style={{ border: '3px solid #fde68a', borderRadius: '12px', padding: '8px', background: '#fffbeb' }}>
+                        <svg viewBox="0 0 200 200" style={{ width: '100%', height: 'auto' }}>
+                            {/* Outer plate ring */}
+                            <circle cx="100" cy="100" r="95" fill="#f1f5f9" stroke="#cbd5e1" strokeWidth="3" />
+                            <circle cx="100" cy="100" r="80" fill="white" stroke="#e2e8f0" strokeWidth="2" />
+                            {/* Quarter sections */}
+                            <path d="M100 100 L100 20 A80 80 0 0 1 180 100 Z" fill="#fef9c3" stroke="#fbbf24" strokeWidth="1.5" />
+                            <path d="M100 100 L180 100 A80 80 0 0 1 100 180 Z" fill="#dcfce7" stroke="#4ade80" strokeWidth="1.5" />
+                            <path d="M100 100 L100 180 A80 80 0 0 1 20 100 Z" fill="#ffedd5" stroke="#f97316" strokeWidth="1.5" />
+                            <path d="M100 100 L20 100 A80 80 0 0 1 100 20 Z" fill="#ffe4e6" stroke="#fb7185" strokeWidth="1.5" />
+                            {/* Section labels */}
+                            <text x="130" y="65" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#92400e">Grains</text>
+                            <text x="150" y="140" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#166534">Veg</text>
+                            <text x="60" y="148" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#c2410c">Protein</text>
+                            <text x="55" y="65" textAnchor="middle" fontSize="7" fontWeight="bold" fill="#9f1239">Fruit</text>
+                            {/* Center circle */}
+                            <circle cx="100" cy="100" r="18" fill="white" stroke="#cbd5e1" strokeWidth="2" />
+                            <text x="100" y="104" textAnchor="middle" fontSize="7" fill="#94a3b8">water</text>
+                        </svg>
+                    </div>
+                </div>
+
+                {/* Food group cards */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {foodGroups.map(g => (
+                        <div key={g.label} style={{
+                            border: `2px solid ${g.colour}`, borderRadius: '10px',
+                            padding: '8px 10px', background: g.colour + '15'
+                        }}>
+                            <p style={{ margin: '0 0 2px', fontWeight: 900, fontSize: '0.72rem', color: '#1e293b' }}>
+                                {g.label}
+                            </p>
+                            <p style={{ margin: '0 0 4px', fontSize: '0.6rem', color: '#64748b', fontStyle: 'italic' }}>
+                                e.g. {g.examples}
+                            </p>
+                            <p style={{ margin: '0 0 2px', fontSize: '0.6rem', color: '#94a3b8', fontWeight: 600 }}>I will eat:</p>
+                            <div style={{ borderBottom: `2px solid ${g.colour}`, height: '20px', background: 'white', borderRadius: '4px 4px 0 0' }} />
+                        </div>
+                    ))}
+                    <div style={{ background: '#eff6ff', border: '2px solid #93c5fd', borderRadius: '8px', padding: '8px' }}>
+                        <p style={{ margin: '0', fontSize: '0.62rem', fontWeight: 700, color: '#1e40af' }}>
+                            💧 Always drink plenty of water — especially in the Caribbean heat!
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {['My favourite Caribbean food is:', 'A healthy food I want to try is:'].map((q, i) => (
+                    <div key={i} style={{ background: '#fffbeb', border: '2px solid #fde68a', borderRadius: '8px', padding: '8px' }}>
+                        <p style={{ margin: '0 0 4px', fontSize: '0.68rem', fontWeight: 700, color: '#92400e' }}>{q}</p>
+                        <div style={{ borderBottom: '2px solid #fbbf24', height: '22px' }} />
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+}
+
+function NatureObservationLog() {
+    const days = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5'];
+    return (
+        <>
+            <WorksheetHeader
+                emoji="🌿"
+                title="My Nature Observation Log"
+                subtitle="Likkle Legends Learning — Science & Nature"
+                instructions="Go outside and observe! For 5 days, record what you see, hear, and feel in your backyard or local area."
+            />
+            <div style={{ background: '#f0fdf4', border: '2px solid #86efac', borderRadius: '8px', padding: '8px 12px', marginBottom: '12px', fontSize: '0.72rem', color: '#166534' }}>
+                🌴 Scientists who study nature are called naturalists! Charles Darwin and many great scientists started by looking carefully at the world around them. You can too!
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {days.map((day, i) => (
+                    <div key={day} style={{
+                        border: `2px solid ${i % 2 === 0 ? '#fde68a' : '#bbf7d0'}`,
+                        borderRadius: '10px', background: i % 2 === 0 ? '#fffbeb' : '#f0fdf4',
+                        padding: '8px 12px'
+                    }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr 1fr 70px', gap: '8px', alignItems: 'center' }}>
+                            <p style={{ margin: 0, fontWeight: 900, fontSize: '0.78rem', color: '#1e293b' }}>{day}</p>
+                            <div>
+                                <p style={{ margin: '0 0 2px', fontSize: '0.58rem', color: '#94a3b8', fontWeight: 600 }}>I saw / heard:</p>
+                                <div style={{ borderBottom: '2px solid #cbd5e1', height: '22px', background: 'white', borderRadius: '4px 4px 0 0' }} />
+                            </div>
+                            <div>
+                                <p style={{ margin: '0 0 2px', fontSize: '0.58rem', color: '#94a3b8', fontWeight: 600 }}>Weather ☀️🌧️⛅:</p>
+                                <div style={{ borderBottom: '2px solid #cbd5e1', height: '22px', background: 'white', borderRadius: '4px 4px 0 0' }} />
+                            </div>
+                            <div>
+                                <p style={{ margin: '0 0 2px', fontSize: '0.55rem', color: '#94a3b8', fontWeight: 600 }}>Draw it!</p>
+                                <div style={{ border: '2px dashed #cbd5e1', borderRadius: '4px', height: '36px', background: 'white' }} />
+                            </div>
+                        </div>
+                        <div style={{ marginTop: '4px' }}>
+                            <p style={{ margin: '0 0 2px', fontSize: '0.58rem', color: '#94a3b8', fontWeight: 600 }}>Something interesting I noticed:</p>
+                            <div style={{ borderBottom: '2px solid #e2e8f0', height: '18px' }} />
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <div style={{ marginTop: '12px', background: '#fef3c7', border: '2px solid #fbbf24', borderRadius: '8px', padding: '10px' }}>
+                <p style={{ margin: '0 0 4px', fontSize: '0.72rem', fontWeight: 700, color: '#92400e' }}>🌟 My most amazing observation this week was:</p>
+                <div style={{ border: '2px dashed #fbbf24', borderRadius: '6px', height: '40px', background: 'white' }} />
+            </div>
+        </>
+    );
+}
+
+function SteelpanMusicWorksheet() {
+    const rhythms = [
+        { pattern: '| ♩ ♩ ♩ ♩ |', beats: 4, name: '4/4 — March time' },
+        { pattern: '| ♩ ♩ ♩ |', beats: 3, name: '3/4 — Waltz time' },
+        { pattern: '| ♩. ♪ ♩. ♪ |', beats: 4, name: 'Calypso groove' },
+    ];
+    return (
+        <>
+            <WorksheetHeader
+                emoji="🥁"
+                title="Steelpan Music — Rhythm Basics"
+                subtitle="Likkle Legends Learning — Music & Culture"
+                instructions="Learn about the steelpan and practise counting rhythms. Then design your own steelpan!"
+            />
+            {/* History box */}
+            <div style={{ background: '#fef3c7', border: '2px solid #fbbf24', borderRadius: '10px', padding: '12px', marginBottom: '14px' }}>
+                <p style={{ margin: '0 0 4px', fontWeight: 900, fontSize: '0.85rem', color: '#92400e' }}>🌴 The Steelpan — Born in Trinidad & Tobago</p>
+                <p style={{ margin: 0, fontSize: '0.7rem', color: '#78350f', lineHeight: 1.5 }}>
+                    The steelpan (also called steel drum) was invented in Trinidad in the 1930s–1940s. Enslaved Africans were banned from playing drums, so they found new ways to make music — including beating on oil barrels! Today the steelpan is the <strong>national instrument of Trinidad and Tobago</strong> and is played at Carnival and concerts worldwide. 🎶
+                </p>
+            </div>
+            {/* Rhythm counting */}
+            <div style={{ marginBottom: '14px' }}>
+                <p style={{ margin: '0 0 8px', fontSize: '0.78rem', fontWeight: 900, color: '#475569' }}>🎵 Counting Rhythms</p>
+                {rhythms.map((r, i) => (
+                    <div key={i} style={{
+                        background: i % 2 === 0 ? '#fffbeb' : '#f0fdf4',
+                        border: `2px solid ${i % 2 === 0 ? '#fde68a' : '#bbf7d0'}`,
+                        borderRadius: '10px', padding: '10px 14px', marginBottom: '8px',
+                        display: 'flex', alignItems: 'center', gap: '12px'
+                    }}>
+                        <div style={{ fontFamily: 'serif', fontSize: '1.2rem', letterSpacing: '0.1em', color: '#1e293b', minWidth: '160px' }}>
+                            {r.pattern}
+                        </div>
+                        <div>
+                            <p style={{ margin: 0, fontSize: '0.72rem', fontWeight: 700, color: '#475569' }}>{r.name}</p>
+                            <p style={{ margin: '2px 0 0', fontSize: '0.62rem', color: '#94a3b8' }}>Count: {Array.from({ length: r.beats }, (_, i) => i + 1).join(' - ')}</p>
+                        </div>
+                        <div style={{ flex: 1, borderBottom: '2px dotted #cbd5e1', height: '1px' }} />
+                        <div>
+                            <p style={{ margin: '0 0 2px', fontSize: '0.58rem', color: '#94a3b8' }}>Clap it:</p>
+                            <div style={{ display: 'flex', gap: '4px' }}>
+                                {Array.from({ length: r.beats }).map((_, j) => (
+                                    <div key={j} style={{ width: '22px', height: '22px', border: '2px solid #fbbf24', borderRadius: '50%', background: 'white' }} />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            {/* Design your steelpan + questions */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                    <p style={{ margin: '0 0 6px', fontSize: '0.72rem', fontWeight: 700, color: '#475569' }}>🎨 Design your steelpan:</p>
+                    <div style={{ border: '3px solid #fde68a', borderRadius: '50%', width: '150px', height: '150px', margin: '0 auto', background: '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                        <div style={{ position: 'absolute', inset: '10px', border: '2px dashed #fbbf24', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <span style={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 600, textAlign: 'center', padding: '8px' }}>Colour and decorate your pan!</span>
+                        </div>
+                    </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                        'Where was the steelpan invented?',
+                        'What is the steelpan made from?',
+                        'Name one song or type of music played on steelpan:',
+                        'Would you like to play steelpan? Why?',
+                    ].map((q, i) => (
+                        <div key={i} style={{ background: i % 2 === 0 ? '#fffbeb' : '#f0fdf4', border: `2px solid ${i % 2 === 0 ? '#fde68a' : '#bbf7d0'}`, borderRadius: '8px', padding: '8px' }}>
+                            <p style={{ margin: '0 0 4px', fontSize: '0.65rem', fontWeight: 700, color: '#475569' }}>{i + 1}. {q}</p>
+                            <div style={{ borderBottom: '2px solid #cbd5e1', height: '20px' }} />
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </>
+    );
+}
+
+function CaribbeanFestivalMatching() {
+    const festivals = [
+        { name: 'Trinidad Carnival', emoji: '🎭', clue: 'Costumes, soca music, steel bands, Ash Wednesday start', island: 'Trinidad & Tobago' },
+        { name: 'Crop Over', emoji: '🌾', clue: 'Celebrates the end of sugar cane harvest, Kadooment parade', island: 'Barbados' },
+        { name: 'Junkanoo', emoji: '🥁', clue: 'Colourful procession at dawn on Boxing Day & New Year\'s', island: 'Bahamas' },
+        { name: 'Hosay', emoji: '🕌', clue: 'Muslim festival of remembrance with large float processions', island: 'Trinidad & Tobago / Jamaica' },
+        { name: 'Phagwa / Holi', emoji: '🌸', clue: 'Celebration of spring — throwing colourful powder and water!', island: 'Trinidad & Guyana' },
+        { name: 'Emancipation Day', emoji: '✊', clue: '1st August — celebrating freedom from slavery in 1834', island: 'All Caribbean islands' },
+    ];
+    const shuffledIslands = [...festivals].sort(() => 0.5 - Math.random());
+    return (
+        <>
+            <WorksheetHeader
+                emoji="🎊"
+                title="Caribbean Festivals — Matching Activity"
+                subtitle="Likkle Legends Learning — Culture & Heritage"
+                instructions="Read the clue for each festival. Draw a line matching it to the correct island on the right!"
+            />
+            <div style={{ background: '#fef3c7', border: '2px solid #fbbf24', borderRadius: '8px', padding: '8px 12px', marginBottom: '14px', fontSize: '0.72rem', color: '#78350f' }}>
+                🌴 The Caribbean is home to people from African, Indian, European, Chinese, and indigenous Amerindian backgrounds — and all their cultures are celebrated through amazing festivals!
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 40px 1fr', gap: '8px', alignItems: 'center' }}>
+                <div style={{ fontWeight: 800, fontSize: '0.72rem', color: '#475569', paddingBottom: '6px', borderBottom: '2px solid #fde68a' }}>Festival</div>
+                <div />
+                <div style={{ fontWeight: 800, fontSize: '0.72rem', color: '#475569', paddingBottom: '6px', borderBottom: '2px solid #fde68a' }}>Island / Country</div>
+                {festivals.map((f, i) => (
+                    <React.Fragment key={i}>
+                        <div style={{
+                            background: '#fffbeb', border: '2px solid #fde68a', borderRadius: '8px',
+                            padding: '8px 10px'
+                        }}>
+                            <p style={{ margin: '0 0 2px', fontWeight: 900, fontSize: '0.78rem', color: '#1e293b' }}>{f.emoji} {f.name}</p>
+                            <p style={{ margin: 0, fontSize: '0.62rem', color: '#64748b', fontStyle: 'italic' }}>{f.clue}</p>
+                        </div>
+                        <div style={{ textAlign: 'center', color: '#cbd5e1', fontSize: '1.2rem' }}>•</div>
+                        <div style={{
+                            background: '#f0fdf4', border: '2px solid #bbf7d0', borderRadius: '8px',
+                            padding: '8px 10px', fontSize: '0.78rem', fontWeight: 600, color: '#1e293b'
+                        }}>
+                            🌴 {festivals[(i + 3) % festivals.length].island}
+                        </div>
+                    </React.Fragment>
+                ))}
+            </div>
+            <div style={{ marginTop: '14px', background: '#eff6ff', border: '2px solid #bfdbfe', borderRadius: '8px', padding: '10px' }}>
+                <p style={{ margin: '0 0 4px', fontSize: '0.72rem', fontWeight: 700, color: '#1e40af' }}>🎉 Which festival do you celebrate or would love to experience?</p>
+                <div style={{ border: '2px dashed #bfdbfe', borderRadius: '6px', height: '40px', background: 'white' }} />
+            </div>
+        </>
+    );
+}
+
 /* ─── Worksheet Registry ─────────────────────────────────────────── */
 
 const WORKSHEETS: Record<string, { title: string; component: React.ReactNode }> = {
@@ -760,6 +1287,42 @@ const WORKSHEETS: Record<string, { title: string; component: React.ReactNode }> 
     'caribbean-weather-journal': {
         title: 'Caribbean Weather Journal',
         component: <CaribbeanWeatherJournal />,
+    },
+    'caribbean-handwriting-practice': {
+        title: 'Caribbean Handwriting Practice — Island Words',
+        component: <CaribbeanHandwritingPractice />,
+    },
+    'caribbean-sea-creatures-word-search': {
+        title: 'Caribbean Sea Creatures Word Search',
+        component: <SeaCreaturesWordSearch />,
+    },
+    'island-market-math': {
+        title: 'Island Market Maths',
+        component: <IslandMarketMath />,
+    },
+    'mango-math-shapes': {
+        title: 'Mango Maths — Shapes & Sorting',
+        component: <MangoMathShapes />,
+    },
+    'feelings-board': {
+        title: 'My Feelings Board',
+        component: <FeelingsBoard />,
+    },
+    'healthy-caribbean-plate': {
+        title: 'My Healthy Caribbean Plate',
+        component: <HealthyCaribbeanPlate />,
+    },
+    'nature-observation-log': {
+        title: 'Nature Observation Log — My Backyard',
+        component: <NatureObservationLog />,
+    },
+    'steelpan-music': {
+        title: 'Steelpan Music — Rhythm Basics',
+        component: <SteelpanMusicWorksheet />,
+    },
+    'caribbean-festival-traditions': {
+        title: 'Caribbean Festivals — Matching Activity',
+        component: <CaribbeanFestivalMatching />,
     },
 };
 
