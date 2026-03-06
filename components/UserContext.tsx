@@ -85,10 +85,6 @@ interface UserContextType {
   canAccess: (tierRequired: string) => boolean;
   tierLevel: number;
 
-  // Localisation
-  dialectMode: 'standard' | 'localized';
-  toggleDialectMode: () => void;
-
   // Notifications
   unreadCount: number;
   refreshNotifications: () => Promise<void>;
@@ -138,8 +134,6 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [unlockedBadge, setUnlockedBadge] = useState<any | null>(null);
-  const [dialectMode, setDialectMode] = useState<'standard' | 'localized'>('standard');
-
   // Refresh user profile
   const refreshUser = useCallback(async () => {
     try {
@@ -388,10 +382,6 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     }
   }, [user?.id, activeChild]);
 
-  const toggleDialectMode = useCallback(() => {
-    setDialectMode(prev => prev === 'standard' ? 'localized' : 'standard');
-  }, []);
-
   const shouldHydrateAuth = React.useMemo(() => {
     const path = pathname || '/';
     return (
@@ -516,8 +506,6 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     isSubscribed: user?.subscription_status === 'active' || user?.subscription_status === 'trialing',
     canAccess,
     tierLevel: user ? (TIER_LEVELS[user.subscription_tier] || 0) : 0,
-    dialectMode,
-    toggleDialectMode,
     unreadCount,
     refreshNotifications,
     unlockedBadge,
@@ -535,8 +523,6 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     refreshChildren,
     logout,
     canAccess,
-    dialectMode,
-    toggleDialectMode,
     unreadCount,
     refreshNotifications,
     unlockedBadge,

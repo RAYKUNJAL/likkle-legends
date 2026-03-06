@@ -5,13 +5,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-    Sparkles, BookOpen, Palette, Target, Star, Play,
-    Trophy, Flame, Crown, ChevronRight, Volume2, Lock, Gift, Video, Radio,
-    Map as MapIcon, Grid, Wand2, LogOut, Download, Menu, X, ShoppingBag, LayoutDashboard, MessageCircle
+    Sparkles, BookOpen, Palette, Play,
+    Trophy, Crown, Lock, Gift, Video, Radio,
+    Map as MapIcon, LogOut, Download, Menu, X, ShoppingBag, LayoutDashboard, MessageCircle
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useUser } from '@/components/UserContext';
-import { getStorybooks, getMissions, getPrintables, getVideos, logActivity } from '@/lib/database';
+import { getStorybooks, getVideos, logActivity } from '@/lib/database';
 import { calculateLevel, LEVELS } from '@/lib/gamification';
 import { RADIO_TRACKS } from '@/lib/constants';
 import { EmptyState } from '@/components/EmptyState';
@@ -20,7 +20,7 @@ import { checkDailyLogin, getFreezeCount } from '@/app/actions/retention';
 import { getXPMultiplier } from '@/lib/services/gamification';
 import { CharacterGuideBanner } from '@/components/portal/CharacterGuideBanner';
 import { TodaysPlanCard } from '@/components/portal/TodaysPlanCard';
-import type { LearningPlan, PlanActivity } from '@/app/actions/generate-plan';
+import type { PlanActivity } from '@/app/actions/generate-plan';
 
 // ─── Lazy-loaded heavy components ────────────────────────────────────────────
 // Only loaded when the user navigates to that section — keeps initial bundle small.
@@ -29,13 +29,11 @@ const IslandVillageMap = dynamic(() => import('@/components/IslandVillageMap'), 
 const PremiumVideoPlayer = dynamic(() => import('@/components/PremiumVideoPlayer'), { ssr: false });
 const LeaderboardPanel = dynamic(() => import('@/components/portal/LeaderboardPanel'), { ssr: false });
 const FamilyChallengesPanel = dynamic(() => import('@/components/portal/FamilyChallengesPanel'), { ssr: false });
-const CultureQuests = dynamic(() => import('@/components/CultureQuests').then(m => ({ default: m.CultureQuests })), { ssr: false });
 const CraftCorner = dynamic(() => import('@/components/portal/CraftCorner').then(m => ({ default: m.CraftCorner })), { ssr: false });
 const PrintablesSection = dynamic(() => import('@/components/PrintablesSection').then(m => ({ default: m.PrintablesSection })), { ssr: false });
 
 // Modals — only rendered when triggered, so lazy load them too
 const BadgeUnlockModal = dynamic(() => import('@/components/gamification/BadgeUnlockModal'), { ssr: false });
-const DialectDial = dynamic(() => import('@/components/portal/DialectDial'), { ssr: false });
 const StreakWidget = dynamic(() => import('@/components/portal/StreakWidget'), { ssr: false });
 const DailyChestModal = dynamic(() => import('@/components/portal/DailyChestModal'), { ssr: false });
 const StreakShareCard = dynamic(() => import('@/components/portal/StreakShareCard'), { ssr: false });
@@ -54,14 +52,6 @@ interface Storybook {
     cover_image_url: string;
     tier_required: string;
     reading_time_minutes: number;
-}
-
-interface Mission {
-    id: string;
-    title: string;
-    description: string;
-    reward_xp: number;
-    mission_type: string;
 }
 
 interface Video {
@@ -152,18 +142,14 @@ const VILLAGE_CINEMA_VIDEOS: Video[] = [
 
 export default function ChildPortalPage() {
     const router = useRouter();
-    const { user, children, activeChild, canAccess, isSubscribed, isLoading: userLoading, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge, verifyAge } = useUser();
+    const { user, children, activeChild, canAccess, isLoading: userLoading, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge, verifyAge } = useUser();
     const [stories, setStories] = useState<Storybook[]>([]);
-    const [missions, setMissions] = useState<Mission[]>([]);
     const [videos, setVideos] = useState<Video[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [loadingStates, setLoadingStates] = useState({
         stories: true,
-        missions: true,
         videos: true
     });
     const [activeSection, setActiveSection] = useState<PortalSection>('home');
-    const [viewMode, setViewMode] = useState<'map' | 'grid'>('map');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Media States
@@ -180,7 +166,6 @@ export default function ChildPortalPage() {
     const [shareCardOpen, setShareCardOpen] = useState(false);
     const [xpMultiplier, setXpMultiplier] = useState(1);
     const [giftModalOpen, setGiftModalOpen] = useState(false);
-    const [activePlan, setActivePlan] = useState<LearningPlan | null>(null);
     const [todaysActivities, setTodaysActivities] = useState<PlanActivity[]>([]);
 
     // CRO: track how many locked items a free user has hit this session
@@ -200,15 +185,6 @@ export default function ChildPortalPage() {
             }
         };
 
-        const fetchMissions = async () => {
-            try {
-                const data = await getMissions(activeChild?.age_track);
-                setMissions(data as unknown as Mission[]);
-            } finally {
-                setLoadingStates(prev => ({ ...prev, missions: false }));
-            }
-        };
-
         const fetchVideos = async () => {
             try {
                 const data = await getVideos();
@@ -218,17 +194,9 @@ export default function ChildPortalPage() {
             }
         };
 
-        setIsLoading(true);
-        setLoadingStates({ stories: true, missions: true, videos: true });
+        setLoadingStates({ stories: true, videos: true });
 
-        // Fire all but don't await all together
-        Promise.allSettled([
-            fetchStories(),
-            fetchMissions(),
-            fetchVideos()
-        ]).finally(() => {
-            setIsLoading(false);
-        });
+        Promise.allSettled([fetchStories(), fetchVideos()]);
     }, [activeChild?.age_track]);
 
     // Redirect to login if not authenticated
@@ -295,7 +263,6 @@ export default function ChildPortalPage() {
                 if (!res.ok) return;
                 const { plan } = await res.json();
                 if (!plan?.plan_data?.weeks) return;
-                setActivePlan(plan);
 
                 // Determine today's activities from the plan
                 const dayIndex = new Date().getDay(); // 0=Sun, 1=Mon...
@@ -461,9 +428,6 @@ export default function ChildPortalPage() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    {/* Dialect Dial */}
-                    <DialectDial />
-
                     {/* Teacher VIP Indicator */}
                     {(user?.role === 'teacher' || user?.is_admin) && (
                         <div className="flex items-center gap-2 bg-amber-50 text-amber-600 px-4 py-2.5 rounded-2xl border border-amber-100 font-black text-xs uppercase tracking-widest animate-pulse">
@@ -612,13 +576,6 @@ export default function ChildPortalPage() {
                                 </div>
                             </div>
                         )}
-                        <button
-                            title="Toggle view mode"
-                            aria-label="Toggle view mode"
-                            className="w-14 h-14 bg-white rounded-2xl shadow-xl flex items-center justify-center text-gray-400 hover:text-primary hover:rotate-90 transition-all border-2 border-transparent hover:border-primary/20"
-                        >
-                            <Grid size={28} />
-                        </button>
                         {/* Chest button */}
                         <button
                             onClick={() => setChestModalOpen(true)}
@@ -978,7 +935,7 @@ export default function ChildPortalPage() {
                     childId={activeChild.id}
                     chestReady={chestReady}
                     onClose={() => setChestModalOpen(false)}
-                    onRewardClaimed={(type, value) => {
+                    onRewardClaimed={(type) => {
                         setChestReady(false);
                         if (type === 'xp') {
                             // Refresh XP display via reload

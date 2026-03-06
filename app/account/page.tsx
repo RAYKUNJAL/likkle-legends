@@ -10,7 +10,7 @@ import {
 import { useUser } from '@/components/UserContext';
 import { updateProfile } from '@/lib/services/profiles';
 import { TIER_INFO } from '@/lib/feature-access';
-import { deleteUserAccountAction } from '@/app/actions/user-actions';
+import { deleteUserAccountAction, updateProfileSettings } from '@/app/actions/user-actions';
 import { supabase } from '@/lib/supabase-client';
 
 type SettingsTab = 'profile' | 'billing' | 'notifications' | 'security' | 'children';
@@ -41,6 +41,8 @@ export default function AccountSettingsPage() {
         push_reminders: true,
         sms_reminders: false,
     });
+    const [isSavingNotifs, setIsSavingNotifs] = useState(false);
+    const [notifMsg, setNotifMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     const handleSaveProfile = async () => {
         if (!user?.id) return;
@@ -77,6 +79,16 @@ export default function AccountSettingsPage() {
         setIsDeleting(false);
         if (result.success) { logout(); }
         else { setConfirmDelete(false); }
+    };
+
+    const handleSaveNotifications = async () => {
+        if (!user?.id) return;
+        setIsSavingNotifs(true);
+        setNotifMsg(null);
+        const result = await updateProfileSettings(user.id, { marketing_opt_in: notifications.email_new_content });
+        setIsSavingNotifs(false);
+        if (result.success) { setNotifMsg({ type: 'success', text: 'Preferences saved.' }); }
+        else { setNotifMsg({ type: 'error', text: result.error || 'Failed to save.' }); }
     };
 
     const tabs = [
@@ -313,21 +325,24 @@ export default function AccountSettingsPage() {
                                         <h3 className="font-bold text-gray-900 mb-4">Email Notifications</h3>
                                         <div className="space-y-4">
                                             {[
-                                                { key: 'email_weekly_digest', label: 'Weekly Progress Digest', desc: 'Summary of your child\'s weekly learning' },
+                                                { key: 'email_weekly_digest', label: 'Weekly Progress Digest', desc: "Summary of your child's weekly learning" },
                                                 { key: 'email_progress_updates', label: 'Progress Updates', desc: 'When your child completes milestones' },
-                                                { key: 'email_new_content', label: 'New Content Alerts', desc: 'When new stories or songs are added' },
+                                                { key: 'email_new_content', label: 'New Content & Offers', desc: 'When new stories, songs, or promotions drop' },
                                             ].map((item) => (
-                                                <label key={item.key} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl cursor-pointer">
+                                                <button
+                                                    key={item.key}
+                                                    type="button"
+                                                    onClick={() => setNotifications(prev => ({ ...prev, [item.key]: !prev[item.key as keyof typeof prev] }))}
+                                                    className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl cursor-pointer text-left"
+                                                >
                                                     <div>
                                                         <p className="font-medium text-gray-900">{item.label}</p>
                                                         <p className="text-sm text-gray-500">{item.desc}</p>
                                                     </div>
-                                                    <div className={`w-12 h-7 rounded-full p-1 transition-colors ${notifications[item.key as keyof typeof notifications] ? 'bg-primary' : 'bg-gray-200'
-                                                        }`}>
-                                                        <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${notifications[item.key as keyof typeof notifications] ? 'translate-x-5' : 'translate-x-0'
-                                                            }`} />
+                                                    <div className={`w-12 h-7 rounded-full p-1 transition-colors flex-shrink-0 ${notifications[item.key as keyof typeof notifications] ? 'bg-primary' : 'bg-gray-200'}`}>
+                                                        <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${notifications[item.key as keyof typeof notifications] ? 'translate-x-5' : 'translate-x-0'}`} />
                                                     </div>
-                                                </label>
+                                                </button>
                                             ))}
                                         </div>
                                     </div>
@@ -335,26 +350,39 @@ export default function AccountSettingsPage() {
                                     <hr />
 
                                     <div>
-                                        <h3 className="font-bold text-gray-900 mb-4">Push Notifications</h3>
-                                        <div className="space-y-4">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <h3 className="font-bold text-gray-900">Push Notifications</h3>
+                                            <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs font-bold rounded-full uppercase tracking-wide">Coming soon</span>
+                                        </div>
+                                        <div className="space-y-4 opacity-50 pointer-events-none">
                                             {[
                                                 { key: 'push_achievements', label: 'Achievements', desc: 'When your child earns badges or levels up' },
                                                 { key: 'push_reminders', label: 'Daily Reminders', desc: 'Reminder to complete daily missions' },
                                             ].map((item) => (
-                                                <label key={item.key} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl cursor-pointer">
+                                                <div key={item.key} className="flex items-center justify-between p-4 rounded-xl">
                                                     <div>
                                                         <p className="font-medium text-gray-900">{item.label}</p>
                                                         <p className="text-sm text-gray-500">{item.desc}</p>
                                                     </div>
-                                                    <div className={`w-12 h-7 rounded-full p-1 transition-colors ${notifications[item.key as keyof typeof notifications] ? 'bg-primary' : 'bg-gray-200'
-                                                        }`}>
-                                                        <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${notifications[item.key as keyof typeof notifications] ? 'translate-x-5' : 'translate-x-0'
-                                                            }`} />
+                                                    <div className={`w-12 h-7 rounded-full p-1 transition-colors flex-shrink-0 ${notifications[item.key as keyof typeof notifications] ? 'bg-primary' : 'bg-gray-200'}`}>
+                                                        <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${notifications[item.key as keyof typeof notifications] ? 'translate-x-5' : 'translate-x-0'}`} />
                                                     </div>
-                                                </label>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
+
+                                    {notifMsg && (
+                                        <p className={`text-sm font-bold ${notifMsg.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{notifMsg.text}</p>
+                                    )}
+
+                                    <button
+                                        onClick={handleSaveNotifications}
+                                        disabled={isSavingNotifs}
+                                        className="w-full px-6 py-3 bg-primary text-white rounded-xl font-bold disabled:opacity-60"
+                                    >
+                                        {isSavingNotifs ? 'Saving...' : 'Save Preferences'}
+                                    </button>
                                 </div>
                             </div>
                         )}

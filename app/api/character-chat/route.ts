@@ -1,10 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { getCharacterConfig, CharacterId, CharacterChild } from '@/lib/characterConfig';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import {
+    GoogleGenerativeAI,
+    HarmBlockThreshold,
+    HarmCategory,
+    SafetySetting
+} from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 const MAX_MESSAGE_CHARS = 320;
+const MAX_MEMORY_FACTS = 6;
+const MAX_HISTORY_ROWS = 60;
+
+const MODEL_SAFETY_SETTINGS: SafetySetting[] = [
+    { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
+    { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE },
+    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE }
+];
+
+const UNSAFE_USER_PATTERNS: RegExp[] = [
+    /\b(kill|hurt|stab|shoot|weapon|bomb|poison)\b/i,
+    /\b(self[\s-]?harm|suicide|end my life)\b/i,
+    /\b(sex|nude|porn|kiss me|dating)\b/i,
+    /\b(hack|steal|cheat code to break|bypass parent|hide from parents)\b/i,
+    /\b(send me your (photo|picture)|meet me|come alone)\b/i,
+    /\b(secret challenge|don't tell your (mom|dad|parent|teacher))\b/i
+];
+
+const PERSONAL_INFO_PATTERNS: RegExp[] = [
+    /\b(my address is|i live at|my school is|my phone number is|my email is)\b/i,
+    /\b\d{1,5}\s+[a-zA-Z]+\s+(street|st|avenue|ave|road|rd|lane|ln|drive|dr)\b/i,
+    /\b\d{5}(?:-\d{4})?\b/,
+    /\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/i
+];
+
+const UNSAFE_ASSISTANT_PATTERNS: RegExp[] = [
+    /\b(step[\s-]?by[\s-]?step).*\b(kill|hurt|weapon|bomb|steal)\b/i,
+    /\b(your address|phone number|school name|password)\b/i,
+    /\b(keep this a secret from your (mom|dad|parent|teacher))\b/i
+];
+
+const URL_OR_CONTACT_PATTERN = /(https?:\/\/\S+|www\.\S+|\b\S+@\S+\.\S+\b|\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b)/gi;
 
 function getDayStartIso() {
     const d = new Date();
@@ -49,6 +87,91 @@ function resolveUsagePolicy(profile: {
     };
 }
 
+function containsUnsafeUserRequest(text: string) {
+    return UNSAFE_USER_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+function containsPersonalInfo(text: string) {
+    return PERSONAL_INFO_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+function outputLooksUnsafe(text: string) {
+    return UNSAFE_ASSISTANT_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+function normalizeUserMessage(text: string) {
+    return text.replace(/\s+/g, ' ').trim();
+}
+
+function clampWords(text: string, maxWords: number) {
+    const words = text.trim().split(/\s+/);
+    if (words.length <= maxWords) return text.trim();
+    return `${words.slice(0, maxWords).join(' ').trim()}...`;
+}
+
+function redactContactData(text: string) {
+    return text
+        .replace(URL_OR_CONTACT_PATTERN, '[removed]')
+        .replace(/\b(my address is|i live at|my school is|my phone number is|my email is)\s+[^.?!\n]*/gi, '$1 [removed]');
+}
+
+function sanitizeAssistantText(text: string, maxWords: number) {
+    const stripped = text
+        .replace(URL_OR_CONTACT_PATTERN, '')
+        .replace(/[*_`#>]/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    return clampWords(stripped, maxWords);
+}
+
+function extractSafeMemoryFacts(history: { role: string; content: string }[]) {
+    const userMessages = [...history]
+        .filter((h) => h.role === 'user')
+        .map((h) => normalizeUserMessage(h.content))
+        .filter(Boolean)
+        .slice(-40)
+        .reverse();
+
+    const memorySet = new Set<string>();
+
+    for (const msg of userMessages) {
+        if (containsUnsafeUserRequest(msg) || containsPersonalInfo(msg)) continue;
+
+        const favorite = msg.match(/\bmy favorite (?:subject|food|game|animal|color|song) is ([a-zA-Z0-9 '\-]{2,40})/i);
+        if (favorite && memorySet.size < MAX_MEMORY_FACTS) memorySet.add(`Favorite: ${favorite[1].trim()}`);
+
+        const likes = msg.match(/\bi (?:love|like|enjoy)\s+([a-zA-Z0-9 '\-,]{2,50})/i);
+        if (likes && memorySet.size < MAX_MEMORY_FACTS) memorySet.add(`Likes: ${likes[1].trim()}`);
+
+        const learning = msg.match(/\b(?:help me with|i want to learn|teach me)\s+([a-zA-Z0-9 '\-,]{2,60})/i);
+        if (learning && memorySet.size < MAX_MEMORY_FACTS) memorySet.add(`Learning goal: ${learning[1].trim()}`);
+
+        const challenge = msg.match(/\b(?:i struggle with|this is hard for me)\s+([a-zA-Z0-9 '\-,]{2,60})/i);
+        if (challenge && memorySet.size < MAX_MEMORY_FACTS) memorySet.add(`Needs support: ${challenge[1].trim()}`);
+
+        if (memorySet.size >= MAX_MEMORY_FACTS) break;
+    }
+
+    return Array.from(memorySet).slice(0, MAX_MEMORY_FACTS);
+}
+
+function buildRuntimeSystemInstruction(baseInstruction: string, memoryFacts: string[]) {
+    const memoryBlock = memoryFacts.length
+        ? `SAFE MEMORY FACTS (for personalization only):\n${memoryFacts.map((f) => `- ${f}`).join('\n')}`
+        : 'SAFE MEMORY FACTS: none yet.';
+
+    return `${baseInstruction}
+
+${memoryBlock}
+
+RUNTIME GUARDRAILS:
+- Never ask for personal identity/contact/location details.
+- If child shares personal details, remind them to keep private info offline.
+- If request is unsafe, briefly refuse and redirect to a learning-safe alternative.
+- Keep language age-appropriate and supportive.
+- Do not include links, phone numbers, or email addresses in replies.`;
+}
+
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
@@ -81,7 +204,7 @@ export async function GET(request: NextRequest) {
             .eq('child_id', childId)
             .eq('character_id', characterId)
             .order('created_at', { ascending: true })
-            .limit(40);
+            .limit(MAX_HISTORY_ROWS);
 
         return NextResponse.json({ history: history || [] });
     } catch (e: any) {
@@ -99,13 +222,28 @@ export async function POST(request: NextRequest) {
             childId: string;
         };
 
-        const trimmedMessage = (message || '').toString().trim();
+        const trimmedMessage = normalizeUserMessage((message || '').toString());
         if (!characterId || !trimmedMessage || !childId) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
         if (trimmedMessage.length > MAX_MESSAGE_CHARS) {
             return NextResponse.json({ error: `Message too long (max ${MAX_MESSAGE_CHARS} chars).` }, { status: 400 });
+        }
+
+        if (containsUnsafeUserRequest(trimmedMessage)) {
+            return NextResponse.json({
+                response: "I can't help with that. Let's do something safe and fun instead. Ask me about animals, stories, or a learning challenge!",
+                blocked: true
+            }, { status: 200 });
+        }
+
+        if (containsPersonalInfo(trimmedMessage)) {
+            return NextResponse.json({
+                response: "Let's keep private details safe. Don't share your address, school, phone, or email here. We can still learn together with a fun question!",
+                blocked: true,
+                code: 'PERSONAL_INFO_BLOCKED'
+            }, { status: 200 });
         }
 
         const authHeader = request.headers.get('Authorization');
@@ -195,9 +333,15 @@ export async function POST(request: NextRequest) {
             .eq('child_id', childId)
             .eq('character_id', characterId)
             .order('created_at', { ascending: false })
-            .limit(8);
+            .limit(MAX_HISTORY_ROWS);
 
-        const chatHistory = (history || []).reverse();
+        const orderedHistory = (history || []).reverse();
+        const chatHistory = orderedHistory.slice(-8);
+        const safeUserMessage = redactContactData(trimmedMessage);
+        const memoryFacts = extractSafeMemoryFacts([
+            ...orderedHistory,
+            { role: 'user', content: safeUserMessage }
+        ]);
 
         const childProfile: CharacterChild = {
             first_name: child.first_name,
@@ -208,11 +352,15 @@ export async function POST(request: NextRequest) {
             age: child.age
         };
 
-        const systemInstruction = characterConfig.getSystemInstruction(childProfile);
+        const systemInstruction = buildRuntimeSystemInstruction(
+            characterConfig.getSystemInstruction(childProfile),
+            memoryFacts
+        );
 
         const model = genAI.getGenerativeModel({
             model: characterConfig.technical.brainModel,
             systemInstruction,
+            safetySettings: MODEL_SAFETY_SETTINGS,
         });
 
         const geminiHistory = chatHistory.map((msg) => ({
@@ -230,26 +378,31 @@ export async function POST(request: NextRequest) {
 
         const result = await chat.sendMessage(trimmedMessage);
         const responseText = result.response.text();
+        const maxWords = child.age_track === 'mini' ? 90 : 170;
+        const safeFallback = "Let's keep it safe and fun. Want to learn a cool fact or try a quick challenge?";
+        const safeResponse = outputLooksUnsafe(responseText)
+            ? safeFallback
+            : sanitizeAssistantText(responseText, maxWords) || safeFallback;
 
         supabaseAdmin.from('child_character_sessions').insert([
             {
                 child_id: childId,
                 character_id: characterId,
                 role: 'user',
-                content: trimmedMessage
+                content: safeUserMessage
             },
             {
                 child_id: childId,
                 character_id: characterId,
                 role: 'assistant',
-                content: responseText
+                content: safeResponse
             }
         ]).then(({ error }) => {
             if (error) console.error('Failed to save chat messages:', error.message);
         });
 
         return NextResponse.json({
-            response: responseText,
+            response: safeResponse,
             limits: {
                 dailyUsed: dailyUsed + 1,
                 dailyLimit: policy.dailyLimit,

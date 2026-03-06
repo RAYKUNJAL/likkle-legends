@@ -13,12 +13,16 @@ import FamilyChallengesPanel from '@/components/portal/FamilyChallengesPanel';
 import LeaderboardPanel from '@/components/portal/LeaderboardPanel';
 import Link from 'next/link';
 
+type ActiveSection = 'profile' | 'notifications' | 'security';
+
 export default function SettingsPage() {
     const router = useRouter();
     const { user, isLoading: userLoading } = useUser();
-    const profile = user; // Map user to profile for local state consistency
+    const profile = user;
+    const [activeSection, setActiveSection] = useState<ActiveSection>('profile');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState(false);
 
     const [formData, setFormData] = useState({
         parent_name: '',
@@ -38,9 +42,7 @@ export default function SettingsPage() {
         if (!user) return;
         setIsLoading(true);
         setMessage(null);
-
         const result = await updateProfileSettings(user.id, formData);
-
         if (result.success) {
             setMessage({ type: 'success', text: 'Settings saved successfully!' });
         } else {
@@ -48,8 +50,6 @@ export default function SettingsPage() {
         }
         setIsLoading(false);
     };
-
-    const [confirmDelete, setConfirmDelete] = useState(false);
 
     const handleDeleteAccount = async () => {
         if (!user) return;
@@ -63,6 +63,12 @@ export default function SettingsPage() {
             setMessage({ type: 'error', text: 'Failed to delete account. Please contact support.' });
         }
     };
+
+    const navItems: { id: ActiveSection; label: string; icon: React.ElementType }[] = [
+        { id: 'profile', label: 'Profile Info', icon: User },
+        { id: 'notifications', label: 'Notifications', icon: Bell },
+        { id: 'security', label: 'Security & Privacy', icon: Shield },
+    ];
 
     if (userLoading) {
         return <div className="min-h-screen flex items-center justify-center bg-[#F0F9FF]"><Loader2 className="animate-spin text-primary" size={48} /></div>;
@@ -89,14 +95,15 @@ export default function SettingsPage() {
                 <div className="grid md:grid-cols-3 gap-8">
                     {/* Navigation Sidebar */}
                     <div className="space-y-2">
-                        {[
-                            { id: 'profile', label: 'Profile Info', icon: User },
-                            { id: 'notifications', label: 'Notifications', icon: Bell },
-                            { id: 'security', label: 'Security & Privacy', icon: Shield },
-                        ].map((item) => (
+                        {navItems.map((item) => (
                             <button
                                 key={item.id}
-                                className="w-full flex items-center gap-3 px-6 py-4 rounded-2xl bg-white shadow-sm border border-border/50 font-bold text-deep/60 hover:border-primary/30 hover:text-primary transition-all"
+                                onClick={() => { setActiveSection(item.id); setMessage(null); }}
+                                className={`w-full flex items-center gap-3 px-6 py-4 rounded-2xl font-bold transition-all border ${
+                                    activeSection === item.id
+                                        ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                        : 'bg-white shadow-sm border-border/50 text-deep/60 hover:border-primary/30 hover:text-primary'
+                                }`}
                             >
                                 <item.icon size={20} />
                                 {item.label}
@@ -106,121 +113,131 @@ export default function SettingsPage() {
 
                     {/* Content Area */}
                     <div className="md:col-span-2 space-y-8">
-                        {/* Profile Section */}
-                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5 space-y-6">
-                            <h2 className="text-xl font-black text-deep flex items-center gap-2">
-                                <User className="text-primary" /> Profile Information
-                            </h2>
 
-                            <div className="space-y-4">
-                                <div>
-                                    <label htmlFor="parent_name" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-2 px-1">Parent Name</label>
-                                    <input
-                                        type="text"
-                                        id="parent_name"
-                                        value={formData.parent_name}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, parent_name: e.target.value }))}
-                                        className="w-full px-6 py-4 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all font-bold text-deep"
-                                        placeholder="Your full name"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-2 px-1">Login Email</label>
-                                    <div className="flex items-center gap-3 px-6 py-4 bg-zinc-100 rounded-2xl font-bold text-deep/40 italic">
-                                        <Mail size={18} /> {profile?.email || 'No email set'}
-                                        <span className="ml-auto text-[10px] bg-zinc-200 px-2 py-1 rounded-md uppercase">Locked</span>
+                        {/* Profile Section */}
+                        {activeSection === 'profile' && (
+                            <>
+                                <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5 space-y-6">
+                                    <h2 className="text-xl font-black text-deep flex items-center gap-2">
+                                        <User className="text-primary" /> Profile Information
+                                    </h2>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label htmlFor="parent_name" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-2 px-1">Parent Name</label>
+                                            <input
+                                                type="text"
+                                                id="parent_name"
+                                                value={formData.parent_name}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, parent_name: e.target.value }))}
+                                                className="w-full px-6 py-4 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all font-bold text-deep"
+                                                placeholder="Your full name"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-2 px-1">Login Email</label>
+                                            <div className="flex items-center gap-3 px-6 py-4 bg-zinc-100 rounded-2xl font-bold text-deep/40 italic">
+                                                <Mail size={18} /> {profile?.email || 'No email set'}
+                                                <span className="ml-auto text-[10px] bg-zinc-200 px-2 py-1 rounded-md uppercase">Locked</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+
+                                <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5">
+                                    <InvitePanel />
+                                </div>
+
+                                <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5">
+                                    <FamilyChallengesPanel />
+                                </div>
+
+                                <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5">
+                                    <LeaderboardPanel />
+                                </div>
+
+                                <button
+                                    onClick={handleSave}
+                                    disabled={isLoading}
+                                    className="w-full bg-primary text-white py-6 rounded-[2.5rem] font-black text-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                >
+                                    {isLoading ? <Loader2 className="animate-spin" /> : 'Save Changes'}
+                                </button>
+                            </>
+                        )}
 
                         {/* Notifications Section */}
-                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5 space-y-6">
-                            <h2 className="text-xl font-black text-deep flex items-center gap-2">
-                                <Bell className="text-secondary" /> Marketing & Updates
-                            </h2>
-
-                            <div className="flex items-center justify-between gap-4 p-4 bg-zinc-50 rounded-2xl">
-                                <div>
-                                    <p className="font-bold text-deep">Cultural News & Offers</p>
-                                    <p className="text-sm text-deep/40">Get notified about new islands, stories, and monthly drops.</p>
-                                </div>
-                                <input
-                                    type="checkbox"
-                                    id="marketing_opt_in"
-                                    checked={formData.marketing_opt_in}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, marketing_opt_in: e.target.checked }))}
-                                    className="w-6 h-6 rounded-lg border-zinc-200 text-primary focus:ring-primary/20"
-                                    aria-label="Opt-in to marketing emails"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Invite Friends */}
-                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5">
-                            <InvitePanel />
-                        </div>
-
-                        {/* Family Challenges */}
-                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5">
-                            <FamilyChallengesPanel />
-                        </div>
-
-                        {/* Leaderboard */}
-                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5">
-                            <LeaderboardPanel />
-                        </div>
-
-                        {/* Security & Privacy */}
-                        <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5 space-y-6">
-                            <h2 className="text-xl font-black text-deep flex items-center gap-2">
-                                <Shield className="text-emerald-500" /> Data & Privacy
-                            </h2>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <button className="flex items-center gap-3 p-4 bg-zinc-50 rounded-2xl hover:bg-zinc-100 transition-colors group">
-                                    <Download className="text-deep/40 group-hover:text-primary" size={20} />
-                                    <div className="text-left">
-                                        <p className="font-bold text-sm">Download My Data</p>
-                                        <p className="text-[10px] text-deep/40 uppercase font-black">GDPR Compliance</p>
+                        {activeSection === 'notifications' && (
+                            <>
+                                <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5 space-y-6">
+                                    <h2 className="text-xl font-black text-deep flex items-center gap-2">
+                                        <Bell className="text-secondary" /> Marketing & Updates
+                                    </h2>
+                                    <div className="flex items-center justify-between gap-4 p-4 bg-zinc-50 rounded-2xl">
+                                        <div>
+                                            <p className="font-bold text-deep">Cultural News & Offers</p>
+                                            <p className="text-sm text-deep/40">Get notified about new islands, stories, and monthly drops.</p>
+                                        </div>
+                                        <button
+                                            role="switch"
+                                            aria-checked={formData.marketing_opt_in}
+                                            onClick={() => setFormData(prev => ({ ...prev, marketing_opt_in: !prev.marketing_opt_in }))}
+                                            className={`relative w-12 h-7 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 ${formData.marketing_opt_in ? 'bg-primary' : 'bg-zinc-300'}`}
+                                        >
+                                            <span className={`block w-5 h-5 bg-white rounded-full shadow transition-transform ${formData.marketing_opt_in ? 'translate-x-5' : 'translate-x-0'}`} />
+                                        </button>
                                     </div>
+                                </div>
+                                <button
+                                    onClick={handleSave}
+                                    disabled={isLoading}
+                                    className="w-full bg-primary text-white py-6 rounded-[2.5rem] font-black text-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                >
+                                    {isLoading ? <Loader2 className="animate-spin" /> : 'Save Preferences'}
                                 </button>
+                            </>
+                        )}
 
-                                {!confirmDelete ? (
-                                    <button
-                                        onClick={() => setConfirmDelete(true)}
-                                        className="flex items-center gap-3 p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-colors group"
-                                    >
-                                        <Trash2 className="text-red-400 group-hover:text-red-600" size={20} />
+                        {/* Security Section */}
+                        {activeSection === 'security' && (
+                            <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5 space-y-6">
+                                <h2 className="text-xl font-black text-deep flex items-center gap-2">
+                                    <Shield className="text-emerald-500" /> Data & Privacy
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <button className="flex items-center gap-3 p-4 bg-zinc-50 rounded-2xl hover:bg-zinc-100 transition-colors group">
+                                        <Download className="text-deep/40 group-hover:text-primary" size={20} />
                                         <div className="text-left">
-                                            <p className="font-bold text-sm text-red-600">Delete Account</p>
-                                            <p className="text-[10px] text-red-400 uppercase font-black">Permanent Action</p>
+                                            <p className="font-bold text-sm">Download My Data</p>
+                                            <p className="text-[10px] text-deep/40 uppercase font-black">GDPR Compliance</p>
                                         </div>
                                     </button>
-                                ) : (
-                                    <div className="col-span-2 p-4 bg-red-50 rounded-2xl border border-red-200 space-y-3">
-                                        <p className="font-bold text-sm text-red-800">Are you sure? This will cancel your subscription and delete all data.</p>
-                                        <div className="flex gap-3">
-                                            <button onClick={handleDeleteAccount} disabled={isLoading} className="px-4 py-2 bg-red-600 text-white rounded-xl font-bold text-xs hover:bg-red-700 disabled:opacity-60">
-                                                {isLoading ? 'Deleting...' : 'Yes, Delete Everything'}
-                                            </button>
-                                            <button onClick={() => setConfirmDelete(false)} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-xs">
-                                                Cancel
-                                            </button>
+                                    {!confirmDelete ? (
+                                        <button
+                                            onClick={() => setConfirmDelete(true)}
+                                            className="flex items-center gap-3 p-4 bg-red-50 rounded-2xl hover:bg-red-100 transition-colors group"
+                                        >
+                                            <Trash2 className="text-red-400 group-hover:text-red-600" size={20} />
+                                            <div className="text-left">
+                                                <p className="font-bold text-sm text-red-600">Delete Account</p>
+                                                <p className="text-[10px] text-red-400 uppercase font-black">Permanent Action</p>
+                                            </div>
+                                        </button>
+                                    ) : (
+                                        <div className="col-span-2 p-4 bg-red-50 rounded-2xl border border-red-200 space-y-3">
+                                            <p className="font-bold text-sm text-red-800">Are you sure? This will cancel your subscription and delete all data.</p>
+                                            <div className="flex gap-3">
+                                                <button onClick={handleDeleteAccount} disabled={isLoading} className="px-4 py-2 bg-red-600 text-white rounded-xl font-bold text-xs hover:bg-red-700 disabled:opacity-60">
+                                                    {isLoading ? 'Deleting...' : 'Yes, Delete Everything'}
+                                                </button>
+                                                <button onClick={() => setConfirmDelete(false)} className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold text-xs">
+                                                    Cancel
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
-                        </div>
-
-                        {/* Save Button */}
-                        <button
-                            onClick={handleSave}
-                            disabled={isLoading}
-                            className="w-full bg-primary text-white py-6 rounded-[2.5rem] font-black text-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
-                        >
-                            {isLoading ? <Loader2 className="animate-spin" /> : 'Save Changes'}
-                        </button>
+                        )}
                     </div>
                 </div>
             </div>

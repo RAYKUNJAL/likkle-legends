@@ -3,6 +3,18 @@ import { generateGeminiSpeech } from '@/lib/gemini-tts';
 import { generateSpeech as generateElevenLabsSpeech, VOICES, VoiceCharacter } from '@/lib/elevenlabs';
 import { supabase } from '@/lib/storage';
 
+const MAX_TTS_CHARS = 900;
+const BLOCKED_TTS_PATTERN = /\b(kill|weapon|suicide|porn|sex|address|phone number|email me|meet me)\b/i;
+
+function sanitizeTtsText(text: string) {
+    return text
+        .replace(/https?:\/\/\S+/gi, '')
+        .replace(/\b\S+@\S+\.\S+\b/g, '')
+        .replace(/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+}
+
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
@@ -12,8 +24,17 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Text is required' }, { status: 400 });
         }
 
-        if (text.length > 5000) {
-            return NextResponse.json({ error: 'Text too long (max 5000 characters)' }, { status: 400 });
+        if (text.length > MAX_TTS_CHARS) {
+            return NextResponse.json({ error: `Text too long (max ${MAX_TTS_CHARS} characters)` }, { status: 400 });
+        }
+
+        if (BLOCKED_TTS_PATTERN.test(text)) {
+            return NextResponse.json({ error: 'Cannot speak that content.' }, { status: 400 });
+        }
+
+        const safeText = sanitizeTtsText(text);
+        if (!safeText) {
+            return NextResponse.json({ error: 'Text is empty after sanitization' }, { status: 400 });
         }
 
         // SECURITY: Verify Authorization (optional in dev mode)
@@ -46,7 +67,7 @@ export async function POST(request: NextRequest) {
             const finalVoice = (voiceId as string) === 'steelpan_sam' ? 'roti' : voiceId;
 
             if (VOICES[finalVoice as VoiceCharacter]) {
-                audioBuffer = await generateElevenLabsSpeech(text, { voice: finalVoice as VoiceCharacter });
+                audioBuffer = await generateElevenLabsSpeech(safeText, { voice: finalVoice as VoiceCharacter });
                 if (audioBuffer) contentType = 'audio/mpeg';
             }
         }
@@ -58,7 +79,7 @@ export async function POST(request: NextRequest) {
                 (voice as string) === 'roti' || (voice as string) === 'steelpan_sam' ? 'roti'
                     : (voice as string) === 'dilly_doubles' ? 'dilly'
                         : 'tanty';
-            audioBuffer = await generateGeminiSpeech(text, { voiceName, character });
+            audioBuffer = await generateGeminiSpeech(safeText, { voiceName, character });
             if (audioBuffer) {
                 contentType = 'audio/wav'; // Gemini returns PCM/WAV
             }
