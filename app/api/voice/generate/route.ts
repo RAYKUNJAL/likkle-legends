@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateGeminiSpeech } from '@/lib/gemini-tts';
 import { generateSpeech as generateElevenLabsSpeech, VOICES, VoiceCharacter } from '@/lib/elevenlabs';
+import { synthesizeSpeech } from '@/lib/google-cloud-tts';
 import { supabase } from '@/lib/storage';
 
 const MAX_TTS_CHARS = 900;
@@ -53,41 +54,73 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized: Missing Authorization header' }, { status: 401 });
         }
 
+        const requestedVoice = String(voice || 'tanty_spice');
+        const mappedVoice =
+            requestedVoice === 'steelpan_sam' ? 'roti' :
+                requestedVoice === 'dilly_doubles' ? 'dilly' :
+                    requestedVoice === 'tanty_spice' ? 'tanty' :
+                        requestedVoice === 'roti' ? 'roti' :
+                            'tanty';
+
         let audioBuffer: ArrayBuffer | null = null;
         let contentType = 'audio/mpeg';
 
-        const useGeminiFirst = provider === 'gemini';
+        const useGoogleFirst = provider === 'auto' || provider === 'google';
+        const useGeminiOnly = provider === 'gemini';
+        const useElevenOnly = provider === 'elevenlabs';
 
-        // 1. Try ElevenLabs first (unless explicit Gemini-first requested)
-        const elevenApiKey = process.env.ELEVENLABS_API_KEY;
-        if (!useGeminiFirst && elevenApiKey) {
-            console.log('Voice API: Using ElevenLabs');
-            const voiceId = voice as VoiceCharacter;
-            // Map 'steelpan_sam' to 'roti' if needed
-            const finalVoice = (voiceId as string) === 'steelpan_sam' ? 'roti' : voiceId;
+        // 1) Google Cloud TTS first for buddy chat stability and consistent voices.
+        if (useGoogleFirst) {
+            console.log('Voice API: Using Google Cloud TTS');
 
-            if (VOICES[finalVoice as VoiceCharacter]) {
-                audioBuffer = await generateElevenLabsSpeech(safeText, { voice: finalVoice as VoiceCharacter });
-                if (audioBuffer) contentType = 'audio/mpeg';
+            const googleVoiceConfig =
+                mappedVoice === 'roti'
+                    ? { languageCode: 'en-US', voiceName: 'en-US-Neural2-J', pitch: 1.5, speakingRate: 1.05, volumeGainDb: 1.0 }
+                    : mappedVoice === 'dilly'
+                        ? { languageCode: 'en-US', voiceName: 'en-US-Neural2-I', pitch: 2.0, speakingRate: 1.1, volumeGainDb: 1.0 }
+                        : { languageCode: 'en-GB', voiceName: 'en-GB-Neural2-C', pitch: -2.0, speakingRate: 0.9, volumeGainDb: 1.0 };
+
+            const googleBase64 = await synthesizeSpeech(safeText, {
+                ...googleVoiceConfig,
+                voiceName: voiceName || googleVoiceConfig.voiceName
+            });
+
+            if (googleBase64) {
+                const googleBuffer = Buffer.from(googleBase64, 'base64');
+                audioBuffer = googleBuffer.buffer.slice(
+                    googleBuffer.byteOffset,
+                    googleBuffer.byteOffset + googleBuffer.byteLength
+                );
+                contentType = 'audio/mpeg';
             }
         }
 
-        // 2. Gemini TTS (primary for buddy mode, fallback for all)
-        if (!audioBuffer) {
+        // 2) Gemini TTS fallback (or explicit provider request)
+        if (!audioBuffer && (useGoogleFirst || useGeminiOnly)) {
             console.log('Voice API: Falling back to Gemini TTS');
-            const character =
-                (voice as string) === 'roti' || (voice as string) === 'steelpan_sam' ? 'roti'
-                    : (voice as string) === 'dilly_doubles' ? 'dilly'
-                        : 'tanty';
+            const character = mappedVoice === 'roti' ? 'roti' : mappedVoice === 'dilly' ? 'dilly' : 'tanty';
             audioBuffer = await generateGeminiSpeech(safeText, { voiceName, character });
             if (audioBuffer) {
                 contentType = 'audio/wav'; // Gemini returns PCM/WAV
             }
         }
 
+        // 3) ElevenLabs final fallback (or explicit provider request)
+        if (!audioBuffer && !useGeminiOnly) {
+            const elevenApiKey = process.env.ELEVENLABS_API_KEY;
+            if (elevenApiKey && (useGoogleFirst || useElevenOnly)) {
+                console.log('Voice API: Falling back to ElevenLabs');
+                const finalVoice: VoiceCharacter = mappedVoice === 'dilly' ? 'dilly_doubles' : mappedVoice === 'roti' ? 'roti' : 'tanty_spice';
+                if (VOICES[finalVoice]) {
+                    audioBuffer = await generateElevenLabsSpeech(safeText, { voice: finalVoice });
+                    if (audioBuffer) contentType = 'audio/mpeg';
+                }
+            }
+        }
+
         if (!audioBuffer) {
             return NextResponse.json({
-                error: 'Failed to generate audio. Check API keys (NEXT_PUBLIC_GEMINI_API_KEY or ELEVENLABS_API_KEY)'
+                error: 'Failed to generate audio. Check GOOGLE_CLOUD_TTS_API_KEY, GEMINI_API_KEY, or ELEVENLABS_API_KEY.'
             }, { status: 500 });
         }
 
