@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { storyGenerator } from '@/lib/ai-content-generator/generators/story-generator';
 import { databasePoster } from '@/lib/ai-content-generator/database-poster';
 import { audioGenerationService } from '@/lib/services/audio-generation-service';
-import { VOICES } from '@/lib/services/elevenlabs';
+import { GoogleVoiceCharacter } from '@/lib/google-cloud-tts';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { createClient } from '@/lib/supabase/server';
 import { CONTENT_CONFIG } from '@/lib/ai-content-generator/config';
@@ -135,8 +135,8 @@ export async function POST(req: Request) {
             if (storyId) {
                 try {
                     console.log(`🎙️ Starting synchronous audio generation for narrator: ${narrator}...`);
-                    const voiceId = narrator === 'tanty_spice' ? VOICES.tanty_spice : VOICES.roti;
-                    const storyWithAudio = await audioGenerationService.generateAudioForStory(story, storyId, true, voiceId);
+                    const googleVoice: GoogleVoiceCharacter = narrator === 'tanty_spice' ? 'tanty' : narrator === 'dilly_doubles' ? 'dilly' : 'roti';
+                    const storyWithAudio = await audioGenerationService.generateAudioForStory(story, storyId, true, googleVoice);
                     story = storyWithAudio;
                 } catch (audioError) {
                     console.error("Audio generation failed (partial success):", audioError);
@@ -160,3 +160,4 @@ export async function POST(req: Request) {
         );
     }
 }
+

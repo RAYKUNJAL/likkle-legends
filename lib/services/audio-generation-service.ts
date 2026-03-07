@@ -1,46 +1,38 @@
-
 import { supabaseManager } from '@/lib/supabase-client';
-import { elevenLabsService, VoiceResponse, VOICES } from '@/lib/services/elevenlabs';
+import { GoogleVoiceCharacter, synthesizeCharacterSpeech } from '@/lib/google-cloud-tts';
 import { GeneratedStory } from '@/lib/ai-content-generator/generators/story-generator';
 
-const DEFAULT_VOICE_ID = VOICES.roti; // R.O.T.I. (consistent default)
-// Other voices available in config if needed
+const DEFAULT_VOICE_ID: GoogleVoiceCharacter = 'roti';
 
 export class AudioGenerationService {
-
     /**
      * Generate audio for a single page, upload it, and return the updated page object.
      */
-    async generatePageAudio(text: string, storyId: string, pageIndex: number, voiceId: string = DEFAULT_VOICE_ID): Promise<{ audioUrl: string; alignment: any } | null> {
+    async generatePageAudio(
+        text: string,
+        storyId: string,
+        pageIndex: number,
+        voiceId: GoogleVoiceCharacter = DEFAULT_VOICE_ID
+    ): Promise<{ audioUrl: string; alignment: any } | null> {
         try {
-            console.log(`   🎤 Generating audio for Page ${pageIndex + 1}...`);
+            console.log(`Generating audio for Page ${pageIndex + 1}...`);
 
-            // 1. Generate Speech with Timestamps
-            const result: VoiceResponse = await elevenLabsService.generateSpeech(
-                text,
-                voiceId,
-                { stability: 0.5, similarity: 0.8 }
-            );
+            const base64Audio = await synthesizeCharacterSpeech(text, voiceId);
+            if (!base64Audio) return null;
 
-            // 2. Upload Audio
+            const audioBuffer = Buffer.from(base64Audio, 'base64');
             const fileName = `stories/${storyId}/page-${pageIndex + 1}-${Date.now()}.mp3`;
-            const publicUrl = await this.uploadAudio(result.audioBuffer, fileName);
-
+            const publicUrl = await this.uploadAudio(audioBuffer, fileName);
             if (!publicUrl) return null;
-
-            // 3. Convert Alignment
-            const wordAlignment = this.convertToWordAlignment(result.alignment, result.normalizedText);
 
             return {
                 audioUrl: publicUrl,
                 alignment: {
-                    words: wordAlignment,
-                    character_alignment: result.alignment // Keep raw if needed
+                    words: this.estimateWordAlignment(text)
                 }
             };
-
         } catch (err: any) {
-            console.error(`     ❌ Generation failed for page ${pageIndex}:`, err.message);
+            console.error(`Generation failed for page ${pageIndex}:`, err.message);
             return null;
         }
     }
@@ -50,25 +42,31 @@ export class AudioGenerationService {
      * Returns the updated story object with audio data.
      * Optionally updates the database directly if updateDB is true.
      */
-    async generateAudioForStory(story: GeneratedStory, storyId: string, updateDB: boolean = true, voiceId: string = DEFAULT_VOICE_ID): Promise<GeneratedStory> {
-        console.log(`🎙️ Starting audio generation for story: ${story.title} (${story.pages.length} pages)`);
+    async generateAudioForStory(
+        story: GeneratedStory,
+        storyId: string,
+        updateDB: boolean = true,
+        voiceId: GoogleVoiceCharacter = DEFAULT_VOICE_ID
+    ): Promise<GeneratedStory> {
+        console.log(`Starting audio generation for story: ${story.title} (${story.pages.length} pages)`);
 
-        // Process all pages in parallel
-        const processedPages = await Promise.all(story.pages.map(async (page, index) => {
-            const audioData = await this.generatePageAudio(page.text, storyId, index, voiceId);
+        const processedPages = await Promise.all(
+            story.pages.map(async (page, index) => {
+                const audioData = await this.generatePageAudio(page.text, storyId, index, voiceId);
 
-            if (audioData) {
-                return {
-                    ...page,
-                    audioUrl: audioData.audioUrl,
-                    audio: {
-                        alignment: audioData.alignment,
-                        duration: 0 // We could calculate this from alignment boundaries
-                    }
-                };
-            }
-            return page;
-        }));
+                if (audioData) {
+                    return {
+                        ...page,
+                        audioUrl: audioData.audioUrl,
+                        audio: {
+                            alignment: audioData.alignment,
+                            duration: 0
+                        }
+                    };
+                }
+                return page;
+            })
+        );
 
         const updatedStory = { ...story, pages: processedPages };
 
@@ -76,23 +74,22 @@ export class AudioGenerationService {
             await this.updateStoryInDB(storyId, updatedStory);
         }
 
-        console.log(`✅ Audio generation complete for ${storyId}`);
+        console.log(`Audio generation complete for ${storyId}`);
         return updatedStory;
     }
 
     private async uploadAudio(buffer: Buffer, path: string): Promise<string | null> {
-        // Use supabaseManager to get a client
         const client = supabaseManager.getClient();
 
-        const { data, error } = await client.storage
-            .from('stories') // Ensure this bucket exists!
+        const { error } = await client.storage
+            .from('stories')
             .upload(path, buffer, {
                 contentType: 'audio/mpeg',
                 upsert: true
             });
 
         if (error) {
-            console.error('❌ Upload failed:', error.message);
+            console.error('Upload failed:', error.message);
             return null;
         }
 
@@ -104,8 +101,6 @@ export class AudioGenerationService {
     }
 
     private async updateStoryInDB(storyId: string, story: GeneratedStory) {
-        // Prepare content_json to match the schema expected by the frontend/DB
-        // logic from database-poster or script
         const contentJson = {
             pages: story.pages,
             patoisWords: story.metadata.patoisWords,
@@ -119,62 +114,20 @@ export class AudioGenerationService {
             .update({ content_json: contentJson })
             .eq('id', storyId);
 
-        if (error) console.error('❌ Failed to update story in DB:', error.message);
+        if (error) console.error('Failed to update story in DB:', error.message);
     }
 
-    /**
-     * Converts ElevenLabs character alignment to word-level alignment
-     */
-    private convertToWordAlignment(alignment: any, text: string) {
-        if (!alignment || !alignment.characters) return [];
+    private estimateWordAlignment(text: string) {
+        const words = text.split(/\s+/).filter(Boolean);
+        let currentTime = 0;
 
-        const words: any[] = [];
-        let currentWord = "";
-        let start = -1;
-        let end = -1;
-
-        const chars = alignment.characters;
-        const starts = alignment.character_start_times_seconds;
-        const ends = alignment.character_end_times_seconds;
-
-        // Sync offset: ElevenLabs timestamps are often slightly "late" compared to the PCM stream
-        // Manual offset to improve perceived sync
-        const SYNC_OFFSET = -0.06;
-
-        for (let i = 0; i < chars.length; i++) {
-            const char = chars[i];
-            const s = starts[i];
-            const e = ends[i];
-
-            // If it's a whitespace character, push the current word
-            if (/\s/.test(char)) {
-                if (currentWord.length > 0) {
-                    words.push({
-                        text: currentWord,
-                        startTimeSeconds: Math.max(0, start + SYNC_OFFSET),
-                        endTimeSeconds: Math.max(0.01, end + SYNC_OFFSET)
-                    });
-                    currentWord = "";
-                    start = -1;
-                }
-            } else {
-                // If it's a non-whitespace character
-                if (start === -1) start = s;
-                end = e;
-                currentWord += char;
-            }
-        }
-
-        // Final word
-        if (currentWord.length > 0) {
-            words.push({
-                text: currentWord,
-                startTimeSeconds: Math.max(0, start + SYNC_OFFSET),
-                endTimeSeconds: Math.max(0.01, end + SYNC_OFFSET)
-            });
-        }
-
-        return words;
+        return words.map((word) => {
+            const duration = Math.max(0.1, (word.length / 10) + 0.08);
+            const startTimeSeconds = currentTime;
+            const endTimeSeconds = currentTime + duration;
+            currentTime = endTimeSeconds;
+            return { text: word, startTimeSeconds, endTimeSeconds };
+        });
     }
 }
 

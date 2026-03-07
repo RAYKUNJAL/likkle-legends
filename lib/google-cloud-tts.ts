@@ -21,6 +21,33 @@ interface TTSResponse {
     audioContent: string; // base64 encoded audio
 }
 
+export type GoogleVoiceCharacter = 'tanty' | 'roti' | 'dilly';
+
+export const GOOGLE_VOICE_PRESETS: Record<GoogleVoiceCharacter, Required<Pick<TTSConfig, 'languageCode' | 'voiceName' | 'pitch' | 'speakingRate' | 'volumeGainDb'>>> = {
+    // Original Tanty v3 "Memory Village" profile from early production build.
+    tanty: {
+        languageCode: 'en-GB',
+        voiceName: 'en-GB-Neural2-C',
+        pitch: -2.0,
+        speakingRate: 0.9,
+        volumeGainDb: 1.0
+    },
+    roti: {
+        languageCode: 'en-US',
+        voiceName: 'en-US-Neural2-J',
+        pitch: 1.5,
+        speakingRate: 1.05,
+        volumeGainDb: 1.0
+    },
+    dilly: {
+        languageCode: 'en-US',
+        voiceName: 'en-US-Neural2-I',
+        pitch: 2.0,
+        speakingRate: 1.1,
+        volumeGainDb: 1.0
+    }
+};
+
 const DEFAULT_CONFIG: TTSConfig = {
     languageCode: "en-GB",
     voiceName: "en-GB-Neural2-C", // Warm British female Neural2 voice (per spec)
@@ -29,6 +56,19 @@ const DEFAULT_CONFIG: TTSConfig = {
     volumeGainDb: 1.0,   // Slight volume boost
     useSSML: true,       // Enable SSML for better prosody
 };
+
+export function isGoogleVoiceName(voiceName?: string): boolean {
+    if (!voiceName) return false;
+    return /^[a-z]{2}-[A-Z]{2,3}-(Neural2|Wavenet|Standard)-[A-Z0-9]+$/.test(voiceName);
+}
+
+export function resolveCharacterVoicePreset(character: GoogleVoiceCharacter, voiceNameOverride?: string): TTSConfig {
+    const preset = GOOGLE_VOICE_PRESETS[character];
+    return {
+        ...preset,
+        voiceName: isGoogleVoiceName(voiceNameOverride) ? voiceNameOverride : preset.voiceName
+    };
+}
 
 /**
  * Generate speech using Google Cloud TTS REST API
@@ -119,6 +159,14 @@ export async function getTTSAudioUrl(
     return `data:audio/mp3;base64,${base64Audio}`;
 }
 
+export async function synthesizeCharacterSpeech(
+    text: string,
+    character: GoogleVoiceCharacter,
+    voiceNameOverride?: string
+): Promise<string | null> {
+    return synthesizeSpeech(text, resolveCharacterVoicePreset(character, voiceNameOverride));
+}
+
 /**
  * Tanty Spice specific voice preset
  * Warm Caribbean grandmother voice using Neural2-C
@@ -130,13 +178,7 @@ export async function getTantySpiceVoice(text: string): Promise<{
     error?: string;
 }> {
     try {
-        const audioUrl = await getTTSAudioUrl(text, {
-            // Per Tanty Spice spec v3.0.0
-            voiceName: "en-GB-Neural2-C",  // Neural2 for more natural sound
-            pitch: -2.0,        // Lower pitch creates grandmotherly warmth
-            speakingRate: 0.90, // Slower pace for warm, measured storytelling
-            volumeGainDb: 1.0,  // Slight boost for clarity
-        });
+        const audioUrl = await getTTSAudioUrl(text, resolveCharacterVoicePreset('tanty'));
 
         if (audioUrl) {
             return { success: true, audio: audioUrl };
@@ -160,12 +202,7 @@ export async function getRotiVoice(text: string): Promise<{
     error?: string;
 }> {
     try {
-        const audioUrl = await getTTSAudioUrl(text, {
-            voiceName: "en-US-Neural2-J",
-            pitch: 2.0,         // Higher pitch for youthful/robotic energy
-            speakingRate: 1.10, // Faster pace for excitement
-            volumeGainDb: 1.0,
-        });
+        const audioUrl = await getTTSAudioUrl(text, resolveCharacterVoicePreset('roti'));
 
         if (audioUrl) {
             return { success: true, audio: audioUrl };
@@ -174,6 +211,21 @@ export async function getRotiVoice(text: string): Promise<{
         return { success: false, error: "Failed to generate audio" };
     } catch (error) {
         console.error("[ROTI Voice] Generation error:", error);
+        return { success: false, error: "Voice generation failed" };
+    }
+}
+
+export async function getDillyVoice(text: string): Promise<{
+    success: boolean;
+    audio?: string;
+    error?: string;
+}> {
+    try {
+        const audioUrl = await getTTSAudioUrl(text, resolveCharacterVoicePreset('dilly'));
+        if (audioUrl) return { success: true, audio: audioUrl };
+        return { success: false, error: "Failed to generate audio" };
+    } catch (error) {
+        console.error("[Dilly Voice] Generation error:", error);
         return { success: false, error: "Voice generation failed" };
     }
 }
