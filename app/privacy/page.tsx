@@ -4,8 +4,8 @@ import Footer from '@/components/Footer';
 import { siteContent } from '@/lib/content';
 
 export const metadata: Metadata = {
-    title: 'Privacy Policy',
-    description: "Your family's privacy is our top priority. Read how Likkle Legends protects your data and ensures a safe experience for your children.",
+    title: 'Privacy Policy & Data Deletion Instructions',
+    description: "Your family's privacy is our top priority. Read how Likkle Legends protects your data, including explicit instructions for data deletion.",
 };
 
 export default function PrivacyPage() {
@@ -72,6 +72,24 @@ export default function PrivacyPage() {
                                 <p className="leading-relaxed">
                                     We use your information to fulfill your subscription, personalize the character letters, and improve the educational quality of our AI Reading Buddy and story generation features.
                                 </p>
+                            </section>
+
+                            <section className="space-y-6">
+                                <h2 className="text-3xl font-black text-deep flex items-center gap-4">
+                                    <span className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center text-sm">05</span>
+                                    Data Deletion Instructions
+                                </h2>
+                                <p className="leading-relaxed">
+                                    According to the Facebook Platform rules and GDPR guidelines, we provide an explicit path for you to request the deletion of your data. If you wish to delete your account and all associated data, including Facebook or Google OAuth login data, you may do so through one of two ways:
+                                </p>
+                                <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-100">
+                                    <h4 className="font-bold text-deep mb-2">Option 1: Automatic Deletion (Recommended)</h4>
+                                    <p className="text-sm">Log into the Parent Dashboard inside the Likkle Legends platform. Navigate to Settings and click "Delete Account". This will instantly and permanently erase your account, profiles, and associated OAuth data.</p>
+                                </div>
+                                <div className="p-6 rounded-2xl bg-zinc-50 border border-zinc-100">
+                                    <h4 className="font-bold text-deep mb-2">Option 2: Manual Request</h4>
+                                    <p className="text-sm">Send an email to <strong>privacy@likklelegends.com</strong> with the subject <strong>"Data Deletion Request"</strong>. Please include your registered email address. We will process your request and permanently remove your data within 7 business days.</p>
+                                </div>
                             </section>
 
                             <div className="p-10 rounded-[2.5rem] bg-deep text-white relative overflow-hidden group">
