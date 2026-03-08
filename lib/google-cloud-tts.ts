@@ -1,4 +1,4 @@
-"use server";
+
 
 /**
  * 🎙️ Google Cloud Text-to-Speech Service
@@ -57,12 +57,12 @@ const DEFAULT_CONFIG: TTSConfig = {
     useSSML: true,       // Enable SSML for better prosody
 };
 
-export function isGoogleVoiceName(voiceName?: string): boolean {
+function isGoogleVoiceName(voiceName?: string): boolean {
     if (!voiceName) return false;
     return /^[a-z]{2}-[A-Z]{2,3}-(Neural2|Wavenet|Standard)-[A-Z0-9]+$/.test(voiceName);
 }
 
-export function resolveCharacterVoicePreset(character: GoogleVoiceCharacter, voiceNameOverride?: string): TTSConfig {
+function resolveCharacterVoicePreset(character: GoogleVoiceCharacter, voiceNameOverride?: string): TTSConfig {
     const preset = GOOGLE_VOICE_PRESETS[character];
     return {
         ...preset,

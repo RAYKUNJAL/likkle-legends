@@ -4,8 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import {
     AdminLayout,
     Download, Upload, RefreshCw, FileText, Search,
-    Edit2, Trash2, Plus, Eye, X, Check, Image as ImageIcon,
-    Filter,
+    Edit, Trash2, Plus, Eye, X, CheckCircle2,
 } from '@/components/admin/AdminComponents';
 
 interface Printable {
@@ -178,7 +177,7 @@ function EditModal({
                                 {hasRealPreview(form.preview_url) ? (
                                     <img src={form.preview_url} alt="preview" className="w-full h-full object-cover" />
                                 ) : (
-                                    <ImageIcon size={28} className="text-gray-300" />
+                                    <FileText size={28} className="text-gray-300" />
                                 )}
                             </div>
                             <div className="flex-1 space-y-2">
@@ -190,7 +189,7 @@ function EditModal({
                                 <p className="text-xs text-gray-400">PNG/JPG/WebP · max 25MB · recommended 600×800px (portrait)</p>
                                 {hasRealPreview(form.preview_url) && (
                                     <div className="flex items-center gap-2 text-xs text-green-600 font-bold">
-                                        <Check size={12} /> Image uploaded
+                                        <CheckCircle2 size={12} /> Image uploaded
                                     </div>
                                 )}
                                 <div>
@@ -306,7 +305,7 @@ function EditModal({
                         disabled={saving}
                         className="flex-1 py-3 bg-amber-400 hover:bg-amber-500 text-white rounded-xl font-black flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
                     >
-                        {saving ? <RefreshCw size={16} className="animate-spin" /> : <Check size={16} />}
+                        {saving ? <RefreshCw size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                         {saving ? 'Saving...' : 'Save Printable'}
                     </button>
                 </div>
@@ -524,7 +523,7 @@ function AdminPrintableCard({
                         title="Edit"
                         aria-label="Edit worksheet"
                     >
-                        <Edit2 size={16} />
+                        <Edit size={16} />
                     </button>
                     {item.pdf_url && (
                         <a
@@ -582,7 +581,7 @@ function AdminPrintableCard({
                     onClick={onEdit}
                     className="w-full py-2 bg-gray-50 hover:bg-amber-50 hover:text-amber-600 text-gray-500 rounded-lg text-[10px] font-black flex items-center justify-center gap-1 transition-colors mt-1"
                 >
-                    <Edit2 size={10} /> Edit
+                    <Edit size={10} /> Edit
                 </button>
             </div>
         </div>

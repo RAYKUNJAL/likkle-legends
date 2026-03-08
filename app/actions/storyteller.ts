@@ -1,7 +1,7 @@
 "use server";
 
 import { generateCulturalStory, StoryInputs } from "@/lib/story-engine";
-
+import { getTantyVoice } from "./voice";
 export async function createStoryAction(inputs: StoryInputs) {
     try {
         const story = await generateCulturalStory(inputs);
@@ -21,8 +21,6 @@ export async function createStoryAction(inputs: StoryInputs) {
     }
 }
 
-
-import { getTantyVoice } from "./voice";
 
 export async function readStorySegment(text: string) {
     try {
