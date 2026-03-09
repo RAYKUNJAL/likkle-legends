@@ -11,7 +11,6 @@ import { getGameById } from '@/lib/database';
 import { logActivity } from '@/lib/database';
 
 // Dynamic Imports with Loaders
-const MangoCatch = dynamic(() => import('@/components/games/MangoCatch'), { loading: () => <LoadingGame /> });
 const ColorMatch = dynamic(() => import('@/components/games/ColorMatch'), { loading: () => <LoadingGame /> });
 const IslandTrivia = dynamic(() => import('@/components/games/IslandTrivia'), { loading: () => <LoadingGame /> });
 const PatoisWizard = dynamic(() => import('@/components/games/PatoisWizard'), { loading: () => <LoadingGame /> });
@@ -145,7 +144,7 @@ export default function GamePlayerPage() {
         const fetchGame = async () => {
             if (!gameId) return;
             // List of featured IDs that don't need DB fetch (matching renderGame logic)
-            const featuredIds = ['island-match', 'patois-puzzle', 'ai-trivia', 'trivia', 'mango-catch', 'color-match'];
+            const featuredIds = ['island-match', 'patois-puzzle', 'ai-trivia', 'trivia', 'color-match'];
 
             if (!featuredIds.includes(gameId)) {
                 try {
@@ -167,7 +166,6 @@ export default function GamePlayerPage() {
             case 'patois-puzzle': return 'Patois Word Wizard';
             case 'ai-trivia': return 'AI Island Trivia';
             case 'trivia': return 'Caribbean Trivia';
-            case 'mango-catch': return 'Mango Catch Adventure';
             case 'color-match': return 'Island Color Match';
             default: return 'Island Game';
         }
@@ -240,8 +238,6 @@ export default function GamePlayerPage() {
             case 'ai-trivia':
             case 'trivia':
                 return <IslandTrivia key={gameKey} onComplete={handleComplete} />;
-            case 'mango-catch':
-                return <MangoCatch key={gameKey} onComplete={(score) => handleComplete(score, 0, 0)} />;
             case 'color-match':
                 return <ColorMatch key={gameKey} onComplete={handleComplete} />;
             default:

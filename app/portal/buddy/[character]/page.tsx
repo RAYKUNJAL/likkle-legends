@@ -403,6 +403,7 @@ export default function CharacterChatPage() {
                     onClose={() => setIsVoiceMode(false)}
                     characterConfig={config}
                     child={childProfile}
+                    childId={activeChild.id}
                 />
             )}
 

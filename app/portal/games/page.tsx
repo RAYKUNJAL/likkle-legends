@@ -130,20 +130,7 @@ const FEATURED_GAMES = [
         isPopular: false,
     },
 
-    {
-        id: 'mango-catch',
-        title: 'Mango Catch Adventure',
-        description: 'Catch the falling tropical fruits in your basket!',
-        emoji: '🧺',
-        gradient: 'from-orange-400 via-yellow-500 to-amber-600',
-        tier: 'free',
-        category: 'adventure',
-        xp: 150,
-        time: '3-10 min',
-        learningFocus: 'Reaction speed and food recognition',
-        isNew: true,
-        isPopular: true,
-    },
+
     {
         id: 'color-match',
         title: 'Island Color Match',
@@ -159,20 +146,6 @@ const FEATURED_GAMES = [
         isPopular: false,
     },
     {
-        id: 'anansi-web',
-        title: "Anansi's Web of Words",
-        description: 'Solve Caribbean riddles with the clever trickster spider!',
-        emoji: '🕸️',
-        gradient: 'from-purple-600 via-indigo-700 to-slate-900',
-        tier: 'starter_mailer',
-        category: 'adventure',
-        xp: 250,
-        time: '5-15 min',
-        learningFocus: 'Problem solving and language play',
-        isNew: true,
-        isPopular: true,
-    },
-    {
         id: 'flag-match',
         title: 'Caribbean Flag Match',
         description: 'Match flags to islands and learn cool Caribbean facts!',
@@ -185,20 +158,6 @@ const FEATURED_GAMES = [
         learningFocus: 'Country identification and map literacy',
         isNew: true,
         isPopular: false,
-    },
-    {
-        id: 'steelpan-simon',
-        title: 'Steelpan Simon Says',
-        description: 'Listen and repeat the steelpan music sequences!',
-        emoji: '🥁',
-        gradient: 'from-purple-500 via-pink-500 to-rose-600',
-        tier: 'free',
-        category: 'creative',
-        xp: 200,
-        time: '8-12 min',
-        learningFocus: 'Listening memory and rhythm patterns',
-        isNew: true,
-        isPopular: true,
     },
 ];
 
@@ -512,7 +471,7 @@ export default function GamesHubPage() {
                                                             ? '/portal/games/flag-match'
                                                             : game.id === 'cultural-quiz'
                                                                 ? '/portal/games/island-trivia'
-                                                            : `/portal/games/${game.id}`
+                                                                : `/portal/games/${game.id}`
                                                 }
                                                 className="w-full py-3.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-2xl font-bold text-center transition-all flex items-center justify-center gap-2 border border-white/20"
                                             >

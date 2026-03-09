@@ -132,7 +132,7 @@ ${SAFETY_RULES}
         emoji: '🤖'
     },
     technical: {
-        brainModel: 'gemini-2.0-flash-exp',
+        brainModel: 'gemini-2.0-flash',
         elevenLabsVoiceId: 'eppqEXVumQ3CfdndcIB',
         geminiVoiceName: 'Leda',
         temperature: 0.7,
@@ -181,7 +181,7 @@ const tantySpiceConfig: CharacterConfig = {
         emoji: '👵🏾'
     },
     technical: {
-        brainModel: 'gemini-2.0-flash-exp',
+        brainModel: 'gemini-2.0-flash',
         elevenLabsVoiceId: 'JfiM1myzVx7xU2MZOAJS',
         geminiVoiceName: 'Kore',
         temperature: 0.95,
@@ -250,7 +250,7 @@ ${SAFETY_RULES}
         emoji: '⚡'
     },
     technical: {
-        brainModel: 'gemini-2.0-flash-exp',
+        brainModel: 'gemini-2.0-flash',
         elevenLabsVoiceId: null, // No custom ElevenLabs voice yet — uses Gemini TTS Fenrir
         geminiVoiceName: 'Fenrir',
         temperature: 0.8,

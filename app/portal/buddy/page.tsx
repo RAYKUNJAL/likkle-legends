@@ -8,8 +8,8 @@ import { useUser } from '@/components/UserContext';
 import { CHARACTER_CONFIGS, CHARACTER_ORDER, CharacterId } from '@/lib/characterConfig';
 import { TIER_LEVELS } from '@/lib/feature-access';
 
-// R.O.T.I. is available on the free tier; all other buddies require a paid subscription
-const FREE_CHARACTERS: CharacterId[] = ['roti'];
+// Keep all buddies available while building/testing character experience.
+const FREE_CHARACTERS: CharacterId[] = ['roti', 'tanty_spice', 'dilly_doubles'];
 
 export default function ChooseYourBuddyPage() {
     const router = useRouter();

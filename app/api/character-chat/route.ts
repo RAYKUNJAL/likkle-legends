@@ -8,7 +8,12 @@ import {
     SafetySetting
 } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+const geminiApiKey =
+    process.env.GEMINI_API_KEY ||
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    '';
+const genAI = new GoogleGenerativeAI(geminiApiKey);
 const MAX_MESSAGE_CHARS = 320;
 const MAX_MEMORY_FACTS = 6;
 const MAX_HISTORY_ROWS = 60;
@@ -215,6 +220,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
+        if (!geminiApiKey) {
+            return NextResponse.json({ error: 'AI buddy is not configured (missing Gemini API key).' }, { status: 500 });
+        }
+
         const body = await request.json();
         const { characterId, message, childId } = body as {
             characterId: CharacterId;

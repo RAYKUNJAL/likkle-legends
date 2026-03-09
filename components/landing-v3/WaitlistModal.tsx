@@ -173,8 +173,8 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
                                                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                                             >
                                                 <option value="">Select Region</option>
-                                                <option value="ca">Canada 🇨🇦</option>
-                                                <option value="uk">United Kingdom 🇬🇧</option>
+                                                <option value="Canada">Canada 🇨🇦</option>
+                                                <option value="United Kingdom">United Kingdom 🇬🇧</option>
                                                 <option value="other">Other International 🌎</option>
                                             </select>
                                         </div>
@@ -242,3 +242,4 @@ export function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
         </Dialog>
     );
 }
+
