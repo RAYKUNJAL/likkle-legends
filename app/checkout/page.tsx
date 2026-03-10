@@ -263,14 +263,6 @@ function CheckoutContent() {
                                 </div>
                                 <div className="flex flex-col items-end">
                                     <span className="text-[10px] font-black uppercase tracking-widest text-deep/25 italic">Step {step} of 4</span>
-                                    {formData.email === 'raykunjal@gmail.com' && (
-                                        <button
-                                            onClick={() => setIsComplete(true)}
-                                            className="text-[10px] font-black text-primary uppercase mt-1 hover:underline"
-                                        >
-                                            Admin Bypass →
-                                        </button>
-                                    )}
                                 </div>
                             </div>
 

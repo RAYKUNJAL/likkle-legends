@@ -177,26 +177,31 @@ export const TIER_INFO: Record<SubscriptionTier, {
 };
 
 /**
- * Check if user has access to a feature
+ * Check if user has access to a feature.
+ * Canceled subscriptions are treated as free tier regardless of stored tier name.
  */
 export function hasFeatureAccess(
     userTier: string,
-    featureKey: string
+    featureKey: string,
+    subscriptionStatus?: string
 ): boolean {
     const feature = FEATURE_ACCESS[featureKey];
-    if (!feature) return false; // Feature doesn't exist
+    if (!feature) return false;
 
-    const userTierLevel = TIER_LEVELS[userTier] ?? 0; // Unknown tier = free
+    // Canceled or past_due → treat as free regardless of stored tier
+    const effectiveTier = (subscriptionStatus === 'canceled' || subscriptionStatus === 'past_due')
+        ? 'free'
+        : userTier;
+
+    const userTierLevel = TIER_LEVELS[effectiveTier] ?? 0;
     const requiredTierLevel = TIER_LEVELS[feature.tier_required];
 
-    // Allow access if user tier >= required tier
     if (userTierLevel >= requiredTierLevel) {
         return true;
     }
 
-    // Special case: Free tier users can access features with free_limit
-    // (they just have usage restrictions)
-    if (userTier === 'free' && feature.free_limit && feature.free_limit > 0) {
+    // Free tier users can access features that have a free_limit
+    if (userTierLevel === 0 && feature.free_limit && feature.free_limit > 0) {
         return true;
     }
 
