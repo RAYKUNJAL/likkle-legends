@@ -7,8 +7,6 @@ import { Mail, Lock, ArrowRight, Loader2, Eye, EyeOff, Sparkles, AlertCircle, Ch
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { sendMagicLinkAction, signInAction } from '@/app/actions/auth-actions';
-import WhatsAppOtpForm from '@/components/auth/WhatsAppOtpForm';
-import { MessageSquare } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 function GoogleIcon() {
@@ -37,7 +35,7 @@ function LoginForm() {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isMagicLinkSent, setIsMagicLinkSent] = useState(false);
-    const [loginMethod, setLoginMethod] = useState<'password' | 'magiclink' | 'whatsapp'>('password');
+    const [loginMethod, setLoginMethod] = useState<'password' | 'magiclink'>('password');
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -208,18 +206,9 @@ function LoginForm() {
                     >
                         Magic
                     </button>
-                    <button
-                        onClick={() => setLoginMethod('whatsapp')}
-                        className={`flex-1 py-1 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 ${loginMethod === 'whatsapp' ? 'bg-white shadow-sm text-emerald-600' : 'text-deep/40 hover:text-deep/60'}`}
-                    >
-                        <MessageSquare size={14} fill={loginMethod === 'whatsapp' ? "currentColor" : "none"} /> WhatsApp
-                    </button>
                 </div>
 
-                {loginMethod === 'whatsapp' ? (
-                    <WhatsAppOtpForm />
-                ) : (
-                    <form className="space-y-6" onSubmit={loginMethod === 'password' ? handlePasswordLogin : handleMagicLinkLogin}>
+                <form className="space-y-6" onSubmit={loginMethod === 'password' ? handlePasswordLogin : handleMagicLinkLogin}>
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-deep/60 ml-4 uppercase tracking-widest">Email Address</label>
                             <div className="relative">
@@ -274,7 +263,6 @@ function LoginForm() {
                             )}
                         </button>
                     </form>
-                )}
 
                 <div className="text-center space-y-4 pt-4">
                     {loginMethod === 'password' && (

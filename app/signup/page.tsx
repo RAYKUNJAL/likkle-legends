@@ -7,8 +7,6 @@ import { ArrowLeft, Mail, Lock, User, Sparkles, Loader2, AlertCircle, Eye, EyeOf
 import { useState, useEffect, Suspense } from 'react';
 import { signupAction } from '@/app/actions/auth-actions';
 import { trackEvent } from '@/lib/analytics';
-import { MessageSquare } from 'lucide-react';
-import WhatsAppOtpForm from '@/components/auth/WhatsAppOtpForm';
 import { createClient } from '@/lib/supabase/client';
 
 // Google SVG icon
@@ -57,7 +55,7 @@ function SignupForm() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
-    const [signupMethod, setSignupMethod] = useState<'email' | 'whatsapp'>('email');
+    const [signupMethod] = useState<'email'>('email');
 
     const handleSocialSignup = async (provider: 'google' | 'facebook') => {
         setError(null);
@@ -270,33 +268,7 @@ function SignupForm() {
                         <div className="flex-1 h-px bg-zinc-100"></div>
                     </div>
 
-                    <div className="flex p-1 bg-zinc-100 rounded-2xl mb-8">
-                        <button
-                            onClick={() => setSignupMethod('email')}
-                            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${signupMethod === 'email' ? 'bg-white shadow-sm text-primary' : 'text-deep/40'}`}
-                        >
-                            Email & Password
-                        </button>
-                        <button
-                            onClick={() => setSignupMethod('whatsapp')}
-                            className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${signupMethod === 'whatsapp' ? 'bg-white shadow-sm text-emerald-600' : 'text-deep/40'}`}
-                        >
-                            <MessageSquare size={16} fill={signupMethod === 'whatsapp' ? 'currentColor' : 'none'} />
-                            WhatsApp OTP
-                        </button>
-                    </div>
-
-                    {signupMethod === 'whatsapp' ? (
-                        <WhatsAppOtpForm
-                            isSignup
-                            initialData={{
-                                childName: formData.childName,
-                                plan: plan,
-                                referral: referral
-                            }}
-                        />
-                    ) : (
-                        <form className="space-y-8" onSubmit={handleSignup}>
+                    <form className="space-y-8" onSubmit={handleSignup}>
                             <div>
                                 <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Child's Name</label>
                                 <div className="relative">
@@ -397,7 +369,6 @@ function SignupForm() {
                                 )}
                             </button>
                         </form>
-                    )}
 
                     <div className="mt-10 pt-10 border-t border-zinc-50">
                         <p className="text-center text-deep/40 font-bold">
