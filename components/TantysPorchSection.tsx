@@ -183,7 +183,7 @@ export default function TantysPorchSection() {
 
     return (
         <section className="py-24 bg-gradient-to-b from-amber-50 to-orange-100 relative overflow-hidden" id="tantys-porch">
-            {isLiveMode && <IslandVoice onClose={() => setIsLiveMode(false)} characterConfig={null as any} child={null as any} />}
+            {isLiveMode && <IslandVoice onClose={() => setIsLiveMode(false)} characterConfig={null as any} child={null as any} childId={activeChild?.id || "demo"} />}
             {/* Background Decor */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-orange-300 opacity-20 rounded-full blur-[120px] -mr-32 -mt-32"></div>
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-yellow-300 opacity-20 rounded-full blur-[120px] -ml-32 -mb-32"></div>
@@ -337,7 +337,7 @@ export default function TantysPorchSection() {
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </div >
+        </section >
     );
 }

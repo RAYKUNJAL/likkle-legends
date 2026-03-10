@@ -219,7 +219,7 @@ export default function GamePlayerPage() {
             const config = dbGame.game_config || {};
             switch (dbGame.game_type) {
                 case 'trivia':
-                    return <IslandTrivia key={gameKey} onComplete={handleComplete} initialQuestions={config.questions} title={dbGame.title} />;
+                    return <IslandTrivia key={gameKey} onComplete={handleComplete} />;
                 case 'memory':
                     return <IslandMemory key={gameKey} onComplete={handleComplete} />; // Add config support to Memory later if needed
                 case 'word-match':

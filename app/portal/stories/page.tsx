@@ -4,12 +4,11 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-    ArrowLeft, Book, Clock, Star, Lock, Play, Filter, Check,
-    Search, ChevronDown, Heart, Sparkles, Wand2
+    ArrowLeft, Book, Clock, Star, Lock, Play, Pickaxe, Check,
+    Search, Map, Heart, Sparkles, BookOpen, Compass, Award, Tag, Sparkle
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { getStorybooks } from '@/lib/database';
-import AdventureCreator from '@/components/AdventureCreator';
 import { STARTER_STORIES } from '@/lib/story-starter-pack';
 
 interface Story {
@@ -18,346 +17,352 @@ interface Story {
     description: string;
     cover_image: string;
     island_origin: string;
-    age_track: 'mini' | 'big';
-    tier_required: string;
+    category: string;
+    age_group: string;
     reading_time: number;
-    page_count: number;
-    rating: number;
-    read_count: number;
-    completed?: boolean;
+    tier_required: string;
     progress?: number;
+    completed?: boolean;
 }
 
-const ISLANDS = ['All Islands', 'Jamaica', 'Trinidad', 'Barbados', 'Grenada', 'St. Lucia'];
+import {
+    ISLANDS as CONFIG_ISLANDS,
+    CATEGORIES as CONFIG_CATEGORIES,
+    TARGET_AGE_GROUPS,
+} from '@/lib/islandStoriesConfig';
 
-export default function StoriesPage() {
+const ISLANDS = [
+    { name: 'All Islands', flag: '🌍' },
+    ...CONFIG_ISLANDS.map(name => {
+        // Simple flag mapping heuristic for known islands
+        const flagMap: Record<string, string> = {
+            'Trinidad and Tobago': '🇹🇹',
+            'Jamaica': '🇯🇲',
+            'Barbados': '🇧🇧',
+            'Dominican Republic': '🇩🇴',
+            'Haiti': '🇭🇹',
+            'Grenada': '🇬🇩',
+            'St Lucia': '🇱🇨',
+            'Antigua': '🇦🇬',
+            'Bahamas': '🇧🇸',
+            'Guyana': '🇬🇾'
+        };
+        return { name, flag: flagMap[name] || '🏝️' };
+    })
+];
+
+const CATEGORIES = ["All Categories", ...CONFIG_CATEGORIES];
+
+const AGE_GROUPS = [
+    { id: 'all', label: 'All Ages' },
+    ...TARGET_AGE_GROUPS.map(ag => ({ id: ag.range, label: `Ages ${ag.range}` }))
+];
+
+export default function StoriesLibraryPage() {
     const { activeChild, canAccess } = useUser();
     const [stories, setStories] = useState<Story[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    // Filters
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedIsland, setSelectedIsland] = useState('All Islands');
-    const [selectedAgeTrack, setSelectedAgeTrack] = useState<'all' | 'mini' | 'big'>('all');
-    const [sortBy, setSortBy] = useState<'popular' | 'newest' | 'rating'>('popular');
-    const [favorites, setFavorites] = useState<Set<string>>(new Set());
-    const [showOnlyAccessible, setShowOnlyAccessible] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState('All Categories');
+    const [selectedAgeGroup, setSelectedAgeGroup] = useState('all');
+
+    // Passport GAMIFICATION
+    const [earnedStamps, setEarnedStamps] = useState<string[]>(['Jamaica']); // Example default stamp
 
     useEffect(() => {
         async function loadStories() {
             setIsLoading(true);
             try {
-                // We can import getStorybooks here or at top level. I added import at top.
                 const data = await getStorybooks();
 
-                // Map database result to component interface
                 const mappedStories: Story[] = data.map((sb: any) => ({
                     id: sb.id,
                     title: sb.title,
                     description: sb.summary,
                     cover_image: sb.cover_image_url || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400',
-                    island_origin: sb.island_category || 'Caribbean',
-                    age_track: sb.age_track || 'mini',
+                    island_origin: sb.island_category || 'Jamaica', // Fallback to a valid island
+                    category: sb.category || 'Adventure',
+                    age_group: sb.age_track === 'big' ? '7-9' : '5-6', // Mapping existing age tracks
                     tier_required: sb.tier_required,
                     reading_time: sb.reading_time_minutes || 5,
-                    page_count: sb.page_count || null,
-                    rating: sb.average_rating || null,
-                    read_count: sb.read_count || 0,
                     completed: false
                 }));
 
-                setStories(mappedStories.length > 0 ? mappedStories : STARTER_STORIES.map((sb) => ({
-                    id: sb.id,
-                    title: sb.title,
-                    description: sb.summary,
-                    cover_image: sb.cover_image_url,
-                    island_origin: 'Caribbean',
-                    age_track: 'mini',
-                    tier_required: sb.tier_required,
-                    reading_time: sb.reading_time_minutes,
-                    page_count: sb.content_json.pages.length,
-                    rating: 5,
-                    read_count: 0,
-                    completed: false
-                })));
+                if (mappedStories.length > 0) {
+                    setStories(mappedStories);
+                } else {
+                    // Fallback to offline starter pack if DB is empty
+                    setStories(STARTER_STORIES.map(sb => ({
+                        id: sb.id,
+                        title: sb.title,
+                        description: sb.summary,
+                        cover_image: sb.cover_image_url,
+                        island_origin: 'Jamaica',
+                        category: 'Story',
+                        age_group: '5-6',
+                        tier_required: sb.tier_required,
+                        reading_time: sb.reading_time_minutes,
+                        completed: false
+                    })));
+                }
+
+                // Hydrate Passport gamification from local storage
+                const stamps = localStorage.getItem('island_passport_stamps');
+                if (stamps) {
+                    setEarnedStamps(JSON.parse(stamps));
+                }
+
             } catch (error) {
                 console.error('Failed to load stories:', error);
-                setStories(STARTER_STORIES.map((sb) => ({
-                    id: sb.id,
-                    title: sb.title,
-                    description: sb.summary,
-                    cover_image: sb.cover_image_url,
-                    island_origin: 'Caribbean',
-                    age_track: 'mini',
-                    tier_required: sb.tier_required,
-                    reading_time: sb.reading_time_minutes,
-                    page_count: sb.content_json.pages.length,
-                    rating: 5,
-                    read_count: 0,
-                    completed: false
-                })));
             } finally {
                 setIsLoading(false);
             }
         }
-
         loadStories();
     }, []);
 
+    // Filter Logic
     const filteredStories = stories.filter(story => {
         const matchesSearch = story.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
             story.description.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesIsland = selectedIsland === 'All Islands' || story.island_origin === selectedIsland;
-        const matchesAgeTrack = selectedAgeTrack === 'all' || story.age_track === selectedAgeTrack;
-        const matchesTier = !showOnlyAccessible || canAccess(story.tier_required);
-        return matchesSearch && matchesIsland && matchesAgeTrack && matchesTier;
-    }).sort((a, b) => {
-        if (sortBy === 'popular') return b.read_count - a.read_count;
-        if (sortBy === 'rating') return b.rating - a.rating;
-        return 0; // Newest sort would need created_at date
+        const matchesCategory = selectedCategory === 'All Categories' || story.category === selectedCategory;
+        const matchesAge = selectedAgeGroup === 'all' || story.age_group === selectedAgeGroup;
+
+        return matchesSearch && matchesIsland && matchesCategory && matchesAge;
     });
 
-    const toggleFavorite = (id: string) => {
-        setFavorites(prev => {
-            const newFavorites = new Set(prev);
-            if (newFavorites.has(id)) {
-                newFavorites.delete(id);
-            } else {
-                newFavorites.add(id);
-            }
-            return newFavorites;
-        });
-    };
-
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-            {/* Header */}
-            <header className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-                <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-8 sm:mb-10">
-                        <Link href="/portal" className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center hover:bg-white/20 transition-all shrink-0">
-                            <ArrowLeft size={24} />
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50 font-sans pb-20">
+            {/* 1. Hero Banner */}
+            <div className="bg-gradient-to-r from-blue-700 via-indigo-800 to-purple-900 text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+
+                <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative z-10">
+                    <div className="flex flex-col mb-8 items-start">
+                        <Link href="/portal" className="bg-white/10 hover:bg-white/20 p-3 rounded-full mb-6 transition-all backdrop-blur-sm">
+                            <ArrowLeft size={20} />
                         </Link>
-                        <div>
-                            <h1 className="text-3xl sm:text-5xl font-black tracking-tight mb-2">Story Library</h1>
-                            <p className="text-white/70 text-sm sm:text-lg font-medium">{stories.length} interactive adventures from across the islands</p>
+
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-lg flex items-center gap-1">
+                                <Sparkles size={14} /> New books every week
+                            </span>
                         </div>
+
+                        <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tight">Island Stories Library</h1>
+                        <p className="text-xl md:text-2xl text-blue-100 max-w-2xl font-medium mb-8">Tales from across the Caribbean featuring magical characters, rich history, and brilliant adventures.</p>
+
+                        <button className="bg-white text-indigo-900 px-8 py-4 rounded-full font-black text-lg hover:scale-105 transition-transform flex items-center gap-2 shadow-xl">
+                            <BookOpen size={20} /> Start Reading
+                        </button>
                     </div>
 
-                    {/* Search */}
-                    <div className="relative group max-w-2xl">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-white transition-colors" size={20} />
+                    {/* Quick Search */}
+                    <div className="relative max-w-xl group mt-8">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-white/50 group-focus-within:text-white" size={24} />
                         <input
                             type="text"
-                            placeholder="Find your favorite legend..."
+                            placeholder="Search by title or character..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-12 pr-4 py-4 bg-white/10 border-2 border-white/10 rounded-2xl text-white placeholder-white/40 focus:bg-white/20 focus:border-white/30 focus:outline-none transition-all text-lg"
+                            className="w-full bg-white/10 border-2 border-white/20 rounded-full py-4 pl-16 pr-6 text-white placeholder:text-white/50 focus:outline-none focus:bg-white/20 focus:border-white/40 backdrop-blur-md text-lg transition-all"
                         />
                     </div>
                 </div>
-            </header>
-
-            {/* Magic Adventure Section */}
-            <div className="max-w-6xl mx-auto px-4 py-8">
-                <AdventureCreator />
             </div>
 
-            {/* Filters */}
-            <div className="max-w-6xl mx-auto px-4 -mt-6">
-                <div className="bg-white rounded-[2rem] p-5 sm:p-6 shadow-2xl border border-gray-100 flex flex-wrap gap-3 sm:gap-4 items-center">
-                    {/* Island Filter */}
-                    <div className="flex items-center gap-2 flex-1 min-w-[140px]">
-                        <Filter size={18} className="text-primary" />
-                        <select
-                            value={selectedIsland}
-                            onChange={(e) => setSelectedIsland(e.target.value)}
-                            className="w-full px-3 py-2 bg-gray-50 border-none rounded-xl font-bold text-sm text-gray-700 outline-none ring-2 ring-transparent focus:ring-primary/20"
-                            aria-label="Filter by island"
-                        >
-                            {ISLANDS.map(island => (
-                                <option key={island} value={island}>{island}</option>
-                            ))}
-                        </select>
+            {/* Island Passport Gamification Widget */}
+            <div className="max-w-7xl mx-auto px-4 -mt-8 relative z-20">
+                <div className="bg-white rounded-3xl p-6 shadow-2xl border border-indigo-50 flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center border-4 border-white shadow-lg shrink-0">
+                            <Compass className="text-indigo-600" size={28} />
+                        </div>
+                        <div>
+                            <h3 className="font-black text-slate-800 text-lg">My Island Passport</h3>
+                            <p className="text-slate-500 font-medium text-sm">Read stories from different islands to collect stamps!</p>
+                        </div>
                     </div>
 
-                    {/* Age Track Filter */}
-                    <div className="flex gap-1 bg-gray-50 rounded-xl p-1 overflow-x-auto no-scrollbar">
-                        {[
-                            { id: 'all', label: 'All Ages' },
-                            { id: 'mini', label: 'Mini' },
-                            { id: 'big', label: 'BigKids' },
-                        ].map(track => (
-                            <button
-                                key={track.id}
-                                onClick={() => setSelectedAgeTrack(track.id as typeof selectedAgeTrack)}
-                                className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-black transition-all whitespace-nowrap ${selectedAgeTrack === track.id
-                                    ? 'bg-white text-primary shadow-md'
-                                    : 'text-gray-400 hover:text-gray-600'
-                                    }`}
-                            >
-                                {track.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Accessibility Filter */}
-                    <button
-                        onClick={() => setShowOnlyAccessible(!showOnlyAccessible)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black border-2 transition-all ${showOnlyAccessible
-                            ? 'bg-primary/5 border-primary/20 text-primary'
-                            : 'bg-white border-gray-100 text-gray-400 hover:border-gray-200'}`}
-                    >
-                        {showOnlyAccessible ? <Check size={16} /> : <Lock size={16} />}
-                        Accessible
-                    </button>
-
-                    {/* Sort */}
-                    <div className="flex-1 sm:flex-none sm:ml-auto min-w-[140px]">
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                            className="w-full px-3 py-2 bg-gray-50 border-none rounded-xl font-bold text-sm text-gray-700 outline-none ring-2 ring-transparent focus:ring-primary/20"
-                            aria-label="Sort by"
-                        >
-                            <option value="popular">Popular</option>
-                            <option value="rating">Top Rated</option>
-                            <option value="newest">Newest</option>
-                        </select>
+                    <div className="flex gap-2">
+                        {ISLANDS.slice(1, 6).map((island, idx) => {
+                            const isEarned = earnedStamps.includes(island.name);
+                            return (
+                                <div key={idx} className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all ${isEarned ? 'bg-indigo-600 text-white shadow-lg hover:scale-110 cursor-pointer' : 'bg-slate-100 text-slate-300 border-2 border-dashed border-slate-200'}`} title={island.name}>
+                                    {isEarned ? island.flag : '?'}
+                                </div>
+                            );
+                        })}
+                        <button className="w-12 h-12 rounded-full bg-slate-50 text-slate-600 font-black text-xs border border-slate-200 hover:bg-slate-100">
+                            +{ISLANDS.length - 6}
+                        </button>
                     </div>
                 </div>
             </div>
 
-            {/* Stories Grid */}
-            <main className="max-w-6xl mx-auto px-4 py-8">
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredStories.map((story) => {
-                        const isLocked = !canAccess(story.tier_required);
+            <div className="max-w-7xl mx-auto px-4 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-                        return (
-                            <div
-                                key={story.id}
-                                className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-xl transition-all group"
-                            >
-                                {/* Cover Image */}
-                                <div className="relative aspect-[4/3] overflow-hidden">
-                                    <Image
-                                        src={story.cover_image}
-                                        alt={story.title}
-                                        fill
-                                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                    />
+                {/* Filters Sidebar */}
+                <aside className="lg:col-span-1 space-y-8">
+                    {/* Browse by Island */}
+                    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-2 mb-4">
+                            <Map className="text-indigo-500" size={20} />
+                            <h3 className="font-black text-slate-800">Browse by Island</h3>
+                        </div>
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                            {ISLANDS.map(island => (
+                                <button
+                                    key={island.name}
+                                    onClick={() => setSelectedIsland(island.name)}
+                                    className={`w-full flex items-center text-left px-4 py-3 rounded-xl transition-all font-bold text-sm ${selectedIsland === island.name ? 'bg-indigo-50 text-indigo-700 shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}
+                                >
+                                    <span className="mr-3 text-xl">{island.flag}</span> {island.name}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
-                                    {/* Isle Badge */}
-                                    <div className="absolute top-3 left-3 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-bold">
-                                        🏝️ {story.island_origin}
-                                    </div>
+                    {/* Age Filters */}
+                    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-2 mb-4">
+                            <Award className="text-emerald-500" size={20} />
+                            <h3 className="font-black text-slate-800">Age Group</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            {AGE_GROUPS.map(age => (
+                                <button
+                                    key={age.id}
+                                    onClick={() => setSelectedAgeGroup(age.id)}
+                                    className={`py-2 px-3 rounded-xl font-bold text-sm text-center transition-all ${selectedAgeGroup === age.id ? 'bg-emerald-500 text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-100'}`}
+                                >
+                                    {age.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </aside>
 
-                                    {/* Age Badge */}
-                                    <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-bold ${story.age_track === 'mini'
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-blue-100 text-blue-700'
-                                        }`}>
-                                        {story.age_track === 'mini' ? '4-5 yrs' : '6-8 yrs'}
-                                    </div>
+                {/* Main Content Area */}
+                <div className="lg:col-span-3">
 
-                                    {/* Locked Overlay */}
-                                    {isLocked && (
-                                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                            <div className="text-center text-white">
-                                                <Lock size={32} className="mx-auto mb-2" />
-                                                <p className="font-bold">Upgrade to Read</p>
+                    {/* Categories Tabs */}
+                    <div className="mb-8 overflow-x-auto no-scrollbar pb-2">
+                        <div className="flex gap-2">
+                            {CATEGORIES.map(category => (
+                                <button
+                                    key={category}
+                                    onClick={() => setSelectedCategory(category)}
+                                    className={`whitespace-nowrap px-6 py-3 rounded-full font-bold text-sm transition-all focus:outline-none ${selectedCategory === category ? 'bg-slate-800 text-white shadow-lg' : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:shadow-md'}`}
+                                >
+                                    {category === 'All Categories' ? <Sparkle className="inline mr-2 w-4 h-4" /> : null}
+                                    {category}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Story Library Grid */}
+                    {isLoading ? (
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[1, 2, 3, 4, 5, 6].map(i => (
+                                <div key={i} className="bg-white rounded-3xl h-[360px] animate-pulse border border-slate-100" />
+                            ))}
+                        </div>
+                    ) : filteredStories.length > 0 ? (
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredStories.map((story) => {
+                                const isLocked = !canAccess(story.tier_required);
+                                const islandData = ISLANDS.find(i => i.name === story.island_origin);
+
+                                return (
+                                    <div
+                                        key={story.id}
+                                        className="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col h-full"
+                                    >
+                                        <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                                            <Image
+                                                src={story.cover_image}
+                                                alt={story.title}
+                                                fill
+                                                className="object-cover group-hover:scale-105 transition-transform duration-700"
+                                            />
+
+                                            {/* Top badges */}
+                                            <div className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-1 bg-white/90 backdrop-blur-md rounded-full text-xs font-black shadow-sm text-slate-800">
+                                                {islandData?.flag || '🌍'} {story.island_origin.substring(0, 12)}{story.island_origin.length > 12 ? '...' : ''}
+                                            </div>
+
+                                            <div className="absolute top-3 right-3 bg-emerald-500 text-white px-2 py-1 rounded-full text-xs font-black shadow-sm">
+                                                {story.age_group}
+                                            </div>
+
+                                            {/* Locked Overlay */}
+                                            {isLocked && (
+                                                <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex flex-col items-center justify-center text-white p-4">
+                                                    <Lock size={32} className="mb-2 text-indigo-300" />
+                                                    <p className="font-black text-center text-white">Unlock with Legends+</p>
+                                                </div>
+                                            )}
+
+                                            {/* Reading Time Badge Bottom Left Image */}
+                                            <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                                                <Clock size={12} /> {story.reading_time}m
                                             </div>
                                         </div>
-                                    )}
 
-                                    {/* Progress Bar */}
-                                    {story.progress && !story.completed && (
-                                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20">
-                                            <div
-                                                className="h-full bg-green-500"
-                                                style={{ width: `${story.progress}%` }}
-                                            />
+                                        <div className="p-5 flex flex-col flex-1">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Tag size={12} className="text-slate-400" />
+                                                <span className="text-xs font-bold uppercase tracking-widest text-indigo-500">{story.category}</span>
+                                            </div>
+
+                                            <h3 className="font-black text-xl text-slate-900 mb-2 line-clamp-2 leading-tight group-hover:text-indigo-600 transition-colors">{story.title}</h3>
+                                            <p className="text-sm text-slate-500 mb-6 line-clamp-2">{story.description}</p>
+
+                                            <div className="mt-auto">
+                                                {!isLocked ? (
+                                                    <Link
+                                                        href={`/portal/stories/${story.id}`}
+                                                        className="w-full py-3.5 bg-indigo-50 text-indigo-700 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-indigo-600 hover:text-white transition-all group-hover:shadow-md"
+                                                    >
+                                                        <Play size={18} />
+                                                        Read Story
+                                                    </Link>
+                                                ) : (
+                                                    <Link
+                                                        href="/checkout?plan=legends_plus"
+                                                        className="w-full py-3.5 bg-slate-50 text-slate-500 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-slate-100 border border-slate-200"
+                                                    >
+                                                        <Lock size={18} /> Get Access
+                                                    </Link>
+                                                )}
+                                            </div>
                                         </div>
-                                    )}
-
-                                    {/* Completed Badge */}
-                                    {story.completed && (
-                                        <div className="absolute bottom-3 right-3 px-2 py-1 bg-green-500 text-white rounded-full text-xs font-bold">
-                                            ✓ Completed
-                                        </div>
-                                    )}
-
-                                    {/* Favorite Button */}
-                                    <button
-                                        onClick={(e) => { e.preventDefault(); toggleFavorite(story.id); }}
-                                        className="absolute bottom-3 left-3 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors"
-                                        aria-label={favorites.has(story.id) ? 'Remove from favorites' : 'Add to favorites'}
-                                    >
-                                        <Heart
-                                            size={16}
-                                            className={favorites.has(story.id) ? 'fill-red-500 text-red-500' : 'text-gray-500'}
-                                        />
-                                    </button>
-                                </div>
-
-                                {/* Content */}
-                                <div className="p-5">
-                                    <h3 className="font-bold text-lg text-gray-900 mb-1 line-clamp-1">{story.title}</h3>
-                                    <p className="text-sm text-gray-500 mb-4 line-clamp-2">{story.description}</p>
-
-                                    {/* Meta */}
-                                    <div className="flex items-center gap-4 text-xs text-gray-400 mb-4">
-                                        <span className="flex items-center gap-1">
-                                            <Clock size={12} /> {story.reading_time} min
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <Book size={12} /> {story.page_count} pages
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <Star size={12} className="text-amber-400" /> {story.rating}
-                                        </span>
                                     </div>
-
-                                    {/* Action Button */}
-                                    {!isLocked ? (
-                                        <Link
-                                            href={`/portal/stories/${story.id}`}
-                                            className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
-                                        >
-                                            <Play size={18} />
-                                            {story.completed ? 'Read Again' : story.progress ? 'Continue' : 'Start Reading'}
-                                        </Link>
-                                    ) : (
-                                        <Link
-                                            href="/checkout?plan=legends_plus"
-                                            className="w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-                                        >
-                                            <Lock size={18} /> Unlock Story
-                                        </Link>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {filteredStories.length === 0 && (
-                    <div className="text-center py-16">
-                        <Book className="text-gray-300 mx-auto mb-4" size={48} />
-                        <p className="text-gray-500">No stories match your filters</p>
-                    </div>
-                )}
-            </main>
-
-            {/* Coming Soon */}
-            <div className="max-w-6xl mx-auto px-4 pb-8">
-                <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-3xl p-8 text-white text-center">
-                    <Sparkles className="mx-auto mb-4" size={40} />
-                    <h3 className="text-2xl font-black mb-2">New Stories Every Month!</h3>
-                    <p className="text-white/80 max-w-md mx-auto">
-                        Our team is always creating new Caribbean adventures. Check back soon for more tales!
-                    </p>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                            <BookOpen className="text-slate-200 mx-auto mb-4" size={64} />
+                            <h4 className="text-2xl font-black text-slate-800 mb-2">No stories found</h4>
+                            <p className="text-slate-500 max-w-sm mx-auto">Try adjusting your filters or search terms to find more Caribbean adventures.</p>
+                            <button
+                                onClick={() => { setSearchQuery(''); setSelectedIsland('All Islands'); setSelectedCategory('All Categories'); setSelectedAgeGroup('all'); }}
+                                className="mt-6 px-6 py-2 bg-indigo-50 text-indigo-600 rounded-full font-bold hover:bg-indigo-100 transition-colors"
+                            >
+                                Clear All Filters
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
+
         </div>
     );
 }

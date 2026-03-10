@@ -40,8 +40,26 @@ export async function GET(request: Request) {
                 },
             }
         )
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
+            // Ensure a profile row exists for OAuth users (Google, Facebook, etc.)
+            // Email/password users have their profile created in signupAction.
+            const user = sessionData?.user;
+            if (user) {
+                const { supabaseAdmin } = await import('@/lib/supabase-client');
+                await Promise.resolve(
+                    supabaseAdmin.from('profiles').upsert(
+                        {
+                            id: user.id,
+                            full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+                            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+                            is_coppa_designated_parent: true,
+                            coppa_consent_date: new Date().toISOString(),
+                        },
+                        { onConflict: 'id', ignoreDuplicates: true }
+                    )
+                ).catch(err => console.error('[AUTH CALLBACK] Profile upsert failed:', err));
+            }
             return NextResponse.redirect(`${origin}${next}`)
         }
     }

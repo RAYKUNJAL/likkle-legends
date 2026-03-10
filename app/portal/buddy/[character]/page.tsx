@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -42,8 +42,8 @@ interface QuickPrompt {
 
 declare global {
     interface Window {
-        webkitSpeechRecognition?: new () => SpeechRecognition;
-        SpeechRecognition?: new () => SpeechRecognition;
+        webkitSpeechRecognition?: any;
+        SpeechRecognition?: any;
     }
     interface SpeechRecognitionEvent extends Event {
         results: SpeechRecognitionResultList;
@@ -168,7 +168,7 @@ export default function CharacterChatPage() {
     const chatEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const audioRef = useRef<HTMLAudioElement>(null);
-    const recognitionRef = useRef<SpeechRecognition | null>(null);
+    const recognitionRef = useRef<any | null>(null);
 
     useEffect(() => {
         if (!config && characterId) {
@@ -398,7 +398,7 @@ export default function CharacterChatPage() {
         <div className="h-screen flex flex-col bg-gradient-to-b from-sky-50 via-cyan-50 to-white">
             <audio ref={audioRef} className="hidden" />
 
-            {isVoiceMode && childProfile && (
+            {isVoiceMode && childProfile && activeChild && (
                 <IslandVoice
                     onClose={() => setIsVoiceMode(false)}
                     characterConfig={config}

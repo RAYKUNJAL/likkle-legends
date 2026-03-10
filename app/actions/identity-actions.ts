@@ -24,6 +24,14 @@ function hasServiceRoleAccess() {
  * Sends a 6-digit OTP via WhatsApp
  */
 export async function sendWhatsAppOtpAction(phone: string) {
+    // Guard: WhatsApp must be configured
+    if (!process.env.WHATSAPP_ACCESS_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID) {
+        return {
+            success: false,
+            error: "WhatsApp verification is not available right now. Please use Email or Google to sign in."
+        };
+    }
+
     try {
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
@@ -39,15 +47,14 @@ export async function sendWhatsAppOtpAction(phone: string) {
 
         if (dbError) throw dbError;
 
-        // 2. Dispatch via WhatsApp
-        // Note: For production, use a registered template 'otp_verification'
+        // 2. Dispatch via WhatsApp template
         const sent = await dispatchExternalMessage({
             to: phone,
-            body: `Your Likkle Legends verification code is: ${code}. It expires in 10 minutes.`,
+            body: code,
             channel: 'whatsapp'
         });
 
-        if (!sent) throw new Error("Could not send WhatsApp message.");
+        if (!sent) throw new Error("WhatsApp message could not be delivered. Please check the number and try again.");
 
         return { success: true };
     } catch (err: any) {

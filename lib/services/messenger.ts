@@ -24,34 +24,60 @@ export async function dispatchExternalMessage(msg: ExternalMessage) {
     // Detect channel if not provided
     const targetChannel = channel || (to.includes('@') ? 'email' : 'whatsapp');
 
-    if (targetChannel === 'whatsapp' && PHONE_NUMBER_ID && WHATSAPP_ACCESS_TOKEN) {
+    if (targetChannel === 'whatsapp') {
+        if (!PHONE_NUMBER_ID || !WHATSAPP_ACCESS_TOKEN) {
+            console.warn("[MESSENGER] WhatsApp not configured: missing WHATSAPP_PHONE_NUMBER_ID or WHATSAPP_ACCESS_TOKEN");
+            return false;
+        }
         try {
+            // WhatsApp Business API requires approved templates for outbound OTP to new users.
+            // The template 'otp_verification' must be pre-approved in Meta Business Manager.
+            const requestBody = template
+                ? {
+                    messaging_product: "whatsapp",
+                    to,
+                    type: "template",
+                    template: { name: template, language: { code: "en_US" } }
+                }
+                : {
+                    messaging_product: "whatsapp",
+                    to,
+                    type: "template",
+                    template: {
+                        name: "otp_verification",
+                        language: { code: "en" },
+                        components: [
+                            {
+                                type: "body",
+                                parameters: [{ type: "text", text: body || "" }]
+                            },
+                            {
+                                type: "button",
+                                sub_type: "url",
+                                index: "0",
+                                parameters: [{ type: "text", text: body || "" }]
+                            }
+                        ]
+                    }
+                };
+
             const response = await fetch(`https://graph.facebook.com/${META_API_VERSION}/${PHONE_NUMBER_ID}/messages`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    messaging_product: "whatsapp",
-                    to,
-                    type: template ? "template" : "text",
-                    ...(template ? {
-                        template: {
-                            name: template,
-                            language: { code: "en_US" },
-                            // mapping components would go here for complex templates
-                        }
-                    } : {
-                        text: { body: body || "" }
-                    })
-                })
+                body: JSON.stringify(requestBody)
             });
 
-            return response.ok;
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                console.error("[MESSENGER] WhatsApp API error:", errData);
+                return false;
+            }
+            return true;
         } catch (err) {
             console.error("[MESSENGER] WhatsApp Failure:", err);
-            // Fallback to email if user has one? (Needs more logic)
             return false;
         }
     }

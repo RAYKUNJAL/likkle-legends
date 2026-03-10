@@ -146,9 +146,11 @@ export default function ChildPortalPage() {
     const [stories, setStories] = useState<Storybook[]>([]);
     const [videos, setVideos] = useState<Video[]>([]);
     const [loadingStates, setLoadingStates] = useState({
-        stories: true,
-        videos: true
+        stories: false,
+        videos: false
     });
+    const [hasLoadedStories, setHasLoadedStories] = useState(false);
+    const [hasLoadedVideos, setHasLoadedVideos] = useState(false);
     const [activeSection, setActiveSection] = useState<PortalSection>('home');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -174,30 +176,31 @@ export default function ChildPortalPage() {
         open: boolean; featureName: string; featureDescription: string; requiredTier: string;
     }>({ open: false, featureName: '', featureDescription: '', requiredTier: 'legends_plus' });
 
-    const loadPortalData = useCallback(async () => {
-        // Individual fetchers to avoid Promise.all bottleneck
-        const fetchStories = async () => {
-            try {
-                const data = await getStorybooks();
-                setStories(data as Storybook[]);
-            } finally {
-                setLoadingStates(prev => ({ ...prev, stories: false }));
-            }
-        };
+    const fetchStories = useCallback(async () => {
+        if (loadingStates.stories || hasLoadedStories) return;
 
-        const fetchVideos = async () => {
-            try {
-                const data = await getVideos();
-                setVideos(data as unknown as Video[]);
-            } finally {
-                setLoadingStates(prev => ({ ...prev, videos: false }));
-            }
-        };
+        setLoadingStates((prev) => ({ ...prev, stories: true }));
+        try {
+            const data = await getStorybooks();
+            setStories(data as Storybook[]);
+        } finally {
+            setLoadingStates((prev) => ({ ...prev, stories: false }));
+            setHasLoadedStories(true);
+        }
+    }, [hasLoadedStories, loadingStates.stories]);
 
-        setLoadingStates({ stories: true, videos: true });
+    const fetchVideos = useCallback(async () => {
+        if (loadingStates.videos || hasLoadedVideos) return;
 
-        Promise.allSettled([fetchStories(), fetchVideos()]);
-    }, [activeChild?.age_track]);
+        setLoadingStates((prev) => ({ ...prev, videos: true }));
+        try {
+            const data = await getVideos();
+            setVideos(data as unknown as Video[]);
+        } finally {
+            setLoadingStates((prev) => ({ ...prev, videos: false }));
+            setHasLoadedVideos(true);
+        }
+    }, [hasLoadedVideos, loadingStates.videos]);
 
     // Redirect to login if not authenticated
     // FIXED: Removed auto-redirect to prevent loops with middleware
@@ -216,9 +219,20 @@ export default function ChildPortalPage() {
                 router.push('/admin');
                 return;
             }
-            loadPortalData();
         }
-    }, [user, children, loadPortalData, router]);
+    }, [user, children, router]);
+
+    useEffect(() => {
+        if (!user) return;
+
+        if (activeSection === 'stories') {
+            void fetchStories();
+        }
+
+        if (activeSection === 'lessons') {
+            void fetchVideos();
+        }
+    }, [activeSection, fetchStories, fetchVideos, user]);
 
     // Phase 1 Retention: check daily login on portal mount
     useEffect(() => {
@@ -336,7 +350,6 @@ export default function ChildPortalPage() {
                 triggerBadgeUnlock(result.unlockedBadge);
             }
 
-            loadPortalData();
         } catch (err) {
             console.error("Failed to log activity:", err);
         }
@@ -683,7 +696,7 @@ export default function ChildPortalPage() {
                                         </div>
                                     </div>
 
-                                    {loadingStates.stories ? (
+                                    {loadingStates.stories || !hasLoadedStories ? (
                                         <GridSkeleton count={4} type="card" />
                                     ) : stories.length === 0 ? (
                                         <div className="col-span-full">
@@ -753,7 +766,7 @@ export default function ChildPortalPage() {
                                         </div>
                                     </div>
 
-                                    {loadingStates.videos ? (
+                                    {loadingStates.videos || !hasLoadedVideos ? (
                                         <GridSkeleton count={3} type="card" />
                                     ) : (
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -939,7 +952,7 @@ export default function ChildPortalPage() {
                         setChestReady(false);
                         if (type === 'xp') {
                             // Refresh XP display via reload
-                            loadPortalData();
+                            window.location.reload();
                         }
                     }}
                 />
@@ -959,7 +972,7 @@ export default function ChildPortalPage() {
                     senderId={activeChild.id}
                     friends={children?.filter(c => c.id !== activeChild.id) || []}
                     onClose={() => setGiftModalOpen(false)}
-                    onGiftSent={() => loadPortalData()}
+                    onGiftSent={() => window.location.reload()}
                 />
             )}
 

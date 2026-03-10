@@ -98,7 +98,7 @@ const VOCABULARY: Record<string, Pair[]> = {
         { patois: 'Junction', english: 'Crossroads', hint: 'Where streets meet', example: 'Meet me at the junction.' },
         { patois: 'Mashramani', english: 'Festival', hint: 'Republic celebration', example: 'We celebrate Mashramani in February.' },
         { patois: 'Salaru', english: 'Salty', hint: 'Too much salt', example: 'This food is too salaru.' },
-        { patois: 'Trench', patois: 'Canal', english: 'Trench / Canal', hint: 'Waterway', example: 'The trench is full of water.' },
+        { patois: 'Trench', english: 'Trench / Canal', hint: 'Waterway', example: 'The trench is full of water.' },
         { patois: 'Vex', english: 'Angry', hint: 'Not happy', example: 'Why are you vex?' },
         { patois: 'Wata', english: 'Water', hint: 'H2O', example: 'Drink wata.' }
     ],
@@ -339,8 +339,8 @@ export default function PatoisWizard({ onComplete }: { onComplete?: (score: numb
                                     disabled={!isUnlocked}
                                     onClick={() => startGame(level.num)}
                                     className={`relative p-6 rounded-3xl flex flex-col items-center justify-center gap-3 border-4 transition-all ${isUnlocked
-                                            ? 'bg-fuchsia-50 border-fuchsia-100 text-fuchsia-900 hover:border-fuchsia-500 hover:shadow-lg hover:-translate-y-1'
-                                            : 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed grayscale'
+                                        ? 'bg-fuchsia-50 border-fuchsia-100 text-fuchsia-900 hover:border-fuchsia-500 hover:shadow-lg hover:-translate-y-1'
+                                        : 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed grayscale'
                                         }`}
                                 >
                                     {isUnlocked ? <Unlock className="text-fuchsia-500" /> : <Lock className="text-slate-300" />}

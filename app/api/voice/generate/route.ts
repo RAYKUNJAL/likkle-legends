@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleVoiceCharacter, synthesizeCharacterSpeech } from '@/lib/google-cloud-tts';
+import { generateSpeech, VoiceCharacter } from '@/lib/elevenlabs';
 import { supabase } from '@/lib/storage';
 
 const MAX_TTS_CHARS = 900;
@@ -12,6 +13,20 @@ function sanitizeTtsText(text: string) {
         .replace(/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, '')
         .replace(/\s{2,}/g, ' ')
         .trim();
+}
+
+function resolveVoiceCharacter(voice: string): VoiceCharacter {
+    if (voice === 'roti') return 'roti';
+    if (voice === 'dilly_doubles') return 'dilly_doubles';
+    if (voice === 'steelpan_sam') return 'steelpan_sam';
+    if (voice === 'tanty') return 'tanty';
+    return 'tanty_spice';
+}
+
+function resolveGoogleVoiceCharacter(voice: string): GoogleVoiceCharacter {
+    if (voice === 'roti' || voice === 'steelpan_sam') return 'roti';
+    if (voice === 'dilly_doubles') return 'dilly';
+    return 'tanty';
 }
 
 export async function POST(request: NextRequest) {
@@ -53,26 +68,33 @@ export async function POST(request: NextRequest) {
         }
 
         const requestedVoice = String(voice || 'tanty_spice');
-        const mappedVoice: GoogleVoiceCharacter =
-            requestedVoice === 'steelpan_sam' ? 'roti' :
-                requestedVoice === 'dilly_doubles' ? 'dilly' :
-                    requestedVoice === 'tanty_spice' ? 'tanty' :
-                        requestedVoice === 'roti' ? 'roti' :
-                            'tanty';
+        const elevenVoice = resolveVoiceCharacter(requestedVoice);
+        const googleVoice = resolveGoogleVoiceCharacter(requestedVoice);
 
-        console.log(`Voice API: Using Google Cloud TTS (${mappedVoice})`);
-        const googleBase64 = await synthesizeCharacterSpeech(safeText, mappedVoice, voiceName);
-        if (!googleBase64) {
-            return NextResponse.json({
-                error: 'Failed to generate audio. Check GOOGLE_CLOUD_TTS_API_KEY.'
-            }, { status: 500 });
+        let audioBuffer: ArrayBuffer | null = null;
+
+        if (process.env.ELEVENLABS_API_KEY) {
+            console.log(`Voice API: Trying ElevenLabs (${elevenVoice})`);
+            audioBuffer = await generateSpeech(safeText, { voice: elevenVoice });
         }
 
-        const googleBuffer = Buffer.from(googleBase64, 'base64');
-        const audioBuffer = googleBuffer.buffer.slice(
-            googleBuffer.byteOffset,
-            googleBuffer.byteOffset + googleBuffer.byteLength
-        );
+        if (!audioBuffer) {
+            console.log(`Voice API: Falling back to Google Cloud TTS (${googleVoice})`);
+            const googleBase64 = await synthesizeCharacterSpeech(safeText, googleVoice, voiceName);
+            if (googleBase64) {
+                const googleBuffer = Buffer.from(googleBase64, 'base64');
+                audioBuffer = googleBuffer.buffer.slice(
+                    googleBuffer.byteOffset,
+                    googleBuffer.byteOffset + googleBuffer.byteLength
+                );
+            }
+        }
+
+        if (!audioBuffer) {
+            return NextResponse.json({
+                error: 'Failed to generate audio from both ElevenLabs and Google TTS.'
+            }, { status: 500 });
+        }
         const contentType = 'audio/mpeg';
 
         // Return audio as response

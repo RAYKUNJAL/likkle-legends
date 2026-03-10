@@ -6,38 +6,8 @@ import { CharacterConfig, CharacterChild } from "@/lib/characterConfig";
 
 declare global {
     interface Window {
-        webkitSpeechRecognition?: new () => SpeechRecognition;
-        SpeechRecognition?: new () => SpeechRecognition;
-    }
-    interface SpeechRecognitionAlternative {
-        transcript: string;
-    }
-    interface SpeechRecognitionResult {
-        0: SpeechRecognitionAlternative;
-        isFinal: boolean;
-        length: number;
-    }
-    interface SpeechRecognitionResultList {
-        0: SpeechRecognitionResult;
-        length: number;
-    }
-    interface SpeechRecognitionEvent extends Event {
-        results: SpeechRecognitionResultList;
-    }
-    interface SpeechRecognitionErrorEvent extends Event {
-        error: string;
-    }
-    interface SpeechRecognition extends EventTarget {
-        lang: string;
-        interimResults: boolean;
-        maxAlternatives: number;
-        continuous: boolean;
-        onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
-        onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any) | null;
-        onend: ((this: SpeechRecognition, ev: Event) => any) | null;
-        onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
-        start: () => void;
-        stop: () => void;
+        webkitSpeechRecognition?: any;
+        SpeechRecognition?: any;
     }
 }
 
@@ -66,7 +36,7 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
     );
     const [error, setError] = useState<string | null>(null);
 
-    const recognitionRef = useRef<SpeechRecognition | null>(null);
+    const recognitionRef = useRef<any | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const objectUrlRef = useRef<string | null>(null);
 
@@ -224,12 +194,12 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
         recognition.continuous = false;
 
         recognition.onstart = () => setIsListening(true);
-        recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        recognition.onerror = (event: any) => {
             setIsListening(false);
             setError(event.error === "not-allowed" ? "Microphone permission was blocked." : "Could not understand that.");
         };
         recognition.onend = () => setIsListening(false);
-        recognition.onresult = (event: SpeechRecognitionEvent) => {
+        recognition.onresult = (event: any) => {
             const transcript = event.results?.[0]?.[0]?.transcript?.trim() || "";
             if (!transcript) {
                 setError("I did not hear anything clearly.");
@@ -295,9 +265,8 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
                             type="button"
                             onClick={isListening ? stopListening : startListening}
                             disabled={isThinking}
-                            className={`flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg transition-all ${
-                                isListening ? "bg-rose-500" : `bg-gradient-to-r ${visual.gradient}`
-                            } disabled:opacity-50`}
+                            className={`flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg transition-all ${isListening ? "bg-rose-500" : `bg-gradient-to-r ${visual.gradient}`
+                                } disabled:opacity-50`}
                             title={isListening ? "Stop listening" : "Start listening"}
                             aria-label={isListening ? "Stop listening" : "Start listening"}
                         >

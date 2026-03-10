@@ -1,5 +1,4 @@
-
-
+import { generateGeminiSpeech } from '@/lib/gemini-tts';
 /**
  * 🎙️ Google Cloud Text-to-Speech Service
  * Production-grade TTS using Google Cloud REST API
@@ -22,6 +21,11 @@ interface TTSResponse {
 }
 
 export type GoogleVoiceCharacter = 'tanty' | 'roti' | 'dilly';
+
+const GOOGLE_CLOUD_TTS_API_KEY =
+    process.env.GOOGLE_CLOUD_TTS_API_KEY ||
+    process.env.GOOGLE_API_KEY ||
+    '';
 
 export const GOOGLE_VOICE_PRESETS: Record<GoogleVoiceCharacter, Required<Pick<TTSConfig, 'languageCode' | 'voiceName' | 'pitch' | 'speakingRate' | 'volumeGainDb'>>> = {
     // Original Tanty v3 "Memory Village" profile from early production build.
@@ -78,10 +82,8 @@ export async function synthesizeSpeech(
     text: string,
     config: TTSConfig = {}
 ): Promise<string | null> {
-    const apiKey = process.env.GOOGLE_CLOUD_TTS_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-
-    if (!apiKey) {
-        console.warn("[Google Cloud TTS] API key not configured (GOOGLE_CLOUD_TTS_API_KEY)");
+    if (!GOOGLE_CLOUD_TTS_API_KEY) {
+        console.warn("[Google Cloud TTS] API key not configured (GOOGLE_CLOUD_TTS_API_KEY or GOOGLE_API_KEY)");
         return null;
     }
 
@@ -116,7 +118,7 @@ export async function synthesizeSpeech(
 
     try {
         const response = await fetch(
-            `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`,
+            `https://texttospeech.googleapis.com/v1/text:synthesize?key=${GOOGLE_CLOUD_TTS_API_KEY}`,
             {
                 method: "POST",
                 headers: {
@@ -164,7 +166,21 @@ export async function synthesizeCharacterSpeech(
     character: GoogleVoiceCharacter,
     voiceNameOverride?: string
 ): Promise<string | null> {
-    return synthesizeSpeech(text, resolveCharacterVoicePreset(character, voiceNameOverride));
+    const cloudAudio = await synthesizeSpeech(text, resolveCharacterVoicePreset(character, voiceNameOverride));
+    if (cloudAudio) return cloudAudio;
+
+    console.warn(`[TTS] Falling back to Gemini TTS for ${character}`);
+
+    const geminiAudio = await generateGeminiSpeech(text, {
+        character,
+        voiceName: isGoogleVoiceName(voiceNameOverride) ? undefined : voiceNameOverride
+    });
+
+    if (!geminiAudio) {
+        return null;
+    }
+
+    return Buffer.from(geminiAudio).toString('base64');
 }
 
 /**
