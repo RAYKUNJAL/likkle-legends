@@ -494,8 +494,14 @@ function CheckoutContent() {
                                         className="space-y-8"
                                     >
                                         <div className="space-y-2">
-                                            <h3 className="text-2xl font-black text-deep tracking-tight">Start Free — Pay Later.</h3>
-                                            <p className="text-deep/40 text-sm font-medium">7-day free trial • $0 charged today • cancel anytime.</p>
+                                            <h3 className="text-2xl font-black text-deep tracking-tight">
+                                                {formData.planKey === 'plan_free_forever' ? 'Your free account is ready.' : 'Start Free — Pay Later.'}
+                                            </h3>
+                                            <p className="text-deep/40 text-sm font-medium">
+                                                {formData.planKey === 'plan_free_forever'
+                                                    ? 'Free forever • No credit card required • upgrade anytime.'
+                                                    : '7-day free trial • $0 charged today • cancel anytime.'}
+                                            </p>
                                         </div>
 
                                         <div className="bg-white rounded-2xl border border-zinc-100 p-6 space-y-6 shadow-sm">
