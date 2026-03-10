@@ -157,6 +157,27 @@ DO $$ BEGIN
   END IF;
 END $$;
 
+-- Drop NOT NULL from the old primary_user_id column — the app now writes parent_id instead.
+-- This is the key fix: production DB had primary_user_id NOT NULL which blocked new inserts.
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='children' AND column_name='primary_user_id'
+  ) THEN
+    ALTER TABLE public.children ALTER COLUMN primary_user_id DROP NOT NULL;
+  END IF;
+END $$;
+
+-- Also drop NOT NULL from old 'name' column if it exists
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema='public' AND table_name='children' AND column_name='name'
+  ) THEN
+    ALTER TABLE public.children ALTER COLUMN name DROP NOT NULL;
+  END IF;
+END $$;
+
 -- Ensure parent_id is NOT NULL now that it's backfilled
 -- (only do this if ALL rows have it)
 DO $$ BEGIN
