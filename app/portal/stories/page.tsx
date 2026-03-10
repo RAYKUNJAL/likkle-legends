@@ -83,7 +83,7 @@ export default function StoriesLibraryPage() {
                     title: sb.title,
                     description: sb.summary,
                     cover_image: sb.cover_image_url || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400',
-                    island_origin: sb.island_category || 'Jamaica', // Fallback to a valid island
+                    island_origin: sb.island_theme || sb.island_category || 'Jamaica',
                     category: sb.category || 'Adventure',
                     age_group: sb.age_track === 'big' ? '7-9' : '5-6', // Mapping existing age tracks
                     tier_required: sb.tier_required,

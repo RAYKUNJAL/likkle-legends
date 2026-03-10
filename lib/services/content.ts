@@ -63,14 +63,21 @@ export async function getContentById(id: string) {
 // Legacy Aliases for compatibility during transition
 export const getCharacters = () => getContentItems('character');
 export async function getStorybooks() {
-    const data = await getContentItems('story');
-    // Map content_items columns → shape expected by the portal
-    return data.map((item: any) => ({
-        ...item,
-        summary: item.description,
-        cover_image_url: item.thumbnail_url,
-        reading_time_minutes: item.metadata?.reading_time_minutes ?? 5,
-    }));
+    if (!isSupabaseConfigured()) {
+        console.warn('⚠️ Supabase not configured. Skipping storybooks fetch.');
+        return [];
+    }
+    const { data, error } = await supabase
+        .from('storybooks')
+        .select('id, title, summary, cover_image_url, age_track, tier_required, island_theme, reading_time_minutes, content_json, is_active, display_order, created_at')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+    if (error) {
+        console.warn('Storybooks fetch warning:', error.message);
+        return [];
+    }
+    return data || [];
 }
 export const getVideos = () => getContentItems('video');
 export const getMissions = (ageTrack?: string) => getContentItems('mission', undefined, ageTrack);
