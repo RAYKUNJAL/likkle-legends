@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useUser } from "@/components/UserContext";
 import { sanitizeInput } from "@/lib/sanitize";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 interface Message {
