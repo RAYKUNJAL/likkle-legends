@@ -2,33 +2,33 @@ export default function StructuredData() {
     const organizationData = {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "Likkle Legends",
-        "url": "https://www.likklelegends.com",
-        "logo": "https://www.likklelegends.com/images/logo.png",
+        "name": "Island City Tattoos",
+        "url": "https://islandcitytattoos.com",
+        "logo": "https://islandcitytattoos.com/icon.png",
         "sameAs": [
-            "https://www.instagram.com/likklelegends",
-            "https://twitter.com/likklelegends"
+            "https://www.instagram.com/zaypaige/",
+            "https://www.instagram.com/ray_tattoos/",
+            "https://www.instagram.com/cookiemandtm_/"
         ],
-        "description": "Premium Caribbean-themed educational mail club for kids."
+        "description": "Custom tattoo studio in Baltimore offering cover-ups, flash tattoos, and design consultations."
     };
 
-    const productData = {
+    const localBusinessData = {
         "@context": "https://schema.org",
-        "@type": "Product",
-        "name": "Likkle Legends Mail Club Subscription",
-        "image": "https://www.likklelegends.com/images/roti-new.jpg",
-        "description": "Monthly adventure boxes including character letters, Caribbean nursery songs, and interactive digital stories.",
-        "brand": {
-            "@type": "Brand",
-            "name": "Likkle Legends"
+        "@type": "TattooParlor",
+        "name": "Island City Tattoos",
+        "image": "https://islandcitytattoos.com/images/og-image.jpg",
+        "description": "Book custom tattoo work, cover-ups, and flash offers in Baltimore.",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "5456 Park Heights Ave",
+            "addressLocality": "Baltimore",
+            "addressRegion": "MD",
+            "postalCode": "21215",
+            "addressCountry": "US"
         },
-        "offers": {
-            "@type": "Offer",
-            "url": "https://www.likklelegends.com/#pricing",
-            "priceCurrency": "USD",
-            "price": "29.99",
-            "availability": "https://schema.org/InStock"
-        }
+        "telephone": "+1-410-466-0555",
+        "url": "https://islandcitytattoos.com"
     };
 
     return (
@@ -39,7 +39,7 @@ export default function StructuredData() {
             />
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(productData) }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessData) }}
             />
         </>
     );

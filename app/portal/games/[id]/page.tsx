@@ -9,6 +9,7 @@ import { useUser } from '@/components/UserContext';
 import confetti from 'canvas-confetti';
 import { getGameById } from '@/lib/database';
 import { logActivity } from '@/lib/database';
+import { recordGameResult } from '@/lib/game-progress';
 
 // Dynamic Imports with Loaders
 const ColorMatch = dynamic(() => import('@/components/games/ColorMatch'), { loading: () => <LoadingGame /> });
@@ -172,6 +173,8 @@ export default function GamePlayerPage() {
     };
 
     const handleComplete = (earnedScore: number, correct: number, total: number) => {
+        recordGameResult(gameId, earnedScore);
+
         if (user && activeChild) {
             const calculatedFromScore = Math.max(Math.floor(earnedScore / 10), 0);
             const xp = Math.min(dbGame?.reward_xp ?? calculatedFromScore, 400);

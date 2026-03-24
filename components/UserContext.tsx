@@ -58,7 +58,21 @@ interface Profile {
   parent_name?: string;
   marketing_opt_in?: boolean;
   is_admin?: boolean;
+  parental_controls?: {
+    allow_stories?: boolean;
+    allow_lessons?: boolean;
+    allow_games?: boolean;
+    allow_radio?: boolean;
+    allow_buddy?: boolean;
+    daily_screen_time_minutes?: number;
+  };
   created_at?: string;
+}
+
+interface SessionUserLike {
+  id: string;
+  email?: string;
+  user_metadata?: Record<string, any>;
 }
 
 interface UserContextType {
@@ -71,8 +85,8 @@ interface UserContextType {
 
   // Actions
   setActiveChild: (childId: string) => void;
-  refreshUser: () => Promise<void>;
-  refreshChildren: () => Promise<void>;
+  refreshUser: (sessionUser?: SessionUserLike | null) => Promise<void>;
+  refreshChildren: (userIdOverride?: string) => Promise<void>;
   logout: () => Promise<void>;
 
   // Gamification
@@ -87,7 +101,7 @@ interface UserContextType {
 
   // Notifications
   unreadCount: number;
-  refreshNotifications: () => Promise<void>;
+  refreshNotifications: (userIdOverride?: string) => Promise<void>;
 
   // Safety
   verifyAge: () => Promise<boolean>;
@@ -134,25 +148,29 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [unlockedBadge, setUnlockedBadge] = useState<any | null>(null);
-  // Refresh user profile
-  const refreshUser = useCallback(async () => {
-    try {
-      // Use getSession for speed (lock timeout handling is at client level)
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      if (sessionError) {
-        console.error('Session error:', sessionError);
+  // Refresh user profile
+  const refreshUser = useCallback(async (sessionUser?: SessionUserLike | null) => {
+    try {
+      let userObj = sessionUser;
+
+      if (!userObj) {
+        // High security auth fetch (always verifies JWT)
+        const { data: { user: supabaseUser }, error: userError } = await supabase.auth.getUser();
+
+        if (userError) {
+          console.error('[UserContext] Auth User Error:', userError);
+        }
+
+        userObj = supabaseUser as any;
       }
 
-      if (!session?.user) {
+      if (!userObj) {
         setUser(null);
         setChildren([]);
         setActiveChildState(null);
         return;
       }
-
-      // If we have a session, ensure we have the most up-to-date user object
-      const userObj = session.user;
 
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -161,7 +179,11 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
         .single();
 
       if (profile) {
-        setUser(profile as Profile);
+        const meta = userObj.user_metadata || {};
+        setUser({
+          ...(profile as Profile),
+          parental_controls: meta.parental_controls || (profile as any).parental_controls || undefined,
+        } as Profile);
       } else {
         // Fallback: If profile row is missing (trigger delay/fail), construct from session
         console.warn('Profile missing from DB, using session fallback');
@@ -185,7 +207,6 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
         setUser(fallbackProfile);
 
         // Self-healing: create the profile row if it doesn't exist
-        // Use service role via API if possible, but here we try user-side upsert
         supabase.from('profiles').upsert({
           id: fallbackProfile.id,
           email: fallbackProfile.email,
@@ -202,15 +223,9 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     }
   }, []);
 
-  // ... (refreshChildren and others unchanged) ...
-
   // Refresh children
-  const refreshChildren = useCallback(async () => {
-    // We check user from the current state (inside the closure)
-    // but we need to be careful with stale state. 
-    // Usually it's better to pass the userId or get it from Supabase session.
-    const { data: { session } } = await supabase.auth.getSession();
-    const userId = session?.user?.id;
+  const refreshChildren = useCallback(async (userIdOverride?: string) => {
+    const userId = userIdOverride || user?.id;
     if (!userId) return;
 
     try {
@@ -237,12 +252,11 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     } catch (error) {
       console.error('Error refreshing children:', error);
     }
-  }, []);
+  }, [user?.id]);
 
   // Refresh notifications
-  const refreshNotifications = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    const userId = session?.user?.id;
+  const refreshNotifications = useCallback(async (userIdOverride?: string) => {
+    const userId = userIdOverride || user?.id;
     if (!userId) return;
 
     try {
@@ -256,7 +270,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     } catch (error) {
       console.error('Error refreshing notifications:', error);
     }
-  }, []);
+  }, [user?.id]);
 
   // Set active child
   const setActiveChild = useCallback((childId: string) => {
@@ -298,10 +312,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
 
       console.log(`[AUTH] Merging anonymous data for user: ${userId}`);
 
-      // 1. Merge Progress (simplified for MVP - in production this would be a bulk RPC)
-      // This is a placeholder for the actual DB sync logic
-
-      // 2. Clear local data after successful merge (or at least attempt)
+      // Placeholder for actual DB sync logic
       localStorage.removeItem(historyKey);
       console.log(`[AUTH] Anonymous data merged and cleared.`);
     } catch (err) {
@@ -311,32 +322,21 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
 
   // Check access to tier-locked content
   const canAccess = useCallback((tierRequired: string): boolean => {
-    // 1. Free content is accessible to everyone (even guests)
     if (tierRequired === 'free' || !tierRequired) return true;
-
-    // 2. Logic for guests (no user)
     if (!user) return false;
+    if (user.role === 'teacher' || user.role === 'admin' || user.is_admin) return true;
 
-    // 3. VIP Bypass: Teachers and Admins never see locks
-    if (user.role === 'teacher' || user.role === 'admin' || user.is_admin) {
-      return true;
-    }
-
-    // 4. Status protection: past_due and canceled users get dropped to 'free' access level
     const isStatusActive = ['active', 'trialing'].includes(user.subscription_status);
     if (!isStatusActive) {
       return tierRequired === 'free' || !tierRequired;
     }
 
-    // 5. COPPA Safety Gate: Specific features (like AI generators) require verified age/consent
     if (tierRequired === 'legends_plus' || tierRequired === 'family_legacy') {
       if (activeChild && activeChild.requires_parental_consent && !activeChild.age_verified) {
-        console.warn("[COPPA] Feature locked: Child needs parental consent.");
         return false;
       }
     }
 
-    // 6. Subscription Level Check
     const userLevel = TIER_LEVELS[user.subscription_tier] || 0;
     const requiredLevel = TIER_LEVELS[tierRequired] || 0;
     return userLevel >= requiredLevel;
@@ -358,14 +358,12 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
 
       if (error) throw error;
 
-      // Update local state
       setUser(prev => prev ? ({
         ...prev,
         age_verified_at: now,
         is_coppa_designated_parent: true
       }) : null);
 
-      // If there's an active child, mark them as verified too
       if (activeChild) {
         await supabase
           .from('children')
@@ -410,12 +408,11 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       }
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
 
-        if (session?.user && mounted) {
-          // Sequential auth calls to avoid lock contention
+        if (supabaseUser && mounted) {
           try {
-            await refreshUser();
+            await refreshUser(supabaseUser as any);
           } catch (err) {
             console.error("refreshUser failed:", err);
           }
@@ -435,15 +432,14 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     }
 
     // Listen for ALL auth changes to keep context synced
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
-
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
         const userId = session?.user?.id;
         if (event === 'SIGNED_IN' && userId) {
           await mergeAnonymousData(userId);
         }
         if (session?.user) {
-          await refreshUser();
+          await refreshUser(session.user);
         }
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
@@ -462,9 +458,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
   // Load children when user changes
   useEffect(() => {
     if (user?.id) {
-      void Promise.all([refreshChildren(), refreshNotifications()]);
-
-      // Child state is handled inside refreshChildren
+      void Promise.all([refreshChildren(user.id), refreshNotifications(user.id)]);
     }
   }, [user?.id, refreshChildren, refreshNotifications]);
 
@@ -511,7 +505,6 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     unlockedBadge,
     clearUnlockedBadge,
     triggerBadgeUnlock,
-    // Safety
     verifyAge,
   }), [
     user,
@@ -527,7 +520,6 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     refreshNotifications,
     unlockedBadge,
     verifyAge,
-    // isSubscribed and tierLevel are derived from user, so user is sufficient
   ]);
 
   return (
@@ -536,10 +528,6 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     </UserContext.Provider>
   );
 }
-
-// ==========================================
-// HOOK
-// ==========================================
 
 export function useUser() {
   const context = useContext(UserContext);

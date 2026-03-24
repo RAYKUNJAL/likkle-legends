@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
     Sparkles, BookOpen, Palette, Play,
     Trophy, Crown, Lock, Gift, Video, Radio,
-    Map as MapIcon, LogOut, Download, Menu, X, ShoppingBag, LayoutDashboard, MessageCircle
+    Map as MapIcon, LogOut, Download, Menu, X, ShoppingBag, LayoutDashboard, MessageCircle, Info
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useUser } from '@/components/UserContext';
@@ -21,11 +21,15 @@ import { getXPMultiplier } from '@/lib/services/gamification';
 import { CharacterGuideBanner } from '@/components/portal/CharacterGuideBanner';
 import { TodaysPlanCard } from '@/components/portal/TodaysPlanCard';
 import type { PlanActivity } from '@/app/actions/generate-plan';
+import { addScreenMinute, getTodayScreenMinutes, normalizeParentalControls } from '@/lib/parental-controls';
 
 // ─── Lazy-loaded heavy components ────────────────────────────────────────────
 // Only loaded when the user navigates to that section — keeps initial bundle small.
 const TantyRadio = dynamic(() => import('@/components/TantyRadio'), { ssr: false });
-const IslandVillageMap = dynamic(() => import('@/components/IslandVillageMap'), { ssr: false });
+const IslandVillageMap = dynamic(() => import('@/components/IslandVillageMap'), {
+    ssr: false,
+    loading: () => <IslandVillageMapSkeleton />,
+});
 const PremiumVideoPlayer = dynamic(() => import('@/components/PremiumVideoPlayer'), { ssr: false });
 const LeaderboardPanel = dynamic(() => import('@/components/portal/LeaderboardPanel'), { ssr: false });
 const FamilyChallengesPanel = dynamic(() => import('@/components/portal/FamilyChallengesPanel'), { ssr: false });
@@ -34,7 +38,10 @@ const PrintablesSection = dynamic(() => import('@/components/PrintablesSection')
 
 // Modals — only rendered when triggered, so lazy load them too
 const BadgeUnlockModal = dynamic(() => import('@/components/gamification/BadgeUnlockModal'), { ssr: false });
-const StreakWidget = dynamic(() => import('@/components/portal/StreakWidget'), { ssr: false });
+const StreakWidget = dynamic(() => import('@/components/portal/StreakWidget'), {
+    ssr: false,
+    loading: () => <StreakWidgetSkeleton />,
+});
 const DailyChestModal = dynamic(() => import('@/components/portal/DailyChestModal'), { ssr: false });
 const StreakShareCard = dynamic(() => import('@/components/portal/StreakShareCard'), { ssr: false });
 const CoppaConsentModal = dynamic(() => import('@/components/auth/CoppaConsentModal'), { ssr: false });
@@ -43,7 +50,7 @@ const DoubleXPBanner = dynamic(() => import('@/components/portal/DoubleXPBanner'
 const MangoGiftModal = dynamic(() => import('@/components/portal/MangoGiftModal'), { ssr: false });
 const FeatureUpgradeModal = dynamic(() => import('@/components/FeatureUpgradeModal'), { ssr: false });
 import { FreeTierBanner } from '@/components/portal/FreeTierBanner';
-import { fireConversionEvent } from '@/lib/analytics';
+import { fireConversionEvent, trackEvent } from '@/lib/analytics';
 
 interface Storybook {
     id: string;
@@ -142,12 +149,27 @@ const VILLAGE_CINEMA_VIDEOS: Video[] = [
 
 export default function ChildPortalPage() {
     const router = useRouter();
-    const { user, children, activeChild, canAccess, isLoading: userLoading, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge, verifyAge } = useUser();
+    const {
+        user,
+        children,
+        activeChild,
+        canAccess,
+        isLoading: userLoading,
+        triggerBadgeUnlock,
+        unlockedBadge,
+        clearUnlockedBadge,
+        verifyAge,
+        refreshChildren
+    } = useUser();
     const [stories, setStories] = useState<Storybook[]>([]);
     const [videos, setVideos] = useState<Video[]>([]);
     const [loadingStates, setLoadingStates] = useState({
         stories: false,
         videos: false
+    });
+    const [contentErrors, setContentErrors] = useState({
+        stories: '',
+        videos: ''
     });
     const [hasLoadedStories, setHasLoadedStories] = useState(false);
     const [hasLoadedVideos, setHasLoadedVideos] = useState(false);
@@ -169,6 +191,11 @@ export default function ChildPortalPage() {
     const [xpMultiplier, setXpMultiplier] = useState(1);
     const [giftModalOpen, setGiftModalOpen] = useState(false);
     const [todaysActivities, setTodaysActivities] = useState<PlanActivity[]>([]);
+    const [isPortalIdleReady, setIsPortalIdleReady] = useState(false);
+    const [authRetryElapsedMs, setAuthRetryElapsedMs] = useState(0);
+    const [showHelpModal, setShowHelpModal] = useState(false);
+    const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
+    const [todayScreenMinutes, setTodayScreenMinutes] = useState(0);
 
     // CRO: track how many locked items a free user has hit this session
     const [lockedHitCount, setLockedHitCount] = useState(0);
@@ -180,9 +207,19 @@ export default function ChildPortalPage() {
         if (loadingStates.stories || hasLoadedStories) return;
 
         setLoadingStates((prev) => ({ ...prev, stories: true }));
+        setContentErrors((prev) => ({ ...prev, stories: '' }));
         try {
-            const data = await getStorybooks();
+            const data = await Promise.race([
+                getStorybooks(),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('Stories request timed out.')), 12000)
+                ),
+            ]);
             setStories(data as Storybook[]);
+        } catch (error) {
+            console.error("Failed to fetch stories:", error);
+            setContentErrors((prev) => ({ ...prev, stories: 'We could not load stories right now.' }));
+            trackEvent('portal_stories_load_failed', { section: 'portal_stories' });
         } finally {
             setLoadingStates((prev) => ({ ...prev, stories: false }));
             setHasLoadedStories(true);
@@ -193,9 +230,19 @@ export default function ChildPortalPage() {
         if (loadingStates.videos || hasLoadedVideos) return;
 
         setLoadingStates((prev) => ({ ...prev, videos: true }));
+        setContentErrors((prev) => ({ ...prev, videos: '' }));
         try {
-            const data = await getVideos();
+            const data = await Promise.race([
+                getVideos(),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('Lessons request timed out.')), 12000)
+                ),
+            ]);
             setVideos(data as unknown as Video[]);
+        } catch (error) {
+            console.error("Failed to fetch videos:", error);
+            setContentErrors((prev) => ({ ...prev, videos: 'We could not load lessons right now.' }));
+            trackEvent('portal_lessons_load_failed', { section: 'portal_lessons' });
         } finally {
             setLoadingStates((prev) => ({ ...prev, videos: false }));
             setHasLoadedVideos(true);
@@ -223,6 +270,33 @@ export default function ChildPortalPage() {
     }, [user, children, router]);
 
     useEffect(() => {
+        let cancelled = false;
+        const win = window as Window & {
+            requestIdleCallback?: (callback: IdleRequestCallback, options?: IdleRequestOptions) => number;
+            cancelIdleCallback?: (handle: number) => void;
+        };
+        const markReady = () => {
+            if (!cancelled) {
+                setIsPortalIdleReady(true);
+            }
+        };
+
+        if (typeof win.requestIdleCallback === 'function') {
+            const idleId = win.requestIdleCallback(() => markReady(), { timeout: 1200 });
+            return () => {
+                cancelled = true;
+                win.cancelIdleCallback?.(idleId);
+            };
+        }
+
+        const timeoutId = window.setTimeout(markReady, 250);
+        return () => {
+            cancelled = true;
+            window.clearTimeout(timeoutId);
+        };
+    }, []);
+
+    useEffect(() => {
         if (!user) return;
 
         if (activeSection === 'stories') {
@@ -234,9 +308,33 @@ export default function ChildPortalPage() {
         }
     }, [activeSection, fetchStories, fetchVideos, user]);
 
+    useEffect(() => {
+        if (!isPortalIdleReady) return;
+        if (typeof window === 'undefined') return;
+        const seen = window.localStorage.getItem('ll_portal_tutorial_seen_v1');
+        if (!seen) {
+            setShowHelpModal(true);
+            window.localStorage.setItem('ll_portal_tutorial_seen_v1', '1');
+        }
+    }, [isPortalIdleReady]);
+
+    // Grace window for auth/session sync before showing fallback screen.
+    useEffect(() => {
+        if (userLoading || user) {
+            setAuthRetryElapsedMs(0);
+            return;
+        }
+
+        const interval = window.setInterval(() => {
+            setAuthRetryElapsedMs((prev) => prev + 1000);
+        }, 1000);
+
+        return () => window.clearInterval(interval);
+    }, [userLoading, user]);
+
     // Phase 1 Retention: check daily login on portal mount
     useEffect(() => {
-        if (!activeChild?.id) return;
+        if (!activeChild?.id || !isPortalIdleReady) return;
         const childId = activeChild.id;
 
         (async () => {
@@ -266,11 +364,11 @@ export default function ChildPortalPage() {
                 console.error('[Retention] Daily login check failed:', err);
             }
         })();
-    }, [activeChild?.id, triggerBadgeUnlock]);
+    }, [activeChild?.id, isPortalIdleReady, triggerBadgeUnlock]);
 
     // Fetch active learning plan for today's activities
     useEffect(() => {
-        if (!activeChild?.id) return;
+        if (!activeChild?.id || !isPortalIdleReady) return;
         (async () => {
             try {
                 const res = await fetch(`/api/learning-plan?childId=${activeChild.id}`);
@@ -289,7 +387,7 @@ export default function ChildPortalPage() {
                 // silently ignore — plan is optional
             }
         })();
-    }, [activeChild?.id]);
+    }, [activeChild?.id, isPortalIdleReady]);
 
     // Show loading while checking auth
     if (userLoading) {
@@ -304,6 +402,29 @@ export default function ChildPortalPage() {
     }
 
     // Don't render content if not authenticated (show error UI instead of redirect loop)
+    if (!user && authRetryElapsedMs < 6000) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-100 via-purple-50 to-pink-100 p-6">
+                <div className="max-w-md w-full bg-white p-10 rounded-[2.5rem] shadow-2xl text-center border-4 border-white">
+                    <div className="text-6xl animate-bounce mb-4">🏝️</div>
+                    <h2 className="text-2xl font-black text-slate-800 mb-2">Connecting to Island...</h2>
+                    <p className="text-slate-500 font-bold mb-6 leading-relaxed">
+                        Hold tight while we sync your adventure.
+                    </p>
+                    <button
+                        onClick={() => {
+                            trackEvent('portal_auth_retry_clicked');
+                            window.location.reload();
+                        }}
+                        className="w-full bg-[#3ABEF9] text-white px-6 py-4 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-blue-200"
+                    >
+                        Retry Connection
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     if (!user) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-100 via-purple-50 to-pink-100 p-6">
@@ -350,6 +471,9 @@ export default function ChildPortalPage() {
                 triggerBadgeUnlock(result.unlockedBadge);
             }
 
+            // Ensure XP/progress counters refresh immediately after server updates.
+            await refreshChildren(user.id);
+
         } catch (err) {
             console.error("Failed to log activity:", err);
         }
@@ -385,6 +509,7 @@ export default function ChildPortalPage() {
     };
 
     const currentLevel = activeChild ? calculateLevel(activeChild.total_xp) : LEVELS[0];
+    const lessonVideos = videos.length > 0 ? videos : VILLAGE_CINEMA_VIDEOS;
 
     const navItems = [
         { id: 'home', label: 'Village', icon: MapIcon, color: 'from-primary to-accent' },
@@ -399,6 +524,34 @@ export default function ChildPortalPage() {
         { id: 'music-hub', label: 'Market', icon: ShoppingBag, color: 'from-indigo-600 to-purple-700' },
         { id: 'buddy', label: 'My Buddy', icon: MessageCircle, color: 'from-emerald-500 to-teal-500' },
     ];
+    const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
+    const sectionAllowed = (section: string) => {
+        if (section === 'stories') return parentalControls.allow_stories;
+        if (section === 'lessons') return parentalControls.allow_lessons;
+        if (section === 'games') return parentalControls.allow_games;
+        if (section === 'radio') return parentalControls.allow_radio;
+        if (section === 'buddy') return parentalControls.allow_buddy;
+        return true;
+    };
+    const screenTimeExceeded = todayScreenMinutes >= parentalControls.daily_screen_time_minutes;
+
+    useEffect(() => {
+        if (!activeChild?.id) return;
+        setTodayScreenMinutes(getTodayScreenMinutes(activeChild.id));
+        const timer = window.setInterval(() => {
+            if (screenTimeExceeded) return;
+            const next = addScreenMinute(activeChild.id);
+            setTodayScreenMinutes(next);
+        }, 60000);
+        return () => window.clearInterval(timer);
+    }, [activeChild?.id, screenTimeExceeded]);
+
+    useEffect(() => {
+        if (screenTimeExceeded && activeSection !== 'home') {
+            setActiveSection('home');
+            setBlockedMessage('Daily screen-time limit reached. Ask your parent to adjust controls.');
+        }
+    }, [screenTimeExceeded, activeSection]);
 
     return (
         <div className="min-h-screen bg-[#F0F9FF] font-heading overflow-hidden relative">
@@ -508,7 +661,7 @@ export default function ChildPortalPage() {
                     </div>
 
                     {/* Navigation Items */}
-                    <div className="w-full px-6 space-y-2 mb-8">
+                    <div className="w-full px-6 space-y-2 flex-1 overflow-y-auto pb-4">
                         {navItems.map((item) => {
                             const Icon = item.icon;
                             const isActive = activeSection === item.id;
@@ -516,6 +669,10 @@ export default function ChildPortalPage() {
                                 <button
                                     key={item.id}
                                     onClick={() => {
+                                        if (!sectionAllowed(item.id as PortalSection) || screenTimeExceeded) {
+                                            setBlockedMessage('This channel is currently locked by parent controls.');
+                                            return;
+                                        }
                                         if (item.id === 'games') {
                                             router.push('/portal/games');
                                         } else if (item.id === 'music-hub') {
@@ -548,8 +705,16 @@ export default function ChildPortalPage() {
                                 Admin Island
                             </button>
                         )}
+                    </div>
 
-                        {/* Exit/Logout Button */}
+                    <div className="w-full px-6 mt-auto space-y-2">
+                        <button
+                            onClick={() => setShowHelpModal(true)}
+                            className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-sm text-white/80 hover:text-white hover:bg-white/10 transition-all border border-white/10"
+                        >
+                            <Info size={20} className="text-white/60" />
+                            Help & Tutorial
+                        </button>
                         <button
                             onClick={() => router.push('/')}
                             className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-black text-sm text-white/70 hover:text-white hover:bg-red-500/20 transition-all group mt-8 border border-white/10 hover:border-white/30"
@@ -607,13 +772,17 @@ export default function ChildPortalPage() {
                             {/* Streak Widget — visible on mobile and desktop */}
                             {activeChild && streakDay > 0 && (
                                 <div className="lg:max-w-md">
-                                    <StreakWidget
-                                        streakDay={streakDay}
-                                        freezeCount={freezeCount}
-                                        childId={activeChild.id}
-                                        onFreezeUsed={() => setFreezeCount(c => Math.max(0, c - 1))}
-                                        onShare={() => setShareCardOpen(true)}
-                                    />
+                                    {isPortalIdleReady ? (
+                                        <StreakWidget
+                                            streakDay={streakDay}
+                                            freezeCount={freezeCount}
+                                            childId={activeChild.id}
+                                            onFreezeUsed={() => setFreezeCount(c => Math.max(0, c - 1))}
+                                            onShare={() => setShareCardOpen(true)}
+                                        />
+                                    ) : (
+                                        <StreakWidgetSkeleton />
+                                    )}
                                 </div>
                             )}
                             {/* Today's Learning Plan */}
@@ -648,6 +817,34 @@ export default function ChildPortalPage() {
                                 </div>
                             )}
 
+                            <div className="bg-white rounded-3xl border-2 border-slate-100 p-5 shadow-md">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <h3 className="font-black text-lg text-gray-800 leading-tight">Parent Controls</h3>
+                                        <p className="text-xs text-gray-400 font-medium">Screen-time limits, content filters, and parent settings.</p>
+                                    </div>
+                                    <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                                        Parent Zone
+                                    </span>
+                                </div>
+                                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => router.push('/parent')}
+                                        className="w-full rounded-2xl bg-slate-900 text-white py-3 font-black text-sm"
+                                    >
+                                        Open Parent Dashboard
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => router.push('/portal/settings')}
+                                        className="w-full rounded-2xl border border-slate-200 text-slate-700 py-3 font-black text-sm"
+                                    >
+                                        Parent Controls
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="space-y-4">
                                 <h2 className="text-5xl md:text-6xl font-black text-[#083344] tracking-tight">
                                     Choose Your <span className="text-[#3ABEF9]">Next Step</span>
@@ -655,32 +852,66 @@ export default function ChildPortalPage() {
                                 <p className="text-xl text-gray-500 font-medium italic underline decoration-[#3ABEF9]/30 underline-offset-8">
                                     Where shall we go today, Little Legend?
                                 </p>
+                                {blockedMessage && (
+                                    <div className="max-w-2xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
+                                        {blockedMessage}
+                                    </div>
+                                )}
+                                <div className="max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-600">
+                                    Screen Time: {todayScreenMinutes}/{parentalControls.daily_screen_time_minutes} min today
+                                </div>
                             </div>
 
                             <div className="w-full h-full min-h-[500px] flex items-center justify-center">
-                                <IslandVillageMap
-                                    onNavigate={(section) => {
-                                        if (section === 'story-studio') {
-                                            // Restricted feature - check COPPA
-                                            if (user?.age_verified_at || activeChild?.age_verified) {
-                                                router.push('/portal/story-studio');
+                                {isPortalIdleReady ? (
+                                    <IslandVillageMap
+                                        onNavigate={(section) => {
+                                            if (section === 'story-studio') {
+                                                // Restricted feature - check COPPA
+                                                if (user?.age_verified_at || activeChild?.age_verified) {
+                                                    router.push('/portal/story-studio');
+                                                } else {
+                                                    setPendingRoute('/portal/story-studio');
+                                                    setIsCoppaModalOpen(true);
+                                                }
                                             } else {
-                                                setPendingRoute('/portal/story-studio');
-                                                setIsCoppaModalOpen(true);
+                                                if (!sectionAllowed(section as PortalSection) || screenTimeExceeded) {
+                                                    setBlockedMessage('This channel is currently locked by parent controls.');
+                                                    return;
+                                                }
+                                                setActiveSection(section as PortalSection);
                                             }
-                                        } else {
-                                            setActiveSection(section as PortalSection);
-                                        }
-                                    }}
-                                />
+                                        }}
+                                    />
+                                ) : (
+                                    <IslandVillageMapSkeleton />
+                                )}
                             </div>
                         </div>
                     ) : (
                         <div className="animate-in fade-in slide-in-from-bottom-5">
+                            {blockedMessage && (
+                                <div className="mb-6 max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
+                                    {blockedMessage}
+                                </div>
+                            )}
+                            {screenTimeExceeded && (
+                                <div className="rounded-[2.5rem] bg-white border border-red-100 p-8 shadow-lg text-center max-w-2xl mx-auto">
+                                    <h3 className="text-3xl font-black text-slate-800 mb-2">Screen-Time Limit Reached</h3>
+                                    <p className="text-slate-500 font-semibold mb-5">Your parent set a daily limit of {parentalControls.daily_screen_time_minutes} minutes.</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => router.push('/portal/settings')}
+                                        className="px-5 py-3 rounded-2xl bg-slate-900 text-white font-black"
+                                    >
+                                        Parent Controls
+                                    </button>
+                                </div>
+                            )}
                             {/* Content of sub-sections (Stories, Songs, etc) */}
 
                             {/* Stories Section */}
-                            {(activeSection === 'stories') && (
+                            {(activeSection === 'stories') && !screenTimeExceeded && sectionAllowed('stories') && (
                                 <section className="space-y-8 animate-in fade-in slide-in-from-bottom-5">
                                     <CharacterGuideBanner
                                         character="tanty_spice"
@@ -698,6 +929,22 @@ export default function ChildPortalPage() {
 
                                     {loadingStates.stories || !hasLoadedStories ? (
                                         <GridSkeleton count={4} type="card" />
+                                    ) : contentErrors.stories ? (
+                                        <div className="col-span-full bg-white rounded-[2.5rem] p-8 shadow-lg border-2 border-blue-100 text-center">
+                                            <h3 className="text-2xl font-black text-blue-900 mb-2">Story shelf is resting</h3>
+                                            <p className="text-blue-700/70 font-medium mb-6">{contentErrors.stories}</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setHasLoadedStories(false);
+                                                    trackEvent('portal_stories_retry_clicked');
+                                                    void fetchStories();
+                                                }}
+                                                className="px-5 py-2.5 rounded-2xl bg-blue-600 text-white font-black hover:bg-blue-700 transition-colors"
+                                            >
+                                                Try Again
+                                            </button>
+                                        </div>
                                     ) : stories.length === 0 ? (
                                         <div className="col-span-full">
                                             <EmptyState
@@ -752,7 +999,7 @@ export default function ChildPortalPage() {
                             )}
 
                             {/* Lessons Section */}
-                            {(activeSection === 'lessons') && (
+                            {(activeSection === 'lessons') && !screenTimeExceeded && sectionAllowed('lessons') && (
                                 <section className="space-y-8 animate-in fade-in slide-in-from-bottom-5">
                                     <CharacterGuideBanner
                                         character="roti"
@@ -766,12 +1013,34 @@ export default function ChildPortalPage() {
                                         </div>
                                     </div>
 
-                                    {loadingStates.videos || !hasLoadedVideos ? (
-                                        <GridSkeleton count={3} type="card" />
-                                    ) : (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                                            {(videos.length > 0 ? videos : VILLAGE_CINEMA_VIDEOS).map((video) => {
+                                    {loadingStates.videos && !hasLoadedVideos && (
+                                        <div className="rounded-3xl border border-indigo-100 bg-indigo-50/70 px-4 py-3 text-sm font-bold text-indigo-700">
+                                            Loading the latest Village Cinema picks. Showing ready-to-watch lessons now.
+                                        </div>
+                                    )}
+
+                                    {contentErrors.videos && (
+                                        <div className="rounded-3xl border-2 border-indigo-100 bg-white px-6 py-5 text-center">
+                                            <h3 className="text-2xl font-black text-blue-900 mb-2">Lesson library is warming up</h3>
+                                            <p className="text-blue-700/70 font-medium mb-5">{contentErrors.videos}</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setHasLoadedVideos(false);
+                                                    trackEvent('portal_lessons_retry_clicked');
+                                                    void fetchVideos();
+                                                }}
+                                                className="px-5 py-2.5 rounded-2xl bg-indigo-600 text-white font-black hover:bg-indigo-700 transition-colors"
+                                            >
+                                                Try Again
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                                            {lessonVideos.map((video) => {
                                                 const isLocked = !canAccess(video.tier_required);
+                                                const durationMinutes = Math.max(1, Math.round(((video.duration_seconds || 300) / 60)));
                                                 return (
                                                     <button
                                                         type="button"
@@ -808,7 +1077,7 @@ export default function ChildPortalPage() {
                                                             )}
 
                                                             <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl text-white font-black text-xs uppercase tracking-widest">
-                                                                {Math.round(video.duration_seconds / 60)}:00
+                                                                {durationMinutes}:00
                                                             </div>
                                                         </div>
                                                         <h3 className="text-2xl font-black text-blue-900 mb-2 truncate px-2">{video.title}</h3>
@@ -820,7 +1089,6 @@ export default function ChildPortalPage() {
                                                 );
                                             })}
                                         </div>
-                                    )}
                                 </section>
                             )}
 
@@ -875,7 +1143,7 @@ export default function ChildPortalPage() {
                                 </div>
                             )}
 
-                            {(activeSection === 'radio') && (
+                            {(activeSection === 'radio') && !screenTimeExceeded && sectionAllowed('radio') && (
                                 <div className="max-w-4xl mx-auto space-y-12">
                                     <div className="flex items-center gap-5 text-center justify-center">
                                         <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-[2.5rem] flex items-center justify-center text-5xl shadow-2xl animate-pulse">📻</div>
@@ -904,43 +1172,51 @@ export default function ChildPortalPage() {
             )}
 
             {/* Badge Unlock Celebration */}
-            <BadgeUnlockModal
-                badge={unlockedBadge}
-                onClose={() => clearUnlockedBadge()}
-            />
+            {unlockedBadge && (
+                <BadgeUnlockModal
+                    badge={unlockedBadge}
+                    onClose={() => clearUnlockedBadge()}
+                />
+            )}
 
-            <CoppaConsentModal
-                isOpen={isCoppaModalOpen}
-                onClose={() => setIsCoppaModalOpen(false)}
-                onSuccess={async () => {
-                    const success = await verifyAge();
-                    if (success) {
-                        setIsCoppaModalOpen(false);
-                        if (pendingRoute) {
-                            router.push(pendingRoute);
-                            setPendingRoute(null);
+            {isCoppaModalOpen && (
+                <CoppaConsentModal
+                    isOpen={isCoppaModalOpen}
+                    onClose={() => setIsCoppaModalOpen(false)}
+                    onSuccess={async () => {
+                        const success = await verifyAge();
+                        if (success) {
+                            setIsCoppaModalOpen(false);
+                            if (pendingRoute) {
+                                router.push(pendingRoute);
+                                setPendingRoute(null);
+                            }
                         }
-                    }
-                }}
-            />
+                    }}
+                />
+            )}
 
             {/* Standard Upgrade Modal (first 2 locked hits) */}
-            <UpgradeModal
-                isOpen={upgradeModal.open}
-                onClose={() => setUpgradeModal({ open: false })}
-                requiredTier={upgradeModal.tier}
-                featureName={upgradeModal.feature}
-            />
+            {upgradeModal.open && (
+                <UpgradeModal
+                    isOpen={upgradeModal.open}
+                    onClose={() => setUpgradeModal({ open: false })}
+                    requiredTier={upgradeModal.tier}
+                    featureName={upgradeModal.feature}
+                />
+            )}
 
             {/* Feature-Specific Upgrade Modal (shown after 3+ locked hits) */}
-            <FeatureUpgradeModal
-                isOpen={featureUpgradeModal.open}
-                onClose={() => setFeatureUpgradeModal({ open: false, featureName: '', featureDescription: '', requiredTier: 'legends_plus' })}
-                featureName={featureUpgradeModal.featureName}
-                featureDescription={featureUpgradeModal.featureDescription}
-                currentTier={(user?.subscription_tier || 'free') as import('@/lib/feature-access').SubscriptionTier}
-                requiredTier={(featureUpgradeModal.requiredTier || 'legends_plus') as import('@/lib/feature-access').SubscriptionTier}
-            />
+            {featureUpgradeModal.open && (
+                <FeatureUpgradeModal
+                    isOpen={featureUpgradeModal.open}
+                    onClose={() => setFeatureUpgradeModal({ open: false, featureName: '', featureDescription: '', requiredTier: 'legends_plus' })}
+                    featureName={featureUpgradeModal.featureName}
+                    featureDescription={featureUpgradeModal.featureDescription}
+                    currentTier={(user?.subscription_tier || 'free') as import('@/lib/feature-access').SubscriptionTier}
+                    requiredTier={(featureUpgradeModal.requiredTier || 'legends_plus') as import('@/lib/feature-access').SubscriptionTier}
+                />
+            )}
 
             {/* Daily Chest Modal */}
             {chestModalOpen && activeChild && (
@@ -976,10 +1252,42 @@ export default function ChildPortalPage() {
                 />
             )}
 
-            <DoubleXPBanner
-                multiplier={xpMultiplier}
-                isVisible={xpMultiplier > 1}
-            />
+            {xpMultiplier > 1 && (
+                <DoubleXPBanner
+                    multiplier={xpMultiplier}
+                    isVisible={xpMultiplier > 1}
+                />
+            )}
+
+            {showHelpModal && (
+                <div className="fixed inset-0 z-[300] bg-slate-900/55 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="w-full max-w-lg rounded-[2rem] bg-white p-6 shadow-2xl border-4 border-white">
+                        <h3 className="text-2xl font-black text-slate-800">How To Use The Island</h3>
+                        <p className="text-slate-500 font-medium mt-2">Quick guide for first-time legends.</p>
+                        <ol className="mt-5 space-y-2 text-sm font-semibold text-slate-700">
+                            <li>1. Tap a channel in the left menu: Stories, Lessons, Craft Corner, Games, or Radio.</li>
+                            <li>2. Complete activities to earn XP and unlock progress.</li>
+                            <li>3. Use "Help & Tutorial" anytime from the sidebar if you get stuck.</li>
+                        </ol>
+                        <div className="mt-6 flex gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setShowHelpModal(false)}
+                                className="flex-1 rounded-2xl bg-slate-900 text-white py-3 font-black"
+                            >
+                                Start Adventure
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { setShowHelpModal(false); setActiveSection('home'); }}
+                                className="flex-1 rounded-2xl border border-slate-200 text-slate-700 py-3 font-black"
+                            >
+                                Back To Village
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -999,6 +1307,47 @@ function GridSkeleton({ count = 4, type = 'card' }: { count?: number, type?: 'ca
                     <div className="h-4 bg-gray-50 rounded-full w-1/2 mx-auto"></div>
                 </div>
             ))}
+        </div>
+    );
+}
+
+function IslandVillageMapSkeleton() {
+    return (
+        <div className="relative w-full h-[600px] md:h-auto md:aspect-[16/9] rounded-[2rem] md:rounded-[3rem] border-4 border-white/20 bg-gradient-to-br from-sky-300 via-sky-400 to-cyan-500 overflow-hidden shadow-2xl">
+            <div className="absolute inset-0 opacity-15 bg-[radial-gradient(circle_at_top,_white,_transparent_55%)]" />
+            <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-8 p-10">
+                {Array.from({ length: 8 }).map((_, index) => (
+                    <div
+                        key={index}
+                        className="self-center justify-self-center w-20 h-20 md:w-28 md:h-28 rounded-full bg-white/35 animate-pulse"
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+function StreakWidgetSkeleton() {
+    return (
+        <div className="rounded-3xl p-5 bg-gradient-to-br from-orange-500 to-red-500 shadow-xl shadow-orange-500/20 animate-pulse">
+            <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-white/25" />
+                    <div className="space-y-2">
+                        <div className="h-3 w-20 rounded-full bg-white/25" />
+                        <div className="h-8 w-12 rounded-full bg-white/35" />
+                    </div>
+                </div>
+                <div className="flex gap-1.5">
+                    {Array.from({ length: 7 }).map((_, index) => (
+                        <div key={index} className="w-4 h-4 rounded-full bg-white/25" />
+                    ))}
+                </div>
+                <div className="flex gap-2">
+                    <div className="w-12 h-12 rounded-2xl bg-white/20" />
+                    <div className="w-12 h-12 rounded-2xl bg-white/20" />
+                </div>
+            </div>
         </div>
     );
 }

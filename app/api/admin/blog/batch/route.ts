@@ -2,10 +2,22 @@
 // POST /api/admin/blog/batch
 
 import { NextRequest, NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import { batchGeneratePosts, CONTENT_IDEAS, BlogGenerationRequest } from '@/lib/services/blog-agent';
+import { requireSupabaseToken } from '@/lib/api/require-supabase-token';
+import { checkRateLimit } from '@/lib/api/rate-limit';
 
 export async function POST(request: NextRequest) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'global';
+
     try {
+        const limitResponse = checkRateLimit(`admin-blog-batch:${ip}`, 6, 120000);
+        if (limitResponse) {
+            return limitResponse;
+        }
+
+        await requireSupabaseToken(request);
+
         const body = await request.json();
 
         const { topics, count, category, autoPublish } = body;
@@ -61,9 +73,13 @@ export async function POST(request: NextRequest) {
         });
 
     } catch (error: any) {
+        if (error instanceof NextResponse) {
+            return error;
+        }
+        Sentry.captureException(error);
         console.error('Batch blog generation error:', error);
         return NextResponse.json(
-            { error: error.message || 'Failed to batch generate posts' },
+            { error: error instanceof Error ? error.message : 'Failed to batch generate posts' },
             { status: 500 }
         );
     }

@@ -93,16 +93,51 @@ export async function generateStory(selection: StoryInputs): Promise<StoryBook |
 
         const result = await model.generateContent(STORYTELLER_V2_PROMPT + "\n\n" + userPrompt);
         const text = result.response.text();
-        let story = JSON.parse(text) as any;
+        
+        // 🛡️ COMPREHENSIVE TEXT CLEANUP & EXTRACTION
+        let story: any;
+        try {
+            // Remove potential markdown wrappers
+            const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            
+            // Attempt direct parse first
+            try {
+                story = JSON.parse(cleanText);
+            } catch {
+                // Try to find the first '{' and last '}' if direct parse fails
+                const start = cleanText.indexOf('{');
+                const end = cleanText.lastIndexOf('}');
+                if (start !== -1 && end !== -1) {
+                    const jsonSub = cleanText.substring(start, end + 1);
+                    story = JSON.parse(jsonSub);
+                } else {
+                    throw new Error("No JSON found in response");
+                }
+            }
+        } catch (parseError) {
+            console.error("[StoryEngine] JSON parse failed:", parseError, "Text received:", text.substring(0, 100));
+            return null;
+        }
 
+        // --- ADAPTIVE SCHEMA NORMALIZATION ---
+        
         // Handle common JSON wrapping issues from Gemini
-        if (story.StoryBook) {
+        if (story.StoryBook && typeof story.StoryBook === 'object') {
             story = story.StoryBook;
         }
 
         // Handle structure mismatch (Gemini sometimes returns array instead of object with pages)
         if (Array.isArray(story.structure)) {
             story.structure = { pages: story.structure };
+        } else if (!story.structure || !Array.isArray(story.structure.pages)) {
+            console.error("[StoryEngine] Invalid structure received:", story.structure);
+            return null;
+        }
+
+        // Validate basic required fields to avoid downstream crashes
+        if (!story.book_meta || !story.folklore_profile) {
+            console.error("[StoryEngine] Missing required meta fields:", story);
+            return null;
         }
 
         // Ensure IDs are set

@@ -9,6 +9,8 @@ import {
 import { useUser } from '@/components/UserContext';
 import VideoPlayer from '@/components/VideoPlayer';
 import { EmptyState } from '@/components/EmptyState';
+import { trackEvent } from '@/lib/analytics';
+import { normalizeParentalControls } from '@/lib/parental-controls';
 
 interface Video {
     id: string;
@@ -22,42 +24,67 @@ interface Video {
 }
 
 export default function LessonsPage() {
-    const { activeChild, canAccess } = useUser();
+    const { activeChild, canAccess, user } = useUser();
     const [videos, setVideos] = useState<Video[]>([]);
     const [activeVideo, setActiveVideo] = useState<Video | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [showOnlyAccessible, setShowOnlyAccessible] = useState(false);
+    const [loadError, setLoadError] = useState<string | null>(null);
+    const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
+
+    if (!parentalControls.allow_lessons) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
+                    <h2 className="text-3xl font-black text-slate-800 mb-2">Lessons Are Locked</h2>
+                    <p className="text-slate-500 font-semibold">Your parent controls currently disable lesson videos.</p>
+                    <Link href="/portal/settings" className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black">
+                        Open Parent Controls
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    const loadVideos = async () => {
+        setIsLoading(true);
+        setLoadError(null);
+        try {
+            // Dynamic import to avoid server-side issues if any
+            const { getVideos } = await import('@/lib/database');
+            // Cast to any because the definition might assume generic DB return type
+            const data = await Promise.race([
+                getVideos(),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('Request timed out.')), 12000)
+                ),
+            ]) as any[];
+
+            const mappedVideos: Video[] = data.map((v) => ({
+                id: v.id,
+                title: v.title,
+                description: v.description || '',
+                video_url: v.video_url,
+                thumbnail_url: v.thumbnail_url || 'https://images.unsplash.com/photo-1606092195730-5d7b9af1ef4d',
+                duration_seconds: v.duration_seconds || 0,
+                tier_required: v.tier_required || 'free',
+                is_active: v.is_active
+            }));
+
+            setVideos(mappedVideos);
+
+            // If there's a featured video or just the first one, we could auto-select?
+            // But let's leave it for user to click.
+        } catch (error) {
+            console.error('Failed to load videos:', error);
+            setLoadError('We could not load lessons right now.');
+            trackEvent('lessons_page_load_failed');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        async function loadVideos() {
-            try {
-                // Dynamic import to avoid server-side issues if any
-                const { getVideos } = await import('@/lib/database');
-                // Cast to any because the definition might assume generic DB return type
-                const data: any[] = await getVideos();
-
-                const mappedVideos: Video[] = data.map((v) => ({
-                    id: v.id,
-                    title: v.title,
-                    description: v.description || '',
-                    video_url: v.video_url,
-                    thumbnail_url: v.thumbnail_url || 'https://images.unsplash.com/photo-1606092195730-5d7b9af1ef4d',
-                    duration_seconds: v.duration_seconds || 0,
-                    tier_required: v.tier_required || 'free',
-                    is_active: v.is_active
-                }));
-
-                setVideos(mappedVideos);
-
-                // If there's a featured video or just the first one, we could auto-select?
-                // But let's leave it for user to click.
-            } catch (error) {
-                console.error('Failed to load videos:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
         loadVideos();
     }, []);
 
@@ -135,6 +162,20 @@ export default function LessonsPage() {
                                 <div className="h-3 bg-gray-200 rounded w-1/2" />
                             </div>
                         ))}
+                    </div>
+                ) : loadError ? (
+                    <div className="rounded-3xl border border-gray-200 bg-white p-8 text-center">
+                        <h3 className="text-2xl font-black text-gray-900 mb-2">Lesson library is warming up</h3>
+                        <p className="text-gray-500 font-medium mb-6">{loadError}</p>
+                        <button
+                            onClick={() => {
+                                trackEvent('lessons_page_retry_clicked');
+                                loadVideos();
+                            }}
+                            className="px-5 py-2 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors"
+                        >
+                            Try Again
+                        </button>
                     </div>
                 ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

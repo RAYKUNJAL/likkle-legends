@@ -13,7 +13,38 @@ function getResend(): Resend | null {
     return _resend;
 }
 
-const FROM_EMAIL = 'Likkle Legends <noreply@likklelegends.com>';
+const FROM_EMAIL = process.env.EMAIL_FROM || 'Likkle Legends <noreply@likklelegends.com>';
+
+type EmailProvider = 'resend' | 'brevo';
+
+function getConfiguredEmailProvider(): EmailProvider | null {
+    const preferred = process.env.EMAIL_PROVIDER?.toLowerCase();
+    if (preferred === 'resend' || preferred === 'brevo') {
+        return preferred;
+    }
+
+    if (process.env.RESEND_API_KEY) {
+        return 'resend';
+    }
+
+    if (process.env.BREVO_API_KEY) {
+        return 'brevo';
+    }
+
+    return null;
+}
+
+function parseFromAddress(from: string): { email: string; name: string } {
+    const match = from.match(/^(.*?)\s*<(.+)>$/);
+    if (!match) {
+        return { name: from, email: from };
+    }
+
+    return {
+        name: match[1].replace(/^"|"$/g, '').trim(),
+        email: match[2].trim(),
+    };
+}
 
 export interface EmailPayload {
     to: string;
@@ -49,27 +80,62 @@ const SOCIAL_TRUST_FOOTER = `
 // --- EMAIL SENDER ---
 
 export async function sendEmail({ to, subject, html }: EmailPayload) {
-    const resend = getResend();
-
-    if (!resend) {
-        console.warn('RESEND_API_KEY is not set. Email not sent.', { to, subject });
-        return { success: false, error: 'Missing Resend API Key' };
+    const provider = getConfiguredEmailProvider();
+    if (!provider) {
+        console.warn('No email provider configured. Set RESEND_API_KEY or BREVO_API_KEY.', { to, subject });
+        return { success: false, error: 'No email provider configured' };
     }
 
     try {
-        const { data, error } = await resend.emails.send({
-            from: FROM_EMAIL,
-            to: [to],
-            subject,
-            html,
-        });
+        if (provider === 'resend') {
+            const resend = getResend();
+            if (!resend) {
+                return { success: false, error: 'Missing Resend API Key' };
+            }
 
-        if (error) {
-            console.error('Resend error:', error);
-            return { success: false, error: error.message };
+            const { data, error } = await resend.emails.send({
+                from: FROM_EMAIL,
+                to: [to],
+                subject,
+                html,
+            });
+
+            if (error) {
+                console.error('Resend error:', error);
+                return { success: false, error: error.message };
+            }
+
+            return { success: true, messageId: data?.id };
         }
 
-        return { success: true, messageId: data?.id };
+        const apiKey = process.env.BREVO_API_KEY;
+        if (!apiKey) {
+            return { success: false, error: 'Missing Brevo API Key' };
+        }
+
+        const sender = parseFromAddress(FROM_EMAIL);
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'api-key': apiKey,
+            },
+            body: JSON.stringify({
+                sender,
+                to: [{ email: to }],
+                subject,
+                htmlContent: html,
+            }),
+        });
+
+        if (!response.ok) {
+            const text = await response.text();
+            console.error('Brevo error:', response.status, text);
+            return { success: false, error: `Brevo send failed (${response.status})` };
+        }
+
+        const data = (await response.json()) as { messageId?: string };
+        return { success: true, messageId: data.messageId };
     } catch (error) {
         console.error('SendEmail error:', error);
         return { success: false, error: String(error) };
@@ -519,6 +585,230 @@ export const TRIAL_REMINDER_TEMPLATE = (parentName: string, childName: string, t
             <center>
                 <a href="https://www.likklelegends.com/account" style="font-size: 13px; color: #94a3b8; text-decoration: underline;">Manage my subscription</a>
             </center>
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+// --- FREE-TO-PAID UPGRADE TEMPLATES ---
+
+// UPGRADE DAY 14: Activity milestone
+export const UPGRADE_DAY14_TEMPLATE = (parentName: string, childName: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1e293b; background: white; }
+        .btn { display: inline-block; padding: 18px 36px; background: #FF6B35; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; }
+    </style>
+</head>
+<body>
+    <div style="max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 40px; border: 2px solid #f1f5f9;">
+        <h1 style="font-size: 28px; font-weight: 900; color: #0f172a;">${childName} Completed 5+ Activities!</h1>
+        <p style="font-size: 17px; color: #475569; line-height: 1.8;">
+            Hi ${parentName}, ${childName} has been busy exploring the Caribbean village! They've completed multiple activities and earned XP along the way.
+        </p>
+
+        <div style="background: linear-gradient(135deg, #0f172a, #1e293b); padding: 30px; border-radius: 24px; color: white; margin: 25px 0; text-align: center;">
+            <p style="font-size: 12px; color: #fcd34d; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin: 0;">Unlock Everything</p>
+            <h3 style="font-size: 24px; font-weight: 900; margin: 10px 0 5px 0;">Upgrade to Legends Plus</h3>
+            <p style="color: #94a3b8; font-size: 14px; margin: 0 0 20px 0;">Unlimited stories, AI buddy chat, 30+ printables & more</p>
+            <a href="https://likklelegends.com/checkout?plan=legends_plus&utm_source=nurture&utm_medium=email&utm_campaign=upgrade_day14" style="background: #fcd34d; color: #000; padding: 15px 30px; border-radius: 16px; text-decoration: none; font-weight: 900; display: inline-block;">Start 7-Day Free Trial</a>
+        </div>
+
+        ${SOCIAL_TRUST_FOOTER}
+    </div>
+</body>
+</html>
+`;
+
+// UPGRADE DAY 30: Special discount offer
+export const UPGRADE_DAY30_TEMPLATE = (parentName: string, childName: string, discountCode: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1e293b; background: white; }
+        .btn { display: inline-block; padding: 22px 44px; background: #FF6B35; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div style="max-width: 600px; margin: 0 auto; border: 4px solid #fecaca; border-radius: 40px; overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #ef4444, #f97316); padding: 40px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 26px; font-weight: 900;">Special Offer: 50% Off Your First Month!</h1>
+        </div>
+        <div style="padding: 40px;">
+            <p style="font-size: 17px; font-weight: 800;">Hi ${parentName},</p>
+            <p style="font-size: 16px; color: #475569; line-height: 1.8;">
+                ${childName} has been learning with us for a month now. We'd love for them to experience everything Likkle Legends has to offer.
+            </p>
+
+            <div style="background: #fef3c7; border: 2px dashed #f59e0b; border-radius: 24px; padding: 25px; margin: 25px 0; text-align: center;">
+                <p style="font-size: 12px; font-weight: 900; color: #92400e; text-transform: uppercase; margin: 0;">Your Exclusive Code</p>
+                <h3 style="font-size: 32px; font-weight: 900; color: #0f172a; margin: 10px 0; letter-spacing: 3px;">${discountCode}</h3>
+                <p style="color: #92400e; font-size: 14px; margin: 0;">50% off your first month of any paid plan</p>
+            </div>
+
+            <center><a href="https://likklelegends.com/checkout?plan=legends_plus&utm_source=nurture&utm_medium=email&utm_campaign=upgrade_day30" class="btn">Claim 50% Off</a></center>
+
+            <p style="text-align: center; margin-top: 15px; font-size: 12px; color: #94a3b8;">Offer expires in 48 hours</p>
+
+            ${SOCIAL_TRUST_FOOTER}
+        </div>
+    </div>
+</body>
+</html>
+`;
+
+// --- LEAD NURTURE TEMPLATES (Growth Engine) ---
+
+// LEAD NURTURE DAY 1: Value Email
+export const LEAD_NURTURE_DAY1_TEMPLATE = (name: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1e293b; background: white; }
+        .btn { display: inline-block; padding: 18px 36px; background: #FF6B35; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; }
+    </style>
+</head>
+<body>
+    <div style="max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 40px; border: 2px solid #f1f5f9;">
+        <h1 style="font-size: 28px; font-weight: 900; color: #0f172a;">3 Fun Caribbean Activities for Tonight</h1>
+        <p style="font-size: 17px; color: #475569;">Hi ${name}, here are 3 quick activities to bring Caribbean culture alive at home:</p>
+
+        <div style="background: #fff7ed; border-radius: 24px; padding: 25px; margin: 25px 0;">
+            <h4 style="margin: 0 0 10px 0; color: #c2410c;">1. Island Name Game</h4>
+            <p style="margin: 0; font-size: 15px; color: #475569;">Take turns naming Caribbean islands. Whoever runs out first does a silly dance!</p>
+        </div>
+
+        <div style="background: #f0fdf4; border-radius: 24px; padding: 25px; margin: 25px 0;">
+            <h4 style="margin: 0 0 10px 0; color: #166534;">2. Patois Phrase of the Day</h4>
+            <p style="margin: 0; font-size: 15px; color: #475569;">Teach your child: <b>"Wah gwaan?"</b> (What's going on?) — a classic Jamaican greeting!</p>
+        </div>
+
+        <div style="background: #eff6ff; border-radius: 24px; padding: 25px; margin: 25px 0;">
+            <h4 style="margin: 0 0 10px 0; color: #1e40af;">3. Draw Your Dream Island</h4>
+            <p style="margin: 0; font-size: 15px; color: #475569;">Grab crayons and have your child draw their own Caribbean island. What would they name it?</p>
+        </div>
+
+        <p style="font-size: 15px; color: #475569;">Want more activities like these? Likkle Legends has 30+ printable worksheets, interactive stories, and games — all celebrating Caribbean culture.</p>
+
+        <center><a href="https://likklelegends.com/signup" class="btn">Explore Free Activities</a></center>
+
+        ${SOCIAL_TRUST_FOOTER}
+    </div>
+</body>
+</html>
+`;
+
+// LEAD NURTURE DAY 3: Meet the Character
+export const LEAD_NURTURE_DAY3_TEMPLATE = (name: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1e293b; background: white; }
+        .btn { display: inline-block; padding: 18px 36px; background: #A855F7; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; }
+    </style>
+</head>
+<body>
+    <div style="max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 40px; border: 2px solid #f1f5f9;">
+        <span style="color: #A855F7; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; font-size: 12px;">Meet de Family</span>
+        <h1 style="font-size: 28px; font-weight: 900; color: #0f172a; margin-top: 10px;">Say Hello to Tanty Spice!</h1>
+
+        <p style="font-size: 17px; color: #475569; line-height: 1.8;">
+            Hi ${name}, imagine your child having a warm, wise Caribbean auntie who tells bedtime stories, teaches cultural lessons, and answers every "why?" with patience and joy.
+        </p>
+
+        <div style="background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-radius: 24px; padding: 30px; margin: 25px 0; text-align: center;">
+            <h3 style="margin: 0; font-size: 24px; color: #7e22ce;">Tanty Spice</h3>
+            <p style="color: #6b21a8; font-size: 14px; margin: 5px 0 0 0; font-weight: 600;">Stories, Culture & Bedtime Adventures</p>
+            <p style="color: #475569; font-size: 15px; margin-top: 15px;">She tells Caribbean folktales, teaches heritage cooking, and makes every child feel like a legend.</p>
+        </div>
+
+        <p style="font-size: 15px; color: #475569;">Tanty Spice is one of 4 AI characters in Likkle Legends. Your child can chat with her, hear stories in her voice, and go on cultural adventures — all for free.</p>
+
+        <center><a href="https://likklelegends.com/signup" class="btn">Meet Tanty Spice (Free)</a></center>
+
+        ${VALUE_PIN_PATOIS}
+        ${SOCIAL_TRUST_FOOTER}
+    </div>
+</body>
+</html>
+`;
+
+// LEAD NURTURE DAY 5: Emotional Hook
+export const LEAD_NURTURE_DAY5_TEMPLATE = (name: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1e293b; background: white; }
+        .btn { display: inline-block; padding: 18px 36px; background: #10b981; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; }
+    </style>
+</head>
+<body>
+    <div style="max-width: 600px; margin: 0 auto; padding: 40px; border-radius: 40px; border: 2px solid #f1f5f9;">
+        <h1 style="font-size: 28px; font-weight: 900; color: #0f172a;">Your Child's Heritage Is a Superpower</h1>
+
+        <p style="font-size: 17px; color: #475569; line-height: 1.8;">
+            Hi ${name}, studies show that children who feel connected to their cultural roots have higher self-esteem and better academic outcomes.
+        </p>
+
+        <div style="background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 24px; padding: 30px; margin: 25px 0;">
+            <p style="margin: 0; font-style: italic; color: #166534; font-size: 16px;">
+                "My daughter used to say she wanted straight hair. After 3 weeks with Likkle Legends, she asked me to tell her more stories about our family in Trinidad. That's priceless."
+            </p>
+            <p style="margin: 10px 0 0 0; font-weight: 800; font-size: 13px; color: #064e3b;">— Keisha, Mom of 2, Brooklyn</p>
+        </div>
+
+        <p style="font-size: 15px; color: #475569;">Likkle Legends helps Caribbean children embrace their identity through stories, games, and cultural adventures. The free plan includes unlimited access to core content.</p>
+
+        <center><a href="https://likklelegends.com/pricing" class="btn">See What's Included (Free)</a></center>
+
+        ${VALUE_PIN_PATOIS}
+        ${SOCIAL_TRUST_FOOTER}
+    </div>
+</body>
+</html>
+`;
+
+// LEAD NURTURE DAY 7: Urgency + Trial CTA
+export const LEAD_NURTURE_DAY7_TEMPLATE = (name: string) => `
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1e293b; background: white; }
+        .btn { display: inline-block; padding: 22px 44px; background: #FF6B35; color: white !important; text-decoration: none; border-radius: 20px; font-weight: 900; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div style="max-width: 600px; margin: 0 auto; border: 4px solid #fed7aa; border-radius: 40px; overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #FF6B35, #FFB627); padding: 40px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 26px; font-weight: 900;">One Week Ago, You Took the First Step</h1>
+        </div>
+        <div style="padding: 40px;">
+            <p style="font-size: 17px; font-weight: 800;">Hi ${name},</p>
+            <p style="font-size: 16px; color: #475569; line-height: 1.8;">
+                A week ago you downloaded our Caribbean activity pack. Now imagine giving your child the <b>full island experience</b> — unlimited stories, AI buddy chat, music, games, and 30+ printables.
+            </p>
+
+            <div style="background: #0f172a; color: white; border-radius: 24px; padding: 30px; margin: 25px 0; text-align: center;">
+                <p style="font-size: 12px; color: #fcd34d; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin: 0;">Limited Time</p>
+                <h3 style="font-size: 28px; font-weight: 900; margin: 10px 0 5px 0;">7-Day Free Trial</h3>
+                <p style="color: #94a3b8; font-size: 14px; margin: 0;">Try everything. Cancel anytime. No risk.</p>
+            </div>
+
+            <center><a href="https://likklelegends.com/checkout?plan=legends_plus&utm_source=nurture&utm_medium=email&utm_campaign=day7" class="btn">Start Free Trial</a></center>
+
+            <p style="text-align: center; margin-top: 20px; font-size: 13px; color: #94a3b8;">
+                Or <a href="https://likklelegends.com/signup" style="color: #FF6B35;">start with our Free plan</a> — no credit card needed.
+            </p>
+
+            ${SOCIAL_TRUST_FOOTER}
         </div>
     </div>
 </body>

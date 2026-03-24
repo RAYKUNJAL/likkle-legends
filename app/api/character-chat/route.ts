@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { getCharacterConfig, CharacterId, CharacterChild } from '@/lib/characterConfig';
+import { TIER_LEVELS } from '@/lib/feature-access';
 import {
     GoogleGenerativeAI,
     HarmBlockThreshold,
@@ -90,6 +91,17 @@ function resolveUsagePolicy(profile: {
         burstWindowMinutes: 5,
         trialLabel: inTrial ? `Free buddy trial: day ${ageDays + 1}/14` : null
     };
+}
+
+function hasPaidBuddyAccess(profile: {
+    subscription_tier?: string | null;
+    subscription_status?: string | null;
+} | null) {
+    if (!profile) return false;
+    const status = profile.subscription_status || 'inactive';
+    const tier = profile.subscription_tier || 'free';
+    const isActive = status === 'active' || status === 'trialing';
+    return isActive && (TIER_LEVELS[tier] ?? 0) > 0;
 }
 
 function containsUnsafeUserRequest(text: string) {
@@ -203,6 +215,19 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
         }
 
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('subscription_tier, subscription_status')
+            .eq('id', user.id)
+            .single();
+
+        if (!hasPaidBuddyAccess(profile)) {
+            return NextResponse.json({
+                error: 'Buddy chat requires a paid account.',
+                code: 'BUDDY_PREMIUM_REQUIRED'
+            }, { status: 402 });
+        }
+
         const { data: history } = await supabaseAdmin
             .from('child_character_sessions')
             .select('id, role, content')
@@ -221,7 +246,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         if (!geminiApiKey) {
-            return NextResponse.json({ error: 'AI buddy is not configured (missing Gemini API key).' }, { status: 500 });
+            return NextResponse.json({ error: 'AI buddy is not configured (missing Gemini API key).' }, { status: 503 });
         }
 
         const body = await request.json();
@@ -280,6 +305,13 @@ export async function POST(request: NextRequest) {
             .select('subscription_tier, subscription_status, created_at')
             .eq('id', user.id)
             .single();
+
+        if (!hasPaidBuddyAccess(profile)) {
+            return NextResponse.json({
+                error: 'Buddy chat requires a paid account.',
+                code: 'BUDDY_PREMIUM_REQUIRED'
+            }, { status: 402 });
+        }
 
         const policy = resolveUsagePolicy(profile || {});
         const todayStart = getDayStartIso();
@@ -422,6 +454,6 @@ export async function POST(request: NextRequest) {
         });
     } catch (e: any) {
         console.error('Character chat error:', e);
-        return NextResponse.json({ error: e.message || 'Something went wrong' }, { status: 500 });
+        return NextResponse.json({ error: e.message || 'Something went wrong' }, { status: 503 });
     }
 }

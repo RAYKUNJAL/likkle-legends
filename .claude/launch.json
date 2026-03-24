@@ -1,0 +1,47 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Main App (Next.js)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "AI Studio (Vite)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "likkle-legend-ai-studio_clone", "run", "dev"],
+      "port": 3001
+    },
+    {
+      "name": "Legends Second (Vite)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "likkle-legends-second", "run", "dev"],
+      "port": 3002
+    },
+    {
+      "name": "Kyutai Client 1 (temp_plex)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "temp_plex/client", "run", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "Kyutai Client 2 (temp_plex_2)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "temp_plex_2/client", "run", "dev"],
+      "port": 5174
+    },
+    {
+      "name": "Moshi Server 1 (temp_plex)",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "moshi.server", "--port", "8998"],
+      "port": 8998
+    },
+    {
+      "name": "Moshi Server 2 (temp_plex_2)",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "moshi.server", "--port", "8999"],
+      "port": 8999
+    }
+  ]
+}

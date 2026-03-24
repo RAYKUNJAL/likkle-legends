@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { RefreshCw, Trophy, ArrowLeft, Target } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
@@ -22,10 +22,24 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
     const [flippedIndices, setFlippedIndices] = useState<number[]>([]);
     const [moves, setMoves] = useState(0);
     const [matches, setMatches] = useState(0);
-    const totalPairs = MEMORY_SYMBOLS.length;
     const [gameWon, setGameWon] = useState(false);
+    const [focusedIndex, setFocusedIndex] = useState(0);
+    const cardButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
     const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard' | null>(null);
+
+    const totalPairs = useMemo(() => {
+        if (difficulty === 'easy') return 6;
+        if (difficulty === 'medium' || difficulty === 'hard') return 8;
+        return MEMORY_SYMBOLS.length;
+    }, [difficulty]);
+
+    const gridColumns = useMemo(() => {
+        if (difficulty === 'easy') return 4;
+        if (difficulty === 'medium') return 4;
+        if (difficulty === 'hard') return 6;
+        return 4;
+    }, [difficulty]);
 
     useEffect(() => {
         if (difficulty) initializeGame();
@@ -56,7 +70,13 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
         setMatches(0);
         setFlippedIndices([]);
         setGameWon(false);
+        setFocusedIndex(0);
     };
+
+    useEffect(() => {
+        const node = cardButtonRefs.current[focusedIndex];
+        if (node) node.focus();
+    }, [focusedIndex, cards.length]);
 
     const handleCardClick = (index: number) => {
         if (flippedIndices.length === 2 || cards[index].isFlipped || cards[index].isMatched) return;
@@ -120,6 +140,35 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
         );
     }
 
+    const handleGridKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (cards.length === 0) return;
+
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            setFocusedIndex((prev) => Math.min(cards.length - 1, prev + 1));
+            return;
+        }
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            setFocusedIndex((prev) => Math.max(0, prev - 1));
+            return;
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setFocusedIndex((prev) => Math.min(cards.length - 1, prev + gridColumns));
+            return;
+        }
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setFocusedIndex((prev) => Math.max(0, prev - gridColumns));
+            return;
+        }
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleCardClick(focusedIndex);
+        }
+    };
+
     // Grid sizing based on difficulty
     const gridData = {
         easy: 'grid-cols-3 md:grid-cols-4',
@@ -157,17 +206,27 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
                         </button>
                     </div>
                 ) : (
-                    <div className={`grid gap-4 w-full max-w-2xl aspect-square p-4 ${gridData[difficulty]}`}>
+                    <div
+                        role="grid"
+                        aria-label="Memory game board"
+                        tabIndex={0}
+                        onKeyDown={handleGridKeyDown}
+                        className={`grid gap-4 w-full max-w-2xl aspect-square p-4 outline-none ${gridData[difficulty]}`}
+                    >
                         {cards.map((card, index) => (
                             <button
                                 key={card.id}
                                 title={`Card ${index + 1}`}
                                 aria-label={`Card ${index + 1}`}
+                                aria-pressed={card.isFlipped || card.isMatched}
+                                tabIndex={index === focusedIndex ? 0 : -1}
+                                ref={(node) => { cardButtonRefs.current[index] = node; }}
                                 onClick={() => handleCardClick(index)}
+                                onFocus={() => setFocusedIndex(index)}
                                 className={`rounded-2xl text-4xl flex items-center justify-center transition-all duration-300 transform aspect-square ${card.isFlipped || card.isMatched
                                     ? 'bg-gradient-to-br from-cyan-400 to-blue-500 rotate-0 scale-100 shadow-lg shadow-cyan-500/40'
                                     : 'bg-white/10 hover:bg-white/15 border border-white/10'
-                                    } ${card.isMatched ? 'opacity-50 grayscale' : ''}`}
+                                    } ${card.isMatched ? 'opacity-50 grayscale' : ''} ${index === focusedIndex ? 'ring-2 ring-primary ring-offset-2 ring-offset-[#1a2c4e]' : ''}`}
                             >
                                 <span className={`transition-all duration-300 ${card.isFlipped || card.isMatched ? 'scale-100' : 'scale-0'}`}>
                                     {card.isFlipped || card.isMatched ? card.symbol : ''}

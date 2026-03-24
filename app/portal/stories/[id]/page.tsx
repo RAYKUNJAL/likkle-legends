@@ -33,10 +33,55 @@ interface Story {
     reading_time_minutes: number;
 }
 
+function normalizeStory(input: any): Story {
+    const content = input?.content_json && typeof input.content_json === 'object' ? input.content_json : {};
+    const rawPages = Array.isArray(content.pages)
+        ? content.pages
+        : Array.isArray(content?.structure?.pages)
+            ? content.structure.pages
+            : [];
+
+    const normalizedPages: StoryPage[] = rawPages
+        .map((page: any, index: number) => {
+            const text = String(
+                page?.text ||
+                page?.narrative_text ||
+                page?.story_text ||
+                page?.content ||
+                ''
+            ).trim();
+
+            if (!text) return null;
+
+            return {
+                pageNumber: Number(page?.pageNumber || page?.page_number || index + 1),
+                text,
+                imageUrl: page?.imageUrl || page?.image_url || page?.illustration_url || page?.illustrationUrl || input?.cover_image_url,
+                glossaryWords: Array.isArray(page?.glossaryWords) ? page.glossaryWords : undefined,
+                question: page?.question,
+            } as StoryPage;
+        })
+        .filter(Boolean) as StoryPage[];
+
+    return {
+        id: String(input?.id || ''),
+        title: String(input?.title || 'Untitled Story'),
+        summary: String(input?.summary || ''),
+        cover_image_url: input?.cover_image_url || 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6?w=900&q=75',
+        character_id: input?.character_id,
+        tier_required: input?.tier_required || 'free',
+        reading_time_minutes: Number(input?.reading_time_minutes || 5),
+        content_json: {
+            pages: normalizedPages,
+            glossary: Array.isArray(content?.glossary) ? content.glossary : [],
+        },
+    };
+}
+
 export default function StoryReaderPage() {
     const params = useParams();
     const router = useRouter();
-    const { user, activeChild, canAccess } = useUser();
+    const { user, activeChild, canAccess, triggerBadgeUnlock } = useUser();
     const storyId = params.id as string;
 
     const [story, setStory] = useState<Story | null>(null);
@@ -49,22 +94,23 @@ export default function StoryReaderPage() {
         try {
             const { data, error } = await supabase
                 .from('storybooks')
-                .select('*')
+                .select('id, title, summary, cover_image_url, content_json, character_id, tier_required, reading_time_minutes')
                 .eq('id', storyId)
                 .single();
 
             if (error) throw error;
-            if (!data?.content_json || !data.content_json.pages?.length) {
+            const normalized = normalizeStory(data);
+            if (!normalized?.content_json?.pages?.length) {
                 const fallback = STARTER_STORIES.find(s => s.id === storyId) || STARTER_STORIES[0];
-                setStory(fallback as unknown as Story);
+                setStory(normalizeStory(fallback));
                 return;
             }
-            setStory(data as Story);
+            setStory(normalized);
         } catch (error) {
             console.error('Failed to load story:', error);
             const fallback = STARTER_STORIES.find(s => s.id === storyId) || STARTER_STORIES[0];
             if (fallback) {
-                setStory(fallback as unknown as Story);
+                setStory(normalizeStory(fallback));
             }
         } finally {
             setIsLoading(false);
@@ -83,7 +129,7 @@ export default function StoryReaderPage() {
 
         try {
             // Log activity and award XP
-            await logActivity(
+            const result = await logActivity(
                 user.id,
                 activeChild.id,
                 'story',
@@ -93,13 +139,17 @@ export default function StoryReaderPage() {
                 { title: story.title, type: 'storybook' }
             );
 
+            if ((result as any)?.unlockedBadge) {
+                triggerBadgeUnlock((result as any).unlockedBadge);
+            }
+
             setIsCompleted(true);
             router.push('/portal?completed=story&xp=' + xpEarned);
         } catch (error) {
             console.error("Failed to save completion:", error);
             router.push('/portal');
         }
-    }, [user, activeChild, story, readingStartTime, storyId, router]);
+    }, [user, activeChild, story, readingStartTime, storyId, router, triggerBadgeUnlock]);
 
     const handleClose = useCallback(() => {
         router.push('/portal');

@@ -57,6 +57,14 @@ export interface GeneratePlanInput {
     childId: string;
 }
 
+interface NormalizedQuizResults {
+    focus_areas: string[];
+    learning_style: string;
+    daily_minutes: number;
+    primary_goal: string;
+    preferred_character: string;
+}
+
 // ─── Tier Helpers ─────────────────────────────────────────────────────────────
 
 const TIER_LEVELS: Record<string, number> = {

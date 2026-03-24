@@ -5,10 +5,12 @@ import Link from 'next/link';
 import {
     ArrowLeft, Gamepad2, Star, Lock, Play, Trophy, Clock,
     Users, Sparkles, Brain, Palette, Zap, Crown, Gift, Wand2,
-    Puzzle, Music, BookOpen, Map as MapIcon, Heart, Target, CheckCircle
+    Puzzle, Music, BookOpen, Map as MapIcon, Heart, Target, CheckCircle, Search
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
-import { getGames } from '@/lib/database';
+import { getGames, getRecentActivities } from '@/lib/database';
+import { getGameProgressMap, type GameProgressEntry } from '@/lib/game-progress';
+import { normalizeParentalControls } from '@/lib/parental-controls';
 
 interface Game {
     id: string;
@@ -164,10 +166,29 @@ const FEATURED_GAMES = [
 import { EmptyState } from '@/components/EmptyState';
 
 export default function GamesHubPage() {
-    const { activeChild } = useUser();
+    const { activeChild, user } = useUser();
     const [games, setGames] = useState<Game[]>(FEATURED_GAMES as Game[]);
     const [activeCategory, setActiveCategory] = useState('all');
     const [showOnlyAccessible, setShowOnlyAccessible] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [durationFilter, setDurationFilter] = useState<'all' | 'short' | 'medium' | 'long'>('all');
+    const [difficultyFilter, setDifficultyFilter] = useState<'all' | 'easy' | 'medium' | 'hard'>('all');
+    const [progressMap, setProgressMap] = useState<Record<string, GameProgressEntry>>({});
+    const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
+
+    if (!parentalControls.allow_games) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
+                    <h2 className="text-3xl font-black text-slate-800 mb-2">Games Are Locked</h2>
+                    <p className="text-slate-500 font-semibold">Your parent controls currently disable game access.</p>
+                    <Link href="/portal/settings" className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black">
+                        Open Parent Controls
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     useEffect(() => {
         let cancelled = false;
@@ -227,15 +248,68 @@ export default function GamesHubPage() {
         };
     }, []);
 
+    useEffect(() => {
+        const localMap = getGameProgressMap();
+        setProgressMap(localMap);
+
+        if (!activeChild?.id) return;
+        (async () => {
+            try {
+                const recent = await getRecentActivities(activeChild.id, 150);
+                const gameRows = recent.filter((row: any) => row.activity_type === 'game' && row.content_id);
+                if (!gameRows.length) return;
+
+                const merged = { ...localMap };
+                gameRows.forEach((row: any) => {
+                    const key = String(row.content_id);
+                    const score = Number(row?.metadata?.score || row?.xp_earned || 0);
+                    const existing = merged[key];
+                    merged[key] = {
+                        gameId: key,
+                        plays: (existing?.plays || 0) + 1,
+                        bestScore: Math.max(existing?.bestScore || 0, score),
+                        lastPlayedAt: existing?.lastPlayedAt || row.created_at || new Date().toISOString(),
+                    };
+                });
+                setProgressMap(merged);
+            } catch (error) {
+                console.error('Failed to load backend game progress:', error);
+            }
+        })();
+    }, [activeChild?.id]);
+
     const canPlayGame = (_tier?: string) => true;
+
+    const getDurationBucket = (value?: string) => {
+        const parsed = parseInt((value || '').replace(/[^0-9]/g, ''), 10);
+        if (!Number.isFinite(parsed)) return 'medium';
+        if (parsed <= 5) return 'short';
+        if (parsed <= 10) return 'medium';
+        return 'long';
+    };
+
+    const getDifficultyBucket = (xp?: number) => {
+        const value = xp || 0;
+        if (value <= 100) return 'easy';
+        if (value <= 200) return 'medium';
+        return 'hard';
+    };
 
     const filteredGames = useMemo(() => {
         const categoryFiltered = activeCategory === 'all'
             ? games
             : games.filter(g => (g as any).category === activeCategory);
 
-        return categoryFiltered.filter(g => !showOnlyAccessible || canPlayGame((g as any).tier_required || (g as any).tier));
-    }, [activeCategory, games, showOnlyAccessible]);
+        return categoryFiltered
+            .filter(g => !showOnlyAccessible || canPlayGame((g as any).tier_required || (g as any).tier))
+            .filter((g) => {
+                if (!searchQuery.trim()) return true;
+                const hay = `${g.title} ${g.description} ${g.learningFocus || ''}`.toLowerCase();
+                return hay.includes(searchQuery.toLowerCase());
+            })
+            .filter((g) => durationFilter === 'all' || getDurationBucket(g.time) === durationFilter)
+            .filter((g) => difficultyFilter === 'all' || getDifficultyBucket(g.xp) === difficultyFilter);
+    }, [activeCategory, games, showOnlyAccessible, searchQuery, durationFilter, difficultyFilter]);
 
     const totalXP = activeChild?.total_xp || 0;
     const unlockedGames = filteredGames.filter(g => canPlayGame((g as any).tier_required || (g as any).tier));
@@ -290,6 +364,42 @@ export default function GamesHubPage() {
 
             {/* Category Filter */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 py-6">
+                <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <label className="relative">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search games or learning focus..."
+                            aria-label="Search games"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-white/30"
+                        />
+                    </label>
+                    <select
+                        value={durationFilter}
+                        onChange={(e) => setDurationFilter(e.target.value as 'all' | 'short' | 'medium' | 'long')}
+                        aria-label="Filter by duration"
+                        className="bg-white/5 border border-white/10 rounded-2xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-white/30"
+                    >
+                        <option value="all" className="text-black">All Durations</option>
+                        <option value="short" className="text-black">Short (≤5 min)</option>
+                        <option value="medium" className="text-black">Medium (6-10 min)</option>
+                        <option value="long" className="text-black">Long (10+ min)</option>
+                    </select>
+                    <select
+                        value={difficultyFilter}
+                        onChange={(e) => setDifficultyFilter(e.target.value as 'all' | 'easy' | 'medium' | 'hard')}
+                        aria-label="Filter by difficulty"
+                        className="bg-white/5 border border-white/10 rounded-2xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-white/30"
+                    >
+                        <option value="all" className="text-black">All Difficulty</option>
+                        <option value="easy" className="text-black">Easy</option>
+                        <option value="medium" className="text-black">Medium</option>
+                        <option value="hard" className="text-black">Hard</option>
+                    </select>
+                </div>
+
                 <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center">
                     {/* Accessibility Filter */}
                     <button
@@ -395,6 +505,7 @@ export default function GamesHubPage() {
                         {filteredGames.map((game) => {
                             const tier = (game as any).tier_required || (game as any).tier;
                             const isLocked = !canPlayGame(tier);
+                            const progress = progressMap[game.id];
 
                             return (
                                 <div
@@ -459,6 +570,12 @@ export default function GamesHubPage() {
                                                 {game.time}
                                             </span>
                                         </div>
+
+                                        {progress && (
+                                            <div className="mb-4 rounded-xl bg-white/10 border border-white/20 px-3 py-2 text-xs font-bold text-white/85">
+                                                Played {progress.plays}x · Best Score {progress.bestScore}
+                                            </div>
+                                        )}
 
                                         {/* Play Button */}
                                         {!isLocked && (

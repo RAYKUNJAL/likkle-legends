@@ -14,12 +14,13 @@ import LeaderboardPanel from '@/components/portal/LeaderboardPanel';
 import Link from 'next/link';
 
 type ActiveSection = 'profile' | 'notifications' | 'security';
+type ExtendedActiveSection = ActiveSection | 'parental';
 
 export default function SettingsPage() {
     const router = useRouter();
     const { user, isLoading: userLoading } = useUser();
     const profile = user;
-    const [activeSection, setActiveSection] = useState<ActiveSection>('profile');
+    const [activeSection, setActiveSection] = useState<ExtendedActiveSection>('profile');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [confirmDelete, setConfirmDelete] = useState(false);
@@ -27,6 +28,14 @@ export default function SettingsPage() {
     const [formData, setFormData] = useState({
         parent_name: '',
         marketing_opt_in: true,
+        parental_controls: {
+            allow_stories: true,
+            allow_lessons: true,
+            allow_games: true,
+            allow_radio: true,
+            allow_buddy: true,
+            daily_screen_time_minutes: 120,
+        }
     });
 
     useEffect(() => {
@@ -34,6 +43,14 @@ export default function SettingsPage() {
             setFormData({
                 parent_name: profile.parent_name || profile.full_name || '',
                 marketing_opt_in: profile.marketing_opt_in ?? true,
+                parental_controls: {
+                    allow_stories: profile.parental_controls?.allow_stories ?? true,
+                    allow_lessons: profile.parental_controls?.allow_lessons ?? true,
+                    allow_games: profile.parental_controls?.allow_games ?? true,
+                    allow_radio: profile.parental_controls?.allow_radio ?? true,
+                    allow_buddy: profile.parental_controls?.allow_buddy ?? true,
+                    daily_screen_time_minutes: profile.parental_controls?.daily_screen_time_minutes ?? 120,
+                }
             });
         }
     }, [profile]);
@@ -64,9 +81,10 @@ export default function SettingsPage() {
         }
     };
 
-    const navItems: { id: ActiveSection; label: string; icon: React.ElementType }[] = [
+    const navItems: { id: ExtendedActiveSection; label: string; icon: React.ElementType }[] = [
         { id: 'profile', label: 'Profile Info', icon: User },
         { id: 'notifications', label: 'Notifications', icon: Bell },
+        { id: 'parental', label: 'Parent Controls', icon: Shield },
         { id: 'security', label: 'Security & Privacy', icon: Shield },
     ];
 
@@ -179,7 +197,8 @@ export default function SettingsPage() {
                                         </div>
                                         <button
                                             role="switch"
-                                            aria-checked={formData.marketing_opt_in}
+                                            aria-checked={formData.marketing_opt_in ? "true" : "false"}
+                                            title={formData.marketing_opt_in ? "Disable marketing emails" : "Enable marketing emails"}
                                             onClick={() => setFormData(prev => ({ ...prev, marketing_opt_in: !prev.marketing_opt_in }))}
                                             className={`relative w-12 h-7 rounded-full p-1 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 ${formData.marketing_opt_in ? 'bg-primary' : 'bg-zinc-300'}`}
                                         >
@@ -193,6 +212,78 @@ export default function SettingsPage() {
                                     className="w-full bg-primary text-white py-6 rounded-[2.5rem] font-black text-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                                 >
                                     {isLoading ? <Loader2 className="animate-spin" /> : 'Save Preferences'}
+                                </button>
+                            </>
+                        )}
+
+                        {/* Security Section */}
+                        {activeSection === 'parental' && (
+                            <>
+                                <div className="bg-white rounded-[2.5rem] p-8 shadow-xl shadow-blue-900/5 space-y-6">
+                                    <h2 className="text-xl font-black text-deep flex items-center gap-2">
+                                        <Shield className="text-primary" /> Real Parent Controls
+                                    </h2>
+                                    <p className="text-sm text-deep/50 font-medium">
+                                        Control what your child can access and set a daily screen-time limit.
+                                    </p>
+                                    <div className="space-y-3">
+                                        {[
+                                            { key: 'allow_stories', label: 'Allow Stories' },
+                                            { key: 'allow_lessons', label: 'Allow Lessons' },
+                                            { key: 'allow_games', label: 'Allow Games' },
+                                            { key: 'allow_radio', label: 'Allow Radio' },
+                                            { key: 'allow_buddy', label: 'Allow Buddy Chat' },
+                                        ].map((item) => (
+                                            <div key={item.key} className="flex items-center justify-between gap-4 p-4 bg-zinc-50 rounded-2xl">
+                                                <p className="font-bold text-deep">{item.label}</p>
+                                                <button
+                                                    role="switch"
+                                                    aria-checked={(formData.parental_controls as any)[item.key] ? "true" : "false"}
+                                                    onClick={() => setFormData((prev) => ({
+                                                        ...prev,
+                                                        parental_controls: {
+                                                            ...prev.parental_controls,
+                                                            [item.key]: !(prev.parental_controls as any)[item.key]
+                                                        }
+                                                    }))}
+                                                    className={`relative w-12 h-7 rounded-full p-1 transition-colors ${((formData.parental_controls as any)[item.key]) ? 'bg-primary' : 'bg-zinc-300'}`}
+                                                >
+                                                    <span className={`block w-5 h-5 bg-white rounded-full shadow transition-transform ${((formData.parental_controls as any)[item.key]) ? 'translate-x-5' : 'translate-x-0'}`} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="p-4 bg-zinc-50 rounded-2xl">
+                                        <label htmlFor="daily_limit" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3">
+                                            Daily Screen-Time Limit (minutes)
+                                        </label>
+                                        <input
+                                            id="daily_limit"
+                                            type="range"
+                                            min={15}
+                                            max={300}
+                                            step={15}
+                                            value={formData.parental_controls.daily_screen_time_minutes}
+                                            onChange={(e) => setFormData((prev) => ({
+                                                ...prev,
+                                                parental_controls: {
+                                                    ...prev.parental_controls,
+                                                    daily_screen_time_minutes: Number(e.target.value)
+                                                }
+                                            }))}
+                                            className="w-full accent-primary"
+                                        />
+                                        <p className="mt-2 font-black text-primary">{formData.parental_controls.daily_screen_time_minutes} minutes/day</p>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleSave}
+                                    disabled={isLoading}
+                                    className="w-full bg-primary text-white py-6 rounded-[2.5rem] font-black text-xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                >
+                                    {isLoading ? <Loader2 className="animate-spin" /> : 'Save Parent Controls'}
                                 </button>
                             </>
                         )}

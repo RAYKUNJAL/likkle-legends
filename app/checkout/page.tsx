@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
     ShieldCheck,
     ArrowRight,
+    ArrowLeft,
     CheckCircle2,
     Lock,
     Mail,
@@ -15,7 +16,8 @@ import {
     Star,
     Sparkles,
     Zap,
-    Search
+    Search,
+    AlertCircle
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -33,6 +35,8 @@ function CheckoutContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const [step, setStep] = useState(1);
+    const [emailError, setEmailError] = useState<string | null>(null);
+    const [emailTouched, setEmailTouched] = useState(false);
 
     // Helper to map URL param to Plan Object
     const getInitialPlan = () => {
@@ -56,6 +60,34 @@ function CheckoutContent() {
     const [isComplete, setIsComplete] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Discount code state
+    const [discountCode, setDiscountCode] = useState("");
+    const [discountValid, setDiscountValid] = useState<{ valid: boolean; discount_percent?: number; description?: string } | null>(null);
+    const [isValidatingDiscount, setIsValidatingDiscount] = useState(false);
+
+    const validateDiscountCode = async () => {
+        if (!discountCode.trim()) return;
+        setIsValidatingDiscount(true);
+        try {
+            const res = await fetch("/api/discount/validate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code: discountCode }),
+            });
+            const data = await res.json();
+            setDiscountValid(data);
+            if (data.valid) {
+                toast.success(`${data.description} applied!`);
+            } else {
+                toast.error(data.error || "Invalid code");
+            }
+        } catch {
+            toast.error("Failed to validate code");
+        } finally {
+            setIsValidatingDiscount(false);
+        }
+    };
 
     // CRO: fire begin_checkout when the page loads (visitor intent signal)
     useEffect(() => {
@@ -98,7 +130,27 @@ function CheckoutContent() {
         h.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleNext = () => setStep(s => s + 1);
+    const handleBack = () => setStep(s => Math.max(1, s - 1));
+
+    const validateEmail = (email: string): string | null => {
+        if (!email.trim()) return "Email is required";
+        if (!email.includes("@")) return "Please enter a valid email address";
+        if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) return "Please enter a valid email format";
+        return null;
+    };
+
+    const handleNext = () => {
+        if (step === 1) {
+            const error = validateEmail(formData.email);
+            if (error) {
+                setEmailError(error);
+                setEmailTouched(true);
+                return;
+            }
+            setEmailError(null);
+        }
+        setStep(s => s + 1);
+    };
 
     const calculateTotal = () => {
         const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
@@ -282,21 +334,39 @@ function CheckoutContent() {
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-deep/30 px-6">Parent Email</label>
                                             <div className="relative">
-                                                <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-deep/20" size={20} />
+                                                <Mail className={`absolute left-6 top-1/2 -translate-y-1/2 transition-colors ${emailError && emailTouched ? 'text-red-400' : 'text-deep/20'}`} size={20} />
                                                 <input
                                                     type="email"
                                                     required
                                                     placeholder="you@example.com"
                                                     value={formData.email}
-                                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                                    className="w-full pl-14 pr-8 py-5 bg-white border border-zinc-100 rounded-2xl font-bold text-deep focus:outline-none focus:border-primary/30 transition-all shadow-sm"
+                                                    onBlur={() => {
+                                                        setEmailTouched(true);
+                                                        setEmailError(validateEmail(formData.email));
+                                                    }}
+                                                    onChange={e => {
+                                                        setFormData({ ...formData, email: e.target.value });
+                                                        if (emailTouched) {
+                                                            setEmailError(validateEmail(e.target.value));
+                                                        }
+                                                    }}
+                                                    className={`w-full pl-14 pr-8 py-5 bg-white border rounded-2xl font-bold text-deep focus:outline-none transition-all shadow-sm ${
+                                                        emailError && emailTouched
+                                                            ? 'border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100'
+                                                            : 'border-zinc-100 focus:border-primary/30'
+                                                    }`}
                                                 />
                                             </div>
+                                            {emailError && emailTouched && (
+                                                <div className="flex items-center gap-2 px-6 pt-1">
+                                                    <AlertCircle size={14} className="text-red-500 shrink-0" />
+                                                    <p className="text-xs font-bold text-red-500">{emailError}</p>
+                                                </div>
+                                            )}
                                         </div>
                                         <button
                                             type="button"
                                             onClick={handleNext}
-                                            disabled={!formData.email.includes("@")}
                                             className="w-full py-5 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
                                         >
                                             Next: Personalize
@@ -377,7 +447,6 @@ function CheckoutContent() {
                                                             type="button"
                                                             onClick={() => {
                                                                 setFormData({ ...formData, heritage: h.code });
-                                                                handleNext();
                                                             }}
                                                             className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all ${formData.heritage === h.code ? 'bg-primary/5 border-primary shadow-inner-sm' : 'bg-white border-zinc-100 hover:border-zinc-200'}`}
                                                         >
@@ -392,6 +461,27 @@ function CheckoutContent() {
                                                     )}
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        {/* Step 2 Navigation */}
+                                        <div className="flex items-center gap-3 pt-4">
+                                            <button
+                                                type="button"
+                                                onClick={handleBack}
+                                                className="flex items-center gap-2 px-5 py-4 text-deep/50 hover:text-deep hover:bg-zinc-100 rounded-2xl font-bold text-sm transition-all"
+                                            >
+                                                <ArrowLeft size={16} />
+                                                Back
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={handleNext}
+                                                disabled={!formData.childName.trim() || !formData.heritage}
+                                                className="flex-1 py-5 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                            >
+                                                Next: Extras
+                                                <ArrowRight size={18} />
+                                            </button>
                                         </div>
                                     </motion.div>
                                 )}
@@ -466,14 +556,52 @@ function CheckoutContent() {
                                             </button>
                                         </div>
 
-                                        <button
-                                            type="button"
-                                            onClick={handleNext}
-                                            className="w-full py-5 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
-                                        >
-                                            Continue to Payment
-                                            <ArrowRight size={18} />
-                                        </button>
+                                        {/* Discount Code */}
+                                        <div className="bg-zinc-50 border border-dashed border-zinc-200 rounded-2xl p-4">
+                                            <p className="text-xs font-bold text-deep/50 uppercase tracking-wider mb-2">Have a discount code?</p>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={discountCode}
+                                                    onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                                                    placeholder="Enter code"
+                                                    className="flex-1 px-4 py-2.5 rounded-xl border border-zinc-200 text-sm font-bold focus:border-primary focus:outline-none"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={validateDiscountCode}
+                                                    disabled={isValidatingDiscount || !discountCode.trim()}
+                                                    className="px-5 py-2.5 bg-deep text-white rounded-xl text-sm font-black hover:bg-deep/90 transition-colors disabled:opacity-50"
+                                                >
+                                                    {isValidatingDiscount ? "..." : "Apply"}
+                                                </button>
+                                            </div>
+                                            {discountValid?.valid && (
+                                                <p className="text-xs font-bold text-green-600 mt-2 flex items-center gap-1">
+                                                    <CheckCircle2 size={12} /> {discountValid.description} applied
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Step 3 Navigation */}
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={handleBack}
+                                                className="flex items-center gap-2 px-5 py-4 text-deep/50 hover:text-deep hover:bg-zinc-100 rounded-2xl font-bold text-sm transition-all"
+                                            >
+                                                <ArrowLeft size={16} />
+                                                Back
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={handleNext}
+                                                className="flex-1 py-5 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                                            >
+                                                Continue to Payment
+                                                <ArrowRight size={18} />
+                                            </button>
+                                        </div>
                                     </motion.div>
                                 )}
 
@@ -494,6 +622,60 @@ function CheckoutContent() {
                                                     ? 'Free forever • No credit card required • upgrade anytime.'
                                                     : '7-day free trial • $0 charged today • cancel anytime.'}
                                             </p>
+                                        </div>
+
+                                        {/* Order Review Summary */}
+                                        <div className="bg-zinc-50 rounded-2xl border border-zinc-100 p-5 space-y-3">
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-deep/30 mb-3">Order Review</p>
+                                            <div className="space-y-2 text-sm">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-deep/50 font-medium">Plan</span>
+                                                    <span className="font-bold text-deep">
+                                                        {SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS]?.name || 'Legend Pass'}
+                                                    </span>
+                                                </div>
+                                                {formData.childName && (
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-deep/50 font-medium">Little Legend</span>
+                                                        <span className="font-bold text-deep">{formData.childName}</span>
+                                                    </div>
+                                                )}
+                                                {formData.heritage && (
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-deep/50 font-medium">Heritage Island</span>
+                                                        <span className="font-bold text-deep">
+                                                            {heritages.find(h => h.code === formData.heritage)?.flag}{' '}
+                                                            {heritages.find(h => h.code === formData.heritage)?.name}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {formData.hasUpsell && (
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-deep/50 font-medium">Digital Activity Pack</span>
+                                                        <span className="font-bold text-primary">+$5.00</span>
+                                                    </div>
+                                                )}
+                                                {formData.hasHeritageStory && (
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-deep/50 font-medium">Heritage DNA Story</span>
+                                                        <span className="font-bold text-primary">+$14.99</span>
+                                                    </div>
+                                                )}
+                                                <div className="border-t border-zinc-200 pt-2 mt-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="font-black text-deep">Due Today</span>
+                                                        <span className="font-black text-green-600 text-lg">
+                                                            {formData.planKey === 'plan_free_forever' ? `$${calculateTotal()}` : '$0.00'}
+                                                        </span>
+                                                    </div>
+                                                    {formData.planKey !== 'plan_free_forever' && (
+                                                        <p className="text-[10px] text-deep/30 font-medium mt-1">
+                                                            Then ${calculateTotal()}/month starting{' '}
+                                                            {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div className="bg-white rounded-2xl border border-zinc-100 p-6 space-y-6 shadow-sm">
@@ -568,6 +750,16 @@ function CheckoutContent() {
                                                 Payments are processed securely by PayPal. You can use your PayPal balance or pay directly with a Debit/Credit Card.
                                             </p>
                                         </div>
+
+                                        {/* Step 4 Back Button */}
+                                        <button
+                                            type="button"
+                                            onClick={handleBack}
+                                            className="flex items-center gap-2 text-deep/40 hover:text-deep font-bold text-sm transition-all mx-auto"
+                                        >
+                                            <ArrowLeft size={16} />
+                                            Back to previous step
+                                        </button>
                                     </motion.div>
                                 )}
                             </AnimatePresence>

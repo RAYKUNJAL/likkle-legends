@@ -3,23 +3,28 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import {
-    X, Volume2, VolumeX, ChevronLeft, ChevronRight,
+    X, Volume2, ChevronLeft, ChevronRight,
     Loader2, Play, Pause, HelpCircle, Star,
-    Trophy, Sparkles, BookOpen, Settings
+    Trophy, BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { generateCharacterAudioWithMetadata } from '@/app/actions/voice';
+import { ensureStoryPageAudio } from '@/app/actions/story-audio';
 import { useUser } from '@/components/UserContext';
-import { logActivity } from '@/lib/database';
 import BadgeUnlockModal from './gamification/BadgeUnlockModal';
 
 interface StoryPage {
     pageNumber: number;
     text: string;
     imageUrl?: string;
+    image_url?: string;
+    illustration_url?: string;
+    illustrationUrl?: string;
     glossaryWords?: string[];
     question?: string;
+    audioUrl?: string;
+    audioWords?: { text: string; start: number; end: number }[];
+    audioCharacter?: GuideId;
 }
 
 interface Story {
@@ -27,6 +32,7 @@ interface Story {
     title: string;
     summary: string;
     cover_image_url: string;
+    character_id?: string;
     content_json: {
         pages: StoryPage[];
         glossary: { word: string; meaning: string }[];
@@ -34,7 +40,7 @@ interface Story {
     reading_time_minutes: number;
 }
 
-type GuideId = 'tanty' | 'roti' | 'dilly';
+type GuideId = 'tanty';
 
 interface PremiumStoryReaderProps {
     story: Story;
@@ -47,16 +53,6 @@ const GUIDE_META: Record<GuideId, { name: string; avatar: string; tagline: strin
         name: 'Tanty Spice',
         avatar: '/images/tanty_spice_avatar.jpg',
         tagline: 'Warm island storytelling',
-    },
-    roti: {
-        name: 'R.O.T.I.',
-        avatar: '/images/roti-new.jpg',
-        tagline: 'Curious learning buddy',
-    },
-    dilly: {
-        name: 'Dilly Doubles',
-        avatar: '/images/dilly-doubles.jpg',
-        tagline: 'Rhythm and reading',
     },
 };
 
@@ -74,25 +70,34 @@ function buildTextTokens(text: string) {
 }
 
 export default function PremiumStoryReader({ story, onClose, onComplete }: PremiumStoryReaderProps) {
-    const { user, activeChild, triggerBadgeUnlock, unlockedBadge, clearUnlockedBadge } = useUser();
+    const { unlockedBadge, clearUnlockedBadge } = useUser();
     const [currentPage, setCurrentPage] = useState(0);
-    const [readingMode, setReadingMode] = useState<'read-to-me' | 'read-by-myself'>('read-to-me');
-    const [guide, setGuide] = useState<GuideId>('tanty');
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoadingAudio, setIsLoadingAudio] = useState(false);
-    const [isMuted, setIsMuted] = useState(false);
     const [showGlossary, setShowGlossary] = useState(false);
     const [showCompletion, setShowCompletion] = useState(false);
     const [isAutoPlaying, setIsAutoPlaying] = useState(true);
     const [currentWordIndex, setCurrentWordIndex] = useState<number | null>(null);
+    const [pages, setPages] = useState<StoryPage[]>(() => story.content_json?.pages || []);
 
     // Audio refs
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const wordTimingsRef = useRef<{ text: string; start: number; end: number }[]>([]);
     const lastWordIndexRef = useRef(0);
-    const pages = story.content_json?.pages || [];
+    const prefetchingPagesRef = useRef<Set<string>>(new Set());
+    const storyGuide: GuideId = 'tanty';
     const currentPageData = pages[currentPage] || { text: '', pageNumber: 1 };
     const textTokens = useMemo(() => buildTextTokens(currentPageData.text || ''), [currentPageData.text]);
+    const currentImage = currentPageData.imageUrl
+        || currentPageData.image_url
+        || currentPageData.illustration_url
+        || currentPageData.illustrationUrl
+        || story.cover_image_url;
+
+    useEffect(() => {
+        setPages(story.content_json?.pages || []);
+        prefetchingPagesRef.current.clear();
+    }, [story]);
 
     const stopAudio = useCallback(() => {
         if (audioRef.current) {
@@ -112,15 +117,6 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             origin: { y: 0.6 },
             colors: ['#FFD700', '#FF4500', '#1E90FF', '#32CD32']
         });
-        // Wait for animation then call onComplete
-        if (user && activeChild) {
-            logActivity(user.id, activeChild.id, 'story', story.id, 100, 0, { title: story.title }).then(result => {
-                if (result?.unlockedBadge) {
-                    triggerBadgeUnlock(result.unlockedBadge);
-                }
-            }).catch(console.error);
-        }
-
         setTimeout(() => {
             onComplete(100); // 100 XP fixed reward
         }, 5000);
@@ -142,6 +138,56 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
         }
     }, [currentPage, stopAudio]);
 
+    const loadCachedNarration = useCallback(async (pageIndex: number) => {
+        const pageData = pages[pageIndex];
+        if (!pageData?.text) return null;
+
+        const cacheKey = `${story.id}:${pageIndex}:${storyGuide}`;
+        if (prefetchingPagesRef.current.has(cacheKey)) {
+            return null;
+        }
+
+        if (pageData.audioUrl && pageData.audioCharacter === storyGuide) {
+            return {
+                audioUrl: pageData.audioUrl,
+                words: pageData.audioWords || [],
+            };
+        }
+
+        prefetchingPagesRef.current.add(cacheKey);
+
+        try {
+            const result = await ensureStoryPageAudio({
+                storyId: story.id,
+                pageIndex,
+                text: pageData.text,
+                voice: storyGuide,
+            });
+
+            if (!result.success || !result.audioUrl) {
+                return null;
+            }
+
+            setPages((prev) => prev.map((page, index) => (
+                index === pageIndex
+                    ? {
+                        ...page,
+                        audioUrl: result.audioUrl,
+                        audioWords: result.words || [],
+                        audioCharacter: storyGuide,
+                    }
+                    : page
+            )));
+
+            return {
+                audioUrl: result.audioUrl,
+                words: result.words || [],
+            };
+        } finally {
+            prefetchingPagesRef.current.delete(cacheKey);
+        }
+    }, [pages, story.id, storyGuide]);
+
     // Voice Narration Logic
     const playNarration = useCallback(async () => {
         if (isPlaying) {
@@ -151,68 +197,74 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
         setIsLoadingAudio(true);
         try {
-            const res = await generateCharacterAudioWithMetadata(currentPageData?.text || "", guide);
-            if (res.success && res.audio) {
-                // If it's a base64 string, we need to handle it properly
-                const audioSrc = res.audio.startsWith('data:') ? res.audio : `data:audio/mp3;base64,${res.audio}`;
-                const audio = new Audio(audioSrc);
-                audio.muted = isMuted;
-
-                audio.onplay = () => {
-                    setIsPlaying(true);
-                    setIsLoadingAudio(false);
-                };
-
-                audio.onended = () => {
-                    setIsPlaying(false);
-                    setCurrentWordIndex(null);
-                    if (isAutoPlaying && currentPage < pages.length - 1) {
-                        setTimeout(nextPage, 1500); // Pause before next page
-                    }
-                };
-
-                if (res.words && res.words.length > 0) {
-                    wordTimingsRef.current = res.words;
-                    lastWordIndexRef.current = 0;
-                    setCurrentWordIndex(0);
-                } else {
-                    wordTimingsRef.current = [];
-                    lastWordIndexRef.current = 0;
-                    setCurrentWordIndex(null);
-                }
-
-                audio.ontimeupdate = () => {
-                    const timings = wordTimingsRef.current;
-                    if (!timings.length) return;
-                    const currentTime = audio.currentTime;
-                    let idx = lastWordIndexRef.current;
-                    if (currentTime < timings[idx]?.start) idx = 0;
-                    while (idx < timings.length && currentTime > timings[idx].end) {
-                        idx += 1;
-                    }
-                    if (idx >= timings.length) idx = timings.length - 1;
-                    if (idx !== lastWordIndexRef.current) {
-                        lastWordIndexRef.current = idx;
-                        setCurrentWordIndex(idx);
-                    }
-                };
-
-                audioRef.current = audio;
-                await audio.play();
+            const cachedNarration = await loadCachedNarration(currentPage);
+            if (!cachedNarration?.audioUrl) {
+                throw new Error('Narration unavailable');
             }
+
+            const audio = new Audio(cachedNarration.audioUrl);
+            audio.preload = 'auto';
+
+            audio.onplay = () => {
+                setIsPlaying(true);
+                setIsLoadingAudio(false);
+            };
+
+            audio.onended = () => {
+                setIsPlaying(false);
+                setCurrentWordIndex(null);
+                if (isAutoPlaying && currentPage < pages.length - 1) {
+                    setTimeout(nextPage, 900);
+                }
+            };
+
+            if (cachedNarration.words.length > 0) {
+                wordTimingsRef.current = cachedNarration.words;
+                lastWordIndexRef.current = 0;
+                setCurrentWordIndex(0);
+            } else {
+                wordTimingsRef.current = [];
+                lastWordIndexRef.current = 0;
+                setCurrentWordIndex(null);
+            }
+
+            audio.ontimeupdate = () => {
+                const timings = wordTimingsRef.current;
+                if (!timings.length) return;
+                const currentTime = audio.currentTime;
+                let idx = lastWordIndexRef.current;
+                if (currentTime < timings[idx]?.start) idx = 0;
+                while (idx < timings.length && currentTime > timings[idx].end) {
+                    idx += 1;
+                }
+                if (idx >= timings.length) idx = timings.length - 1;
+                if (idx !== lastWordIndexRef.current) {
+                    lastWordIndexRef.current = idx;
+                    setCurrentWordIndex(idx);
+                }
+            };
+
+            audioRef.current = audio;
+            await audio.play();
         } catch (error) {
             console.error("Narration error:", error);
             setIsLoadingAudio(false);
         }
-    }, [isPlaying, currentPageData?.text, isMuted, isAutoPlaying, currentPage, pages.length, nextPage, stopAudio, guide]);
+    }, [isPlaying, isAutoPlaying, currentPage, pages.length, nextPage, stopAudio, loadCachedNarration]);
 
-    // Auto-start narration on page change if in "Read to Me" mode
+    // Auto-start narration on page change
     useEffect(() => {
-        if (readingMode === 'read-to-me' && !showCompletion) {
+        if (!showCompletion) {
             playNarration();
         }
         return () => stopAudio();
-    }, [currentPage, readingMode, showCompletion, playNarration, stopAudio]);
+    }, [currentPage, showCompletion, playNarration, stopAudio]);
+
+    useEffect(() => {
+        if (currentPage + 1 < pages.length) {
+            void loadCachedNarration(currentPage + 1);
+        }
+    }, [currentPage, pages.length, loadCachedNarration]);
 
     return (
         <div className="fixed inset-0 z-[1000] bg-sky-950 flex items-center justify-center p-0 md:p-8 select-none">
@@ -284,22 +336,6 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
                             <div className="flex items-center gap-2 md:gap-4 bg-blue-50 p-2 rounded-2xl">
                                 <button
-                                    onClick={() => {
-                                        if (readingMode === 'read-to-me') {
-                                            stopAudio();
-                                            setReadingMode('read-by-myself');
-                                        } else {
-                                            setReadingMode('read-to-me');
-                                        }
-                                    }}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all flex items-center gap-2 ${readingMode === 'read-to-me' ? 'bg-blue-600 text-white shadow-md' : 'text-blue-400'}`}
-                                    title={readingMode === 'read-to-me' ? 'Switch to Read by Myself' : 'Switch to Read to Me'}
-                                    aria-label={readingMode === 'read-to-me' ? 'Switch to Read by Myself' : 'Switch to Read to Me'}
-                                >
-                                    <Volume2 size={16} /> {readingMode === 'read-to-me' ? 'Read to Me' : 'Read to Myself'}
-                                </button>
-                                <div className="w-px h-6 bg-blue-200"></div>
-                                <button
                                     onClick={() => setIsAutoPlaying(!isAutoPlaying)}
                                     className={`px-4 py-2 rounded-xl text-xs font-black uppercase transition-all ${isAutoPlaying ? 'text-green-600' : 'text-blue-400'}`}
                                     title={isAutoPlaying ? 'Turn off Auto-Turn' : 'Turn on Auto-Turn'}
@@ -308,21 +344,10 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                     {isAutoPlaying ? 'Auto-Turn ON' : 'Auto-Turn OFF'}
                                 </button>
                                 <div className="hidden lg:flex items-center gap-2 bg-white rounded-xl px-3 py-2 border border-blue-100">
-                                    <span className="text-[10px] font-black uppercase text-blue-500 tracking-widest">Guide</span>
-                                    {(['tanty', 'roti', 'dilly'] as GuideId[]).map((id) => (
-                                        <button
-                                            key={id}
-                                            onClick={() => {
-                                                setGuide(id);
-                                                stopAudio();
-                                            }}
-                                            className={`px-3 py-1 rounded-lg text-[11px] font-black uppercase transition-all ${guide === id ? 'bg-blue-600 text-white' : 'text-blue-400 hover:text-blue-600'}`}
-                                            title={`Switch to ${GUIDE_META[id].name}`}
-                                            aria-label={`Switch to ${GUIDE_META[id].name}`}
-                                        >
-                                            {GUIDE_META[id].name}
-                                        </button>
-                                    ))}
+                                    <span className="text-[10px] font-black uppercase text-blue-500 tracking-widest">Story Voice</span>
+                                    <span className="px-3 py-1 rounded-lg text-[11px] font-black uppercase bg-blue-600 text-white">
+                                        Tanty Spice
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -340,9 +365,9 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                         transition={{ duration: 0.6, ease: "circOut" }}
                                         className="absolute inset-0"
                                     >
-                                        {currentPageData.imageUrl ? (
+                                        {currentImage ? (
                                             <Image
-                                                src={currentPageData.imageUrl}
+                                                src={currentImage}
                                                 alt={`Page ${currentPage + 1}`}
                                                 fill
                                                 className="object-cover"
@@ -370,8 +395,8 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                 <div className="absolute top-10 right-10 flex items-center gap-3">
                                     <div className={`relative w-16 h-16 rounded-full border-4 ${isPlaying ? 'border-green-400 animate-pulse' : 'border-blue-100'}`}>
                                         <Image
-                                            src={GUIDE_META[guide].avatar}
-                                            alt={GUIDE_META[guide].name}
+                                            src={GUIDE_META[storyGuide].avatar}
+                                            alt={GUIDE_META[storyGuide].name}
                                             fill
                                             className="rounded-full object-cover"
                                         />
@@ -383,28 +408,17 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                     </div>
                                     <div className="bg-blue-50 p-3 rounded-2xl hidden md:block">
                                         <p className="text-[10px] font-black text-blue-900 uppercase">Listening Guide</p>
-                                        <p className="text-[12px] font-bold text-blue-400">{GUIDE_META[guide].name}</p>
-                                        <p className="text-[10px] font-bold text-blue-300">{GUIDE_META[guide].tagline}</p>
+                                        <p className="text-[12px] font-bold text-blue-400">{GUIDE_META[storyGuide].name}</p>
+                                        <p className="text-[10px] font-bold text-blue-300">{GUIDE_META[storyGuide].tagline}</p>
                                     </div>
                                 </div>
 
                                 <div className="space-y-10">
                                     <div className="lg:hidden flex flex-wrap items-center gap-2 bg-blue-50 p-3 rounded-2xl border border-blue-100">
-                                        <span className="text-[10px] font-black uppercase text-blue-500 tracking-widest">Guide</span>
-                                        {(['tanty', 'roti', 'dilly'] as GuideId[]).map((id) => (
-                                            <button
-                                                key={id}
-                                                onClick={() => {
-                                                    setGuide(id);
-                                                    stopAudio();
-                                                }}
-                                                className={`px-3 py-1 rounded-lg text-[11px] font-black uppercase transition-all ${guide === id ? 'bg-blue-600 text-white' : 'text-blue-400 hover:text-blue-600'}`}
-                                                title={`Switch to ${GUIDE_META[id].name}`}
-                                                aria-label={`Switch to ${GUIDE_META[id].name}`}
-                                            >
-                                                {GUIDE_META[id].name}
-                                            </button>
-                                        ))}
+                                        <span className="text-[10px] font-black uppercase text-blue-500 tracking-widest">Story Voice</span>
+                                        <span className="px-3 py-1 rounded-lg text-[11px] font-black uppercase bg-blue-600 text-white">
+                                            Tanty Spice
+                                        </span>
                                     </div>
                                     <AnimatePresence mode="wait">
                                         <motion.div
@@ -491,12 +505,33 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                 ))}
                             </div>
 
-                            <button
-                                onClick={nextPage}
-                                className={`flex items-center gap-4 px-12 py-5 rounded-[2rem] font-black text-xl transition-all bg-gradient-to-r from-primary to-accent text-white shadow-xl shadow-primary/20 hover:scale-105 active:scale-95`}
-                            >
-                                {currentPage === pages.length - 1 ? 'Finish!' : 'Next'} <ChevronRight size={32} />
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={playNarration}
+                                    disabled={isLoadingAudio}
+                                    className="flex items-center gap-3 px-6 py-4 rounded-[1.5rem] font-black text-sm md:text-base bg-orange-500 text-white shadow-lg hover:scale-105 active:scale-95 transition-all disabled:opacity-60"
+                                    title={isPlaying ? 'Stop Narration' : 'Play Narration'}
+                                    aria-label={isPlaying ? 'Stop Narration' : 'Play Narration'}
+                                >
+                                    {isLoadingAudio ? <Loader2 size={20} className="animate-spin" /> : (isPlaying ? <Pause size={20} /> : <Play size={20} />)}
+                                    {isPlaying ? 'Stop' : 'Play'}
+                                </button>
+                                <button
+                                    onClick={onClose}
+                                    className="flex items-center gap-3 px-6 py-4 rounded-[1.5rem] font-black text-sm md:text-base bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all"
+                                    title="Exit Story"
+                                    aria-label="Exit Story"
+                                >
+                                    <X size={20} />
+                                    Exit
+                                </button>
+                                <button
+                                    onClick={nextPage}
+                                    className={`flex items-center gap-4 px-8 py-5 rounded-[2rem] font-black text-xl transition-all bg-gradient-to-r from-primary to-accent text-white shadow-xl shadow-primary/20 hover:scale-105 active:scale-95`}
+                                >
+                                    {currentPage === pages.length - 1 ? 'Finish!' : 'Next'} <ChevronRight size={32} />
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 )}

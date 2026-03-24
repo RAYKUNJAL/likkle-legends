@@ -7,6 +7,7 @@ import {
     ArrowLeft,
     Flame,
     Info,
+    Lock,
     Loader2,
     MessageCircle,
     Mic,
@@ -18,8 +19,9 @@ import {
     Zap
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
-import { getCharacterConfig, CharacterId, CharacterChild } from '@/lib/characterConfig';
+import { getCharacterConfig, CHARACTER_ORDER, CharacterId, CharacterChild } from '@/lib/characterConfig';
 import IslandVoice from '@/components/IslandVoice';
+import { normalizeParentalControls } from '@/lib/parental-controls';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -136,7 +138,26 @@ export default function CharacterChatPage() {
     const params = useParams();
     const router = useRouter();
     const characterId = params.character as CharacterId;
-    const { activeChild } = useUser();
+    const { activeChild, canAccess, isLoading, user } = useUser();
+    const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
+
+    if (!isLoading && !parentalControls.allow_buddy) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
+                    <h2 className="text-3xl font-black text-slate-800 mb-2">Buddy Chat Is Locked</h2>
+                    <p className="text-slate-500 font-semibold">Your parent controls currently disable buddy chat.</p>
+                    <button
+                        type="button"
+                        onClick={() => router.push('/portal/settings')}
+                        className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black"
+                    >
+                        Open Parent Controls
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const config = useMemo(() => {
         try {
@@ -177,6 +198,12 @@ export default function CharacterChatPage() {
     }, [config, characterId, router]);
 
     useEffect(() => {
+        if (!isLoading && user && !canAccess('starter_mailer')) {
+            setErrorMessage('Buddy chat is available on paid plans.');
+        }
+    }, [canAccess, isLoading, user]);
+
+    useEffect(() => {
         if (typeof window === 'undefined') return;
         const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
         setSpeechSupported(Boolean(SpeechRecognitionAPI));
@@ -196,7 +223,11 @@ export default function CharacterChatPage() {
     }, [messages, statusMessage, errorMessage]);
 
     useEffect(() => {
-        if (!activeChild || !characterId || !config) return;
+        if (isLoading) return;
+        if (!activeChild || !characterId || !config || !user || !canAccess('starter_mailer')) {
+            setIsLoadingHistory(false);
+            return;
+        }
 
         let cancelled = false;
         const loadHistory = async () => {
@@ -210,6 +241,9 @@ export default function CharacterChatPage() {
                     { headers: { Authorization: `Bearer ${session?.access_token}` } }
                 );
                 const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data?.error || 'Failed to load buddy history.');
+                }
                 const history: { id: string; role: string; content: string }[] = data.history || [];
 
                 if (cancelled) return;
@@ -225,8 +259,9 @@ export default function CharacterChatPage() {
                     const welcomeText = config.persona.welcomeMessage(activeChild.first_name, activeChild.current_streak || 0);
                     setMessages([{ role: 'assistant', content: welcomeText, id: 'welcome-local' }]);
                 }
-            } catch {
+            } catch (error: any) {
                 if (cancelled) return;
+                setErrorMessage(error?.message || 'Failed to load buddy history.');
                 const welcomeText = config.persona.welcomeMessage(activeChild.first_name, activeChild.current_streak || 0);
                 setMessages([{ role: 'assistant', content: welcomeText, id: 'welcome-local' }]);
             } finally {
@@ -236,7 +271,7 @@ export default function CharacterChatPage() {
 
         loadHistory();
         return () => { cancelled = true; };
-    }, [activeChild?.id, characterId, config]);
+    }, [activeChild?.id, canAccess, characterId, config, isLoading, user]);
 
     const speakText = useCallback(async (text: string) => {
         if (!config) return;
@@ -272,7 +307,7 @@ export default function CharacterChatPage() {
     }, [config, characterId]);
 
     const sendMessage = useCallback(async (rawText: string) => {
-        if (!activeChild || !config || isSending) return;
+        if (!activeChild || !config || isSending || !user || !canAccess('starter_mailer')) return;
         const text = rawText.trim();
         if (!text) return;
         if (text.length > MESSAGE_CHAR_LIMIT) {
@@ -304,6 +339,10 @@ export default function CharacterChatPage() {
             if (data?.limits) setLimits(data.limits);
 
             if (!res.ok) {
+                if (res.status === 402) {
+                    setErrorMessage(data?.error || 'Buddy chat requires a paid plan.');
+                    return;
+                }
                 if (res.status === 429) {
                     setStatusMessage(data?.error || 'Buddy is taking a short break. Please try again soon.');
                     return;
@@ -380,6 +419,8 @@ export default function CharacterChatPage() {
     }, [isListening, isSending, sendMessage]);
 
     if (!config) return null;
+
+    const isPaidBuddyAccount = !isLoading && !!user && canAccess('starter_mailer');
 
     const childProfile: CharacterChild | null = activeChild ? {
         first_name: activeChild.first_name,
@@ -475,6 +516,28 @@ export default function CharacterChatPage() {
                 </button>
             </header>
 
+            <div className="bg-white/90 border-b border-slate-200 px-4 py-2.5">
+                <div className="flex items-center gap-2 overflow-x-auto">
+                    {CHARACTER_ORDER.map((id) => {
+                        const isCurrent = id === characterId;
+                        const label = getCharacterConfig(id).persona.name;
+                        return (
+                            <button
+                                key={id}
+                                type="button"
+                                onClick={() => router.push(`/portal/buddy/${id}`)}
+                                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-black transition-colors ${isCurrent
+                                    ? 'bg-slate-900 text-white'
+                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                    }`}
+                            >
+                                {label}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
             {(limits || statusMessage || errorMessage) && (
                 <div className="px-4 py-2 border-b border-slate-200 bg-white/90">
                     {limits && (
@@ -493,7 +556,42 @@ export default function CharacterChatPage() {
             )}
 
             <div className="flex-1 overflow-y-auto">
-                {isLoadingHistory ? (
+                {isLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                        <div className="flex flex-col items-center gap-3">
+                            <Loader2 className="animate-spin text-slate-300" size={36} />
+                            <p className="text-slate-500 text-sm font-semibold">Loading your buddy...</p>
+                        </div>
+                    </div>
+                ) : !isPaidBuddyAccount ? (
+                    <div className="flex h-full items-center justify-center px-5 py-8">
+                        <div className="w-full max-w-md rounded-[2rem] border border-amber-200 bg-white p-6 shadow-lg">
+                            <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                                <Lock size={22} />
+                            </div>
+                            <h2 className="mt-4 text-2xl font-black text-slate-900">Buddy chat requires a paid plan.</h2>
+                            <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">
+                                Upgrade to unlock commercial-grade voice chat, safe memory, and the full buddy experience for your child.
+                            </p>
+                            <div className="mt-5 flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => router.push('/checkout')}
+                                    className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white"
+                                >
+                                    Upgrade Now
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => router.push('/portal')}
+                                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-700"
+                                >
+                                    Back to Portal
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ) : isLoadingHistory ? (
                     <div className="flex items-center justify-center h-full">
                         <div className="flex flex-col items-center gap-3">
                             <Loader2 className="animate-spin text-slate-300" size={36} />

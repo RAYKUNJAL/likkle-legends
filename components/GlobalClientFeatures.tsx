@@ -13,6 +13,11 @@ type Props = {
 };
 
 const HIDE_MARKETING_BAR_PREFIXES = [
+  "/",
+  "/book",
+  "/offers",
+  "/aftercare",
+  "/contact",
   "/admin",
   "/portal",
   "/dashboard",
@@ -47,4 +52,3 @@ export default function GlobalClientFeatures({ notificationContent }: Props) {
     </>
   );
 }
-

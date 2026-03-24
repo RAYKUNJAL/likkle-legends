@@ -17,6 +17,8 @@ import {
     BarChart
 } from 'lucide-react';
 
+import { useUser } from './UserContext';
+
 interface SidebarProps {
     view?: 'parent' | 'admin';
 }
@@ -24,6 +26,7 @@ interface SidebarProps {
 export default function Sidebar({ view = 'parent' }: SidebarProps) {
     const pathname = usePathname();
     const isAdmin = view === 'admin';
+    const { logout } = useUser();
 
     const parentItems = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -44,6 +47,16 @@ export default function Sidebar({ view = 'parent' }: SidebarProps) {
     ];
 
     const items = isAdmin ? adminItems : parentItems;
+
+    const handleLogout = async () => {
+        try {
+            await logout();
+            window.location.href = '/';
+        } catch (error) {
+            console.error('Logout error:', error);
+            window.location.href = '/';
+        }
+    };
 
     return (
         <aside className="w-64 bg-deep text-white h-screen fixed left-0 top-0 flex flex-col p-8 z-50">
@@ -85,10 +98,7 @@ export default function Sidebar({ view = 'parent' }: SidebarProps) {
 
             <div className="pt-8 border-t border-white/10">
                 <button
-                    onClick={() => {
-                        // In a real app, call supabase.auth.signOut()
-                        window.location.href = '/';
-                    }}
+                    onClick={handleLogout}
                     className="flex items-center gap-4 px-5 py-3.5 rounded-2xl text-white/40 hover:text-white hover:bg-white/5 w-full transition-all group"
                 >
                     <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />

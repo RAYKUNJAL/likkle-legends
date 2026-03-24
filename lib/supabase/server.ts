@@ -1,43 +1,30 @@
-
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-
-const PLACEHOLDER_URL = 'https://placeholder.supabase.co';
-const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MTY0MDMyMjUsImV4cCI6MTkzMTk3OTIyNX0.placeholder';
-
-function getValidUrl(): string {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-    return (url && url.startsWith('https://') && url.length > 15) ? url : PLACEHOLDER_URL;
-}
-
-function getValidKey(): string {
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-    return (key && key.length > 20 && key !== 'false') ? key : PLACEHOLDER_KEY;
-}
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { serverEnv } from '@/lib/env/server';
 
 export const createClient = () => {
-    const cookieStore = cookies()
+  const cookieStore = cookies();
 
-    return createServerClient(
-        getValidUrl(),
-        getValidKey(),
-        {
-            cookies: {
-                getAll() {
-                    return cookieStore.getAll()
-                },
-                setAll(cookiesToSet) {
-                    try {
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            cookieStore.set(name, value, options)
-                        )
-                    } catch {
-                        // The `setAll` method was called from a Server Component.
-                        // This can be ignored if you have middleware refreshing
-                        // user sessions.
-                    }
-                },
-            },
-        }
-    )
-}
+  return createServerClient(
+    serverEnv.SUPABASE_URL,
+    serverEnv.SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    }
+  );
+};

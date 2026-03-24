@@ -27,12 +27,15 @@ const DIFFICULTY_LABEL: Record<string, string> = {
 export function CraftCorner({ completedIds = [], onComplete }: CraftCornerProps) {
     const [selected, setSelected] = useState<CraftActivity | null>(null);
     const [celebrating, setCelebrating] = useState(false);
+    const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
     const handleComplete = (craft: CraftActivity) => {
         if (celebrating) return;
         setCelebrating(true);
         confetti({ particleCount: 180, spread: 80, origin: { y: 0.5 } });
         onComplete?.(craft.rewardXp, craft.id);
+        setSaveMessage(`Saved! +${craft.rewardXp} XP added.`);
+        setTimeout(() => setSaveMessage(null), 2600);
         setTimeout(() => {
             setCelebrating(false);
             setSelected(null);
@@ -40,6 +43,9 @@ export function CraftCorner({ completedIds = [], onComplete }: CraftCornerProps)
     };
 
     const totalDone = completedIds.length;
+    const totalXpEarned = CRAFT_ACTIVITIES
+        .filter((craft) => completedIds.includes(craft.id))
+        .reduce((sum, craft) => sum + craft.rewardXp, 0);
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-5">
@@ -56,9 +62,14 @@ export function CraftCorner({ completedIds = [], onComplete }: CraftCornerProps)
                 </div>
                 <div className="flex items-center gap-2 bg-amber-50 border-2 border-amber-200 rounded-2xl px-5 py-3">
                     <Star className="text-amber-500" size={18} fill="currentColor" />
-                    <span className="font-black text-amber-700 text-sm">{totalDone * 75} XP earned</span>
+                    <span className="font-black text-amber-700 text-sm">{totalXpEarned} XP earned</span>
                 </div>
             </div>
+            {saveMessage && (
+                <div className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 px-5 py-3 text-emerald-700 font-black text-sm">
+                    {saveMessage}
+                </div>
+            )}
 
             {/* Craft grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

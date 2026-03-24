@@ -1,5 +1,5 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import { Fredoka, Quicksand, Montserrat } from "next/font/google";
 import "./globals.css";
 
@@ -30,6 +30,8 @@ const quicksand = Quicksand({
 });
 
 import { siteContent } from '@/lib/content';
+import { getCachedSiteContent } from '@/lib/services/cms';
+import NotificationBar from '@/components/landing/NotificationBar';
 import { GeoProvider } from '@/components/GeoContext';
 
 export const metadata: Metadata = {
@@ -64,19 +66,25 @@ export const metadata: Metadata = {
   },
 };
 
+import AnalyticsLoader from '@/components/AnalyticsLoader';
+import { CookieConsentBanner } from '@/components/CookieConsentBanner';
 import { UserProvider } from '@/components/UserContext';
 import StructuredData from '@/components/StructuredData';
-
-const GlobalClientFeatures = dynamic(
-  () => import('@/components/GlobalClientFeatures'),
-  { ssr: false }
-);
+import ReferralTracker from '@/components/ReferralTracker';
+import { Toaster } from 'react-hot-toast';
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let content = siteContent;
+  try {
+    content = await getCachedSiteContent();
+  } catch (err) {
+    console.error("Failed to load CMS content:", err);
+  }
+
   return (
     <html lang="en">
       <head>
@@ -86,7 +94,13 @@ export default async function RootLayout({
         className={`${montserrat.variable} ${fredoka.variable} ${quicksand.variable} font-montserrat antialiased`}
         suppressHydrationWarning
       >
-        <GlobalClientFeatures notificationContent={siteContent} />
+        <NotificationBar content={content} />
+        <AnalyticsLoader />
+        <Suspense fallback={null}>
+          <ReferralTracker />
+        </Suspense>
+        <CookieConsentBanner />
+        <Toaster position="top-right" />
         <UserProvider>
           <GeoProvider>
             {children}

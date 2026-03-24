@@ -10,6 +10,8 @@ import {
 import { useUser } from '@/components/UserContext';
 import { getStorybooks } from '@/lib/database';
 import { STARTER_STORIES } from '@/lib/story-starter-pack';
+import { trackEvent } from '@/lib/analytics';
+import { normalizeParentalControls } from '@/lib/parental-controls';
 
 interface Story {
     id: string;
@@ -59,68 +61,93 @@ const AGE_GROUPS = [
 ];
 
 export default function StoriesLibraryPage() {
-    const { activeChild, canAccess } = useUser();
+    const { activeChild, canAccess, user } = useUser();
     const [stories, setStories] = useState<Story[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedIsland, setSelectedIsland] = useState('All Islands');
     const [selectedCategory, setSelectedCategory] = useState('All Categories');
     const [selectedAgeGroup, setSelectedAgeGroup] = useState('all');
+    const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
+
+    if (!parentalControls.allow_stories) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
+                    <h2 className="text-3xl font-black text-slate-800 mb-2">Stories Are Locked</h2>
+                    <p className="text-slate-500 font-semibold">Your parent controls currently disable story access.</p>
+                    <Link href="/portal/settings" className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black">
+                        Open Parent Controls
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     // Passport GAMIFICATION
     const [earnedStamps, setEarnedStamps] = useState<string[]>(['Jamaica']); // Example default stamp
 
-    useEffect(() => {
-        async function loadStories() {
-            setIsLoading(true);
-            try {
-                const data = await getStorybooks();
+    const loadStories = async () => {
+        setIsLoading(true);
+        setLoadError(null);
+        try {
+            const data = await Promise.race([
+                getStorybooks(),
+                new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('Request timed out.')), 12000)
+                ),
+            ]);
 
-                const mappedStories: Story[] = data.map((sb: any) => ({
+            const mappedStories: Story[] = (data as any[]).map((sb: any) => ({
+                id: sb.id,
+                title: sb.title,
+                description: sb.summary,
+                cover_image: sb.cover_image_url || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400',
+                island_origin: sb.island_theme || sb.island_category || 'Jamaica',
+                category: sb.category || 'Adventure',
+                age_group: sb.age_track === 'big' ? '7-9' : '5-6', // Mapping existing age tracks
+                tier_required: sb.tier_required,
+                reading_time: sb.reading_time_minutes || 5,
+                completed: false
+            }));
+
+            if (mappedStories.length > 0) {
+                setStories(mappedStories);
+            } else {
+                // Fallback to offline starter pack if DB is empty
+                setStories(STARTER_STORIES.map(sb => ({
                     id: sb.id,
                     title: sb.title,
                     description: sb.summary,
-                    cover_image: sb.cover_image_url || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400',
-                    island_origin: sb.island_theme || sb.island_category || 'Jamaica',
-                    category: sb.category || 'Adventure',
-                    age_group: sb.age_track === 'big' ? '7-9' : '5-6', // Mapping existing age tracks
+                    cover_image: sb.cover_image_url,
+                    island_origin: 'Jamaica',
+                    category: 'Story',
+                    age_group: '5-6',
                     tier_required: sb.tier_required,
-                    reading_time: sb.reading_time_minutes || 5,
+                    reading_time: sb.reading_time_minutes,
                     completed: false
-                }));
-
-                if (mappedStories.length > 0) {
-                    setStories(mappedStories);
-                } else {
-                    // Fallback to offline starter pack if DB is empty
-                    setStories(STARTER_STORIES.map(sb => ({
-                        id: sb.id,
-                        title: sb.title,
-                        description: sb.summary,
-                        cover_image: sb.cover_image_url,
-                        island_origin: 'Jamaica',
-                        category: 'Story',
-                        age_group: '5-6',
-                        tier_required: sb.tier_required,
-                        reading_time: sb.reading_time_minutes,
-                        completed: false
-                    })));
-                }
-
-                // Hydrate Passport gamification from local storage
-                const stamps = localStorage.getItem('island_passport_stamps');
-                if (stamps) {
-                    setEarnedStamps(JSON.parse(stamps));
-                }
-
-            } catch (error) {
-                console.error('Failed to load stories:', error);
-            } finally {
-                setIsLoading(false);
+                })));
             }
+
+            // Hydrate Passport gamification from local storage
+            const stamps = localStorage.getItem('island_passport_stamps');
+            if (stamps) {
+                setEarnedStamps(JSON.parse(stamps));
+            }
+
+        } catch (error) {
+            console.error('Failed to load stories:', error);
+            setLoadError('We could not load stories right now.');
+            trackEvent('stories_page_load_failed');
+        } finally {
+            setIsLoading(false);
         }
+    };
+
+    useEffect(() => {
         loadStories();
     }, []);
 
@@ -272,6 +299,21 @@ export default function StoriesLibraryPage() {
                             {[1, 2, 3, 4, 5, 6].map(i => (
                                 <div key={i} className="bg-white rounded-3xl h-[360px] animate-pulse border border-slate-100" />
                             ))}
+                        </div>
+                    ) : loadError ? (
+                        <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                            <BookOpen className="text-slate-200 mx-auto mb-4" size={64} />
+                            <h4 className="text-2xl font-black text-slate-800 mb-2">Story shelf is resting</h4>
+                            <p className="text-slate-500 max-w-sm mx-auto">{loadError}</p>
+                            <button
+                                onClick={() => {
+                                    trackEvent('stories_page_retry_clicked');
+                                    loadStories();
+                                }}
+                                className="mt-6 px-6 py-2 bg-indigo-50 text-indigo-600 rounded-full font-bold hover:bg-indigo-100 transition-colors"
+                            >
+                                Try Again
+                            </button>
                         </div>
                     ) : filteredStories.length > 0 ? (
                         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">

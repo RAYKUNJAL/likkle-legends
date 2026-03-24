@@ -31,6 +31,8 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
     const [isNarrating, setIsNarrating] = useState(false);
     const [hasError, setHasError] = useState(false);
     const [retryCount, setRetryCount] = useState(0);
+    const [volume, setVolume] = useState(0.8);
+    const [isMuted, setIsMuted] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -85,6 +87,17 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
         setIsPlaying(false);
         setRetryCount(0);
     }, [currentTrack?.id]);
+
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.volume = volume;
+            audioRef.current.muted = isMuted;
+        }
+        if (videoRef.current) {
+            videoRef.current.volume = volume;
+            videoRef.current.muted = isMuted;
+        }
+    }, [volume, isMuted, currentTrack?.id]);
 
     const stopVisualizer = () => {
         if (animationFrameRef.current) {
@@ -492,10 +505,58 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
                                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z" /></svg>
                             </button>
 
+                            <button
+                                type="button"
+                                onClick={() => setIsMuted((prev) => !prev)}
+                                className="w-10 h-10 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                                aria-label={isMuted ? "Unmute" : "Mute"}
+                                title={isMuted ? "Unmute" : "Mute"}
+                            >
+                                {isMuted ? (
+                                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M16.5 12c0-1.77-1-3.29-2.5-4.03v8.05A4.485 4.485 0 0 0 16.5 12zM19 12c0 2.53-1.45 4.73-3.56 5.79l1.43 1.43A8 8 0 0 0 21 12c0-2.21-.9-4.21-2.36-5.64l-1.42 1.42A5.944 5.944 0 0 1 19 12zM3.27 2 2 3.27 6.73 8H3v8h4l5 5V13.27l4.73 4.73 1.27-1.27L3.27 2z" /></svg>
+                                ) : (
+                                    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1-3.29-2.5-4.03v8.05A4.485 4.485 0 0 0 16.5 12zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" /></svg>
+                                )}
+                            </button>
+
+                            <input
+                                type="range"
+                                min={0}
+                                max={1}
+                                step={0.05}
+                                value={volume}
+                                onChange={(e) => setVolume(Number(e.target.value))}
+                                className="w-24 accent-orange-500"
+                                aria-label="Volume"
+                                title="Volume"
+                            />
+
                             {/* Loading status text (non-blocking) */}
                             {loadingStatus && !hasError && (
                                 <span className="text-orange-300/60 text-[9px] font-black uppercase tracking-widest">{loadingStatus}</span>
                             )}
+                        </div>
+
+                        <div className="border border-white/10 bg-white/5 rounded-2xl p-3">
+                            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-white/40 mb-2">Playlist</p>
+                            <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                                {channelTracks.length === 0 && (
+                                    <p className="text-xs text-white/50 font-semibold">No tracks available on this channel yet.</p>
+                                )}
+                                {channelTracks.map((track, index) => (
+                                    <button
+                                        key={track.id}
+                                        type="button"
+                                        onClick={() => { setCurrentTrackIndex(index); setIsPlaying(false); }}
+                                        className={`w-full text-left px-2.5 py-2 rounded-xl text-xs font-bold transition-colors ${index === safeIndex
+                                            ? 'bg-orange-500/80 text-white'
+                                            : 'text-white/70 hover:bg-white/10 hover:text-white'
+                                            }`}
+                                    >
+                                        {index + 1}. {track.title}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>

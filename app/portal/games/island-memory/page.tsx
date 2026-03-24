@@ -7,11 +7,14 @@ import Link from 'next/link';
 
 import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
+import { recordGameResult } from '@/lib/game-progress';
 
 export default function IslandMemoryPage() {
     const { user, activeChild } = useUser();
 
     const handleComplete = async (score: number) => {
+        recordGameResult('island-memory', score);
+
         if (!user || !activeChild) return;
         try {
             // Log the game activity with the score as XP (capped at 200)

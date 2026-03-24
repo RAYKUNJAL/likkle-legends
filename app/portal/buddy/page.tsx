@@ -3,22 +3,38 @@
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, MessageCircle, Star, Lock } from 'lucide-react';
+import { ArrowLeft, Lock, MessageCircle, Star } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
 import { CHARACTER_CONFIGS, CHARACTER_ORDER, CharacterId } from '@/lib/characterConfig';
 import { TIER_LEVELS } from '@/lib/feature-access';
-
-// Keep all buddies available while building/testing character experience.
-const FREE_CHARACTERS: CharacterId[] = ['roti', 'tanty_spice', 'dilly_doubles'];
+import { normalizeParentalControls } from '@/lib/parental-controls';
 
 export default function ChooseYourBuddyPage() {
     const router = useRouter();
-    const { activeChild, user } = useUser();
+    const { activeChild, user, isLoading } = useUser();
 
     const favChar = activeChild?.favorite_character as CharacterId | undefined;
-    const isPaid = (TIER_LEVELS[user?.subscription_tier || 'free'] ?? 0) > 0;
+    const hasActiveSubscription = user?.subscription_status === 'active' || user?.subscription_status === 'trialing';
+    const isPaid = hasActiveSubscription && (TIER_LEVELS[user?.subscription_tier || 'free'] ?? 0) > 0;
+    const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
 
-    const isLocked = (characterId: CharacterId) => !isPaid && !FREE_CHARACTERS.includes(characterId);
+    if (!parentalControls.allow_buddy) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
+                    <h2 className="text-3xl font-black text-slate-800 mb-2">Buddy Chat Is Locked</h2>
+                    <p className="text-slate-500 font-semibold">Your parent controls currently disable buddy chat.</p>
+                    <button
+                        type="button"
+                        onClick={() => router.push('/portal/settings')}
+                        className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black"
+                    >
+                        Open Parent Controls
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-sky-100 via-purple-50 to-pink-100 flex flex-col">
@@ -42,11 +58,34 @@ export default function ChooseYourBuddyPage() {
             </header>
 
             <main className="flex-1 px-6 pb-12 max-w-2xl mx-auto w-full">
+                {isLoading ? (
+                    <div className="rounded-3xl bg-white/80 px-5 py-8 text-center shadow-sm">
+                        <p className="text-sm font-bold text-slate-500">Loading your buddy options...</p>
+                    </div>
+                ) : (
+                    <>
+                {!isPaid && (
+                    <div className="mb-4 rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4">
+                        <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-700">Paid Feature</p>
+                        <h2 className="mt-2 text-lg font-black text-slate-900">Buddy chat is available on paid plans.</h2>
+                        <p className="mt-1 text-sm font-medium text-slate-600">
+                            Upgrade to unlock the full kid-safe chat, voice mode, and memory experience for your child.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => router.push('/checkout')}
+                            className="mt-4 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-black text-white"
+                        >
+                            Upgrade Now
+                        </button>
+                    </div>
+                )}
+
                 <div className="space-y-4">
                     {CHARACTER_ORDER.map((characterId) => {
                         const config = CHARACTER_CONFIGS[characterId];
                         const isFav = favChar === characterId;
-                        const locked = isLocked(characterId);
+                        const locked = !isPaid;
 
                         const cardContent = (
                             <div className={`
@@ -114,7 +153,7 @@ export default function ChooseYourBuddyPage() {
 
                                 <div className="px-5 pb-4">
                                     {locked ? (
-                                        <p className="text-xs text-slate-400 font-bold">Unlock with any paid plan — starts at $4.99/mo</p>
+                                        <p className="text-xs text-slate-400 font-bold">Unlock with any paid plan - starts at $4.99/mo</p>
                                     ) : (
                                         <p className="text-xs text-slate-400 italic font-medium">
                                             "{config.persona.catchphrases[0]}"
@@ -149,24 +188,12 @@ export default function ChooseYourBuddyPage() {
                     })}
                 </div>
 
-                {!isPaid && (
-                    <div className="mt-6 p-4 bg-white/80 rounded-2xl border border-primary/20 text-center">
-                        <p className="text-sm font-bold text-slate-700 mb-2">
-                            Unlock Tanty Spice & Dilly Doubles with a paid plan
-                        </p>
-                        <Link
-                            href="/checkout"
-                            className="inline-block px-5 py-2 bg-primary text-white font-black text-sm rounded-xl shadow hover:bg-primary/90 transition-colors"
-                        >
-                            Upgrade Now
-                        </Link>
-                    </div>
-                )}
-
                 {isPaid && (
                     <p className="text-center text-xs text-slate-400 font-medium mt-8">
-                        You can chat with all three — switch anytime.
+                        You can chat with all three - switch anytime.
                     </p>
+                )}
+                    </>
                 )}
             </main>
         </div>

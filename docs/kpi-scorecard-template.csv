@@ -1,0 +1,20 @@
+week_start,week_end,kpi_name,category,baseline_value,current_value,target_value,delta_vs_baseline,status,owner,notes
+2026-03-23,2026-03-29,Paid Conversion Rate,Revenue,TBD-14d,,+10% to +20% vs baseline,,baseline_pending,Product,Capture baseline from last 14 days before Friday review
+2026-03-23,2026-03-29,Week-4 Subscriber Retention,Revenue,TBD-14d,,+5% vs baseline,,baseline_pending,Product,Requires cohort table
+2026-03-23,2026-03-29,Child Session Completion Rate,Engagement,TBD-14d,,>=75%,,baseline_pending,Product,Completed activity / total sessions
+2026-03-23,2026-03-29,Portal Interactive Success Rate,Reliability,TBD-14d,,>=98%,,baseline_pending,Engineering,Primary SLO
+2026-03-23,2026-03-29,Stories Failure Rate,Reliability,TBD-14d,,<2%,,baseline_pending,Engineering,Source: portal_stories_load_failed
+2026-03-23,2026-03-29,Lessons Failure Rate,Reliability,TBD-14d,,<2%,,baseline_pending,Engineering,Source: portal_lessons_load_failed
+2026-03-23,2026-03-29,Auth Retry Clicks (per 10m),Reliability,TBD-14d,,<25/10m,,baseline_pending,Engineering,Source: portal_auth_retry_clicked
+2026-03-23,2026-03-29,Parent Controls Save Success,Trust/Safety,TBD-14d,,>=99%,,baseline_pending,Engineering,Must remain >=98% daily
+2026-03-23,2026-03-29,Blocked Channel Enforcement Integrity,Trust/Safety,TBD-14d,,100%,,baseline_pending,Engineering,No bypass for blocked channels
+2026-03-23,2026-03-29,Screen-Time Limit Trigger Accuracy,Trust/Safety,TBD-14d,,>=99%,,baseline_pending,Engineering,Lock only at or after limit
+2026-03-23,2026-03-29,Craft Completion Rate,Engagement,TBD-14d,,+10% vs baseline,,baseline_pending,Product,Track starts vs completions
+2026-03-23,2026-03-29,Games Repeat Play Rate,Engagement,TBD-14d,,+8% vs baseline,,baseline_pending,Product,7-day repeat window
+2026-03-23,2026-03-29,Buddy Chat Return Rate,Engagement,TBD-14d,,+10% vs baseline,,baseline_pending,Product,Users with >=2 buddy sessions in 7 days
+2026-03-23,2026-03-29,Radio Start Rate,Engagement,TBD-14d,,No decline vs baseline,,baseline_pending,Product,Guardrail after player changes
+2026-03-23,2026-03-29,Support Tickets per 1000 Sessions,Support,TBD-14d,,-20% vs baseline,,baseline_pending,CX,Normalize by sessions
+2026-03-23,2026-03-29,Parent-Control Complaints,Support,TBD-14d,,Downward WoW trend,,baseline_pending,CX,Tag tickets by topic
+2026-03-23,2026-03-29,Incident MTTR (minutes),Operations,TBD-14d,,P1<30m/P0<15m,,baseline_pending,Engineering,From alert fired to verified recovery
+2026-03-23,2026-03-29,P0 Incident Count,Operations,TBD-14d,,0,,baseline_pending,Engineering,Strict objective
+2026-03-23,2026-03-29,P1 Incident Count,Operations,TBD-14d,,Decreasing WoW,,baseline_pending,Engineering,Trend metric

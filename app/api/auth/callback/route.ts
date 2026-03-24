@@ -2,6 +2,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { serverEnv } from '@/lib/env/server'
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
@@ -13,11 +14,8 @@ export async function GET(request: Request) {
 
     if (code) {
         const cookieStore = cookies()
-        const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MTY0MDMyMjUsImV4cCI6MTkzMTk3OTIyNX0.placeholder';
-        const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-        const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-        const supabaseUrl = (rawUrl && rawUrl.startsWith('https://') && rawUrl.length > 15) ? rawUrl : 'https://placeholder.supabase.co';
-        const supabaseKey = (rawKey && rawKey.length > 20 && rawKey !== 'false') ? rawKey : PLACEHOLDER_KEY;
+        const supabaseUrl = serverEnv.SUPABASE_URL
+        const supabaseKey = serverEnv.SUPABASE_ANON_KEY
         const supabase = createServerClient(
             supabaseUrl,
             supabaseKey,
@@ -40,29 +38,12 @@ export async function GET(request: Request) {
                 },
             }
         )
-        const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
-            // Ensure a profile row exists for OAuth users (Google, Facebook, etc.)
-            // Email/password users have their profile created in signupAction.
-            const user = sessionData?.user;
-            if (user) {
-                const { supabaseAdmin } = await import('@/lib/supabase-client');
-                await Promise.resolve(
-                    supabaseAdmin.from('profiles').upsert(
-                        {
-                            id: user.id,
-                            full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
-                            avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
-                            is_coppa_designated_parent: true,
-                            coppa_consent_date: new Date().toISOString(),
-                        },
-                        { onConflict: 'id', ignoreDuplicates: true }
-                    )
-                ).catch(err => console.error('[AUTH CALLBACK] Profile upsert failed:', err));
-            }
             return NextResponse.redirect(`${origin}${next}`)
         }
     }
+    
 
     // return the user to an error page with instructions
     return NextResponse.redirect(`${origin}/login?error=auth-code-error`)

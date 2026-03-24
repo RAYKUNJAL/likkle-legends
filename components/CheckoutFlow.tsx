@@ -146,11 +146,18 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                 currentUserId = session.user.id;
             }
 
+            // 2. Auth protection — must have valid session to confirm
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                throw new Error("Your session has expired. Please log in and try again.");
+            }
+
             // Save subscription to database
             const response = await fetch('/api/payments/paypal/confirm', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
                 },
                 body: JSON.stringify({
                     subscriptionId: data.subscriptionID,
@@ -159,7 +166,6 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                     addGrandparent,
                     currency: displayPrice.currency,
                     billingCycle: paymentBillingCycle,
-                    userId: currentUserId, // Explicitly pass ID to be safe
                     shipping: (activeTier === 'plan_free_forever' || activeTier === 'plan_digital_legends') ? null : shippingData
                 }),
             });

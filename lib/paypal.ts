@@ -1,8 +1,14 @@
-// PayPal Integration for Likkle Legends
-// Handles subscription billing and one-time purchases
+// Required for production stability
+function requireEnv(name: string): string {
+    const val = process.env[name];
+    if (!val && process.env.NODE_ENV === 'production') {
+        throw new Error(`CRITICAL: Missing required environment variable: ${name}`);
+    }
+    return val || '';
+}
 
 export const PAYPAL_CONFIG = {
-    clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '',
+    clientId: requireEnv('NEXT_PUBLIC_PAYPAL_CLIENT_ID'),
     currency: 'USD',
     intent: 'subscription',
 };
@@ -31,8 +37,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_digital_legends: {
         id: 'plan_digital_legends',
         name: 'Digital Legends',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL || 'P-0LU582199P7741420NGQA4JI',
-        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL_YEARLY || 'P-0YY72736T56573355NFLOZZQ',
+        paypalPlanId: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL'),
+        paypalPlanIdYearly: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL_YEARLY'),
         price: 4.99,
         priceYearly: 49.90, // Approx 2 months free
         interval: 'month',
@@ -51,8 +57,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_mail_intro: {
         id: 'plan_mail_intro',
         name: 'Island Starter',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER || 'P-9Y7503296X038324YNGN72CI',
-        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_MAIL_YEARLY || 'P-0YY72736T56573355NFLOZZQ',
+        paypalPlanId: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_STARTER'),
+        paypalPlanIdYearly: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_MAIL_YEARLY'),
         price: 9.99,
         priceYearly: 99.00,
         interval: 'month',
@@ -70,8 +76,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_legends_plus: {
         id: 'plan_legends_plus',
         name: 'Legends Plus',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS || 'P-45M32159VV6033601NFLOOYI',
-        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_PLUS_YEARLY || 'P-2503312149524980NNFLO34Y',
+        paypalPlanId: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS'),
+        paypalPlanIdYearly: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_PLUS_YEARLY'),
         price: 19.99,
         priceYearly: 199.00,
         interval: 'month',
@@ -90,8 +96,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_family_legacy: {
         id: 'plan_family_legacy',
         name: 'Family Legacy',
-        paypalPlanId: process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY || 'P-9MP32022V70125639NFLT4IA',
-        paypalPlanIdYearly: process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY_YEARLY || 'P-5U054702T9664311ANFLO53A',
+        paypalPlanId: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_FAMILY'),
+        paypalPlanIdYearly: requireEnv('NEXT_PUBLIC_PLAN_FAMILY_YEARLY'),
         price: 34.99,
         priceYearly: 349.00,
         interval: 'month',

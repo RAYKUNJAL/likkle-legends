@@ -120,12 +120,20 @@ export async function POST(request: NextRequest) {
             case 'BILLING.SUBSCRIPTION.ACTIVATED': {
                 const subscriptionId = resource.id;
                 const subscriberEmail = resource.subscriber?.email_address;
+                const customId = resource.custom_id || resource.custom;
 
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('id, parent_name, email, subscription_status')
-                    .or(`paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`)
-                    .single();
+                // Priority lookup: 1. customId (real user ID), 2. subscriptionId, 3. email
+                let query = supabase.from('profiles').select('id, parent_name, email, subscription_status');
+                
+                if (customId) {
+                    query = query.eq('id', customId);
+                } else if (subscriptionId) {
+                    query = query.or(`paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`);
+                } else {
+                    query = query.eq('email', subscriberEmail);
+                }
+
+                const { data: profile } = await query.maybeSingle();
 
                 if (profile) {
                     const planId = resource.plan_id;
@@ -182,16 +190,20 @@ export async function POST(request: NextRequest) {
                 // First real payment after trial (or renewal) — promote to active
                 const subscriptionId = resource.id ?? resource.billing_agreement_id;
                 const subscriberEmail = resource.subscriber?.email_address;
+                const customId = resource.custom_id || resource.custom;
 
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('id, parent_name, email, subscription_status, subscription_tier')
-                    .or(
-                        subscriberEmail
-                            ? `paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`
-                            : `paypal_subscription_id.eq.${subscriptionId}`
-                    )
-                    .single();
+                // Priority lookup: 1. customId (real user ID), 2. subscriptionId, 3. email
+                let query = supabase.from('profiles').select('id, parent_name, email, subscription_status, subscription_tier');
+                
+                if (customId) {
+                    query = query.eq('id', customId);
+                } else if (subscriptionId) {
+                    query = query.or(`paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`);
+                } else {
+                    query = query.eq('email', subscriberEmail);
+                }
+
+                const { data: profile } = await query.maybeSingle();
 
                 if (profile) {
                     const wasTrialing = profile.subscription_status === 'trialing';
@@ -237,12 +249,20 @@ export async function POST(request: NextRequest) {
                 // PayPal sends this ~2 days before trial ends
                 const subscriptionId = resource.id;
                 const subscriberEmail = resource.subscriber?.email_address;
+                const customId = resource.custom_id || resource.custom;
 
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('id, email, parent_name, subscription_tier')
-                    .or(`paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`)
-                    .single();
+                // Priority lookup: 1. customId (real user ID), 2. subscriptionId, 3. email
+                let query = supabase.from('profiles').select('id, email, parent_name, subscription_tier');
+                
+                if (customId) {
+                    query = query.eq('id', customId);
+                } else if (subscriptionId) {
+                    query = query.or(`paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`);
+                } else {
+                    query = query.eq('email', subscriberEmail);
+                }
+
+                const { data: profile } = await query.maybeSingle();
 
                 if (profile) {
                     const { data: child } = await supabase

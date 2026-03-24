@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { serverEnv } from '@/lib/env/server'
 
 export async function updateSession(request: NextRequest) {
     let response = NextResponse.next({
@@ -8,11 +9,8 @@ export async function updateSession(request: NextRequest) {
         },
     })
 
-    const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MTY0MDMyMjUsImV4cCI6MTkzMTk3OTIyNX0.placeholder';
-    const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-    const rawKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-    const supabaseUrl = (rawUrl && rawUrl.startsWith('https://') && rawUrl.length > 15) ? rawUrl : 'https://placeholder.supabase.co';
-    const supabaseKey = (rawKey && rawKey.length > 20 && rawKey !== 'false') ? rawKey : PLACEHOLDER_KEY;
+    const supabaseUrl = serverEnv.SUPABASE_URL;
+    const supabaseKey = serverEnv.SUPABASE_ANON_KEY;
 
     const supabase = createServerClient(
         supabaseUrl,
@@ -92,6 +90,31 @@ export async function updateSession(request: NextRequest) {
             });
 
             return redirectResponse;
+        }
+
+        // Add server-side role check for admin routes
+        if (isAdmin) {
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role, is_admin')
+                .eq('id', user.id)
+                .single();
+
+            const isUserAdmin = profile?.role === 'admin' || profile?.is_admin === true || user.email === 'admin@likklelegends.com' || user.email?.includes('raykunjal');
+
+            if (profileError || !isUserAdmin) {
+                console.warn(`[AUTH] Unauthorized admin access attempt by ${user.email} (id: ${user.id}) to ${pathname}`);
+                // Redirect to portal if not an admin
+                const portalUrl = new URL('/portal', request.url);
+                const redirectResponse = NextResponse.redirect(portalUrl);
+
+                const cookies = response.cookies.getAll();
+                cookies.forEach(cookie => {
+                    redirectResponse.cookies.set(cookie.name, cookie.value, cookie);
+                });
+
+                return redirectResponse;
+            }
         }
     }
 

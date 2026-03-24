@@ -219,6 +219,8 @@ export default function PremiumVideoPlayer({ video, onClose, onComplete }: Premi
                                     {!isPlaying && !isLoading && (
                                         <button
                                             onClick={togglePlay}
+                                            title="Play"
+                                            aria-label="Play"
                                             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
                                         >
                                             <Play size={64} className="ml-2" />
@@ -247,7 +249,7 @@ export default function PremiumVideoPlayer({ video, onClose, onComplete }: Premi
                                                     <Sparkles className="text-yellow-400" size={20} />
                                                     <span className="text-white font-black">+{video.reward_xp || 50} XP</span>
                                                 </div>
-                                                <button className="text-white/80 hover:text-white"><Maximize size={32} /></button>
+                                                <button className="text-white/80 hover:text-white" title="Fullscreen" aria-label="Fullscreen"><Maximize size={32} /></button>
                                             </div>
                                         </div>
                                     </div>

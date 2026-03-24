@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 import { GoogleVoiceCharacter, synthesizeCharacterSpeech } from '@/lib/google-cloud-tts';
 import { generateSpeech, VoiceCharacter } from '@/lib/elevenlabs';
-import { supabase } from '@/lib/storage';
+import { serverEnv } from '@/lib/env/server';
+import { requireSupabaseToken } from '@/lib/api/require-supabase-token';
+import { checkRateLimit } from '@/lib/api/rate-limit';
 
 const MAX_TTS_CHARS = 900;
 const BLOCKED_TTS_PATTERN = /\b(kill|weapon|suicide|porn|sex|address|phone number|email me|meet me)\b/i;
@@ -30,6 +33,12 @@ function resolveGoogleVoiceCharacter(voice: string): GoogleVoiceCharacter {
 }
 
 export async function POST(request: NextRequest) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'global';
+    const bucketResponse = checkRateLimit(`voice-gen:${ip}`, 6, 10000);
+    if (bucketResponse) {
+        return bucketResponse;
+    }
+
     try {
         const body = await request.json();
         const { text, voice = 'tanty_spice', voiceName } = body;
@@ -51,20 +60,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Text is empty after sanitization' }, { status: 400 });
         }
 
-        // SECURITY: Verify Authorization (optional in dev mode)
-        const authHeader = request.headers.get('Authorization');
-        const isDev = process.env.NODE_ENV === 'development';
-
-        if (authHeader) {
-            const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-            if (authError || !user) {
-                console.warn('Voice API: Invalid token, proceeding anyway in dev mode');
-                if (!isDev) {
-                    return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
-                }
-            }
-        } else if (!isDev) {
-            return NextResponse.json({ error: 'Unauthorized: Missing Authorization header' }, { status: 401 });
+        const isDev = serverEnv.NODE_ENV !== 'production';
+        if (!isDev) {
+            await requireSupabaseToken(request);
         }
 
         const requestedVoice = String(voice || 'tanty_spice');
@@ -73,7 +71,7 @@ export async function POST(request: NextRequest) {
 
         let audioBuffer: ArrayBuffer | null = null;
 
-        if (process.env.ELEVENLABS_API_KEY) {
+        if (serverEnv.ELEVENLABS_API_KEY) {
             console.log(`Voice API: Trying ElevenLabs (${elevenVoice})`);
             audioBuffer = await generateSpeech(safeText, { voice: elevenVoice });
         }
@@ -93,7 +91,7 @@ export async function POST(request: NextRequest) {
         if (!audioBuffer) {
             return NextResponse.json({
                 error: 'Failed to generate audio from both ElevenLabs and Google TTS.'
-            }, { status: 500 });
+            }, { status: 503 });
         }
         const contentType = 'audio/mpeg';
 
@@ -106,8 +104,12 @@ export async function POST(request: NextRequest) {
             },
         });
     } catch (error) {
+        if (error instanceof NextResponse) {
+            return error;
+        }
+        Sentry.captureException(error);
         console.error('Voice generation error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json({ error: 'Voice service unavailable' }, { status: 503 });
     }
 }
 
