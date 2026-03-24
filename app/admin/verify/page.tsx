@@ -22,8 +22,10 @@ export default function LaunchVerificationPage() {
     const [checks, setChecks] = useState({
         database: { status: 'pending', message: 'Checking Supabase connection...' },
         rls: { status: 'pending', message: 'Verifying Security Policies...' },
-        payments: { status: 'pending', message: 'Probing PayPal Webhooks...' },
-        env: { status: 'pending', message: 'Validating Environment Variables...' },
+        payments: { status: 'pending', message: 'Checking PayPal configuration...' },
+        ai: { status: 'pending', message: 'Checking Gemini AI key...' },
+        voice: { status: 'pending', message: 'Checking ElevenLabs voice key...' },
+        email: { status: 'pending', message: 'Checking Resend email key...' },
     });
 
     useEffect(() => {
@@ -46,22 +48,14 @@ export default function LaunchVerificationPage() {
                     ...prev,
                     database: checkResults.database,
                     rls: checkResults.rls,
+                    ai: checkResults.ai ?? prev.ai,
+                    voice: checkResults.voice ?? prev.voice,
+                    email: checkResults.email ?? prev.email,
+                    payments: checkResults.payments ?? prev.payments,
                 }));
             } else {
                 setChecks(prev => ({ ...prev, database: { status: 'error', message: checkResults.error || 'Check failed' } }));
             }
-
-            // 3. Env Check (Client Side is fine mostly for PUBLIC vars, but server vars should be checked on server if needed. 
-            // For now keeping simple client check for PUBLIC vars)
-            const requiredVars = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_PAYPAL_CLIENT_ID'];
-            const missing = requiredVars.filter(v => !process.env[v]);
-            setChecks(prev => ({
-                ...prev,
-                env: {
-                    status: missing.length === 0 ? 'success' : 'error',
-                    message: missing.length === 0 ? 'Public keys present.' : `Missing: ${missing.join(', ')}`
-                }
-            }));
 
             // 4. Analytics & Profiles (Recent)
             const { getAdminAnalytics, getRecentCustomersAdmin } = await import('@/app/actions/admin');
@@ -73,8 +67,6 @@ export default function LaunchVerificationPage() {
             setStats(analytics);
             setProfiles(recentProfiles || []);
             if (recentProfiles?.[0]) setSelectedProfileId(recentProfiles[0].id);
-
-            setChecks(prev => ({ ...prev, payments: { status: 'success', message: 'PayPal configured.' } }));
         } catch (e: any) {
             console.error(e);
             setChecks(prev => ({ ...prev, database: { status: 'error', message: e.message || 'System check failed.' } }));
