@@ -1,7 +1,11 @@
-// Required for production stability
+// Required for production stability.
+// NEXT_PHASE is 'phase-production-build' during `next build` — we must NOT
+// throw then because env vars like PayPal Plan IDs aren't available at build
+// time on Vercel (they're runtime-only). We only throw at actual runtime.
 function requireEnv(name: string): string {
     const val = process.env[name];
-    if (!val && process.env.NODE_ENV === 'production') {
+    const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
+    if (!val && !isBuildPhase && process.env.NODE_ENV === 'production') {
         throw new Error(`CRITICAL: Missing required environment variable: ${name}`);
     }
     return val || '';
