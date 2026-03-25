@@ -31,15 +31,16 @@ class SupabaseClientManager {
         const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
-        // Validation — env vars can be "false", empty, or missing
+        // Fail fast — never silently fall back to placeholder credentials
         const isValidUrl = url && url.startsWith('https://') && url.length > 15;
         const isValidKey = anonKey && anonKey.length > 20 && anonKey !== 'false';
 
         if (!isValidUrl || !isValidKey) {
-            console.warn(`⚠️  Supabase credentials missing or invalid. URL valid: ${!!isValidUrl}, Key valid: ${!!isValidKey}. Using safe placeholder.`);
-            return createClient(
-                'https://placeholder.supabase.co',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MTY0MDMyMjUsImV4cCI6MTkzMTk3OTIyNX0.placeholder'
+            throw new Error(
+                `[supabase-client] Missing or invalid credentials. ` +
+                `NEXT_PUBLIC_SUPABASE_URL valid: ${!!isValidUrl}, ` +
+                `NEXT_PUBLIC_SUPABASE_ANON_KEY valid: ${!!isValidKey}. ` +
+                `Check your .env.local or Vercel environment variables.`
             );
         }
 
@@ -224,28 +225,43 @@ const globalForSupabase = globalThis as unknown as {
     manager: SupabaseClientManager;
 };
 
-// Singleton instance retrieval
-export const supabaseManager = globalForSupabase.manager || new SupabaseClientManager();
-export const supabase = globalForSupabase.supabase || supabaseManager.getClient();
-export const supabaseAdmin = globalForSupabase.supabaseAdmin || supabaseManager.getServiceClient();
+// Singleton manager — never call getClient/getServiceClient at module parse time.
+// Use the lazy getters below so clients are only created on first use.
+export const supabaseManager = globalForSupabase.manager ?? (() => {
+    const m = new SupabaseClientManager();
+    if (process.env.NODE_ENV !== 'production') globalForSupabase.manager = m;
+    return m;
+})();
 
-if (process.env.NODE_ENV !== 'production') {
-    globalForSupabase.manager = supabaseManager;
-    globalForSupabase.supabase = supabase;
-    globalForSupabase.supabaseAdmin = supabaseAdmin;
-}
+// Lazy getters — safe to import at the top of any file
+export const getSupabase = () => {
+    if (!globalForSupabase.supabase) {
+        globalForSupabase.supabase = supabaseManager.getClient();
+    }
+    return globalForSupabase.supabase;
+};
+
+export const getSupabaseAdmin = () => {
+    if (!globalForSupabase.supabaseAdmin) {
+        globalForSupabase.supabaseAdmin = supabaseManager.getServiceClient();
+    }
+    return globalForSupabase.supabaseAdmin;
+};
+
+// Named shorthands used throughout the codebase — lazily resolved
+// IMPORTANT: These are evaluated on first import call, NOT at module parse time.
+export const supabase = new Proxy({} as SupabaseClient, {
+    get(_t, prop) { return (getSupabase() as any)[prop]; }
+});
+export const supabaseAdmin = new Proxy({} as SupabaseClient, {
+    get(_t, prop) { return (getSupabaseAdmin() as any)[prop]; }
+});
 
 // Export utility functions
 export function isSupabaseConfigured(): boolean {
-    return !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-}
-
-export function getSupabase(): SupabaseClient {
-    return supabaseManager.getClient();
-}
-
-export function getSupabaseAdmin(): SupabaseClient {
-    return supabaseManager.getServiceClient();
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    return !!(url && url.startsWith('https://') && key && key.length > 20);
 }
 
 export async function testSupabaseConnection() {

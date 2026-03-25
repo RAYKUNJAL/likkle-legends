@@ -1,33 +1,33 @@
+'use client';
 
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient } from '@supabase/ssr';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
-const PLACEHOLDER_URL = 'https://placeholder.supabase.co';
-const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsYWNlaG9sZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2MTY0MDMyMjUsImV4cCI6MTkzMTk3OTIyNX0.placeholder';
+// Lazy singleton — never initialized at module parse time.
+// Uses @supabase/ssr createBrowserClient so it reads from the same HTTP cookies
+// that server actions write to, keeping user sessions in sync.
+let browserClient: SupabaseClient | null = null;
 
-function getValidUrl(): string {
+export const createClient = (): SupabaseClient => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-    return (url && url.startsWith('https://') && url.length > 15) ? url : PLACEHOLDER_URL;
-}
-
-function getValidKey(): string {
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-    return (key && key.length > 20 && key !== 'false') ? key : PLACEHOLDER_KEY;
-}
 
-// Singleton browser client — uses @supabase/ssr createBrowserClient so it reads
-// from the same HTTP cookies that the SSR server client writes to.
-// This ensures sessions set by server actions are immediately visible client-side.
-let browserClient: ReturnType<typeof createBrowserClient> | null = null;
-
-export const createClient = () => {
-    if (typeof window === 'undefined') {
-        // Server-side (e.g. called from a shared util): return a fresh instance
-        // Note: prefer using lib/supabase/server.ts in server components/actions
-        return createBrowserClient(getValidUrl(), getValidKey());
+    if (!url || !url.startsWith('https://') || url.length < 16) {
+        throw new Error('[supabase/client] NEXT_PUBLIC_SUPABASE_URL is missing or invalid.');
+    }
+    if (!key || key.length < 20) {
+        throw new Error('[supabase/client] NEXT_PUBLIC_SUPABASE_ANON_KEY is missing or invalid.');
     }
 
-    if (!browserClient) {
-        browserClient = createBrowserClient(getValidUrl(), getValidKey());
+    // Reuse the singleton on the browser — avoids duplicate subscriptions
+    if (typeof window !== 'undefined') {
+        if (!browserClient) {
+            browserClient = createBrowserClient(url, key) as unknown as SupabaseClient;
+        }
+        return browserClient;
     }
-    return browserClient;
+
+    // Server-side (e.g. called from a shared util):
+    // prefer lib/supabase/server.ts in server components/actions
+    return createBrowserClient(url, key) as unknown as SupabaseClient;
 };
