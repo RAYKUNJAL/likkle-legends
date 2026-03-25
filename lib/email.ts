@@ -284,7 +284,22 @@ export const CONFIRMATION_EMAIL_TEMPLATE = (name: string, link: string) => `
 `;
 
 // 4. SUBSCRIPTION CONFIRMATION
-export const SUBSCRIPTION_CONFIRMATION_TEMPLATE = (name: string, tier?: string, childName?: string) => `
+export const SUBSCRIPTION_CONFIRMATION_TEMPLATE = (name: string, tier?: string, childName?: string, hasUpsell?: boolean, hasHeritageStory?: boolean) => {
+    const upsellBlock = hasUpsell ? `
+        <div style="background: #fff7ed; border: 2px solid #fdba74; border-radius: 24px; padding: 25px; margin: 20px 0;">
+            <h4 style="margin: 0; color: #c2410c; font-size: 16px; font-weight: 900;">🎨 Digital Activity Super-Pack UNLOCKED!</h4>
+            <p style="margin: 10px 0 0 0; color: #9a3412; font-size: 14px;">Your 50+ printable coloring pages and island mazes are waiting in your <b>Treasure Chest</b> in de portal.</p>
+        </div>
+    ` : '';
+
+    const heritageBlock = hasHeritageStory ? `
+        <div style="background: #eff6ff; border: 2px solid #93c5fd; border-radius: 24px; padding: 25px; margin: 20px 0;">
+            <h4 style="margin: 0; color: #1e40af; font-size: 16px; font-weight: 900;">🧬 Heritage DNA Story UNLOCKED!</h4>
+            <p style="margin: 10px 0 0 0; color: #1e3a8a; font-size: 14px;">Your custom family quest for ${childName || 'your child'} is ready to be created. Look for de <b>Golden Compass</b> in de portal to start your heritage journey.</p>
+        </div>
+    ` : '';
+
+    return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -308,10 +323,13 @@ export const SUBSCRIPTION_CONFIRMATION_TEMPLATE = (name: string, tier?: string, 
             <div class="card">
                 <span style="font-size: 10px; font-weight: 900; color: #065f46; text-transform: uppercase;">Membership Status</span>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                    <span style="font-size: 22px; font-weight: 900; color: #047857;">${tier || 'Legends Plus'}</span>
+                    <span style="font-size: 22px; font-weight: 900; color: #047857;">${tier?.replace(/_/g, ' ') || 'Legends Plus'}</span>
                     <span style="background: #059669; color: white; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 800;">ACTIVE</span>
                 </div>
             </div>
+
+            ${upsellBlock}
+            ${heritageBlock}
 
             <center><a href="https://likklelegends.com/portal" class="btn">Enter de Village</a></center>
 
@@ -322,6 +340,7 @@ export const SUBSCRIPTION_CONFIRMATION_TEMPLATE = (name: string, tier?: string, 
 </body>
 </html>
 `;
+};
 
 // 5. MUSIC PURCHASE RECEIPT
 export const MUSIC_PURCHASE_RECEIPT = (name: string, items: { title: string, price: string }[], total: string) => `

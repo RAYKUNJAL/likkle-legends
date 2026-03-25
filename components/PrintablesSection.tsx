@@ -41,7 +41,7 @@ function hasRealPreview(url?: string) {
 }
 
 export function PrintablesSection() {
-    const { canAccess } = useUser();
+    const { canAccess, hasSuperPack } = useUser();
     const [printables, setPrintables] = useState<Printable[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('all');
@@ -150,14 +150,19 @@ export function PrintablesSection() {
                 />
             ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {filteredPrintables.map((item, idx) => (
-                        <PrintableCard
-                            key={item.id}
-                            item={item}
-                            isLocked={!canAccess(item.tier_required || 'free')}
-                            idx={idx}
-                        />
-                    ))}
+                    {filteredPrintables.map((item, idx) => {
+                        const baseIsLocked = !canAccess(item.tier_required || 'free');
+                        const isLockedForUser = hasSuperPack ? false : baseIsLocked;
+                        
+                        return (
+                            <PrintableCard
+                                key={item.id}
+                                item={item}
+                                isLocked={isLockedForUser}
+                                idx={idx}
+                            />
+                        );
+                    })}
                 </div>
             )}
         </div>

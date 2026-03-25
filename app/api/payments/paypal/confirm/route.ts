@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-client';
 import { SUBSCRIPTION_PLANS, SubscriptionTier } from '@/lib/paypal';
 import { getFulfillmentHub } from '@/lib/geo-routing';
 import { sendEmail, ADMIN_NEW_ORDER_TEMPLATE } from '@/lib/email';
+import { queueSubscriptionConfirmation, cancelAbandonedCheckout } from '@/lib/services/email-triggers';
 import { cookies } from 'next/headers';
 
 const supabase = supabaseAdmin;
@@ -69,26 +70,74 @@ async function recordReferralConversion(userId: string, refCode: string, amount:
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { subscriptionId, orderId, tier, addGrandparent, currency, userId, billingCycle, shipping } = body;
+        const {
+            subscriptionId,
+            orderId,
+            tier,
+            email: reqEmail,
+            addGrandparent,
+            currency,
+            userId: bodyUserId,
+            billingCycle,
+            shipping,
+            hasUpsell,
+            hasHeritageStory,
+            heritage,
+            childName: reqChildName
+        } = body;
 
         if (!subscriptionId && !orderId) {
             return NextResponse.json({ error: 'Missing subscription or order ID' }, { status: 400 });
         }
 
 
-        // Authenticate user via Bearer token ONLY — no body userId fallback
+        // Authenticate user via Bearer token OR email fallback for guest checkouts
+        let userIdToUpdate: string | null = null;
         const authHeader = request.headers.get('Authorization');
-        if (!authHeader) {
-            return NextResponse.json({ error: 'Missing Authorization header' }, { status: 401 });
+
+        if (authHeader) {
+            const token = authHeader.replace('Bearer ', '');
+            const { data: { user } } = await supabase.auth.getUser(token);
+            if (user) {
+                userIdToUpdate = user.id;
+            }
         }
 
-        const token = authHeader.replace('Bearer ', '');
-        const { data: { user } } = await supabase.auth.getUser(token);
-        if (!user) {
-            return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+        // GUEST CHECKOUT: If not logged in, find/create by email
+        if (!userIdToUpdate && reqEmail) {
+            console.log(`[PAYMENTS] No token found. Attempting guest lookup for: ${reqEmail}`);
+            // 1. Check if user exists in profiles
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('email', reqEmail.toLowerCase())
+                .limit(1)
+                .maybeSingle();
+
+            if (profile) {
+                userIdToUpdate = profile.id;
+                console.log(`[PAYMENTS] Found existing user ID ${userIdToUpdate} for guest email`);
+            } else {
+                // 2. Create a new user account blindly (User will claim via 'forgot password' or invited link)
+                console.log(`[PAYMENTS] Creating new guest user for: ${reqEmail}`);
+                const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+                    email: reqEmail.toLowerCase(),
+                    email_confirm: true,
+                    user_metadata: { is_guest: true, invited: true }
+                });
+
+                if (createError) {
+                    console.error('[PAYMENTS] Guest creation error:', createError);
+                } else if (newUser.user) {
+                    userIdToUpdate = newUser.user.id;
+                    console.log(`[PAYMENTS] Successfully created guest user ${userIdToUpdate}`);
+                }
+            }
         }
 
-        const userIdToUpdate = user.id;
+        if (!userIdToUpdate) {
+            return NextResponse.json({ error: 'User could not be identified for this payment' }, { status: 401 });
+        }
 
         // 7-day free trial: first billing is delayed by 7 days via start_time in PayPal SDK
         const TRIAL_DAYS = 7;
@@ -101,10 +150,12 @@ export async function POST(request: NextRequest) {
             ? new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000)
             : trialEndsAt;
 
-        // Update user profile with subscription info
+        // Update user profile with subscription info (use upsert for guests)
         const { error: profileError } = await supabase
             .from('profiles')
-            .update({
+            .upsert({
+                id: userIdToUpdate,
+                email: reqEmail?.toLowerCase() || undefined,
                 subscription_tier: tier,
                 // Paid plans start in 'trialing' — upgrade to 'active' via webhook on first payment
                 subscription_status: isFree ? 'active' : 'trialing',
@@ -114,15 +165,32 @@ export async function POST(request: NextRequest) {
                 subscription_started_at: new Date().toISOString(),
                 next_billing_date: nextBillingDate.toISOString().split('T')[0],
                 trial_ends_at: isFree ? null : trialEndsAt.toISOString(),
-            })
-            .eq('id', userIdToUpdate);
+            }, { onConflict: 'id' });
 
         if (profileError) {
             console.error('Profile update error:', profileError);
             return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
         }
 
-        // Create initial order if this is a mail-based plan
+        // 2. Process Digital Upsells (Super-Pack & Heritage Story)
+        if (hasUpsell) {
+            await supabase.from('digital_possessions').upsert({
+                user_id: userIdToUpdate,
+                product_id: 'digital_activity_super_pack',
+                order_id: subscriptionId || orderId
+            }, { onConflict: 'user_id, product_id' });
+        }
+
+        if (hasHeritageStory) {
+            await supabase.from('digital_possessions').upsert({
+                user_id: userIdToUpdate,
+                product_id: 'heritage_dna_story',
+                order_id: subscriptionId || orderId,
+                metadata: { heritage: heritage || 'Caribbean' }
+            }, { onConflict: 'user_id, product_id' });
+        }
+
+        // 3. Create initial order if this is a mail-based plan
         if (shipping && tier !== 'plan_free_forever' && tier !== 'plan_digital_legends') {
             const plan = SUBSCRIPTION_PLANS[tier as SubscriptionTier];
             const price = billingCycle === 'year' ? (plan?.priceYearly || 0) : (plan?.price || 0);
@@ -142,9 +210,13 @@ export async function POST(request: NextRequest) {
                 shipping_country: shipping.country,
                 fulfillment_hub: hub,
                 fulfillment_status: 'pending',
-                child_name: shipping.name, // Fallback to shipping name if child name not passed
+                child_name: reqChildName || shipping.name, // Use provided name if available
                 child_age: 5, // Default
-                selected_island: 'explorer', // Default
+                selected_island: heritage || 'explorer', 
+                metadata: {
+                    has_upsell: hasUpsell || false,
+                    has_heritage_story: hasHeritageStory || false
+                }
             });
         }
 
@@ -168,6 +240,7 @@ export async function POST(request: NextRequest) {
                 .single();
 
             if (profile) {
+                // Admin Alert
                 await sendEmail({
                     to: 'legends@likklelegends.com', // Admin inbox
                     subject: `🚀 SALE ALERT: ${tier.toUpperCase()}`,
@@ -177,6 +250,19 @@ export async function POST(request: NextRequest) {
                         profile.email || "No Email"
                     )
                 });
+
+                // User Confirmation (Immediate)
+                await queueSubscriptionConfirmation(
+                    profile.email || "", 
+                    profile.parent_name || "Legend", 
+                    tier, 
+                    reqChildName || "your child",
+                    hasUpsell,
+                    hasHeritageStory
+                );
+
+                // Cancel any abandonment reminders
+                await cancelAbandonedCheckout(profile.email || "");
             }
 
             // 5. PROCESS GROWTH ENGINE / REFERRALS

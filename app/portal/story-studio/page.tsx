@@ -55,7 +55,7 @@ const ISLANDS = [
 
 export default function StoryStudioPage() {
     const router = useRouter();
-    const { activeChild, user } = useUser();
+    const { activeChild, user, hasHeritageStory } = useUser();
     const [step, setStep] = useState<WizardStep>('tradition');
     const [selection, setSelection] = useState<Selection>({
         tradition: '',
@@ -65,7 +65,7 @@ export default function StoryStudioPage() {
 
     // ACCESS CONTROL
     const userSubscriptionTier = (user?.subscription_tier as any) || 'free';
-    const hasAccess = hasFeatureAccess(userSubscriptionTier, 'story_builder');
+    const hasAccess = hasFeatureAccess(userSubscriptionTier, 'story_builder') || hasHeritageStory;
     const [showUpgradeModal, setShowUpgradeModal] = useState(!hasAccess);
     const upgradeTier = getUpgradeTier(userSubscriptionTier);
 

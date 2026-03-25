@@ -98,6 +98,8 @@ interface UserContextType {
   isSubscribed: boolean;
   canAccess: (tierRequired: string) => boolean;
   tierLevel: number;
+  hasSuperPack: boolean;
+  hasHeritageStory: boolean;
 
   // Notifications
   unreadCount: number;
@@ -143,6 +145,7 @@ const TIER_LEVELS: Record<string, number> = {
 export function UserProvider({ children: childrenNodes }: { children: ReactNode }) {
   const pathname = usePathname();
   const [user, setUser] = useState<Profile | null>(null);
+  const [digitalPossessions, setDigitalPossessions] = useState<string[]>([]);
   const [children, setChildren] = useState<Child[]>([]);
   const [activeChild, setActiveChildState] = useState<Child | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -167,16 +170,24 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
 
       if (!userObj) {
         setUser(null);
+        setDigitalPossessions([]);
         setChildren([]);
         setActiveChildState(null);
         return;
       }
 
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userObj.id)
-        .single();
+      // Parallel fetch for profile and digital possessions
+      const [profileRes, possessionsRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userObj.id).single(),
+        supabase.from('digital_possessions').select('product_id').eq('user_id', userObj.id)
+      ]);
+
+      const { data: profile } = profileRes;
+      const { data: possessions } = possessionsRes;
+
+      if (possessions) {
+        setDigitalPossessions(possessions.map(p => p.product_id));
+      }
 
       if (profile) {
         const meta = userObj.user_metadata || {};
@@ -500,6 +511,8 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     isSubscribed: user?.subscription_status === 'active' || user?.subscription_status === 'trialing',
     canAccess,
     tierLevel: user ? (TIER_LEVELS[user.subscription_tier] || 0) : 0,
+    hasSuperPack: digitalPossessions.includes('digital_activity_super_pack'),
+    hasHeritageStory: digitalPossessions.includes('heritage_dna_story'),
     unreadCount,
     refreshNotifications,
     unlockedBadge,
@@ -508,6 +521,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     verifyAge,
   }), [
     user,
+    digitalPossessions,
     children,
     activeChild,
     isLoading,

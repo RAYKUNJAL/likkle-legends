@@ -26,7 +26,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { ISLAND_REGISTRY } from "@/lib/registries/islands";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { SUBSCRIPTION_PLANS } from "@/lib/paypal";
+import { SUBSCRIPTION_PLANS, UPSELLS } from "@/lib/paypal";
 import { supabase } from "@/lib/supabase-client";
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "sb";
@@ -54,8 +54,9 @@ function CheckoutContent() {
         childName: searchParams.get('childName') || "",
         heritage: searchParams.get('heritage')?.toUpperCase() || "",
         planKey: getInitialPlan(), // Store the key of SUBSCRIPTION_PLANS
-        hasUpsell: false,
-        hasHeritageStory: false
+        hasUpsell: false, // Super-Pack
+        hasHeritageStory: false, // Custom Story
+        addGrandparent: false // Grandparent Mirror
     });
     const [isComplete, setIsComplete] = useState(false);
 
@@ -152,12 +153,20 @@ function CheckoutContent() {
         setStep(s => s + 1);
     };
 
-    const calculateTotal = () => {
+    const calculateOneTimeTotal = () => {
+        let total = 0;
+        if (formData.hasUpsell) total += UPSELLS.digital_activity_super_pack.price;
+        if (formData.hasHeritageStory) total += UPSELLS.heritage_dna_story.price;
+        return total;
+    };
+
+    const calculateRecurringTotal = () => {
         const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
-        let total = selectedPlan?.price || 10.00;
-        if (formData.hasUpsell) total += 5.00;
-        if (formData.hasHeritageStory) total += 14.99;
-        return total.toFixed(2);
+        return selectedPlan?.price || 0;
+    };
+
+    const calculateTotal = () => {
+        return (calculateOneTimeTotal() + calculateRecurringTotal()).toFixed(2);
     };
 
     if (isComplete) {
@@ -233,7 +242,7 @@ function CheckoutContent() {
                                 <div className="space-y-3 pt-4 border-t border-zinc-200/50">
                                     <div className="flex justify-between text-[11px] font-bold text-deep/40 uppercase tracking-widest">
                                         <span>Subtotal</span>
-                                        <span>${SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS]?.price.toFixed(2)}</span>
+                                        <span>${calculateRecurringTotal().toFixed(2)}</span>
                                     </div>
                                     <div className="flex justify-between text-[11px] font-bold text-deep/40 uppercase tracking-widest">
                                         <span>Legend Envelope (US)</span>
@@ -242,30 +251,30 @@ function CheckoutContent() {
                                     {formData.hasUpsell && (
                                         <div className="flex justify-between text-[11px] font-bold text-deep/40 uppercase tracking-widest animate-pulse">
                                             <span>+ Digital Activity Pack</span>
-                                            <span>$5.00</span>
+                                            <span>${UPSELLS.digital_activity_super_pack.price.toFixed(2)}</span>
                                         </div>
                                     )}
                                     {formData.hasHeritageStory && (
                                         <div className="flex justify-between text-[11px] font-bold text-deep/40 uppercase tracking-widest animate-pulse">
                                             <span>+ Heritage DNA Story</span>
-                                            <span>$14.99</span>
+                                            <span>${UPSELLS.heritage_dna_story.price.toFixed(2)}</span>
                                         </div>
                                     )}
                                     {formData.planKey !== 'plan_free_forever' && (
                                         <div className="flex justify-between text-[11px] font-bold text-green-600 uppercase tracking-widest animate-pulse">
                                             <span>7-Day Free Trial</span>
-                                            <span>-${calculateTotal()}</span>
+                                            <span>-${calculateRecurringTotal().toFixed(2)}</span>
                                         </div>
                                     )}
                                     <div className="flex justify-between text-lg font-black text-deep pt-2">
                                         <span>Due Today</span>
                                         <span className="text-green-600">
-                                            {formData.planKey === 'plan_free_forever' ? `$${calculateTotal()}` : '$0.00'}
+                                            ${calculateOneTimeTotal().toFixed(2)}
                                         </span>
                                     </div>
                                     {formData.planKey !== 'plan_free_forever' && (
                                         <p className="text-[10px] text-deep/30 font-medium">
-                                            Then ${calculateTotal()}/month starting{' '}
+                                            Then ${calculateRecurringTotal().toFixed(2)}/month starting{' '}
                                             {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                                         </p>
                                     )}
@@ -522,7 +531,7 @@ function CheckoutContent() {
                                                             50+ printable coloring pages, mazes, and word searches.
                                                         </p>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-sm font-black text-primary">$5.00</span>
+                                                            <span className="text-sm font-black text-primary">${UPSELLS.digital_activity_super_pack.price.toFixed(2)}</span>
                                                             <span className="text-xs font-bold text-deep/30 line-through">$15.00</span>
                                                         </div>
                                                     </div>
@@ -548,8 +557,34 @@ function CheckoutContent() {
                                                             A deeply personalized story based on your family heritage.
                                                         </p>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-sm font-black text-primary">$14.99</span>
+                                                            <span className="text-sm font-black text-primary">${UPSELLS.heritage_dna_story.price.toFixed(2)}</span>
                                                             <span className="text-xs font-bold text-deep/30 line-through">$29.99</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </button>
+
+                                            {/* Upsell 3: Grandparent Dashboard */}
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, addGrandparent: !prev.addGrandparent }))}
+                                                className={`w-full text-left bg-zinc-50 border-2 rounded-2xl p-6 transition-all ${formData.addGrandparent ? 'border-primary bg-primary/5' : 'border-dashed border-zinc-200 hover:bg-zinc-100'}`}
+                                            >
+                                                <div className="flex gap-4">
+                                                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-zinc-100 flex items-center justify-center text-2xl shrink-0">
+                                                        👵🏽
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex justify-between items-start">
+                                                            <h4 className="font-black text-deep text-sm">Grandparent Mirror Dashboard</h4>
+                                                            {formData.addGrandparent && <CheckCircle2 size={18} className="text-primary" />}
+                                                        </div>
+                                                        <p className="text-xs text-deep/50 font-medium leading-relaxed mt-1 mb-2">
+                                                            Limited Time: Include extended family in their journey for FREE.
+                                                        </p>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-sm font-black text-primary">FREE</span>
+                                                            <span className="text-xs font-bold text-deep/30 line-through">$10.00</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -681,7 +716,7 @@ function CheckoutContent() {
                                         <div className="bg-white rounded-2xl border border-zinc-100 p-6 space-y-6 shadow-sm">
                                             {/* PayPal Button Container */}
                                             <div className="relative min-h-[150px] flex flex-col justify-center">
-                                                {formData.planKey === 'plan_free_forever' ? (
+                                                {formData.planKey === 'plan_free_forever' && calculateOneTimeTotal() === 0 ? (
                                                     <button
                                                         onClick={() => {
                                                             const uid = searchParams.get('uid') || '';
@@ -695,18 +730,44 @@ function CheckoutContent() {
                                                 ) : (
                                                     <PayPalButtons
                                                         style={{ layout: "vertical", shape: "rect", borderRadius: 12, height: 48 }}
-                                                        createSubscription={(_data, actions) => {
+                                                        createOrder={formData.planKey === 'plan_free_forever' ? (_data, actions) => {
+                                                            return actions.order.create({
+                                                                intent: 'CAPTURE',
+                                                                purchase_units: [{
+                                                                    amount: {
+                                                                        currency_code: 'USD',
+                                                                        value: calculateOneTimeTotal().toFixed(2)
+                                                                    },
+                                                                    description: "Likkle Legends Digital Items"
+                                                                }]
+                                                            });
+                                                        } : undefined}
+                                                        createSubscription={formData.planKey !== 'plan_free_forever' ? (_data, actions) => {
                                                             const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
-                                                            const targetPlanId = selectedPlan?.paypalPlanId || SUBSCRIPTION_PLANS.plan_mail_intro.paypalPlanId;
+                                                            const targetPlanId = selectedPlan?.paypalPlanId;
+
+                                                            if (!targetPlanId) {
+                                                                toast.error("Invalid configuration. Please contact support.");
+                                                                throw new Error("Missing PayPal Plan ID");
+                                                            }
 
                                                             // 7-day free trial: delay first billing by 7 days
                                                             const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+                                                            const setupFee = calculateOneTimeTotal();
 
-                                                            return actions.subscription.create({
+                                                            return (actions.subscription.create as any)({
                                                                 plan_id: targetPlanId,
                                                                 start_time: trialEndDate.toISOString(),
+                                                                plan: setupFee > 0 ? {
+                                                                    payment_preferences: {
+                                                                        setup_fee: {
+                                                                            value: setupFee.toFixed(2),
+                                                                            currency_code: 'USD'
+                                                                        }
+                                                                    }
+                                                                } as any : undefined
                                                             });
-                                                        }}
+                                                        } : undefined}
                                                         onApprove={async (data, _actions) => {
                                                             try {
                                                                 const { data: sessionData } = await supabase.auth.getSession();
@@ -720,9 +781,16 @@ function CheckoutContent() {
                                                                     },
                                                                     body: JSON.stringify({
                                                                         subscriptionId: data.subscriptionID,
+                                                                        orderId: data.orderID,
                                                                         tier: formData.planKey,
+                                                                        email: formData.email,
+                                                                        addGrandparent: formData.addGrandparent,
                                                                         billingCycle: 'month',
                                                                         currency: 'USD',
+                                                                        hasUpsell: formData.hasUpsell,
+                                                                        hasHeritageStory: formData.hasHeritageStory,
+                                                                        childName: formData.childName,
+                                                                        heritage: formData.heritage
                                                                     }),
                                                                 });
 

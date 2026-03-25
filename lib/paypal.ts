@@ -146,6 +146,13 @@ export const UPSELLS = {
         type: 'one-time',
         description: 'A deeply personalized story based on your family heritage',
     },
+    digital_activity_super_pack: {
+        id: 'digital_activity_super_pack',
+        name: 'Digital Activity Super-Pack',
+        price: 9.99,
+        type: 'one-time',
+        description: '50+ high-resolution cultural coloring pages and activities (Digital Download)',
+    },
 };
 
 export const MUSIC_STORE_PRODUCTS = {

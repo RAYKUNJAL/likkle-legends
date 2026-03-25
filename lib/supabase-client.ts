@@ -248,13 +248,27 @@ export const getSupabaseAdmin = () => {
     return globalForSupabase.supabaseAdmin;
 };
 
-// Named shorthands used throughout the codebase — lazily resolved
-// IMPORTANT: These are evaluated on first import call, NOT at module parse time.
+// Lazy shorthands used throughout the codebase — lazily resolved and bound to preserve 'this'
 export const supabase = new Proxy({} as SupabaseClient, {
-    get(_t, prop) { return (getSupabase() as any)[prop]; }
+    get(_t, prop) {
+        const client = getSupabase();
+        const value = (client as any)[prop];
+        if (typeof value === 'function') {
+            return value.bind(client);
+        }
+        return value;
+    }
 });
+
 export const supabaseAdmin = new Proxy({} as SupabaseClient, {
-    get(_t, prop) { return (getSupabaseAdmin() as any)[prop]; }
+    get(_t, prop) {
+        const admin = getSupabaseAdmin();
+        const value = (admin as any)[prop];
+        if (typeof value === 'function') {
+            return value.bind(admin);
+        }
+        return value;
+    }
 });
 
 // Export utility functions

@@ -154,6 +154,8 @@ export default function ChildPortalPage() {
         children,
         activeChild,
         canAccess,
+        hasSuperPack,
+        hasHeritageStory,
         isLoading: userLoading,
         triggerBadgeUnlock,
         unlockedBadge,
@@ -844,6 +846,47 @@ export default function ChildPortalPage() {
                                     </button>
                                 </div>
                             </div>
+
+                            {(hasSuperPack || hasHeritageStory) && (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-2">
+                                        <Sparkles className="text-amber-500" size={20} />
+                                        <h3 className="font-black text-xs uppercase tracking-[0.2em] text-amber-600">Your Digital Treasures</h3>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        {hasSuperPack && (
+                                            <button
+                                                onClick={() => setActiveSection('printables')}
+                                                className="group bg-gradient-to-br from-amber-400 to-orange-500 p-6 rounded-[2rem] shadow-xl hover:scale-105 transition-all text-left relative overflow-hidden"
+                                            >
+                                                <div className="relative z-10 flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl">🖍️</div>
+                                                    <div>
+                                                        <h4 className="font-black text-white text-lg leading-tight uppercase tracking-tight">Activity Super-Pack</h4>
+                                                        <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">50+ Printing Adventures UNLOCKED</p>
+                                                    </div>
+                                                </div>
+                                                <div className="absolute -right-4 -bottom-4 text-6xl opacity-10 group-hover:scale-125 transition-transform duration-500">🎨</div>
+                                            </button>
+                                        )}
+                                        {hasHeritageStory && (
+                                            <button
+                                                onClick={() => router.push('/portal/story-studio')}
+                                                className="group bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-[2rem] shadow-xl hover:scale-105 transition-all text-left relative overflow-hidden"
+                                            >
+                                                <div className="relative z-10 flex items-center gap-4">
+                                                    <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl">🌍</div>
+                                                    <div>
+                                                        <h4 className="font-black text-white text-lg leading-tight uppercase tracking-tight">Heritage DNA Story</h4>
+                                                        <p className="text-white/80 text-[10px] font-bold uppercase tracking-widest mt-0.5">Start Your Custom Family Quest</p>
+                                                    </div>
+                                                </div>
+                                                <div className="absolute -right-4 -bottom-4 text-6xl opacity-10 group-hover:scale-125 transition-transform duration-500">🧬</div>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="space-y-4">
                                 <h2 className="text-5xl md:text-6xl font-black text-[#083344] tracking-tight">

@@ -107,7 +107,13 @@ function renderTemplate(templateId: string, data: any): string {
     case "ABANDONED_CHECKOUT":
       return ABANDONED_CHECKOUT_TEMPLATE(data.name || "Friend", data.planName || "Legends Plus");
     case "SUBSCRIPTION_CONFIRMATION":
-      return SUBSCRIPTION_CONFIRMATION_TEMPLATE(data.name || "Legend", data.tier || "Legends Plus", data.childName || "");
+      return SUBSCRIPTION_CONFIRMATION_TEMPLATE(
+        data.name || "Legend", 
+        data.tier || "Legends Plus", 
+        data.childName || "",
+        data.hasUpsell,
+        data.hasHeritageStory
+      );
     case "SUPPORT_REPLY":
       return SUPPORT_REPLY_TEMPLATE(data.parentName || "Friend", data.subject || "", data.replyText || "");
     case "WIN_BACK":

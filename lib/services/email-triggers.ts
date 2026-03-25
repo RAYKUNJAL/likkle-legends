@@ -107,13 +107,20 @@ export async function cancelAbandonedCheckout(email: string) {
 /**
  * Queue subscription confirmation after successful payment
  */
-export async function queueSubscriptionConfirmation(email: string, name: string, tier: string, childName?: string) {
+export async function queueSubscriptionConfirmation(
+    email: string, 
+    name: string, 
+    tier: string, 
+    childName?: string, 
+    hasUpsell?: boolean, 
+    hasHeritageStory?: boolean
+) {
     const admin = createAdminClient();
 
     const { error } = await admin.from('email_queue').insert({
         recipient_email: email,
         template_id: 'SUBSCRIPTION_CONFIRMATION',
-        template_data: { name, tier, childName },
+        template_data: { name, tier, childName, hasUpsell, hasHeritageStory },
         status: 'pending',
         send_at: new Date().toISOString() // Immediate
     });
