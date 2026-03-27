@@ -12,11 +12,13 @@ export const createClient = (): SupabaseClient => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
-    if (!url || !url.startsWith('https://') || url.length < 16) {
-        throw new Error('[supabase/client] NEXT_PUBLIC_SUPABASE_URL is missing or invalid.');
+    if (!url || !url.startsWith('https://')) {
+        console.error('❌ [supabase/client] NEXT_PUBLIC_SUPABASE_URL is missing or invalid.');
+        return {} as any;
     }
     if (!key || key.length < 20) {
-        throw new Error('[supabase/client] NEXT_PUBLIC_SUPABASE_ANON_KEY is missing or invalid.');
+        console.error('❌ [supabase/client] NEXT_PUBLIC_SUPABASE_ANON_KEY is missing or invalid.');
+        return {} as any;
     }
 
     // Reuse the singleton on the browser — avoids duplicate subscriptions

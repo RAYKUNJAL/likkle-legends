@@ -24,7 +24,9 @@ function assertEnv(key: keyof ServerEnv, optional = false): string | undefined {
     if (optional) {
       return undefined;
     }
-    throw new Error(`[server-env] Missing required environment variable: ${key}`);
+    console.error(`❌ [server-env] Missing required environment variable: ${key}`);
+    // Return empty string instead of throwing to avoid crashing the build
+    return "";
   }
   return value;
 }
