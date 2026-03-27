@@ -33,9 +33,28 @@ function optionalEnv(key: keyof ServerEnv): string | undefined {
   return assertEnv(key, true);
 }
 
+// Resolve SUPABASE_URL — accept both naming conventions
+const supabaseUrl =
+  process.env.SUPABASE_URL?.trim() ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+  '';
+
+// Resolve SUPABASE_ANON_KEY — accept both naming conventions
+const supabaseAnonKey =
+  process.env.SUPABASE_ANON_KEY?.trim() ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
+  '';
+
+if (!supabaseUrl) {
+  throw new Error('[server-env] Missing required environment variable: SUPABASE_URL');
+}
+if (!supabaseAnonKey) {
+  throw new Error('[server-env] Missing required environment variable: SUPABASE_ANON_KEY');
+}
+
 export const serverEnv: ServerEnv = {
-  SUPABASE_URL: assertEnv('SUPABASE_URL')!,
-  SUPABASE_ANON_KEY: assertEnv('SUPABASE_ANON_KEY')!,
+  SUPABASE_URL: supabaseUrl,
+  SUPABASE_ANON_KEY: supabaseAnonKey,
   SUPABASE_SERVICE_ROLE_KEY: assertEnv('SUPABASE_SERVICE_ROLE_KEY')!,
   GEMINI_API_KEY: optionalEnv('GEMINI_API_KEY'),
   GOOGLE_GENERATIVE_AI_API_KEY: optionalEnv('GOOGLE_GENERATIVE_AI_API_KEY'),
@@ -43,7 +62,7 @@ export const serverEnv: ServerEnv = {
   PAYPAL_CLIENT_SECRET: optionalEnv('PAYPAL_CLIENT_SECRET'),
   CLOUDFLARE_API_TOKEN: optionalEnv('CLOUDFLARE_API_TOKEN'),
   SENTRY_DSN: optionalEnv('SENTRY_DSN'),
-  APP_URL: process.env.NEXT_PUBLIC_APP_URL ? process.env.NEXT_PUBLIC_APP_URL.trim() : 'https://www.likklelegends.com',
+  APP_URL: process.env.NEXT_PUBLIC_APP_URL?.trim() || 'https://www.likklelegends.com',
   NODE_ENV: process.env.NODE_ENV || 'development',
 };
 
