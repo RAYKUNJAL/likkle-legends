@@ -2,33 +2,30 @@ export default function StructuredData() {
     const organizationData = {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "Island City Tattoos",
-        "url": "https://islandcitytattoos.com",
-        "logo": "https://islandcitytattoos.com/icon.png",
+        "name": "Likkle Legends",
+        "url": "https://www.likklelegends.com",
+        "logo": "https://www.likklelegends.com/images/logo.png",
         "sameAs": [
-            "https://www.instagram.com/zaypaige/",
-            "https://www.instagram.com/ray_tattoos/",
-            "https://www.instagram.com/cookiemandtm_/"
+            "https://www.instagram.com/likklelegends",
+            "https://twitter.com/likklelegends"
         ],
-        "description": "Custom tattoo studio in Baltimore offering cover-ups, flash tattoos, and design consultations."
+        "description": "Premium Caribbean-themed educational mail club for kids ages 3-9."
     };
 
-    const localBusinessData = {
+    const productData = {
         "@context": "https://schema.org",
-        "@type": "TattooParlor",
-        "name": "Island City Tattoos",
-        "image": "https://islandcitytattoos.com/images/og-image.jpg",
-        "description": "Book custom tattoo work, cover-ups, and flash offers in Baltimore.",
-        "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "5456 Park Heights Ave",
-            "addressLocality": "Baltimore",
-            "addressRegion": "MD",
-            "postalCode": "21215",
-            "addressCountry": "US"
-        },
-        "telephone": "+1-410-466-0555",
-        "url": "https://islandcitytattoos.com"
+        "@type": "Product",
+        "name": "Likkle Legends Mail Club Subscription",
+        "image": "https://www.likklelegends.com/images/roti-new.jpg",
+        "description": "Monthly adventure boxes including character letters, Caribbean nursery songs, and interactive digital stories.",
+        "brand": { "@type": "Brand", "name": "Likkle Legends" },
+        "offers": {
+            "@type": "Offer",
+            "url": "https://www.likklelegends.com/#pricing",
+            "priceCurrency": "USD",
+            "price": "9.99",
+            "availability": "https://schema.org/InStock"
+        }
     };
 
     return (
@@ -39,7 +36,7 @@ export default function StructuredData() {
             />
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessData) }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(productData) }}
             />
         </>
     );

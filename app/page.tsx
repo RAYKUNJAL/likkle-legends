@@ -1,23 +1,20 @@
 import type { Metadata } from "next";
-import { TattooLandingPage } from "@/components/tattoo/TattooLandingPage";
 
 export const metadata: Metadata = {
-  title: "Island City Tattoos | Custom Tattoo Studio",
+  title: "Likkle Legends | Learning That Feels Like Home",
   description:
-    "Custom tattoo studio in Baltimore with online booking, flash specials, and custom design consultations.",
+    "Help your child grow academically while staying connected to Caribbean culture—wherever you live. Stories, songs, activities, and monthly character drops for kids 3-9.",
   alternates: {
-    canonical: "https://islandcitytattoos.com/",
+    canonical: "https://www.likklelegends.com/",
   },
   openGraph: {
-    title: "Island City Tattoos",
+    title: "Likkle Legends | Learning That Feels Like Home",
     description:
-      "Book bold custom work, claim limited flash offers, and start your tattoo consult online.",
-    url: "https://islandcitytattoos.com/",
-    siteName: "Island City Tattoos",
+      "Caribbean-inspired educational stories, songs, and monthly mail for kids 3-9.",
+    url: "https://www.likklelegends.com/",
+    siteName: "Likkle Legends",
     type: "website",
   },
 };
 
-export default function Page() {
-  return <TattooLandingPage />;
-}
+export { default } from "@/components/landing-v3/LandingPage";

@@ -11,7 +11,7 @@ dotenv.config({ path: path.resolve(__dirname, '..', '.env.local') });
 const SAMPLE_SONGS = [
     {
         title: "likkle Legends jingle",
-        artist: "Raytattoos",
+        artist: "Island Legend",
         audio_url: "https://cdn1.suno.ai/b792349c-09ad-4d94-8e96-ef4077b39209.mp3",
         duration_seconds: 61,
         category: "story",

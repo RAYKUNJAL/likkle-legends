@@ -90,16 +90,10 @@ function renderTemplate(templateId: string, data: any): string {
   switch (templateId) {
     case "WELCOME":
       return WELCOME_EMAIL_TEMPLATE(data.name || "Legend");
-    case "TATTOO_CONTEST_WELCOME":
-      return tattooContestWelcomeTemplate(
         data.name || "Friend",
         data.referralUrl || "",
         data.prize || "Free cover-up consultation + custom design layout"
       );
-    case "TATTOO_CONTEST_DAY_2":
-      return tattooContestDay2Template(data.name || "Friend", data.referralUrl || "");
-    case "TATTOO_CONTEST_DAY_4":
-      return tattooContestDay4Template(data.name || "Friend");
     case "ONBOARDING_DAY_2":
       return ONBOARDING_DAY_2_TEMPLATE(data.name || "Legend", data.childName || "");
     case "ONBOARDING_DAY_7":
@@ -119,7 +113,7 @@ function renderTemplate(templateId: string, data: any): string {
     case "WIN_BACK":
       return WIN_BACK_TEMPLATE(data.name || "Legend");
     default:
-      return `<p>${data.message || "Hello from Island City Tattoos."}</p>`;
+      return `<p>${data.message || "Hello from Likkle Legends."}</p>`;
   }
 }
 
@@ -127,12 +121,6 @@ function getSubjectForTemplate(templateId: string, data: any): string {
   switch (templateId) {
     case "WELCOME":
       return "Welcome to Likkle Legends";
-    case "TATTOO_CONTEST_WELCOME":
-      return "You are in: Free cover-up consultation giveaway";
-    case "TATTOO_CONTEST_DAY_2":
-      return "Share your link to boost your contest entry";
-    case "TATTOO_CONTEST_DAY_4":
-      return "Cover-up consultation spots are filling up";
     case "ONBOARDING_DAY_2":
       return `Pro tip for ${data.childName || "your kid"} (Day 2)`;
     case "ONBOARDING_DAY_7":
@@ -146,40 +134,6 @@ function getSubjectForTemplate(templateId: string, data: any): string {
     case "WIN_BACK":
       return "We miss you";
     default:
-      return "Hello from Island City Tattoos";
+      return "Hello from Likkle Legends";
   }
-}
-
-function tattooContestWelcomeTemplate(name: string, referralUrl: string, prize: string): string {
-  return `
-    <div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;padding:24px;color:#1f2937">
-      <h2 style="margin:0 0 12px 0;">You are entered, ${name}.</h2>
-      <p style="line-height:1.6;">Thanks for entering: <b>${prize}</b>.</p>
-      <p style="line-height:1.6;">Share your referral link to improve your chances:</p>
-      <p style="background:#111827;color:#f9fafb;padding:12px;border-radius:8px;word-break:break-all;">${referralUrl}</p>
-      <p style="line-height:1.6;">Questions? DM <b>@ray_tattoos</b> on Instagram.</p>
-      <p style="font-size:12px;color:#6b7280;">No purchase necessary. Winner details posted on social channels.</p>
-    </div>
-  `;
-}
-
-function tattooContestDay2Template(name: string, referralUrl: string): string {
-  return `
-    <div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;padding:24px;color:#1f2937">
-      <h2 style="margin:0 0 12px 0;">Quick reminder, ${name}</h2>
-      <p style="line-height:1.6;">Your entry is active. Share your link today:</p>
-      <p style="background:#111827;color:#f9fafb;padding:12px;border-radius:8px;word-break:break-all;">${referralUrl}</p>
-      <p style="line-height:1.6;">Need immediate help with a cover-up? Book now and mention your contest entry.</p>
-    </div>
-  `;
-}
-
-function tattooContestDay4Template(name: string): string {
-  return `
-    <div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;padding:24px;color:#1f2937">
-      <h2 style="margin:0 0 12px 0;">${name}, consultation spots are filling up</h2>
-      <p style="line-height:1.6;">If you want design direction for a cover-up, this is the best time to schedule.</p>
-      <p style="line-height:1.6;">DM <b>@ray_tattoos</b> for artist details.</p>
-    </div>
-  `;
 }
