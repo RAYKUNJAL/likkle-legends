@@ -29,7 +29,12 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { SUBSCRIPTION_PLANS, UPSELLS } from "@/lib/paypal";
 import { supabase } from "@/lib/supabase-client";
 
-const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "sb";
+const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
+
+// Log if PayPal client ID is missing in production
+if (typeof window !== 'undefined' && !PAYPAL_CLIENT_ID) {
+    console.warn('[PayPal] Client ID not configured. Set NEXT_PUBLIC_PAYPAL_CLIENT_ID environment variable.');
+}
 
 function CheckoutContent() {
     const searchParams = useSearchParams();
@@ -196,6 +201,23 @@ function CheckoutContent() {
                     </Link>
                 </motion.div>
             </div>
+        );
+    }
+
+    if (!PAYPAL_CLIENT_ID) {
+        return (
+            <main className="min-h-screen bg-[#FFFDF7] flex items-center justify-center">
+                <div className="text-center p-8 max-w-md">
+                    <h1 className="text-2xl font-black text-deep mb-4">Payment System Unavailable</h1>
+                    <p className="text-deep/60 mb-6">The payment system is currently being configured. Please try again in a few moments or contact support at legends@likklelegends.com for assistance.</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-6 py-3 bg-primary text-white rounded-2xl font-black"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </main>
         );
     }
 
@@ -747,8 +769,9 @@ function CheckoutContent() {
                                                             const targetPlanId = selectedPlan?.paypalPlanId;
 
                                                             if (!targetPlanId) {
-                                                                toast.error("Invalid configuration. Please contact support.");
-                                                                throw new Error("Missing PayPal Plan ID");
+                                                                console.error(`[PayPal] Missing Plan ID for tier: ${formData.planKey}`);
+                                                                toast.error("Payment configuration is incomplete. Please contact support@likklelegends.com to set up this payment plan.");
+                                                                throw new Error(`Missing PayPal Plan ID for tier: ${formData.planKey}`);
                                                             }
 
                                                             // 7-day free trial: delay first billing by 7 days
