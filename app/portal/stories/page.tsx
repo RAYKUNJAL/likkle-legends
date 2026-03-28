@@ -71,6 +71,14 @@ export default function StoriesLibraryPage() {
     const [selectedIsland, setSelectedIsland] = useState('All Islands');
     const [selectedCategory, setSelectedCategory] = useState('All Categories');
     const [selectedAgeGroup, setSelectedAgeGroup] = useState('all');
+    
+    // Passport GAMIFICATION
+    const [earnedStamps, setEarnedStamps] = useState<string[]>(['Jamaica']); // Example default stamp
+
+    useEffect(() => {
+        loadStories();
+    }, []);
+
     const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
 
     if (!parentalControls.allow_stories) {
@@ -86,9 +94,6 @@ export default function StoriesLibraryPage() {
             </div>
         );
     }
-
-    // Passport GAMIFICATION
-    const [earnedStamps, setEarnedStamps] = useState<string[]>(['Jamaica']); // Example default stamp
 
     const loadStories = async () => {
         setIsLoading(true);
@@ -147,9 +152,6 @@ export default function StoriesLibraryPage() {
         }
     };
 
-    useEffect(() => {
-        loadStories();
-    }, []);
 
     // Filter Logic
     const filteredStories = stories.filter(story => {

@@ -386,10 +386,123 @@ export default function ChildPortalPage() {
                     setTodaysActivities(week.days[weekdayIndex].activities || []);
                 }
             } catch {
+                if (!res.ok) return;
+                const { plan } = await res.json();
+                if (!plan?.plan_data?.weeks) return;
+
+                // Determine today's activities from the plan
+                const dayIndex = new Date().getDay(); // 0=Sun, 1=Mon...
+                const weekdayIndex = Math.max(0, dayIndex - 1); // Mon=0, Fri=4
+                const week = plan.plan_data.weeks[0]; // Use week 1 for daily view
+                if (week?.days?.[weekdayIndex]) {
+                    setTodaysActivities(week.days[weekdayIndex].activities || []);
+                }
+            } catch {
                 // silently ignore — plan is optional
             }
         })();
     }, [activeChild?.id, isPortalIdleReady]);
+
+    const handleActivityLog = async (type: string, id: string, title?: string, xp?: number) => {
+        if (!user || !activeChild) return;
+        try {
+            const result = await logActivity(
+                user.id,
+                activeChild.id,
+                type,
+                id,
+                xp || 0,
+                0,
+                { title }
+            ) as any;
+
+            if (result?.unlockedBadge) {
+                triggerBadgeUnlock(result.unlockedBadge);
+            }
+
+            // Ensure XP/progress counters refresh immediately after server updates.
+            await refreshChildren(user.id);
+
+        } catch (err) {
+            console.error("Failed to log activity:", err);
+        }
+    };
+
+    const handleMediaComplete = async (type: 'video', id: string, xp: number) => {
+        if (!user || !activeChild) return;
+
+        try {
+            await handleActivityLog(type, id, activeVideo?.title, xp);
+            if (type === 'video') setActiveVideo(null);
+        } catch (err) {
+            console.error("Failed to log activity:", err);
+        }
+    };
+
+    const handleMissionComplete = async (xp: number, questId: string) => {
+        await handleActivityLog('mission', questId, undefined, xp);
+    };
+
+    const handleLockedClick = (tier: string, featureName: string, featureDescription = '') => {
+        const nextCount = lockedHitCount + 1;
+        setLockedHitCount(nextCount);
+        trackEvent('view_item', { item_name: featureName, item_tier: tier, locked_hit: nextCount });
+
+        if (nextCount >= 3) {
+            // After 3 locked hits, use FeatureUpgradeModal for a more targeted pitch
+            setFeatureUpgradeModal({ open: true, featureName, featureDescription: featureDescription || `Upgrade to access ${featureName} and more premium content.`, requiredTier: tier });
+        } else {
+            setUpgradeModal({ open: true, tier, feature: featureName });
+        }
+    };
+
+    const currentLevel = activeChild ? calculateLevel(activeChild.total_xp) : LEVELS[0];
+    const lessonVideos = videos.length > 0 ? videos : VILLAGE_CINEMA_VIDEOS;
+
+    const navItems = [
+        { id: 'home', label: 'Village', icon: MapIcon, color: 'from-primary to-accent' },
+        { id: 'stories', label: 'Stories', icon: BookOpen, color: 'from-blue-500 to-cyan-500' },
+        { id: 'lessons', label: 'Lessons', icon: Video, color: 'from-indigo-500 to-purple-500' },
+        { id: 'missions', label: 'Craft Corner', icon: Palette, color: 'from-amber-500 to-orange-500' },
+        { id: 'games', label: 'Games', icon: Palette, color: 'from-green-500 to-emerald-500' },
+        { id: 'leaderboard', label: 'Legends', icon: Trophy, color: 'from-amber-500 to-yellow-500' },
+        { id: 'challenges', label: 'Challenges', icon: Crown, color: 'from-red-500 to-pink-500' },
+        { id: 'printables', label: 'Printables', icon: Download, color: 'from-amber-400 to-orange-500' },
+        { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
+        { id: 'music-hub', label: 'Market', icon: ShoppingBag, color: 'from-indigo-600 to-purple-700' },
+        { id: 'buddy', label: 'My Buddy', icon: MessageCircle, color: 'from-emerald-500 to-teal-500' },
+    ];
+
+    const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
+
+    const sectionAllowed = (section: string) => {
+        if (section === 'stories') return parentalControls.allow_stories;
+        if (section === 'lessons') return parentalControls.allow_lessons;
+        if (section === 'games') return parentalControls.allow_games;
+        if (section === 'radio') return parentalControls.allow_radio;
+        if (section === 'buddy') return parentalControls.allow_buddy;
+        return true;
+    };
+
+    const screenTimeExceeded = todayScreenMinutes >= parentalControls.daily_screen_time_minutes;
+
+    useEffect(() => {
+        if (!activeChild?.id) return;
+        setTodayScreenMinutes(getTodayScreenMinutes(activeChild.id));
+        const timer = window.setInterval(() => {
+            if (screenTimeExceeded) return;
+            const next = addScreenMinute(activeChild.id);
+            setTodayScreenMinutes(next);
+        }, 60000);
+        return () => window.clearInterval(timer);
+    }, [activeChild?.id, screenTimeExceeded]);
+
+    useEffect(() => {
+        if (screenTimeExceeded && activeSection !== 'home') {
+            setActiveSection('home');
+            setBlockedMessage('Daily screen-time limit reached. Ask your parent to adjust controls.');
+        }
+    }, [screenTimeExceeded, activeSection]);
 
     // Show loading while checking auth
     if (userLoading) {
@@ -456,105 +569,6 @@ export default function ChildPortalPage() {
             </div>
         );
     }
-    const handleActivityLog = async (type: string, id: string, title?: string, xp?: number) => {
-        if (!user || !activeChild) return;
-        try {
-            const result = await logActivity(
-                user.id,
-                activeChild.id,
-                type,
-                id,
-                xp || 0,
-                0,
-                { title }
-            ) as any;
-
-            if (result?.unlockedBadge) {
-                triggerBadgeUnlock(result.unlockedBadge);
-            }
-
-            // Ensure XP/progress counters refresh immediately after server updates.
-            await refreshChildren(user.id);
-
-        } catch (err) {
-            console.error("Failed to log activity:", err);
-        }
-    };
-
-    const handleMediaComplete = async (type: 'video', id: string, xp: number) => {
-        if (!user || !activeChild) return;
-
-        try {
-            await handleActivityLog(type, id, activeVideo?.title, xp);
-            if (type === 'video') setActiveVideo(null);
-        } catch (err) {
-            console.error("Failed to log activity:", err);
-        }
-    };
-
-    const handleMissionComplete = async (xp: number, questId: string) => {
-        await handleActivityLog('mission', questId, undefined, xp);
-    };
-
-    // CRO: called when a free user taps a locked content item
-    const handleLockedClick = (tier: string, featureName: string, featureDescription = '') => {
-        const nextCount = lockedHitCount + 1;
-        setLockedHitCount(nextCount);
-        fireConversionEvent('view_item', { item_name: featureName, item_tier: tier, locked_hit: nextCount });
-
-        if (nextCount >= 3) {
-            // After 3 locked hits, use FeatureUpgradeModal for a more targeted pitch
-            setFeatureUpgradeModal({ open: true, featureName, featureDescription: featureDescription || `Upgrade to access ${featureName} and more premium content.`, requiredTier: tier });
-        } else {
-            setUpgradeModal({ open: true, tier, feature: featureName });
-        }
-    };
-
-    const currentLevel = activeChild ? calculateLevel(activeChild.total_xp) : LEVELS[0];
-    const lessonVideos = videos.length > 0 ? videos : VILLAGE_CINEMA_VIDEOS;
-
-    const navItems = [
-        { id: 'home', label: 'Village', icon: MapIcon, color: 'from-primary to-accent' },
-        { id: 'stories', label: 'Stories', icon: BookOpen, color: 'from-blue-500 to-cyan-500' },
-        { id: 'lessons', label: 'Lessons', icon: Video, color: 'from-indigo-500 to-purple-500' },
-        { id: 'missions', label: 'Craft Corner', icon: Palette, color: 'from-amber-500 to-orange-500' },
-        { id: 'games', label: 'Games', icon: Palette, color: 'from-green-500 to-emerald-500' },
-        { id: 'leaderboard', label: 'Legends', icon: Trophy, color: 'from-amber-500 to-yellow-500' },
-        { id: 'challenges', label: 'Challenges', icon: Crown, color: 'from-red-500 to-pink-500' },
-        { id: 'printables', label: 'Printables', icon: Download, color: 'from-amber-400 to-orange-500' },
-        { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
-        { id: 'music-hub', label: 'Market', icon: ShoppingBag, color: 'from-indigo-600 to-purple-700' },
-        { id: 'buddy', label: 'My Buddy', icon: MessageCircle, color: 'from-emerald-500 to-teal-500' },
-    ];
-    const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
-    const sectionAllowed = (section: string) => {
-        if (section === 'stories') return parentalControls.allow_stories;
-        if (section === 'lessons') return parentalControls.allow_lessons;
-        if (section === 'games') return parentalControls.allow_games;
-        if (section === 'radio') return parentalControls.allow_radio;
-        if (section === 'buddy') return parentalControls.allow_buddy;
-        return true;
-    };
-    const screenTimeExceeded = todayScreenMinutes >= parentalControls.daily_screen_time_minutes;
-
-    useEffect(() => {
-        if (!activeChild?.id) return;
-        setTodayScreenMinutes(getTodayScreenMinutes(activeChild.id));
-        const timer = window.setInterval(() => {
-            if (screenTimeExceeded) return;
-            const next = addScreenMinute(activeChild.id);
-            setTodayScreenMinutes(next);
-        }, 60000);
-        return () => window.clearInterval(timer);
-    }, [activeChild?.id, screenTimeExceeded]);
-
-    useEffect(() => {
-        if (screenTimeExceeded && activeSection !== 'home') {
-            setActiveSection('home');
-            setBlockedMessage('Daily screen-time limit reached. Ask your parent to adjust controls.');
-        }
-    }, [screenTimeExceeded, activeSection]);
-
     return (
         <div className="min-h-screen bg-[#F0F9FF] font-heading overflow-hidden relative">
             {/* Background elements */}
