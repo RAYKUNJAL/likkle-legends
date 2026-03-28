@@ -4,127 +4,162 @@ import { sendEmail, SUBSCRIPTION_CONFIRMATION_TEMPLATE, TRIAL_REMINDER_TEMPLATE 
 
 const supabase = supabaseAdmin;
 
-const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID || '';
+// ── Env validation ────────────────────────────────────────────────────────────
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    throw new Error('Missing Supabase env vars');
+}
 
 // Internal mapping of PayPal Plan IDs to our logic tiers
 const PLAN_TO_TIER: Record<string, string> = {
-    'P-0LU582199P7741420NGQA4JI': 'digital_legends', // Digital Legends Monthly
-    'P-9Y7503296X038324YNGN72CI': 'starter_mailer',  // Island Starter Monthly (current)
-    'P-1R150232CG183332XNFLNNBQ': 'starter_mailer',  // Starter Monthly (legacy)
-    'P-0YY72736T56573355NFLOZZQ': 'starter_mailer',  // Starter Yearly
-    'P-45M32159VV6033601NFLOOYI': 'legends_plus',    // Legends Plus Monthly
-    'P-2503312149524980NNFLO34Y': 'legends_plus',    // Legends Plus Yearly
-    'P-9MP32022V70125639NFLT4IA': 'family_legacy',   // Family Legacy Monthly (current)
-    'P-4G842008M1421443UNFLO3MY': 'family_legacy',   // Family Legacy Monthly (legacy)
-    'P-5U054702T9664311ANFLO53A': 'family_legacy',   // Family Yearly (current)
-    'P-5U054702T9664311ANFLO53': 'family_legacy',    // Family Yearly (legacy)
+    'P-0LU582199P7741420NGQA4JI': 'digital_legends',
+    'P-9Y7503296X038324YNGN72CI': 'starter_mailer',
+    'P-1R150232CG183332XNFLNNBQ': 'starter_mailer',
+    'P-0YY72736T56573355NFLOZZQ': 'starter_mailer',
+    'P-45M32159VV6033601NFLOOYI': 'legends_plus',
+    'P-2503312149524980NNFLO34Y': 'legends_plus',
+    'P-9MP32022V70125639NFLT4IA': 'family_legacy',
+    'P-4G842008M1421443UNFLO3MY': 'family_legacy',
+    'P-5U054702T9664311ANFLO53A': 'family_legacy',
+    'P-5U054702T9664311ANFLO53': 'family_legacy',
 };
 
-// Also pull from env to ensure production IDs are covered
 if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL] = 'digital_legends';
 if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER] = 'starter_mailer';
 if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS] = 'legends_plus';
 if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY] = 'family_legacy';
 
-// Verify PayPal webhook signature via PayPal API
-async function verifyWebhookSignature(req: NextRequest, body: string): Promise<boolean> {
-    const transmissionId = req.headers.get('paypal-transmission-id');
-    const transmissionTime = req.headers.get('paypal-transmission-time');
-    const transmissionSig = req.headers.get('paypal-transmission-sig');
-    const certUrl = req.headers.get('paypal-cert-url');
-    const authAlgo = req.headers.get('paypal-auth-algo');
+// ── PayPal base URL ───────────────────────────────────────────────────────────
+const PAYPAL_BASE =
+    process.env.PAYPAL_ENV === 'sandbox'
+        ? 'https://api-m.sandbox.paypal.com'
+        : 'https://api-m.paypal.com';
 
-    if (!transmissionId || !transmissionSig || !transmissionTime || !certUrl || !authAlgo) {
-        console.warn('Missing PayPal webhook headers — rejecting request');
+// ── Get PayPal access token ───────────────────────────────────────────────────
+async function getPayPalAccessToken(): Promise<string> {
+    if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+        throw new Error('Missing PayPal credentials');
+    }
+    const credentials = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
+    const res = await fetch(`${PAYPAL_BASE}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Basic ${credentials}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'grant_type=client_credentials',
+    });
+    if (!res.ok) throw new Error(`PayPal token error: ${res.status}`);
+    const data = await res.json() as { access_token: string };
+    return data.access_token;
+}
+
+// ── Verify PayPal webhook signature ──────────────────────────────────────────
+async function verifyWebhookSignature(
+    request: NextRequest,
+    rawBody: string
+): Promise<boolean> {
+    if (!PAYPAL_WEBHOOK_ID) {
+        console.error('PAYPAL_WEBHOOK_ID is not set — rejecting webhook');
         return false;
     }
 
-    if (!PAYPAL_WEBHOOK_ID) {
-        console.error('PAYPAL_WEBHOOK_ID is not configured — cannot verify webhook');
+    const transmissionId = request.headers.get('paypal-transmission-id');
+    const transmissionTime = request.headers.get('paypal-transmission-time');
+    const certUrl = request.headers.get('paypal-cert-url');
+    const authAlgo = request.headers.get('paypal-auth-algo');
+    const transmissionSig = request.headers.get('paypal-transmission-sig');
+
+    if (!transmissionId || !transmissionTime || !certUrl || !authAlgo || !transmissionSig) {
+        console.error('PayPal webhook: missing required signature headers');
+        return false;
+    }
+
+    // Cert URL must be a PayPal domain — prevent SSRF
+    let certHostname: string;
+    try {
+        certHostname = new URL(certUrl).hostname;
+    } catch {
+        console.error('PayPal webhook: cert URL is invalid');
+        return false;
+    }
+
+    if (!certHostname.endsWith('.paypal.com') && certHostname !== 'paypal.com') {
+        console.error('PayPal webhook: cert URL is not from paypal.com domain');
         return false;
     }
 
     try {
-        const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-        const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-        if (!clientId || !clientSecret) {
-            console.error('PayPal credentials missing for webhook verification');
-            return false;
-        }
-
-        // Get OAuth token
-        const authResponse = await fetch('https://api-m.paypal.com/v1/oauth2/token', {
+        const accessToken = await getPayPalAccessToken();
+        const verifyRes = await fetch(`${PAYPAL_BASE}/v1/notifications/verify-webhook-signature`, {
             method: 'POST',
             headers: {
-                'Authorization': 'Basic ' + Buffer.from(`${clientId}:${clientSecret}`).toString('base64'),
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'grant_type=client_credentials',
-        });
-        const authData = await authResponse.json();
-
-        if (!authData.access_token) {
-            console.error('Failed to get PayPal OAuth token for webhook verification');
-            return false;
-        }
-
-        // Verify signature
-        const verifyResponse = await fetch('https://api-m.paypal.com/v1/notifications/verify-webhook-signature', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${authData.access_token}`,
+                Authorization: `Bearer ${accessToken}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                auth_algo: authAlgo,
-                cert_url: certUrl,
                 transmission_id: transmissionId,
-                transmission_sig: transmissionSig,
                 transmission_time: transmissionTime,
+                cert_url: certUrl,
+                auth_algo: authAlgo,
+                transmission_sig: transmissionSig,
                 webhook_id: PAYPAL_WEBHOOK_ID,
-                webhook_event: JSON.parse(body),
+                webhook_event: JSON.parse(rawBody),
             }),
         });
 
-        const verifyData = await verifyResponse.json();
-        const isValid = verifyData.verification_status === 'SUCCESS';
-
-        if (!isValid) {
-            console.warn('PayPal webhook signature verification FAILED:', verifyData);
+        if (!verifyRes.ok) {
+            console.error(`PayPal signature verify API error: ${verifyRes.status}`);
+            return false;
         }
 
-        return isValid;
-    } catch (error) {
-        console.error('PayPal webhook verification error:', error);
+        const verifyData = await verifyRes.json() as { verification_status: string };
+        return verifyData.verification_status === 'SUCCESS';
+    } catch (err) {
+        console.error('PayPal webhook signature verification threw:', err);
         return false;
     }
 }
 
+// ── Main webhook handler ──────────────────────────────────────────────────────
 export async function POST(request: NextRequest) {
+    // 1. Read raw body BEFORE parsing — needed for signature verification
+    const rawBody = await request.text();
+
+    // 2. Verify signature — reject anything that doesn't pass
+    const isValid = await verifyWebhookSignature(request, rawBody);
+    if (!isValid) {
+        console.error('PayPal webhook: signature verification FAILED — rejecting');
+        return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
+    }
+
+    // 3. Parse event
+    let event: any;
     try {
-        const body = await request.text();
+        event = JSON.parse(rawBody);
+    } catch {
+        return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
 
-        // Verify webhook signature
-        const isValid = await verifyWebhookSignature(request, body);
-        if (!isValid) {
-            return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-        }
+    const eventType = event.event_type;
+    const resource = event.resource;
 
-        const event = JSON.parse(body);
-        const eventType = event.event_type;
-        const resource = event.resource;
+    console.log('PayPal webhook event:', eventType);
 
-        console.log('PayPal webhook event:', eventType);
-
+    try {
         switch (eventType) {
             case 'BILLING.SUBSCRIPTION.ACTIVATED': {
                 const subscriptionId = resource.id;
                 const subscriberEmail = resource.subscriber?.email_address;
                 const customId = resource.custom_id || resource.custom;
 
-                // Priority lookup: 1. customId (real user ID), 2. subscriptionId, 3. email
                 let query = supabase.from('profiles').select('id, parent_name, email, subscription_status');
-                
+
                 if (customId) {
                     query = query.eq('id', customId);
                 } else if (subscriptionId) {
@@ -138,14 +173,9 @@ export async function POST(request: NextRequest) {
                 if (profile) {
                     const planId = resource.plan_id;
                     const tier = PLAN_TO_TIER[planId] || 'starter_mailer';
-
-                    // Detect trial: if next_billing_time is more than 1 day away,
-                    // billing has been delayed (7-day free trial via start_time).
                     const nextBillingTime = resource.billing_info?.next_billing_time;
                     const isTrialing = nextBillingTime &&
                         new Date(nextBillingTime).getTime() > Date.now() + 24 * 60 * 60 * 1000;
-
-                    // If confirm route already set 'trialing', don't downgrade to 'active'
                     const alreadyTrialing = profile.subscription_status === 'trialing';
                     const newStatus = (isTrialing || alreadyTrialing) ? 'trialing' : 'active';
 
@@ -160,9 +190,20 @@ export async function POST(request: NextRequest) {
                         })
                         .eq('id', profile.id);
 
-                    console.log(`Subscription activated for ${profile.id} — tier: ${tier}, status: ${newStatus}`);
+                    // Also update the 'subscriptions' table
+                    await supabase
+                        .from('subscriptions')
+                        .upsert({
+                            user_id: profile.id,
+                            plan_id: planId,
+                            status: newStatus as any,
+                            provider: 'paypal',
+                            provider_subscription_id: subscriptionId,
+                            current_period_end: nextBillingTime ?? null,
+                        }, { onConflict: 'provider_subscription_id' });
 
-                    // Only send confirmation email when actually going active (not trialing)
+                    console.log(`Subscription activated for ${profile.id}, tier: ${tier}, status: ${newStatus}`);
+
                     if (newStatus === 'active') {
                         const { data: child } = await supabase
                             .from('children')
@@ -173,11 +214,11 @@ export async function POST(request: NextRequest) {
 
                         await sendEmail({
                             to: profile.email || subscriberEmail,
-                            subject: "You're Officially in the Club! 🌴",
+                            subject: "You're Officially in the Club!",
                             html: SUBSCRIPTION_CONFIRMATION_TEMPLATE(
-                                profile.parent_name || "Legend Parent",
+                                profile.parent_name || 'Legend Parent',
                                 tier.replace('_', ' ').toUpperCase(),
-                                child?.first_name || "your little legend"
+                                child?.first_name || 'your little legend'
                             )
                         });
                     }
@@ -187,14 +228,12 @@ export async function POST(request: NextRequest) {
 
             case 'BILLING.SUBSCRIPTION.RENEWED':
             case 'BILLING.SUBSCRIPTION.PAYMENT.COMPLETED': {
-                // First real payment after trial (or renewal) — promote to active
                 const subscriptionId = resource.id ?? resource.billing_agreement_id;
                 const subscriberEmail = resource.subscriber?.email_address;
                 const customId = resource.custom_id || resource.custom;
 
-                // Priority lookup: 1. customId (real user ID), 2. subscriptionId, 3. email
                 let query = supabase.from('profiles').select('id, parent_name, email, subscription_status, subscription_tier');
-                
+
                 if (customId) {
                     query = query.eq('id', customId);
                 } else if (subscriptionId) {
@@ -220,9 +259,8 @@ export async function POST(request: NextRequest) {
                         })
                         .eq('id', profile.id);
 
-                    console.log(`Payment completed for ${profile.id} — tier: ${tier}, was trialing: ${wasTrialing}`);
+                    console.log(`Payment completed for ${profile.id}, tier: ${tier}, was trialing: ${wasTrialing}`);
 
-                    // Send confirmation email if this is the first payment after trial
                     if (wasTrialing) {
                         const { data: child } = await supabase
                             .from('children')
@@ -233,11 +271,11 @@ export async function POST(request: NextRequest) {
 
                         await sendEmail({
                             to: profile.email || subscriberEmail,
-                            subject: "You're Officially in the Club! 🌴",
+                            subject: "You're Officially in the Club!",
                             html: SUBSCRIPTION_CONFIRMATION_TEMPLATE(
-                                profile.parent_name || "Legend Parent",
+                                profile.parent_name || 'Legend Parent',
                                 tier.replace('_', ' ').toUpperCase(),
-                                child?.first_name || "your little legend"
+                                child?.first_name || 'your little legend'
                             )
                         });
                     }
@@ -246,14 +284,12 @@ export async function POST(request: NextRequest) {
             }
 
             case 'BILLING.SUBSCRIPTION.TRIAL.ENDING': {
-                // PayPal sends this ~2 days before trial ends
                 const subscriptionId = resource.id;
                 const subscriberEmail = resource.subscriber?.email_address;
                 const customId = resource.custom_id || resource.custom;
 
-                // Priority lookup: 1. customId (real user ID), 2. subscriptionId, 3. email
                 let query = supabase.from('profiles').select('id, email, parent_name, subscription_tier');
-                
+
                 if (customId) {
                     query = query.eq('id', customId);
                 } else if (subscriptionId) {
@@ -274,10 +310,10 @@ export async function POST(request: NextRequest) {
 
                     await sendEmail({
                         to: profile.email || subscriberEmail,
-                        subject: "Your free trial ends soon 🌴 Keep the adventure going!",
+                        subject: 'Your free trial ends soon. Keep the adventure going!',
                         html: TRIAL_REMINDER_TEMPLATE(
-                            profile.parent_name || "Legend Parent",
-                            child?.first_name || "your little legend",
+                            profile.parent_name || 'Legend Parent',
+                            child?.first_name || 'your little legend',
                             profile.subscription_tier || 'starter_mailer'
                         )
                     });
@@ -316,8 +352,8 @@ export async function POST(request: NextRequest) {
 
                     await supabase.from('notifications').insert({
                         user_id: profile.id,
-                        title: '⚠️ Payment Issue',
-                        body: 'We couldn\'t process your latest payment. Please update your payment method to keep your subscription active.',
+                        title: 'Payment Issue',
+                        body: 'We could not process your latest payment. Please update your payment method to keep your subscription active.',
                         notification_type: 'subscription',
                         action_url: '/account/billing',
                     });

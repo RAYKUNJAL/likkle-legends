@@ -4,12 +4,12 @@ import { SUBSCRIPTION_PLANS, SubscriptionTier } from '@/lib/paypal';
 import { getFulfillmentHub } from '@/lib/geo-routing';
 import { sendEmail, ADMIN_NEW_ORDER_TEMPLATE } from '@/lib/email';
 import { queueSubscriptionConfirmation, cancelAbandonedCheckout } from '@/lib/services/email-triggers';
+import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 
 const supabase = supabaseAdmin;
 
 async function recordReferralConversion(userId: string, refCode: string, amount: number, orderId: string) {
-    // 1. Check if it's a PROMOTER code
     const { data: promoter } = await supabase
         .from('promoters')
         .select('*')
@@ -18,10 +18,8 @@ async function recordReferralConversion(userId: string, refCode: string, amount:
         .single();
 
     if (promoter) {
-        // Calculate Commission (e.g. 20%)
         const commission = amount * (Number(promoter.commission_rate) || 0.2);
 
-        // Record Referral
         await supabase.from('referrals').insert({
             promoter_id: promoter.id,
             order_id: orderId,
@@ -30,7 +28,6 @@ async function recordReferralConversion(userId: string, refCode: string, amount:
             status: 'pending_payout'
         });
 
-        // Update Promoter Earnings
         if (promoter.user_id !== userId) {
             await supabase.rpc('increment_promoter_earnings', {
                 row_id: promoter.id,
@@ -41,7 +38,6 @@ async function recordReferralConversion(userId: string, refCode: string, amount:
         return { type: 'promoter', id: promoter.id, commission };
     }
 
-    // 2. Check if it's a PARENT referral code
     const { data: parent } = await supabase
         .from('users')
         .select('id')
@@ -49,7 +45,6 @@ async function recordReferralConversion(userId: string, refCode: string, amount:
         .single();
 
     if (parent && parent.id !== userId) {
-        // Create a pending credit for the parent
         await supabase
             .from('referral_credits')
             .insert({
@@ -77,7 +72,6 @@ export async function POST(request: NextRequest) {
             email: reqEmail,
             addGrandparent,
             currency,
-            userId: bodyUserId,
             billingCycle,
             shipping,
             hasUpsell,
@@ -90,74 +84,33 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing subscription or order ID' }, { status: 400 });
         }
 
-
-        // Authenticate user via Bearer token OR email fallback for guest checkouts
-        let userIdToUpdate: string | null = null;
-        const authHeader = request.headers.get('Authorization');
-
-        if (authHeader) {
-            const token = authHeader.replace('Bearer ', '');
-            const { data: { user } } = await supabase.auth.getUser(token);
-            if (user) {
-                userIdToUpdate = user.id;
-            }
+        const supabaseAuth = createClient();
+        const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+        if (authError) {
+            console.error('[PAYMENTS] Session lookup failed:', authError);
         }
 
-        // GUEST CHECKOUT: If not logged in, find/create by email
-        if (!userIdToUpdate && reqEmail) {
-            console.log(`[PAYMENTS] No token found. Attempting guest lookup for: ${reqEmail}`);
-            // 1. Check if user exists in profiles
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('email', reqEmail.toLowerCase())
-                .limit(1)
-                .maybeSingle();
-
-            if (profile) {
-                userIdToUpdate = profile.id;
-                console.log(`[PAYMENTS] Found existing user ID ${userIdToUpdate} for guest email`);
-            } else {
-                // 2. Create a new user account blindly (User will claim via 'forgot password' or invited link)
-                console.log(`[PAYMENTS] Creating new guest user for: ${reqEmail}`);
-                const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-                    email: reqEmail.toLowerCase(),
-                    email_confirm: true,
-                    user_metadata: { is_guest: true, invited: true }
-                });
-
-                if (createError) {
-                    console.error('[PAYMENTS] Guest creation error:', createError);
-                } else if (newUser.user) {
-                    userIdToUpdate = newUser.user.id;
-                    console.log(`[PAYMENTS] Successfully created guest user ${userIdToUpdate}`);
-                }
-            }
+        if (!user) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        if (!userIdToUpdate) {
-            return NextResponse.json({ error: 'User could not be identified for this payment' }, { status: 401 });
-        }
+        const userIdToUpdate = user.id;
 
-        // 7-day free trial: first billing is delayed by 7 days via start_time in PayPal SDK
         const TRIAL_DAYS = 7;
         const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
         const isFree = tier === 'plan_free_forever';
 
-        // After trial, billing resumes on the normal cycle
         const daysToAdd = billingCycle === 'year' ? 365 : 30;
         const nextBillingDate = isFree
             ? new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000)
             : trialEndsAt;
 
-        // Update user profile with subscription info (use upsert for guests)
         const { error: profileError } = await supabase
             .from('profiles')
             .upsert({
                 id: userIdToUpdate,
                 email: reqEmail?.toLowerCase() || undefined,
                 subscription_tier: tier,
-                // Paid plans start in 'trialing' — upgrade to 'active' via webhook on first payment
                 subscription_status: isFree ? 'active' : 'trialing',
                 paypal_subscription_id: subscriptionId || null,
                 currency: currency || 'USD',
@@ -172,7 +125,18 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
         }
 
-        // 2. Process Digital Upsells (Super-Pack & Heritage Story)
+        // Also upsert into 'subscriptions' table for new architecture consistency
+        if (subscriptionId) {
+            await supabase.from('subscriptions').upsert({
+                user_id: userIdToUpdate,
+                plan_id: tier,
+                status: isFree ? 'active' : 'trialing',
+                provider: 'paypal',
+                provider_subscription_id: subscriptionId,
+                current_period_end: nextBillingDate.toISOString(),
+            }, { onConflict: 'provider_subscription_id' });
+        }
+
         if (hasUpsell) {
             await supabase.from('digital_possessions').upsert({
                 user_id: userIdToUpdate,
@@ -190,7 +154,6 @@ export async function POST(request: NextRequest) {
             }, { onConflict: 'user_id, product_id' });
         }
 
-        // 3. Create initial order if this is a mail-based plan
         if (shipping && tier !== 'plan_free_forever' && tier !== 'plan_digital_legends') {
             const plan = SUBSCRIPTION_PLANS[tier as SubscriptionTier];
             const price = billingCycle === 'year' ? (plan?.priceYearly || 0) : (plan?.price || 0);
@@ -210,9 +173,9 @@ export async function POST(request: NextRequest) {
                 shipping_country: shipping.country,
                 fulfillment_hub: hub,
                 fulfillment_status: 'pending',
-                child_name: reqChildName || shipping.name, // Use provided name if available
-                child_age: 5, // Default
-                selected_island: heritage || 'explorer', 
+                child_name: reqChildName || shipping.name,
+                child_age: 5,
+                selected_island: heritage || 'explorer',
                 metadata: {
                     has_upsell: hasUpsell || false,
                     has_heritage_story: hasHeritageStory || false
@@ -220,18 +183,16 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // Create a notification for the user
         await supabase.from('notifications').insert({
             user_id: userIdToUpdate,
-            title: '🎉 Welcome to Likkle Legends!',
+            title: 'Welcome to Likkle Legends!',
             body: isFree
                 ? `Your free account is ready. Let's set up your child's profile!`
-                : `Your 7-day free trial has started! Explore everything — your first payment isn't until ${trialEndsAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.`,
+                : `Your 7-day free trial has started! Explore everything. Your first payment is not until ${trialEndsAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.`,
             notification_type: 'subscription',
             action_url: '/onboarding/child',
         });
 
-        // 4. Send Admin Alert Email
         try {
             const { data: profile } = await supabase
                 .from('profiles')
@@ -240,37 +201,32 @@ export async function POST(request: NextRequest) {
                 .single();
 
             if (profile) {
-                // Admin Alert
                 await sendEmail({
-                    to: 'legends@likklelegends.com', // Admin inbox
-                    subject: `🚀 SALE ALERT: ${tier.toUpperCase()}`,
+                    to: 'legends@likklelegends.com',
+                    subject: `SALE ALERT: ${tier.toUpperCase()}`,
                     html: ADMIN_NEW_ORDER_TEMPLATE(
-                        profile.parent_name || "New Parent",
+                        profile.parent_name || 'New Parent',
                         tier.replace('_', ' ').toUpperCase(),
-                        profile.email || "No Email"
+                        profile.email || 'No Email'
                     )
                 });
 
-                // User Confirmation (Immediate)
                 await queueSubscriptionConfirmation(
-                    profile.email || "", 
-                    profile.parent_name || "Legend", 
-                    tier, 
-                    reqChildName || "your child",
+                    profile.email || '',
+                    profile.parent_name || 'Legend',
+                    tier,
+                    reqChildName || 'your child',
                     hasUpsell,
                     hasHeritageStory
                 );
 
-                // Cancel any abandonment reminders
-                await cancelAbandonedCheckout(profile.email || "");
+                await cancelAbandonedCheckout(profile.email || '');
             }
 
-            // 5. PROCESS GROWTH ENGINE / REFERRALS
             const cookieStore = cookies();
             const refCode = cookieStore.get('likkle_ref')?.value;
 
             if (refCode) {
-                // Determine amount (trial is 0, others have price)
                 const plan = SUBSCRIPTION_PLANS[tier as SubscriptionTier];
                 const price = billingCycle === 'year' ? (plan?.priceYearly || 0) : (plan?.price || 0);
 
