@@ -385,7 +385,7 @@ export default function ChildPortalPage() {
                 if (week?.days?.[weekdayIndex]) {
                     setTodaysActivities(week.days[weekdayIndex].activities || []);
                 }
-            } catch {
+            } catch (_e) {
                 if (!res.ok) return;
                 const { plan } = await res.json();
                 if (!plan?.plan_data?.weeks) return;
@@ -397,7 +397,7 @@ export default function ChildPortalPage() {
                 if (week?.days?.[weekdayIndex]) {
                     setTodaysActivities(week.days[weekdayIndex].activities || []);
                 }
-            } catch {
+            } catch (_e) {
                 // silently ignore — plan is optional
             }
         })();
