@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tanty's Kitchen — Likkle Legends</title>
+<link href="https://api.fontshare.com/v2/css?f[]=chillax@400,500,600,700&f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+/* ============ RESET & BASE ============ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+  -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+}
+body {
+  min-height: 100dvh;
+  font-family: 'General Sans', sans-serif;
+  background: #0A1628;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ============ TOKENS ============ */
+:root {
+  --pink: #FF69B4;
+  --pink-light: #FF8FCC;
+  --pink-glow: #FFB6D9;
+  --wood: #8B5E3C;
+  --wood-dark: #6B4226;
+  --wood-light: #A67B5B;
+  --cream: #FFF8E7;
+  --cream-dark: #F5E6C8;
+  --ocean: #0A1628;
+  --ocean-light: #132240;
+  --gold: #FFD700;
+  --gold-dark: #E6A800;
+  --green: #4CAF50;
+  --green-light: #81C784;
+  --red: #FF5252;
+  --red-light: #FF8A80;
+  --text-dark: #3E2723;
+  --text-light: #FFF8E7;
+  --font-display: 'Chillax', sans-serif;
+  --font-body: 'General Sans', sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-card: 0 4px 16px rgba(0,0,0,0.15);
+  --shadow-pot: 0 8px 32px rgba(0,0,0,0.3);
+  --transition-snap: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-ui: 200ms ease;
+}
+
+/* ============ SCREENS ============ */
+.screen { display: none; width: 100%; height: 100dvh; position: relative; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ============ BACK LINK ============ */
+.back-link {
+  position: fixed; top: 12px; left: 12px; z-index: 200;
+  color: var(--cream); font-family: var(--font-body);
+  font-size: 13px; font-weight: 600;
+  text-decoration: none; display: flex; align-items: center; gap: 5px;
+  background: rgba(10,22,40,0.85); padding: 6px 12px;
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(8px);
+  transition: background var(--transition-ui), transform var(--transition-ui);
+}
+.back-link:hover { background: rgba(10,22,40,0.95); transform: scale(1.05); }
+.back-link svg { width: 14px; height: 14px; }
+
+/* ============ START SCREEN ============ */
+#start-screen {
+  align-items: center; justify-content: center;
+  background: linear-gradient(180deg, #0A1628 0%, #1a2d4d 30%, #2a1a0e 65%, #3E2723 100%);
+  overflow: hidden;
+}
+.start-content {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 18px; padding: 20px; z-index: 2; max-width: 480px; width: 100%;
+  animation: fadeSlideUp 0.8s ease both;
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.tanty-avatar-start {
+  width: clamp(130px, 28vw, 180px);
+  height: clamp(130px, 28vw, 180px);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 5px solid var(--pink);
+  box-shadow: 0 0 40px rgba(255,105,180,0.3), 0 8px 32px rgba(0,0,0,0.4);
+}
+.start-title {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  color: var(--cream); text-align: center; line-height: 1.1;
+}
+.start-title span { color: var(--pink); }
+.start-subtitle {
+  font-family: var(--font-body); font-size: clamp(0.85rem, 2.2vw, 1.05rem);
+  color: rgba(255,248,231,0.7); text-align: center; max-width: 340px;
+  line-height: 1.5;
+}
+.start-tiers {
+  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+}
+.tier-badge {
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
+  padding: 6px 14px; border-radius: 20px;
+  background: rgba(255,255,255,0.08); color: var(--cream);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.tier-badge.t1 { border-color: var(--green); color: var(--green-light); }
+.tier-badge.t2 { border-color: var(--gold); color: var(--gold); }
+.tier-badge.t3 { border-color: var(--pink); color: var(--pink-light); }
+.btn-start {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  color: #fff; background: linear-gradient(135deg, var(--pink), #e0449a);
+  border: none; border-radius: var(--radius-xl);
+  padding: 16px 48px; cursor: pointer;
+  box-shadow: 0 6px 24px rgba(255,105,180,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-start:hover { transform: scale(1.06); box-shadow: 0 8px 32px rgba(255,105,180,0.5); }
+.btn-start:active { transform: scale(0.97); }
+
+/* ============ GAME SCREEN ============ */
+#game-screen {
+  background: linear-gradient(180deg, #1a2d4d 0%, #2a1a0e 50%, #3E2723 100%);
+  overflow: hidden;
+}
+
+/* Top bar */
+.game-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; padding-left: 100px;
+  background: rgba(10,22,40,0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  z-index: 10; flex-shrink: 0;
+}
+.recipe-info {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.recipe-name {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(0.95rem, 2.5vw, 1.2rem);
+  color: var(--cream);
+}
+.recipe-tier {
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
+  color: var(--pink-light);
+}
+.score-display {
+  font-family: var(--font-body); font-weight: 700;
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+.combo-display {
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
+  color: var(--green-light);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Progress bar */
+.progress-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 16px; padding-left: 100px;
+  background: rgba(10,22,40,0.6);
+  flex-shrink: 0;
+}
+.progress-label {
+  font-family: var(--font-body); font-size: 11px; font-weight: 600;
+  color: rgba(255,248,231,0.5); white-space: nowrap;
+}
+.progress-bar-outer {
+  flex: 1; height: 6px; border-radius: 3px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.progress-bar-inner {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--green), var(--gold), var(--pink));
+  transition: width 0.5s ease;
+}
+
+/* Timer bar (Tier 3) */
+.timer-row {
+  display: none; padding: 0 16px; padding-left: 100px; padding-top: 4px; padding-bottom: 4px;
+  background: rgba(10,22,40,0.6);
+  flex-shrink: 0;
+}
+.timer-row.visible { display: flex; align-items: center; gap: 8px; }
+.timer-label {
+  font-family: var(--font-body); font-size: 12px; font-weight: 700;
+  color: var(--red-light); white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.timer-bar-outer {
+  flex: 1; height: 8px; border-radius: 4px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.timer-bar-inner {
+  height: 100%; border-radius: 4px; width: 100%;
+  background: linear-gradient(90deg, var(--red), var(--gold));
+  transition: width 0.1s linear;
+}
+.timer-bar-inner.urgent {
+  background: linear-gradient(90deg, #ff0000, var(--red));
+  animation: timerPulse 0.5s infinite;
+}
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Kitchen area */
+.kitchen-area {
+  flex: 1; display: flex; position: relative;
+  overflow: hidden; min-height: 0;
+}
+
+/* Tanty panel */
+.tanty-panel {
+  position: absolute; left: 10px; top: 10px; z-index: 5;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  width: 100px;
+}
+.tanty-avatar-game {
+  width: 64px; height: 64px; border-radius: 50%;
+  object-fit: cover; border: 3px solid var(--pink);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  transition: transform 0.3s;
+}
+.tanty-avatar-game.celebrate {
+  animation: tantyCelebrate 0.6s ease;
+}
+@keyframes tantyCelebrate {
+  0%, 100% { transform: scale(1) rotate(0); }
+  25% { transform: scale(1.1) rotate(-5deg); }
+  50% { transform: scale(1.15) rotate(5deg); }
+  75% { transform: scale(1.1) rotate(-3deg); }
+}
+.speech-bubble {
+  background: var(--cream); color: var(--text-dark);
+  font-family: var(--font-body); font-size: 12px;
+  font-weight: 500; padding: 8px 10px; border-radius: 12px;
+  max-width: 140px; text-align: center; line-height: 1.35;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  opacity: 0; transform: scale(0.8);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.speech-bubble.visible {
+  opacity: 1; transform: scale(1);
+}
+.speech-bubble::after {
+  content: ''; position: absolute; top: -6px; left: 50%; transform: translateX(-50%);
+  width: 0; height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid var(--cream);
+}
+
+/* Cooking stage */
+.cooking-stage {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px; padding: 10px; padding-left: 60px;
+}
+
+/* Recipe progress dots */
+.recipe-dots {
+  display: flex; gap: 6px; align-items: center;
+}
+.recipe-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 2px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; transition: all 0.3s;
+}
+.recipe-dot.filled {
+  background: var(--green); border-color: var(--green-light);
+}
+.recipe-dot.current {
+  border-color: var(--gold); background: rgba(255,215,0,0.15);
+  animation: dotPulse 1.5s infinite;
+}
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,0,0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(255,215,0,0); }
+}
+
+/* Pot */
+.pot-container {
+  position: relative;
+  width: clamp(160px, 32vw, 220px);
+  height: clamp(130px, 26vw, 180px);
+}
+.pot {
+  width: 100%; height: 100%;
+  background: linear-gradient(180deg, #555 0%, #333 60%, #222 100%);
+  border-radius: 12px 12px 40% 40%;
+  position: relative;
+  box-shadow: var(--shadow-pot), inset 0 2px 8px rgba(255,255,255,0.1);
+  transition: transform 0.15s;
+  overflow: hidden;
+}
+.pot.shake {
+  animation: potShake 0.4s ease;
+}
+@keyframes potShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px) rotate(-2deg); }
+  40% { transform: translateX(8px) rotate(2deg); }
+  60% { transform: translateX(-5px) rotate(-1deg); }
+  80% { transform: translateX(5px) rotate(1deg); }
+}
+.pot-inner {
+  position: absolute; inset: 10px; top: 15px;
+  background: linear-gradient(180deg, #1a0a00 0%, #2d1500 100%);
+  border-radius: 8px 8px 35% 35%;
+}
+.pot-rim {
+  position: absolute; top: -4px; left: -8px; right: -8px; height: 14px;
+  background: linear-gradient(180deg, #777, #555);
+  border-radius: 6px 6px 2px 2px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.pot-handles {
+  position: absolute; top: 8px; width: calc(100% + 30px); left: -15px;
+  display: flex; justify-content: space-between;
+}
+.pot-handle {
+  width: 18px; height: 28px;
+  border: 4px solid #666;
+  border-radius: 8px;
+}
+
+/* Steam */
+.steam-container {
+  position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+  width: 80px; height: 40px; pointer-events: none;
+}
+.steam {
+  position: absolute; bottom: 0;
+  width: 8px; height: 8px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  animation: steamRise 2s infinite ease-out;
+}
+.steam:nth-child(1) { left: 15%; animation-delay: 0s; }
+.steam:nth-child(2) { left: 45%; animation-delay: 0.5s; }
+.steam:nth-child(3) { left: 75%; animation-delay: 1s; }
+@keyframes steamRise {
+  0% { transform: translateY(0) scale(1); opacity: 0.4; }
+  50% { opacity: 0.25; }
+  100% { transform: translateY(-35px) scale(2.5); opacity: 0; }
+}
+
+/* Pot ingredients collected */
+.pot-ingredients {
+  position: absolute; inset: 0; display: flex;
+  flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 4px; padding: 20px 14px 10px;
+  pointer-events: none; z-index: 2;
+}
+.pot-ingredient-icon {
+  font-size: 22px;
+  animation: ingredientDrop 0.4s ease both;
+}
+@keyframes ingredientDrop {
+  from { transform: translateY(-20px) scale(1.5); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Drop zone overlay */
+.drop-zone {
+  position: absolute; inset: 0; z-index: 3;
+  border-radius: 12px 12px 40% 40%;
+  border: 3px dashed transparent;
+  transition: border-color 0.2s, background 0.2s;
+}
+.drop-zone.drag-over {
+  border-color: var(--gold);
+  background: rgba(255,215,0,0.08);
+}
+
+/* Completed dish */
+.completed-dish {
+  position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  font-size: 48px; opacity: 0; pointer-events: none;
+}
+.completed-dish.show {
+  animation: dishReveal 1s ease both;
+}
+@keyframes dishReveal {
+  0% { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.5); }
+  50% { opacity: 1; transform: translateX(-50%) translateY(-10px) scale(1.2); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+/* Ingredient shelf */
+.ingredient-shelf {
+  flex-shrink: 0;
+  background: linear-gradient(180deg, rgba(139,94,60,0.3) 0%, rgba(139,94,60,0.6) 100%);
+  border-top: 3px solid var(--wood);
+  padding: 12px 16px 16px;
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 10px;
+  overflow-x: auto; overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ingredient cards */
+.ingredient-card {
+  width: 76px; height: 88px;
+  background: var(--cream);
+  border-radius: var(--radius-md);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px; cursor: grab;
+  box-shadow: var(--shadow-card);
+  border: 2px solid transparent;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s, border-color 0.2s;
+  flex-shrink: 0;
+  touch-action: none;
+}
+.ingredient-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  border-color: var(--pink-light);
+}
+.ingredient-card:active { cursor: grabbing; }
+.ingredient-card.used {
+  opacity: 0.3; pointer-events: none;
+  transform: scale(0.9);
+}
+.ingredient-card .emoji { font-size: 32px; line-height: 1; }
+.ingredient-card .label {
+  font-family: var(--font-body); font-size: 10px; font-weight: 600;
+  color: var(--text-dark); text-align: center;
+  line-height: 1.2; max-width: 70px;
+  overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+
+/* Drag ghost */
+.drag-ghost {
+  position: fixed; pointer-events: none; z-index: 1000;
+  width: 76px; height: 88px;
+  background: var(--cream);
+  border-radius: var(--radius-md);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  border: 2px solid var(--pink);
+  transform: translate(-50%, -50%) scale(1.1);
+  transition: none;
+}
+.drag-ghost .emoji { font-size: 32px; }
+.drag-ghost .label {
+  font-family: var(--font-body); font-size: 10px; font-weight: 600;
+  color: var(--text-dark); text-align: center;
+}
+
+/* Sizzle particles */
+.sizzle-particle {
+  position: absolute; pointer-events: none;
+  width: 6px; height: 6px;
+  background: var(--gold);
+  border-radius: 50%;
+  animation: sizzle 0.6s ease-out forwards;
+}
+@keyframes sizzle {
+  0% { transform: translate(0,0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--sx), var(--sy)) scale(0); opacity: 0; }
+}
+
+/* Steam puff */
+.steam-puff {
+  position: absolute; pointer-events: none;
+  width: 30px; height: 30px;
+  background: radial-gradient(circle, rgba(255,255,255,0.3), transparent);
+  border-radius: 50%;
+  animation: puff 0.6s ease-out forwards;
+}
+@keyframes puff {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(3) translateY(-20px); opacity: 0; }
+}
+
+/* Point popup */
+.point-popup {
+  position: absolute; pointer-events: none; z-index: 20;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 24px; color: var(--gold);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  animation: pointFloat 1s ease-out forwards;
+}
+@keyframes pointFloat {
+  0% { transform: translateY(0) scale(0.5); opacity: 1; }
+  100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+}
+
+/* ============ TIER TRANSITION ============ */
+#tier-screen {
+  align-items: center; justify-content: center;
+  background: linear-gradient(180deg, #0A1628 0%, #1a2d4d 50%, #2a1a0e 100%);
+}
+.tier-content {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 16px; padding: 24px; max-width: 400px; width: 100%;
+  animation: fadeSlideUp 0.6s ease both;
+}
+.tier-title {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  color: var(--gold); text-align: center;
+}
+.tier-stars {
+  display: flex; gap: 8px; font-size: 36px;
+}
+.tier-stat {
+  font-family: var(--font-body); font-size: 15px;
+  color: var(--cream); text-align: center;
+  font-weight: 500;
+}
+.tier-stat strong { color: var(--gold); }
+.tier-fact {
+  font-family: var(--font-body); font-size: 13px;
+  color: rgba(255,248,231,0.6); text-align: center;
+  font-style: italic; max-width: 320px; line-height: 1.5;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.tanty-reaction {
+  width: 80px; height: 80px; border-radius: 50%;
+  object-fit: cover; border: 3px solid var(--gold);
+  box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+}
+.btn-next {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1.1rem; color: #fff;
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  border: none; border-radius: var(--radius-xl);
+  padding: 14px 40px; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+  transition: transform 0.2s;
+}
+.btn-next:hover { transform: scale(1.05); }
+.btn-next:active { transform: scale(0.97); }
+
+/* ============ VICTORY SCREEN ============ */
+#victory-screen {
+  align-items: center; justify-content: center;
+  background: linear-gradient(180deg, #0A1628 0%, #1a2040 30%, #3E2723 100%);
+  overflow-y: auto;
+}
+.victory-content {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 16px; padding: 24px; max-width: 480px; width: 100%;
+  animation: fadeSlideUp 0.8s ease both;
+}
+.victory-title {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(2rem, 6vw, 3rem);
+  color: var(--gold); text-align: center;
+}
+.victory-score {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.3rem, 4vw, 1.8rem);
+  color: var(--cream); text-align: center;
+}
+.victory-stars-row {
+  display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+}
+.victory-tier-stars {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.victory-tier-label {
+  font-family: var(--font-body); font-size: 11px; font-weight: 600;
+  color: var(--pink-light);
+}
+.victory-tier-stars .stars { font-size: 24px; }
+.badge-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px; width: 100%;
+}
+.dish-badge {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 4px;
+  background: rgba(255,255,255,0.05);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.dish-badge .badge-emoji { font-size: 28px; }
+.dish-badge .badge-name {
+  font-family: var(--font-body); font-size: 9px; font-weight: 600;
+  color: rgba(255,248,231,0.6); text-align: center;
+  line-height: 1.2;
+}
+.tanty-final-msg {
+  font-family: var(--font-body); font-size: 14px;
+  color: var(--cream); text-align: center;
+  font-style: italic; line-height: 1.5;
+  padding: 12px; background: rgba(255,105,180,0.1);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255,105,180,0.15);
+}
+.victory-buttons {
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+}
+.btn-victory {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1rem; border: none;
+  border-radius: var(--radius-xl);
+  padding: 14px 32px; cursor: pointer;
+  transition: transform 0.2s;
+}
+.btn-victory:hover { transform: scale(1.05); }
+.btn-victory.primary {
+  color: #fff; background: linear-gradient(135deg, var(--pink), #e0449a);
+  box-shadow: 0 4px 20px rgba(255,105,180,0.3);
+}
+.btn-victory.secondary {
+  color: var(--cream); background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+/* Celebration confetti */
+.confetti {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 50;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute; top: -20px;
+  width: 10px; height: 10px;
+  animation: confettiFall var(--dur) linear forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 600px) {
+  .back-link { font-size: 0; padding: 8px; top: 8px; left: 8px; gap: 0; border-radius: 50%; width: 32px; height: 32px; justify-content: center; }
+  .back-link svg { width: 16px; height: 16px; }
+  .game-top { padding: 8px 10px; padding-left: 48px; gap: 6px; }
+  .progress-row { padding: 3px 10px; padding-left: 48px; }
+  .timer-row { padding-left: 48px; padding-top: 2px; padding-bottom: 2px; }
+  .recipe-name { font-size: 0.85rem; }
+  .recipe-tier { font-size: 11px; }
+  .score-display { font-size: 0.85rem; }
+  .combo-display { font-size: 11px; }
+  .tanty-panel { width: 60px; left: 2px; top: 2px; }
+  .tanty-avatar-game { width: 44px; height: 44px; }
+  .speech-bubble { font-size: 10px; max-width: 100px; padding: 5px 7px; }
+  .cooking-stage { padding-left: 35px; gap: 8px; }
+  .ingredient-shelf { padding: 8px 8px 12px; gap: 6px; }
+  .ingredient-card { width: 60px; height: 72px; }
+  .ingredient-card .emoji { font-size: 24px; }
+  .ingredient-card .label { font-size: 9px; }
+  .pot-container { width: clamp(130px, 38vw, 170px); height: clamp(100px, 30vw, 140px); }
+  .recipe-dot { width: 22px; height: 22px; font-size: 10px; }
+}
+@media (max-width: 380px) {
+  .game-top { padding-left: 44px; }
+  .progress-row { padding-left: 44px; }
+  .timer-row { padding-left: 44px; }
+  .tanty-panel { width: 52px; }
+  .tanty-avatar-game { width: 38px; height: 38px; }
+  .speech-bubble { font-size: 9px; max-width: 85px; }
+  .cooking-stage { padding-left: 28px; }
+  .ingredient-card { width: 56px; height: 66px; }
+  .ingredient-card .emoji { font-size: 20px; }
+  .ingredient-card .label { font-size: 8px; }
+  .pot-container { width: clamp(120px, 35vw, 150px); height: clamp(90px, 28vw, 125px); }
+  .recipe-dot { width: 20px; height: 20px; font-size: 9px; }
+}
+
+/* ===== SUBSCRIPTION GATE ===== */
+.gate-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(10, 22, 40, 0.95);
+  backdrop-filter: blur(12px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  animation: gateFadeIn 0.4s ease;
+}
+.gate-overlay.visible { display: flex; }
+@keyframes gateFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.gate-lock { font-size: 4rem; margin-bottom: 1rem; animation: gateBounce 1s ease infinite alternate; }
+@keyframes gateBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
+.gate-title {
+  font-family: var(--font-display, 'Chillax', sans-serif);
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, #FFD23F, #FF6B35);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+.gate-subtitle {
+  font-size: 1.1rem;
+  color: #8EA4C8;
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+  line-height: 1.5;
+}
+.gate-character {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(255, 210, 63, 0.4);
+  margin-bottom: 1rem;
+  box-shadow: 0 0 30px rgba(255, 210, 63, 0.2);
+}
+.gate-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+.gate-feature {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.95rem; color: #B8C8E0;
+}
+.gate-feature::before { content: '✅'; }
+.gate-cta {
+  display: inline-block;
+  padding: 0.9rem 2rem;
+  border-radius: 14px;
+  font-family: var(--font-display, 'Chillax', sans-serif);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  background: linear-gradient(135deg, #FFD23F, #FF6B35);
+  border: none; cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.35);
+}
+.gate-cta:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(255, 107, 53, 0.45); }
+.gate-free-btn {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 10px;
+  font-family: var(--font-body, 'General Sans', sans-serif);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #8EA4C8;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.gate-free-btn:hover { background: rgba(255,255,255,0.1); color: #F0F4FF; }
+.gate-guarantee {
+  margin-top: 1rem;
+  font-size: 0.78rem;
+  color: #5A6E8C;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Back link -->
+<a href="index.html" class="back-link" aria-label="Back to Games">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  Games
+</a>
+
+<!-- ===== START SCREEN ===== -->
+<div id="start-screen" class="screen active">
+  <div class="start-content">
+    <img src="./images/tanty_spice_avatar.jpg" alt="Tanty Spice" class="tanty-avatar-start">
+    <h1 class="start-title">Tanty's <span>Kitchen</span></h1>
+    <p class="start-subtitle">12 Caribbean Recipes to Master!<br>Cook with Tanty Spice and learn about Caribbean food!</p>
+    <div class="start-tiers">
+      <span class="tier-badge t1">🥄 Likkle Chef</span>
+      <span class="tier-badge t2">👨‍🍳 Head Chef</span>
+      <span class="tier-badge t3">⭐ Master Chef</span>
+    </div>
+    <button class="btn-start" id="btn-play" aria-label="Start cooking">Let's Cook!</button>
+  </div>
+</div>
+
+<!-- ===== GAME SCREEN ===== -->
+<div id="game-screen" class="screen">
+  <!-- Top bar -->
+  <div class="game-top">
+    <div class="recipe-info">
+      <div class="recipe-name" id="recipe-name">Sorrel Drink</div>
+      <div class="recipe-tier" id="recipe-tier">Tier 1: Likkle Chef — Recipe 1/4</div>
+    </div>
+    <div style="text-align:right">
+      <div class="score-display" id="score-display">Score: 0</div>
+      <div class="combo-display" id="combo-display"></div>
+    </div>
+  </div>
+  <!-- Progress -->
+  <div class="progress-row">
+    <span class="progress-label" id="progress-label">Recipe 1 / 12</span>
+    <div class="progress-bar-outer">
+      <div class="progress-bar-inner" id="progress-bar" style="width: 0%"></div>
+    </div>
+  </div>
+  <!-- Timer -->
+  <div class="timer-row" id="timer-row">
+    <span class="timer-label" id="timer-label">⏱ 45s</span>
+    <div class="timer-bar-outer">
+      <div class="timer-bar-inner" id="timer-bar"></div>
+    </div>
+  </div>
+  <!-- Kitchen area -->
+  <div class="kitchen-area">
+    <!-- Tanty panel -->
+    <div class="tanty-panel">
+      <img src="./images/tanty_spice_avatar.jpg" alt="Tanty Spice" class="tanty-avatar-game" id="tanty-avatar">
+      <div class="speech-bubble" id="speech-bubble">Let's cook!</div>
+    </div>
+    <!-- Cooking stage -->
+    <div class="cooking-stage">
+      <div class="recipe-dots" id="recipe-dots"></div>
+      <div class="pot-container" id="pot-container">
+        <div class="completed-dish" id="completed-dish"></div>
+        <div class="steam-container">
+          <div class="steam"></div>
+          <div class="steam"></div>
+          <div class="steam"></div>
+        </div>
+        <div class="pot" id="pot">
+          <div class="pot-rim"></div>
+          <div class="pot-inner"></div>
+          <div class="pot-handles">
+            <div class="pot-handle"></div>
+            <div class="pot-handle"></div>
+          </div>
+          <div class="pot-ingredients" id="pot-ingredients"></div>
+          <div class="drop-zone" id="drop-zone"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Ingredient shelf -->
+  <div class="ingredient-shelf" id="ingredient-shelf"></div>
+</div>
+
+<!-- ===== TIER TRANSITION SCREEN ===== -->
+<div id="tier-screen" class="screen">
+  <div class="tier-content" id="tier-content"></div>
+</div>
+
+<!-- ===== VICTORY SCREEN ===== -->
+<div id="victory-screen" class="screen">
+  <div class="victory-content" id="victory-content"></div>
+</div>
+
+<!-- Confetti container -->
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* ============================================================
+   TANTY'S KITCHEN — 12 Recipes, 3 Tiers
+   ============================================================ */
+
+// ---- Audio Context ----
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+function playTone(freq, dur, type = 'sine', vol = 0.15) {
+  if (!audioCtx) return;
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + dur);
+  } catch(e) {}
+}
+function playSizzle() { playTone(800, 0.15, 'sawtooth', 0.08); setTimeout(() => playTone(600, 0.1, 'sawtooth', 0.06), 50); }
+function playWrong() { playTone(200, 0.3, 'square', 0.12); }
+function playComplete() {
+  [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.3, 'sine', 0.12), i * 100));
+}
+function playTierComplete() {
+  [523, 659, 784, 880, 1047].forEach((f, i) => setTimeout(() => playTone(f, 0.4, 'sine', 0.15), i * 120));
+}
+
+// ---- Recipe Data ----
+const RECIPES = [
+  // TIER 1: Likkle Chef (4 correct from 6, any order)
+  {
+    name: 'Sorrel Drink', tier: 1, dish: '🥤',
+    correct: [
+      { emoji: '🌺', label: 'Sorrel' },
+      { emoji: '🍬', label: 'Sugar' },
+      { emoji: '🫚', label: 'Cloves' },
+      { emoji: '💧', label: 'Water' }
+    ],
+    wrong: [
+      { emoji: '🧂', label: 'Salt' },
+      { emoji: '☕', label: 'Coffee' }
+    ],
+    tantyIntro: "Sorrel is what we drink at Christmas time, darlin!",
+    ordered: false, timed: false
+  },
+  {
+    name: 'Coconut Bake', tier: 1, dish: '🍞',
+    correct: [
+      { emoji: '🌾', label: 'Flour' },
+      { emoji: '🥥', label: 'Coconut Milk' },
+      { emoji: '🧈', label: 'Butter' },
+      { emoji: '🧂', label: 'Salt' }
+    ],
+    wrong: [
+      { emoji: '🍫', label: 'Chocolate' },
+      { emoji: '🌶️', label: 'Pepper' }
+    ],
+    tantyIntro: "Bake and cheese on a Saturday morning — nothing better!",
+    ordered: false, timed: false
+  },
+  {
+    name: 'Corn Soup', tier: 1, dish: '🍲',
+    correct: [
+      { emoji: '🌽', label: 'Corn' },
+      { emoji: '💧', label: 'Water' },
+      { emoji: '🧂', label: 'Salt' },
+      { emoji: '🫚', label: 'Herbs' }
+    ],
+    wrong: [
+      { emoji: '🍝', label: 'Pasta' },
+      { emoji: '🧀', label: 'Cheese' }
+    ],
+    tantyIntro: "Corn soup does warm yuh belly on a rainy night!",
+    ordered: false, timed: false
+  },
+  {
+    name: 'Mauby', tier: 1, dish: '🥤',
+    correct: [
+      { emoji: '🌿', label: 'Mauby Bark' },
+      { emoji: '🍬', label: 'Sugar' },
+      { emoji: '🫚', label: 'Spices' },
+      { emoji: '💧', label: 'Water' }
+    ],
+    wrong: [
+      { emoji: '🍋', label: 'Lemon' },
+      { emoji: '🥛', label: 'Milk' }
+    ],
+    tantyIntro: "Mauby is an old-time Caribbean drink. Bitter-sweet and refreshing!",
+    ordered: false, timed: false
+  },
+  // TIER 2: Head Chef (5 correct from 8, ordered)
+  {
+    name: 'Doubles', tier: 2, dish: '🫓',
+    correct: [
+      { emoji: '🫓', label: 'Bara Dough' },
+      { emoji: '🫘', label: 'Channa' },
+      { emoji: '🌿', label: 'Chadon Beni' },
+      { emoji: '🌶️', label: 'Pepper Sauce' },
+      { emoji: '🟤', label: 'Tamarind Sauce' }
+    ],
+    wrong: [
+      { emoji: '🍚', label: 'Rice' },
+      { emoji: '🧀', label: 'Cheese' },
+      { emoji: '🥫', label: 'Ketchup' }
+    ],
+    tantyIntro: "Doubles is Trinidad's pride! Two bara, plenty channa, pepper to taste!",
+    ordered: true, timed: false
+  },
+  {
+    name: 'Pelau', tier: 2, dish: '🍛',
+    correct: [
+      { emoji: '🍗', label: 'Chicken' },
+      { emoji: '🍚', label: 'Rice' },
+      { emoji: '🫘', label: 'Pigeon Peas' },
+      { emoji: '🥥', label: 'Coconut Milk' },
+      { emoji: '🟫', label: 'Browning Sauce' }
+    ],
+    wrong: [
+      { emoji: '🍝', label: 'Pasta' },
+      { emoji: '🧈', label: 'Butter' },
+      { emoji: '🥫', label: 'Mayo' }
+    ],
+    tantyIntro: "Pelau is a one-pot wonder! Brown the chicken first, always!",
+    ordered: true, timed: false
+  },
+  {
+    name: 'Callaloo', tier: 2, dish: '🥘',
+    correct: [
+      { emoji: '🥬', label: 'Dasheen Leaves' },
+      { emoji: '🟢', label: 'Okra' },
+      { emoji: '🥥', label: 'Coconut Milk' },
+      { emoji: '🦀', label: 'Crab' },
+      { emoji: '🌶️', label: 'Hot Pepper' }
+    ],
+    wrong: [
+      { emoji: '🥗', label: 'Lettuce' },
+      { emoji: '🧀', label: 'Cheese' },
+      { emoji: '🍞', label: 'Bread' }
+    ],
+    tantyIntro: "Real callaloo must have dasheen leaf — not spinach, yuh hear?",
+    ordered: true, timed: false
+  },
+  {
+    name: 'Bake & Shark', tier: 2, dish: '🥪',
+    correct: [
+      { emoji: '🌾', label: 'Flour (bake)' },
+      { emoji: '🦈', label: 'Shark Fish' },
+      { emoji: '🧄', label: 'Garlic Sauce' },
+      { emoji: '🌿', label: 'Chadon Beni' },
+      { emoji: '🌶️', label: 'Pepper Sauce' }
+    ],
+    wrong: [
+      { emoji: '🍕', label: 'Pizza Dough' },
+      { emoji: '🐟', label: 'Tuna' },
+      { emoji: '🥫', label: 'Ketchup' }
+    ],
+    tantyIntro: "Maracas Beach bake and shark — nothing in the world like it!",
+    ordered: true, timed: false
+  },
+  // TIER 3: Master Chef (6 correct from 10, ordered, timed 45s)
+  {
+    name: 'Curry Goat', tier: 3, dish: '🍛',
+    correct: [
+      { emoji: '🐐', label: 'Goat Meat' },
+      { emoji: '🧅', label: 'Onion' },
+      { emoji: '🧄', label: 'Garlic' },
+      { emoji: '🟡', label: 'Curry Powder' },
+      { emoji: '🥔', label: 'Potato' },
+      { emoji: '🌶️', label: 'Scotch Bonnet' }
+    ],
+    wrong: [
+      { emoji: '🍗', label: 'Chicken' },
+      { emoji: '🍚', label: 'Rice' },
+      { emoji: '🍅', label: 'Tomato Paste' },
+      { emoji: '🥕', label: 'Carrot' }
+    ],
+    tantyIntro: "Curry goat take patience — yuh have to marinate it good!",
+    ordered: true, timed: true
+  },
+  {
+    name: 'Oil Down', tier: 3, dish: '🍲',
+    correct: [
+      { emoji: '🍞', label: 'Breadfruit' },
+      { emoji: '🥥', label: 'Coconut Milk' },
+      { emoji: '🥬', label: 'Callaloo Leaves' },
+      { emoji: '🍗', label: 'Chicken' },
+      { emoji: '🟡', label: 'Turmeric' },
+      { emoji: '🌶️', label: 'Hot Pepper' }
+    ],
+    wrong: [
+      { emoji: '🍚', label: 'Rice' },
+      { emoji: '🧈', label: 'Butter' },
+      { emoji: '🍝', label: 'Pasta' },
+      { emoji: '🧀', label: 'Cheese' }
+    ],
+    tantyIntro: "Oil Down is the national dish of Grenada — everything cook down in coconut milk!",
+    ordered: true, timed: true
+  },
+  {
+    name: 'Jerk Chicken', tier: 3, dish: '🍗',
+    correct: [
+      { emoji: '🍗', label: 'Chicken' },
+      { emoji: '🌶️', label: 'Scotch Bonnet' },
+      { emoji: '🧅', label: 'Scallion' },
+      { emoji: '🫚', label: 'Pimento' },
+      { emoji: '🧄', label: 'Garlic' },
+      { emoji: '🍯', label: 'Honey Glaze' }
+    ],
+    wrong: [
+      { emoji: '🥫', label: 'Ketchup' },
+      { emoji: '🍅', label: 'Tomato' },
+      { emoji: '🧈', label: 'Butter' },
+      { emoji: '🍋', label: 'Lemon' }
+    ],
+    tantyIntro: "Real jerk chicken need pimento wood smoke — dat is the secret!",
+    ordered: true, timed: true
+  },
+  {
+    name: 'Black Cake', tier: 3, dish: '🎂',
+    correct: [
+      { emoji: '🍇', label: 'Dried Fruit (rum)' },
+      { emoji: '🌾', label: 'Flour' },
+      { emoji: '🧈', label: 'Butter' },
+      { emoji: '🍬', label: 'Brown Sugar' },
+      { emoji: '🟫', label: 'Browning' },
+      { emoji: '🥚', label: 'Eggs' }
+    ],
+    wrong: [
+      { emoji: '🍫', label: 'Chocolate' },
+      { emoji: '🥛', label: 'Milk' },
+      { emoji: '🧀', label: 'Cream Cheese' },
+      { emoji: '🍋', label: 'Lemon' }
+    ],
+    tantyIntro: "Black cake is Caribbean Christmas! The fruit must soak for months!",
+    ordered: true, timed: true
+  }
+];
+
+const TIER_NAMES = { 1: 'Likkle Chef', 2: 'Head Chef', 3: 'Master Chef' };
+const TIER_MULTIPLIERS = { 1: 1, 2: 2, 3: 3 };
+const TIER_FACTS = {
+  1: "In Trinidad, Tanty always says 'the hand that stirs the pot rules the world!'",
+  2: "Fun fact: Caribbean food blends African, Indian, European, and Indigenous flavors!"
+};
+const ENCOURAGEMENTS = [
+  "Yes, darlin!", "Dat's it!", "Good job!", "Yuh learning fast!",
+  "Beautiful!", "Now we cookin!", "Tanty proud!", "Just so!"
+];
+const TIMER_SECONDS = 45;
+
+// ---- Game State ----
+let state = {
+  currentRecipe: 0,
+  score: 0,
+  combo: 0,
+  maxCombo: 0,
+  addedIngredients: [],
+  nextOrderIndex: 0,
+  attempts: {}, // ingredientIndex -> attempts count
+  perfectRecipes: { 1: 0, 2: 0, 3: 0 },
+  recipePerfect: true,
+  timerInterval: null,
+  timerRemaining: TIMER_SECONDS,
+  timerRunning: false,
+  tierScores: { 1: 0, 2: 0, 3: 0 },
+  tierStars: { 1: 0, 2: 0, 3: 0 },
+  dragging: null,
+  ghostEl: null
+};
+
+// ---- DOM Refs ----
+const $ = id => document.getElementById(id);
+const screens = {
+  start: $('start-screen'),
+  game: $('game-screen'),
+  tier: $('tier-screen'),
+  victory: $('victory-screen')
+};
+
+function showScreen(name) {
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+}
+
+// ---- Shuffle ----
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ---- Start Game ----
+$('btn-play').addEventListener('click', () => {
+  ensureAudio();
+  state.currentRecipe = 0;
+  state.score = 0;
+  state.combo = 0;
+  state.maxCombo = 0;
+  state.perfectRecipes = { 1: 0, 2: 0, 3: 0 };
+  state.tierScores = { 1: 0, 2: 0, 3: 0 };
+  state.tierStars = { 1: 0, 2: 0, 3: 0 };
+  startRecipe();
+  showScreen('game');
+});
+
+// ---- Start Recipe ----
+function startRecipe() {
+  const recipe = RECIPES[state.currentRecipe];
+  state.addedIngredients = [];
+  state.nextOrderIndex = 0;
+  state.attempts = {};
+  state.recipePerfect = true;
+  stopTimer();
+
+  // Update UI
+  $('recipe-name').textContent = recipe.name;
+  const tierRecipeIdx = state.currentRecipe - (recipe.tier === 1 ? 0 : recipe.tier === 2 ? 4 : 8);
+  $('recipe-tier').textContent = `Tier ${recipe.tier}: ${TIER_NAMES[recipe.tier]} — Recipe ${tierRecipeIdx + 1}/4`;
+  $('score-display').textContent = `Score: ${state.score}`;
+  updateComboDisplay();
+
+  // Progress bar
+  $('progress-label').textContent = `Recipe ${state.currentRecipe + 1} / 12`;
+  $('progress-bar').style.width = `${(state.currentRecipe / 12) * 100}%`;
+
+  // Timer
+  if (recipe.timed) {
+    $('timer-row').classList.add('visible');
+    state.timerRemaining = TIMER_SECONDS;
+    updateTimerDisplay();
+    startTimer();
+  } else {
+    $('timer-row').classList.remove('visible');
+  }
+
+  // Recipe dots
+  renderRecipeDots();
+
+  // Pot clear
+  $('pot-ingredients').innerHTML = '';
+  $('completed-dish').classList.remove('show');
+  $('completed-dish').textContent = '';
+  $('pot').classList.remove('shake');
+
+  // Tanty speech
+  showSpeech(recipe.tantyIntro);
+
+  // Render ingredients
+  renderIngredients(recipe);
+}
+
+function renderRecipeDots() {
+  const recipe = RECIPES[state.currentRecipe];
+  const total = recipe.correct.length;
+  const dotsEl = $('recipe-dots');
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'recipe-dot';
+    if (i < state.addedIngredients.length) {
+      dot.className += ' filled';
+      dot.textContent = '✓';
+    } else if (i === state.addedIngredients.length) {
+      dot.className += ' current';
+      dot.textContent = (i + 1);
+    } else {
+      dot.textContent = (i + 1);
+    }
+    dotsEl.appendChild(dot);
+  }
+}
+
+function renderIngredients(recipe) {
+  const shelf = $('ingredient-shelf');
+  shelf.innerHTML = '';
+  const all = shuffle([...recipe.correct.map((ing, i) => ({ ...ing, correctIndex: i, isCorrect: true })),
+                        ...recipe.wrong.map(ing => ({ ...ing, isCorrect: false }))]);
+  all.forEach((ing, i) => {
+    const card = document.createElement('div');
+    card.className = 'ingredient-card';
+    card.dataset.idx = i;
+    card.dataset.emoji = ing.emoji;
+    card.dataset.label = ing.label;
+    card.dataset.isCorrect = ing.isCorrect;
+    if (ing.isCorrect) card.dataset.correctIndex = ing.correctIndex;
+    card.innerHTML = `<span class="emoji">${ing.emoji}</span><span class="label">${ing.label}</span>`;
+
+    // Mouse drag
+    card.addEventListener('mousedown', onDragStart);
+    // Touch drag
+    card.addEventListener('touchstart', onTouchStart, { passive: false });
+
+    shelf.appendChild(card);
+  });
+}
+
+// ---- Speech ----
+let speechTimeout = null;
+function showSpeech(text, duration = 4000) {
+  const bubble = $('speech-bubble');
+  bubble.textContent = text;
+  bubble.classList.add('visible');
+  clearTimeout(speechTimeout);
+  speechTimeout = setTimeout(() => bubble.classList.remove('visible'), duration);
+}
+
+// ---- Combo ----
+function updateComboDisplay() {
+  const el = $('combo-display');
+  if (state.combo >= 2) {
+    el.textContent = `🔥 ${state.combo}x Combo!`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+// ---- Timer ----
+function startTimer() {
+  state.timerRunning = true;
+  state.timerInterval = setInterval(() => {
+    state.timerRemaining -= 0.1;
+    if (state.timerRemaining <= 0) {
+      state.timerRemaining = 0;
+      stopTimer();
+      onTimerExpired();
+    }
+    updateTimerDisplay();
+  }, 100);
+}
+function stopTimer() {
+  state.timerRunning = false;
+  clearInterval(state.timerInterval);
+  state.timerInterval = null;
+}
+function updateTimerDisplay() {
+  const pct = (state.timerRemaining / TIMER_SECONDS) * 100;
+  const bar = $('timer-bar');
+  bar.style.width = `${pct}%`;
+  if (pct < 25) bar.classList.add('urgent');
+  else bar.classList.remove('urgent');
+  $('timer-label').textContent = `⏱ ${Math.ceil(state.timerRemaining)}s`;
+}
+function onTimerExpired() {
+  showSpeech("Time's up! But yuh can still finish, darlin!", 3000);
+  // Let them still complete — just no points for remaining
+  state.recipePerfect = false;
+}
+
+// ---- Drag & Drop (Mouse) ----
+function onDragStart(e) {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  const card = e.currentTarget;
+  if (card.classList.contains('used')) return;
+  startDragging(card, e.clientX, e.clientY);
+  document.addEventListener('mousemove', onDragMove);
+  document.addEventListener('mouseup', onDragEnd);
+}
+function onDragMove(e) {
+  e.preventDefault();
+  moveDragging(e.clientX, e.clientY);
+}
+function onDragEnd(e) {
+  document.removeEventListener('mousemove', onDragMove);
+  document.removeEventListener('mouseup', onDragEnd);
+  endDragging(e.clientX, e.clientY);
+}
+
+// ---- Drag & Drop (Touch) ----
+function onTouchStart(e) {
+  e.preventDefault();
+  const card = e.currentTarget;
+  if (card.classList.contains('used')) return;
+  const t = e.touches[0];
+  startDragging(card, t.clientX, t.clientY);
+  card.addEventListener('touchmove', onTouchMove, { passive: false });
+  card.addEventListener('touchend', onTouchEnd);
+  card.addEventListener('touchcancel', onTouchCancel);
+}
+function onTouchMove(e) {
+  e.preventDefault();
+  const t = e.touches[0];
+  moveDragging(t.clientX, t.clientY);
+}
+function onTouchEnd(e) {
+  const card = e.currentTarget;
+  card.removeEventListener('touchmove', onTouchMove);
+  card.removeEventListener('touchend', onTouchEnd);
+  card.removeEventListener('touchcancel', onTouchCancel);
+  const t = e.changedTouches[0];
+  endDragging(t.clientX, t.clientY);
+}
+function onTouchCancel(e) {
+  const card = e.currentTarget;
+  card.removeEventListener('touchmove', onTouchMove);
+  card.removeEventListener('touchend', onTouchCancel);
+  card.removeEventListener('touchcancel', onTouchCancel);
+  cancelDragging();
+}
+
+// ---- Shared Drag Logic ----
+function startDragging(card, x, y) {
+  state.dragging = card;
+  card.style.opacity = '0.4';
+  // Create ghost
+  const ghost = document.createElement('div');
+  ghost.className = 'drag-ghost';
+  ghost.innerHTML = `<span class="emoji">${card.dataset.emoji}</span><span class="label">${card.dataset.label}</span>`;
+  ghost.style.left = x + 'px';
+  ghost.style.top = y + 'px';
+  document.body.appendChild(ghost);
+  state.ghostEl = ghost;
+}
+function moveDragging(x, y) {
+  if (!state.ghostEl) return;
+  state.ghostEl.style.left = x + 'px';
+  state.ghostEl.style.top = y + 'px';
+  // Check if over pot
+  const potRect = $('pot').getBoundingClientRect();
+  const over = x >= potRect.left && x <= potRect.right && y >= potRect.top && y <= potRect.bottom;
+  $('drop-zone').classList.toggle('drag-over', over);
+}
+function endDragging(x, y) {
+  if (!state.dragging) return;
+  const card = state.dragging;
+  const potRect = $('pot').getBoundingClientRect();
+  const over = x >= potRect.left && x <= potRect.right && y >= potRect.top && y <= potRect.bottom;
+  $('drop-zone').classList.remove('drag-over');
+
+  if (over) {
+    handleDrop(card);
+  } else {
+    card.style.opacity = '';
+  }
+  // Remove ghost
+  if (state.ghostEl) { state.ghostEl.remove(); state.ghostEl = null; }
+  state.dragging = null;
+}
+function cancelDragging() {
+  if (state.dragging) state.dragging.style.opacity = '';
+  if (state.ghostEl) { state.ghostEl.remove(); state.ghostEl = null; }
+  state.dragging = null;
+  $('drop-zone').classList.remove('drag-over');
+}
+
+// ---- Handle Drop ----
+function handleDrop(card) {
+  const recipe = RECIPES[state.currentRecipe];
+  const isCorrect = card.dataset.isCorrect === 'true';
+  const correctIndex = parseInt(card.dataset.correctIndex);
+
+  if (!isCorrect) {
+    // Wrong ingredient entirely
+    wrongIngredient(card);
+    return;
+  }
+
+  // Already added?
+  if (state.addedIngredients.includes(correctIndex)) {
+    card.style.opacity = '';
+    showSpeech("Yuh already add dat one!");
+    return;
+  }
+
+  if (recipe.ordered) {
+    // Must be in correct order
+    if (correctIndex !== state.nextOrderIndex) {
+      // Wrong order
+      wrongOrder(card, recipe.correct[state.nextOrderIndex].label);
+      return;
+    }
+  }
+
+  // Correct!
+  addIngredient(card, correctIndex);
+}
+
+function wrongIngredient(card) {
+  playWrong();
+  card.style.opacity = '';
+  $('pot').classList.add('shake');
+  setTimeout(() => $('pot').classList.remove('shake'), 400);
+  showSpeech("Not dat one!", 2000);
+  state.combo = 0;
+  state.recipePerfect = false;
+  updateComboDisplay();
+  bounceCard(card);
+}
+
+function wrongOrder(card, correctName) {
+  playWrong();
+  card.style.opacity = '';
+  $('pot').classList.add('shake');
+  setTimeout(() => $('pot').classList.remove('shake'), 400);
+  showSpeech(`Not yet, darlin — ${correctName} goes first!`, 3000);
+  state.combo = 0;
+  state.recipePerfect = false;
+  updateComboDisplay();
+  bounceCard(card);
+}
+
+function bounceCard(card) {
+  card.style.transition = 'transform 0.3s cubic-bezier(0.34,1.56,0.64,1)';
+  card.style.transform = 'translateY(-10px) scale(1.1)';
+  setTimeout(() => {
+    card.style.transform = '';
+    setTimeout(() => card.style.transition = '', 300);
+  }, 300);
+}
+
+function addIngredient(card, correctIndex) {
+  const recipe = RECIPES[state.currentRecipe];
+  playSizzle();
+  state.addedIngredients.push(correctIndex);
+  state.nextOrderIndex = state.addedIngredients.length;
+
+  // Track attempts
+  if (!state.attempts[correctIndex]) state.attempts[correctIndex] = 0;
+  state.attempts[correctIndex]++;
+
+  // Score
+  let points = 0;
+  if (state.timerRemaining > 0 || !recipe.timed) {
+    if (state.attempts[correctIndex] === 1) points = 10;
+    else if (state.attempts[correctIndex] === 2) points = 5;
+  }
+  points *= TIER_MULTIPLIERS[recipe.tier];
+
+  state.score += points;
+  state.tierScores[recipe.tier] += points;
+  if (points === 0) state.recipePerfect = false;
+
+  // Combo
+  if (state.attempts[correctIndex] === 1) {
+    state.combo++;
+    if (state.combo > state.maxCombo) state.maxCombo = state.combo;
+  } else {
+    state.combo = 0;
+  }
+
+  // Mark card used
+  card.classList.add('used');
+  card.style.opacity = '';
+
+  // Add to pot
+  const potIng = document.createElement('span');
+  potIng.className = 'pot-ingredient-icon';
+  potIng.textContent = card.dataset.emoji;
+  $('pot-ingredients').appendChild(potIng);
+
+  // Sizzle particles
+  spawnSizzle();
+
+  // Steam puff
+  spawnSteamPuff();
+
+  // Point popup
+  if (points > 0) spawnPointPopup(points);
+
+  // Update UI
+  $('score-display').textContent = `Score: ${state.score}`;
+  updateComboDisplay();
+  renderRecipeDots();
+
+  // Encouragement
+  const enc = ENCOURAGEMENTS[Math.floor(Math.random() * ENCOURAGEMENTS.length)];
+  showSpeech(enc, 2000);
+
+  // Check if recipe complete
+  if (state.addedIngredients.length === recipe.correct.length) {
+    stopTimer();
+    setTimeout(() => completeRecipe(), 600);
+  }
+}
+
+// ---- Effects ----
+function spawnSizzle() {
+  const potEl = $('pot-container');
+  for (let i = 0; i < 8; i++) {
+    const p = document.createElement('div');
+    p.className = 'sizzle-particle';
+    const angle = (Math.PI * 2 * i) / 8;
+    const dist = 20 + Math.random() * 30;
+    p.style.setProperty('--sx', `${Math.cos(angle) * dist}px`);
+    p.style.setProperty('--sy', `${Math.sin(angle) * dist - 20}px`);
+    p.style.left = '50%';
+    p.style.top = '40%';
+    const colors = ['#FFD700', '#FF69B4', '#FF5252', '#4CAF50', '#FFA000'];
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    potEl.appendChild(p);
+    setTimeout(() => p.remove(), 600);
+  }
+}
+function spawnSteamPuff() {
+  const potEl = $('pot-container');
+  const puff = document.createElement('div');
+  puff.className = 'steam-puff';
+  puff.style.left = `${30 + Math.random() * 40}%`;
+  puff.style.top = '10%';
+  potEl.appendChild(puff);
+  setTimeout(() => puff.remove(), 600);
+}
+function spawnPointPopup(pts) {
+  const potEl = $('pot-container');
+  const pop = document.createElement('div');
+  pop.className = 'point-popup';
+  pop.textContent = `+${pts}`;
+  pop.style.left = '50%';
+  pop.style.top = '0';
+  pop.style.transform = 'translateX(-50%)';
+  potEl.appendChild(pop);
+  setTimeout(() => pop.remove(), 1000);
+}
+
+// ---- Recipe Complete ----
+function completeRecipe() {
+  const recipe = RECIPES[state.currentRecipe];
+  playComplete();
+
+  // Show completed dish
+  $('completed-dish').textContent = recipe.dish;
+  $('completed-dish').classList.add('show');
+
+  // Tanty celebrate
+  $('tanty-avatar').classList.add('celebrate');
+  setTimeout(() => $('tanty-avatar').classList.remove('celebrate'), 600);
+
+  // Track perfection
+  if (state.recipePerfect) {
+    state.perfectRecipes[recipe.tier]++;
+  }
+
+  showSpeech(`${recipe.name} done! Beautiful!`, 3000);
+
+  // Small confetti burst
+  spawnConfetti(15);
+
+  // Next
+  setTimeout(() => {
+    state.currentRecipe++;
+    // Check if tier is done (every 4 recipes)
+    if (state.currentRecipe === 4 || state.currentRecipe === 8) {
+      showTierTransition(recipe.tier);
+    } else if (state.currentRecipe >= 12) {
+      showVictory();
+    } else {
+      startRecipe();
+    }
+  }, 1800);
+}
+
+// ---- Tier Transition ----
+function showTierTransition(completedTier) {
+  playTierComplete();
+  const perfect = state.perfectRecipes[completedTier];
+  let stars = 0;
+  if (perfect === 4) stars = 3;
+  else if (perfect >= 3) stars = 2;
+  else if (perfect >= 1) stars = 1;
+  state.tierStars[completedTier] = stars;
+
+  const nextTier = completedTier + 1;
+  const fact = TIER_FACTS[completedTier] || '';
+  const starStr = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+
+  $('tier-content').innerHTML = `
+    <img src="./images/tanty_spice_avatar.jpg" alt="Tanty Spice" class="tanty-reaction">
+    <h2 class="tier-title">${TIER_NAMES[completedTier]} Complete!</h2>
+    <div class="tier-stars">${starStr.split('').map(s => `<span>${s}</span>`).join('')}</div>
+    <p class="tier-stat">Recipes Completed: <strong>4 / 4</strong></p>
+    <p class="tier-stat">Perfect Recipes: <strong>${perfect}</strong></p>
+    <p class="tier-stat">Tier Score: <strong>${state.tierScores[completedTier]}</strong></p>
+    ${fact ? `<p class="tier-fact">"${fact}"</p>` : ''}
+    <button class="btn-next" id="btn-next-tier">Next: ${TIER_NAMES[nextTier]} →</button>
+  `;
+  showScreen('tier');
+  spawnConfetti(30);
+
+  document.getElementById('btn-next-tier').addEventListener('click', () => {
+    if (state.currentTier > 1 && !window.__unlocked) {
+      showGate();
+      return;
+    }
+    startRecipe();
+    showScreen('game');
+  });
+}
+
+// ---- Victory ----
+function showVictory() {
+  // Calculate Tier 3 stars
+  const t3perfect = state.perfectRecipes[3];
+  let t3stars = 0;
+  if (t3perfect === 4) t3stars = 3;
+  else if (t3perfect >= 3) t3stars = 2;
+  else if (t3perfect >= 1) t3stars = 1;
+  state.tierStars[3] = t3stars;
+
+  const totalStars = state.tierStars[1] + state.tierStars[2] + state.tierStars[3];
+
+  playTierComplete();
+  spawnConfetti(60);
+
+  const badgesHTML = RECIPES.map(r =>
+    `<div class="dish-badge">
+      <span class="badge-emoji">${r.dish}</span>
+      <span class="badge-name">${r.name}</span>
+    </div>`
+  ).join('');
+
+  const tierStarsHTML = [1,2,3].map(t => {
+    const s = state.tierStars[t];
+    const str = '⭐'.repeat(s) + '☆'.repeat(3 - s);
+    return `<div class="victory-tier-stars">
+      <span class="victory-tier-label">${TIER_NAMES[t]}</span>
+      <span class="stars">${str}</span>
+    </div>`;
+  }).join('');
+
+  $('victory-content').innerHTML = `
+    <h1 class="victory-title">👨‍🍳 Master Chef!</h1>
+    <img src="./images/tanty_spice_avatar.jpg" alt="Tanty Spice" class="tanty-reaction" style="width:100px;height:100px;">
+    <p class="victory-score">Total Score: ${state.score}</p>
+    <div class="victory-stars-row">${tierStarsHTML}</div>
+    <p class="victory-score" style="font-size:1rem;color:var(--gold)">Stars: ${totalStars} / 9</p>
+    <div class="badge-grid">${badgesHTML}</div>
+    <div class="tanty-final-msg">
+      "Yuh mek Tanty proud today! Come back and cook again!"
+    </div>
+    <div class="victory-buttons">
+      <button class="btn-victory primary" id="btn-cook-again">Cook Again!</button>
+      <a href="index.html" class="btn-victory secondary" style="text-decoration:none;display:inline-flex;align-items:center;">Back to Games</a>
+    </div>
+  `;
+  showScreen('victory');
+
+  document.getElementById('btn-cook-again').addEventListener('click', () => {
+    state.currentRecipe = 0;
+    state.score = 0;
+    state.combo = 0;
+    state.maxCombo = 0;
+    state.perfectRecipes = { 1: 0, 2: 0, 3: 0 };
+    state.tierScores = { 1: 0, 2: 0, 3: 0 };
+    state.tierStars = { 1: 0, 2: 0, 3: 0 };
+    startRecipe();
+    showScreen('game');
+  });
+}
+
+// ---- Confetti ----
+function spawnConfetti(count) {
+  const container = $('confetti');
+  const colors = ['#FF69B4', '#FFD700', '#4CAF50', '#FF5252', '#00BCD4', '#FF9800', '#9C27B0'];
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.setProperty('--dur', `${1.5 + Math.random() * 2}s`);
+    piece.style.animationDelay = `${Math.random() * 0.5}s`;
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.width = `${6 + Math.random() * 8}px`;
+    piece.style.height = `${6 + Math.random() * 8}px`;
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+    setTimeout(() => piece.remove(), 4000);
+  }
+}
+
+
+
+// ===== FREE-TO-PAID GATE =====
+const GATE_CONFIG = {"charImg":"./images/tanty_spice_avatar.jpg","charAlt":"Tanty Spice","gateTitle":"Tanty has more recipes!","gateSubtitle":"You've cooked the easy recipes! Unlock all 12 Caribbean dishes — including curry goat, jerk chicken, and black cake — plus 3 more games.","freeMaxTier":1,"gateCheck":"TANTY"};
+function showGate() {
+  const g = document.getElementById('gateOverlay');
+  const img = document.getElementById('gateCharImg');
+  const title = document.getElementById('gateTitle');
+  const subtitle = document.getElementById('gateSubtitle');
+  img.src = GATE_CONFIG.charImg;
+  img.alt = GATE_CONFIG.charAlt;
+  title.textContent = GATE_CONFIG.gateTitle;
+  subtitle.textContent = GATE_CONFIG.gateSubtitle;
+  g.classList.add('visible');
+}
+function isGated() { return false; } // Set to true when auth is wired up
+
+</script>
+
+<div class="gate-overlay" id="gateOverlay">
+  <div class="gate-lock">🔒</div>
+  <img src="./images/tanty_spice_avatar.jpg" alt="Tanty Spice" class="gate-character" id="gateCharImg">
+  <h2 class="gate-title" id="gateTitle">Want to keep playing?</h2>
+  <p class="gate-subtitle" id="gateSubtitle"></p>
+  <div class="gate-features">
+    <div class="gate-feature">All levels in all 4 games</div>
+    <div class="gate-feature">Full Likkle Legends learning portal</div>
+    <div class="gate-feature">Caribbean stories, songs, and activities</div>
+    <div class="gate-feature">New content every month</div>
+  </div>
+  <a href="https://www.likklelegends.com/#pricing" class="gate-cta">Start the $10 Legend Intro Pass →</a>
+  <a href="index.html" class="gate-free-btn">← Back to Free Games</a>
+  <p class="gate-guarantee">🛡️ 30-day money-back guarantee. Cancel anytime.</p>
+</div>
+
+</body>
+</html>

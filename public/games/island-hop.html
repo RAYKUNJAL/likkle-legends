@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Mango's Island Hop — Caribbean Geography Quiz</title>
+<link href="https://api.fontshare.com/v2/css?f[]=chillax@400,500,600,700&f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: none;
+}
+:root {
+  --font-display: 'Chillax', sans-serif;
+  --font-body: 'General Sans', sans-serif;
+  --color-bg: #0A1628;
+  --color-ocean: #0F2847;
+  --color-ocean-mid: #132F52;
+  --color-green: #00C853;
+  --color-green-light: #69F0AE;
+  --color-yellow: #FFD23F;
+  --color-coral: #FF6B6B;
+  --color-orange: #FF9F43;
+  --color-text: #F0F4FF;
+  --color-text-muted: #8BA3C7;
+  --color-sand: #F5D5A0;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+}
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+  overflow: hidden;
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#game-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ─── OCEAN BACKGROUND ─── */
+.ocean-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, #0A1628 0%, #0F2847 40%, #0E3A5E 70%, #0A1628 100%);
+  z-index: 0;
+}
+.ocean-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 120% 60% at 30% 80%, rgba(0,200,83,0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 50% at 70% 20%, rgba(105,240,174,0.04) 0%, transparent 60%);
+}
+
+/* ─── WAVE ANIMATION ─── */
+.wave-layer {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 200%; height: 80px;
+  z-index: 1;
+  opacity: 0.15;
+}
+.wave-layer svg { width: 100%; height: 100%; }
+@keyframes waveScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.wave-layer { animation: waveScroll 20s linear infinite; }
+.wave-layer.w2 { animation-duration: 28s; animation-direction: reverse; opacity: 0.1; bottom: 10px; }
+
+/* ─── TOP BAR ─── */
+.top-bar {
+  position: absolute; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  z-index: 100;
+  background: rgba(10,22,40,0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(105,240,174,0.1);
+}
+.back-link {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex; align-items: center; gap: 6px;
+  transition: color 0.2s;
+}
+.back-link:hover { color: var(--color-green-light); }
+.back-link svg { width: 16px; height: 16px; }
+.progress-label {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-yellow);
+  text-align: center;
+}
+.score-display {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; font-weight: 600;
+}
+.score-display .stars { color: var(--color-yellow); }
+.score-display .pts { color: var(--color-green-light); }
+
+/* ─── SCREENS ─── */
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 50;
+  transition: opacity 0.4s, transform 0.4s;
+  padding: 20px;
+}
+.screen.hidden {
+  opacity: 0; pointer-events: none;
+  transform: scale(0.95);
+}
+.screen.visible {
+  opacity: 1; pointer-events: auto;
+  transform: scale(1);
+}
+
+/* ─── START SCREEN ─── */
+#start-screen {
+  background: radial-gradient(ellipse at center 40%, #132F52 0%, #0A1628 70%);
+  text-align: center;
+}
+.start-logo {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--color-yellow);
+  box-shadow: 0 0 40px rgba(255,210,63,0.3);
+  margin-bottom: 16px;
+  animation: floatBounce 3s ease-in-out infinite;
+}
+@keyframes floatBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.start-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--color-yellow);
+  line-height: 1.1;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 20px rgba(255,210,63,0.3);
+}
+.start-subtitle {
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+}
+.start-stats {
+  font-family: var(--font-display);
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 600;
+  color: var(--color-green-light);
+  margin-bottom: 24px;
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+}
+.start-stats span {
+  background: rgba(105,240,174,0.1);
+  padding: 4px 12px; border-radius: var(--radius-full);
+  border: 1px solid rgba(105,240,174,0.2);
+}
+.start-rounds {
+  display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; justify-content: center;
+}
+.round-badge {
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 600;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  text-align: left; max-width: 200px;
+}
+.round-badge .rb-title {
+  font-family: var(--font-display);
+  color: var(--color-yellow);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.round-badge .rb-desc { color: var(--color-text-muted); font-size: 12px; }
+.btn-primary {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  font-weight: 700;
+  color: #0A1628;
+  background: linear-gradient(135deg, var(--color-yellow), #FFBE0B);
+  border: none; border-radius: var(--radius-full);
+  padding: 14px 40px;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(255,210,63,0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 32px rgba(255,210,63,0.4); }
+.btn-primary:active { transform: translateY(0); }
+
+/* ─── ROUND TRANSITION ─── */
+#round-screen {
+  background: radial-gradient(ellipse at center 40%, #132F52 0%, #0A1628 70%);
+  text-align: center;
+}
+.round-number {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 3vw, 1.3rem);
+  color: var(--color-green-light);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.round-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  font-weight: 700;
+  color: var(--color-yellow);
+  margin-bottom: 12px;
+  text-shadow: 0 2px 20px rgba(255,210,63,0.3);
+}
+.round-desc {
+  font-size: 15px; color: var(--color-text-muted);
+  max-width: 420px; margin-bottom: 8px; line-height: 1.5;
+}
+.round-fact {
+  font-size: 14px; color: var(--color-green-light);
+  background: rgba(105,240,174,0.08);
+  padding: 10px 20px; border-radius: var(--radius-lg);
+  border: 1px solid rgba(105,240,174,0.15);
+  max-width: 400px; margin-bottom: 24px;
+  line-height: 1.4;
+}
+.round-fact strong { color: var(--color-yellow); }
+
+/* ─── MAP AREA ─── */
+#map-screen {
+  z-index: 10;
+  padding: 0;
+  flex-direction: column;
+}
+.map-container {
+  position: relative;
+  width: 100%; height: 100%;
+  overflow: hidden;
+}
+.map-canvas {
+  width: 100%; height: 100%;
+  display: block;
+}
+.round-label {
+  position: absolute; top: 52px; left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 13px; font-weight: 700;
+  color: var(--color-yellow);
+  background: rgba(10,22,40,0.85);
+  backdrop-filter: blur(8px);
+  padding: 5px 16px; border-radius: var(--radius-full);
+  border: 1px solid rgba(255,210,63,0.2);
+  white-space: nowrap; z-index: 20;
+}
+
+/* ─── QUESTION PANEL ─── */
+#question-panel {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(10,22,40,0.92);
+  backdrop-filter: blur(12px);
+  border-top: 2px solid rgba(105,240,174,0.15);
+  padding: 16px;
+  z-index: 80;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 60vh; overflow-y: auto;
+}
+#question-panel.open { transform: translateY(0); }
+.q-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px;
+}
+.q-island {
+  font-family: var(--font-display);
+  font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+  font-weight: 700; color: var(--color-yellow);
+}
+.q-progress {
+  font-size: 13px; color: var(--color-text-muted); font-weight: 500;
+}
+.q-text {
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+  font-weight: 600; color: var(--color-text);
+  margin-bottom: 14px; line-height: 1.4;
+}
+.q-options {
+  display: grid; gap: 8px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 600px) {
+  .q-options { grid-template-columns: 1fr 1fr; }
+}
+.q-option {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: 2px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: var(--color-text);
+  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+.q-option:hover:not(.disabled) {
+  border-color: rgba(105,240,174,0.4);
+  background: rgba(105,240,174,0.08);
+}
+.q-option.correct {
+  border-color: var(--color-green);
+  background: rgba(0,200,83,0.15);
+  color: #69F0AE;
+  animation: correctPulse 0.4s;
+}
+.q-option.wrong {
+  border-color: var(--color-coral);
+  background: rgba(255,107,107,0.12);
+  color: #FF9999;
+}
+.q-option.disabled { pointer-events: none; opacity: 0.6; }
+.q-option.show-correct {
+  border-color: var(--color-green);
+  background: rgba(0,200,83,0.15);
+  color: #69F0AE;
+  opacity: 1 !important;
+}
+@keyframes correctPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* ─── MANGO AVATAR ─── */
+.mango-guide {
+  position: absolute; bottom: 0; left: 10px;
+  z-index: 70;
+  display: flex; flex-direction: column; align-items: flex-start;
+  transition: transform 0.3s;
+  pointer-events: none;
+}
+.mango-guide.hide-for-q { transform: translateY(120%); }
+.mango-avatar {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-yellow);
+  box-shadow: 0 2px 12px rgba(255,210,63,0.25);
+}
+.speech-bubble {
+  position: absolute; bottom: 65px; left: 8px;
+  background: rgba(255,255,255,0.95);
+  color: #1a1a2e;
+  font-size: 13px; font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 14px 14px 14px 4px;
+  max-width: 200px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  opacity: 0; transform: translateY(8px) scale(0.9);
+  transition: all 0.3s;
+  pointer-events: none;
+}
+.speech-bubble.show {
+  opacity: 1; transform: translateY(0) scale(1);
+}
+
+/* ─── VICTORY SCREEN ─── */
+#victory-screen {
+  background: radial-gradient(ellipse at center 30%, #132F52 0%, #0A1628 70%);
+  text-align: center;
+}
+.victory-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--color-yellow);
+  margin-bottom: 6px;
+  text-shadow: 0 2px 20px rgba(255,210,63,0.3);
+}
+.victory-subtitle {
+  font-size: 15px; color: var(--color-text-muted);
+  margin-bottom: 20px;
+}
+.victory-score {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 700;
+  color: var(--color-green-light);
+  margin-bottom: 4px;
+}
+.victory-stars-big {
+  font-size: 28px; margin-bottom: 20px;
+  letter-spacing: 4px;
+}
+.victory-breakdown {
+  display: flex; flex-direction: column; gap: 8px;
+  margin-bottom: 24px; width: 100%; max-width: 360px;
+}
+.vb-row {
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(255,255,255,0.05);
+  padding: 10px 16px; border-radius: var(--radius-md);
+  font-size: 14px;
+}
+.vb-row .vb-label { color: var(--color-text-muted); }
+.vb-row .vb-val { font-weight: 700; color: var(--color-green-light); }
+.vb-row .vb-stars { color: var(--color-yellow); }
+.victory-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.btn-secondary {
+  font-family: var(--font-display);
+  font-size: 15px; font-weight: 600;
+  color: var(--color-text);
+  background: rgba(255,255,255,0.08);
+  border: 2px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius-full);
+  padding: 12px 28px; cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); }
+
+/* ─── ISLAND HOP ANIMATION OVERLAY ─── */
+.hop-overlay {
+  position: absolute; inset: 0;
+  z-index: 90; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.3s;
+}
+.hop-overlay.show { opacity: 1; }
+.hop-msg {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  font-weight: 700; color: var(--color-yellow);
+  text-shadow: 0 2px 16px rgba(0,0,0,0.5);
+  animation: hopBounce 0.6s ease-out;
+}
+@keyframes hopBounce {
+  0% { transform: translateY(20px) scale(0.8); opacity: 0; }
+  60% { transform: translateY(-8px) scale(1.05); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 480px) {
+  .top-bar { padding: 8px 10px; }
+  .score-display { gap: 8px; font-size: 12px; }
+  .progress-label { font-size: 12px; }
+  .back-link { font-size: 12px; }
+  .mango-avatar { width: 48px; height: 48px; }
+  .speech-bubble { font-size: 12px; max-width: 160px; bottom: 54px; }
+  .start-logo { width: 110px; height: 110px; }
+  .round-badge { padding: 6px 10px; font-size: 12px; }
+  .round-badge .rb-title { font-size: 12px; }
+  .round-badge .rb-desc { font-size: 11px; }
+  #question-panel { padding: 12px; }
+  .q-text { font-size: 0.9rem; }
+}
+
+/* ─── STAR ANIMATION ─── */
+@keyframes starPop {
+  0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+  60% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.star-earned { animation: starPop 0.5s ease-out forwards; }
+
+/* ─── CONFETTI (Victory) ─── */
+@keyframes confettiFall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+.confetti-piece {
+  position: absolute; top: -10px;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  animation: confettiFall linear forwards;
+  z-index: 200;
+  pointer-events: none;
+}
+
+/* ===== SUBSCRIPTION GATE ===== */
+.gate-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(10, 22, 40, 0.95);
+  backdrop-filter: blur(12px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  animation: gateFadeIn 0.4s ease;
+}
+.gate-overlay.visible { display: flex; }
+@keyframes gateFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.gate-lock { font-size: 4rem; margin-bottom: 1rem; animation: gateBounce 1s ease infinite alternate; }
+@keyframes gateBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
+.gate-title {
+  font-family: var(--font-display, 'Chillax', sans-serif);
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, #FFD23F, #FF6B35);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+.gate-subtitle {
+  font-size: 1.1rem;
+  color: #8EA4C8;
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+  line-height: 1.5;
+}
+.gate-character {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(255, 210, 63, 0.4);
+  margin-bottom: 1rem;
+  box-shadow: 0 0 30px rgba(255, 210, 63, 0.2);
+}
+.gate-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+.gate-feature {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.95rem; color: #B8C8E0;
+}
+.gate-feature::before { content: '✅'; }
+.gate-cta {
+  display: inline-block;
+  padding: 0.9rem 2rem;
+  border-radius: 14px;
+  font-family: var(--font-display, 'Chillax', sans-serif);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  background: linear-gradient(135deg, #FFD23F, #FF6B35);
+  border: none; cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.35);
+}
+.gate-cta:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(255, 107, 53, 0.45); }
+.gate-free-btn {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 10px;
+  font-family: var(--font-body, 'General Sans', sans-serif);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #8EA4C8;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.gate-free-btn:hover { background: rgba(255,255,255,0.1); color: #F0F4FF; }
+.gate-guarantee {
+  margin-top: 1rem;
+  font-size: 0.78rem;
+  color: #5A6E8C;
+}
+
+</style>
+</head>
+<body>
+<div id="game-container">
+  <div class="ocean-bg"></div>
+  <div class="wave-layer">
+    <svg viewBox="0 0 2400 80" preserveAspectRatio="none"><path d="M0,40 C200,0 400,80 600,40 C800,0 1000,80 1200,40 C1400,0 1600,80 1800,40 C2000,0 2200,80 2400,40 L2400,80 L0,80 Z" fill="rgba(105,240,174,0.3)"/></svg>
+  </div>
+  <div class="wave-layer w2">
+    <svg viewBox="0 0 2400 80" preserveAspectRatio="none"><path d="M0,50 C300,10 500,70 800,40 C1100,10 1300,70 1600,40 C1900,10 2100,70 2400,50 L2400,80 L0,80 Z" fill="rgba(0,200,83,0.2)"/></svg>
+  </div>
+
+  <!-- TOP BAR -->
+  <div class="top-bar" id="top-bar" style="display:none;">
+    <a href="index.html" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      Games
+    </a>
+    <div class="progress-label" id="progress-label"></div>
+    <div class="score-display">
+      <span class="stars" id="star-count">★ 0/9</span>
+      <span class="pts" id="score-count">0 pts</span>
+    </div>
+  </div>
+
+  <!-- START SCREEN -->
+  <div class="screen visible" id="start-screen">
+    <img src="./images/mango_moko.png" alt="Mango Moko" class="start-logo">
+    <div class="start-title">Mango's Island Hop</div>
+    <div class="start-subtitle">Learn about the Caribbean — island by island!</div>
+    <div class="start-stats">
+      <span>3 Rounds</span>
+      <span>30 Islands</span>
+      <span>90 Questions</span>
+    </div>
+    <div class="start-rounds">
+      <div class="round-badge">
+        <div class="rb-title">🌴 Round 1</div>
+        <div class="rb-desc">Island Explorer — Easy</div>
+      </div>
+      <div class="round-badge">
+        <div class="rb-title">🧭 Round 2</div>
+        <div class="rb-desc">Island Navigator — Medium</div>
+      </div>
+      <div class="round-badge">
+        <div class="rb-title">🏆 Round 3</div>
+        <div class="rb-desc">Island Champion — Hard</div>
+      </div>
+    </div>
+    <button class="btn-primary" id="btn-start">Start Adventure!</button>
+  </div>
+
+  <!-- ROUND TRANSITION -->
+  <div class="screen hidden" id="round-screen">
+    <div class="round-number" id="round-number"></div>
+    <div class="round-title" id="round-title"></div>
+    <div class="round-desc" id="round-desc"></div>
+    <div class="round-fact" id="round-fact"></div>
+    <button class="btn-primary" id="btn-round-go">Let's Go!</button>
+  </div>
+
+  <!-- MAP SCREEN -->
+  <div class="screen hidden" id="map-screen">
+    <div class="map-container">
+      <canvas class="map-canvas" id="map-canvas"></canvas>
+      <div class="round-label" id="round-label"></div>
+    </div>
+  </div>
+
+  <!-- QUESTION PANEL -->
+  <div id="question-panel">
+    <div class="q-header">
+      <div class="q-island" id="q-island"></div>
+      <div class="q-progress" id="q-progress"></div>
+    </div>
+    <div class="q-text" id="q-text"></div>
+    <div class="q-options" id="q-options"></div>
+  </div>
+
+  <!-- MANGO GUIDE -->
+  <div class="mango-guide" id="mango-guide">
+    <div class="speech-bubble" id="speech-bubble"></div>
+    <img src="./images/mango_moko.png" alt="Mango Moko" class="mango-avatar">
+  </div>
+
+  <!-- HOP OVERLAY -->
+  <div class="hop-overlay" id="hop-overlay">
+    <div class="hop-msg" id="hop-msg"></div>
+  </div>
+
+  <!-- VICTORY SCREEN -->
+  <div class="screen hidden" id="victory-screen">
+    <div class="victory-title">🎉 Adventure Complete!</div>
+    <div class="victory-subtitle" id="v-subtitle"></div>
+    <div class="victory-score" id="v-score"></div>
+    <div class="victory-stars-big" id="v-stars-big"></div>
+    <div class="victory-breakdown" id="v-breakdown"></div>
+    <div class="victory-actions">
+      <button class="btn-primary" id="btn-replay">Play Again</button>
+      <a href="index.html" class="btn-secondary">Back to Games</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// MANGO'S ISLAND HOP — 3 Rounds, 30 Islands, 90 Questions
+// ═══════════════════════════════════════════════════════════════
+
+// ─── AUDIO ENGINE ───
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+function playTone(freq, dur, type='sine', vol=0.15) {
+  if (!audioCtx) return;
+  try {
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(vol, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    osc.connect(g).connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + dur);
+  } catch(e) {}
+}
+function sfxCorrect() {
+  playTone(523, 0.12, 'sine', 0.15);
+  setTimeout(() => playTone(659, 0.12, 'sine', 0.15), 100);
+  setTimeout(() => playTone(784, 0.2, 'sine', 0.15), 200);
+}
+function sfxWrong() {
+  playTone(220, 0.15, 'sawtooth', 0.1);
+  setTimeout(() => playTone(185, 0.25, 'sawtooth', 0.1), 120);
+}
+function sfxHop() {
+  playTone(440, 0.08, 'sine', 0.12);
+  setTimeout(() => playTone(554, 0.08, 'sine', 0.12), 80);
+  setTimeout(() => playTone(659, 0.08, 'sine', 0.12), 160);
+  setTimeout(() => playTone(880, 0.15, 'sine', 0.12), 240);
+}
+function sfxRoundWin() {
+  const notes = [523, 587, 659, 784, 880, 1047];
+  notes.forEach((n,i) => setTimeout(() => playTone(n, 0.15, 'sine', 0.12), i * 80));
+}
+function sfxClick() { playTone(660, 0.05, 'sine', 0.08); }
+
+// ─── QUESTION DATABASE ───
+const ROUNDS = [
+  {
+    name: "Island Explorer",
+    emoji: "🌴",
+    difficulty: "Easy",
+    desc: "Start your journey through 10 amazing Caribbean islands! Answer basic facts about each one.",
+    fact: "<strong>Fun Fact:</strong> The Caribbean has over 7,000 islands — but only about 2% are inhabited!",
+    optionCount: 3,
+    islands: [
+      { name: "Trinidad", x: 0.78, y: 0.82, questions: [
+        { q: "What is the capital of Trinidad and Tobago?", a: "Port of Spain", w: ["Kingston", "Bridgetown", "Nassau"] },
+        { q: "What famous street food is Trinidad known for?", a: "Doubles", w: ["Jerk chicken", "Flying fish", "Conch fritters"] },
+        { q: "What musical instrument was invented in Trinidad?", a: "Steelpan", w: ["Guitar", "Ukulele", "Bongo"] }
+      ]},
+      { name: "Jamaica", x: 0.30, y: 0.52, questions: [
+        { q: "What is the capital of Jamaica?", a: "Kingston", w: ["Montego Bay", "Port of Spain", "Nassau"] },
+        { q: "What style of music is Jamaica famous for?", a: "Reggae", w: ["Soca", "Calypso", "Merengue"] },
+        { q: "What spicy cooking style is Jamaica known for?", a: "Jerk", w: ["Curry", "Tandoori", "BBQ"] }
+      ]},
+      { name: "Barbados", x: 0.88, y: 0.68, questions: [
+        { q: "What is the capital of Barbados?", a: "Bridgetown", w: ["Kingston", "Castries", "Nassau"] },
+        { q: "What fish is Barbados famous for?", a: "Flying fish", w: ["Swordfish", "Clownfish", "Salmon"] },
+        { q: "What is the big summer festival in Barbados called?", a: "Crop Over", w: ["Carnival", "Junkanoo", "Kadooment"] }
+      ]},
+      { name: "Bahamas", x: 0.35, y: 0.10, questions: [
+        { q: "What is the capital of The Bahamas?", a: "Nassau", w: ["Freeport", "Miami", "Hamilton"] },
+        { q: "What color are the famous sand beaches in Harbour Island?", a: "Pink", w: ["White", "Black", "Gold"] },
+        { q: "What unusual animals swim with tourists in the Bahamas?", a: "Pigs", w: ["Dolphins only", "Horses", "Cats"] }
+      ]},
+      { name: "Grenada", x: 0.82, y: 0.75, questions: [
+        { q: "What is the capital of Grenada?", a: "St. George's", w: ["Castries", "Roseau", "Basseterre"] },
+        { q: 'Grenada is known as the "Island of ___"?', a: "Spice", w: ["Music", "Flowers", "Birds"] },
+        { q: "What spice is Grenada the world's #2 producer of?", a: "Nutmeg", w: ["Cinnamon", "Pepper", "Ginger"] }
+      ]},
+      { name: "St. Lucia", x: 0.80, y: 0.62, questions: [
+        { q: "What is the capital of St. Lucia?", a: "Castries", w: ["Soufriere", "Bridgetown", "Roseau"] },
+        { q: "What famous twin mountains are in St. Lucia?", a: "The Pitons", w: ["The Twins", "The Sisters", "Blue Mountains"] },
+        { q: "What fruit is a major export of St. Lucia?", a: "Banana", w: ["Apple", "Grape", "Strawberry"] }
+      ]},
+      { name: "Antigua", x: 0.76, y: 0.45, questions: [
+        { q: "What is the capital of Antigua and Barbuda?", a: "St. John's", w: ["Plymouth", "Basseterre", "Castries"] },
+        { q: "How many beaches does Antigua claim to have?", a: "365", w: ["100", "200", "52"] },
+        { q: "What is the famous sailing event held in Antigua?", a: "Antigua Sailing Week", w: ["Caribbean Cup", "Island Regatta", "Sea Festival"] }
+      ]},
+      { name: "Dominica", x: 0.78, y: 0.54, questions: [
+        { q: "What is the capital of Dominica?", a: "Roseau", w: ["Castries", "St. George's", "Basseterre"] },
+        { q: 'Dominica is called the "Nature Island" because of its?', a: "Rainforests and rivers", w: ["Deserts", "Glaciers", "Volcanoes only"] },
+        { q: "What rare parrot is found only in Dominica?", a: "Sisserou", w: ["Macaw", "Cockatoo", "Toucan"] }
+      ]},
+      { name: "St. Kitts", x: 0.72, y: 0.38, questions: [
+        { q: "What is the capital of St. Kitts and Nevis?", a: "Basseterre", w: ["Roseau", "Castries", "Plymouth"] },
+        { q: "What historic site is a UNESCO World Heritage Site in St. Kitts?", a: "Brimstone Hill Fortress", w: ["Blue Lagoon", "Pitons", "Trafalgar Falls"] },
+        { q: "What is the main crop that built St. Kitts' economy?", a: "Sugarcane", w: ["Coffee", "Cocoa", "Cotton"] }
+      ]},
+      { name: "Guyana", x: 0.85, y: 0.92, questions: [
+        { q: "What is the capital of Guyana?", a: "Georgetown", w: ["Paramaribo", "Port of Spain", "Cayenne"] },
+        { q: "What is the name of the massive waterfall in Guyana?", a: "Kaieteur Falls", w: ["Niagara Falls", "Victoria Falls", "Angel Falls"] },
+        { q: "What is the national dish of Guyana?", a: "Pepperpot", w: ["Jerk chicken", "Doubles", "Callaloo"] }
+      ]}
+    ]
+  },
+  {
+    name: "Island Navigator",
+    emoji: "🧭",
+    difficulty: "Medium",
+    desc: "Navigate deeper into the Caribbean! These islands have more challenging questions with 4 options each.",
+    fact: "<strong>Fun Fact:</strong> The word 'Caribbean' comes from the Carib people, the original indigenous inhabitants of the region!",
+    optionCount: 4,
+    islands: [
+      { name: "Tobago", x: 0.82, y: 0.85, questions: [
+        { q: "What is the main city in Tobago?", a: "Scarborough", w: ["Port of Spain", "San Fernando", "Arima"] },
+        { q: "What is the oldest protected rainforest in the Western Hemisphere, located in Tobago?", a: "Main Ridge Forest Reserve", w: ["Amazon", "El Yunque", "Blue Mountains"] },
+        { q: "What water sport is Tobago famous for?", a: "Diving and snorkeling", w: ["Ice skating", "Skiing", "Surfing only"] }
+      ]},
+      { name: "Haiti", x: 0.35, y: 0.45, questions: [
+        { q: "What is the capital of Haiti?", a: "Port-au-Prince", w: ["Cap-Haitien", "Santo Domingo", "Kingston"] },
+        { q: "What language do most Haitians speak?", a: "Haitian Creole", w: ["Spanish", "English", "Dutch"] },
+        { q: "What famous fortress sits atop a mountain in Haiti?", a: "Citadelle Laferrière", w: ["Fort George", "Brimstone Hill", "El Morro"] }
+      ]},
+      { name: "Dominican Republic", x: 0.46, y: 0.40, questions: [
+        { q: "What is the capital of the Dominican Republic?", a: "Santo Domingo", w: ["Santiago", "Punta Cana", "Port-au-Prince"] },
+        { q: "What dance style originated in the Dominican Republic?", a: "Merengue", w: ["Reggae", "Soca", "Salsa"] },
+        { q: "What sport is most popular in the Dominican Republic?", a: "Baseball", w: ["Cricket", "Soccer", "Basketball"] }
+      ]},
+      { name: "St. Vincent", x: 0.80, y: 0.68, questions: [
+        { q: "What is the capital of St. Vincent?", a: "Kingstown", w: ["Kingston", "Castries", "Roseau"] },
+        { q: "What movie franchise used St. Vincent's beaches for filming?", a: "Pirates of the Caribbean", w: ["Jaws", "Moana", "Aquaman"] },
+        { q: "What volcanic island is part of St. Vincent and the Grenadines?", a: "Mustique", w: ["Aruba", "Bermuda", "Bonaire"] }
+      ]},
+      { name: "Montserrat", x: 0.74, y: 0.48, questions: [
+        { q: "What happened to Montserrat's capital Plymouth?", a: "Buried by volcanic eruption", w: ["Flooded", "Hit by earthquake", "Abandoned peacefully"] },
+        { q: 'Montserrat is sometimes called "The Emerald Isle of the Caribbean" due to connections with which country?', a: "Ireland", w: ["England", "Scotland", "Wales"] },
+        { q: "What volcano devastated Montserrat in 1995?", a: "Soufrière Hills", w: ["Mount Pelée", "La Soufrière", "Kick 'em Jenny"] }
+      ]},
+      { name: "Curaçao", x: 0.60, y: 0.78, questions: [
+        { q: "What is the capital of Curaçao?", a: "Willemstad", w: ["Oranjestad", "Kralendijk", "Nassau"] },
+        { q: "What colorful feature makes Willemstad a UNESCO World Heritage Site?", a: "Painted Dutch colonial buildings", w: ["Coral reefs", "Waterfalls", "Ancient ruins"] },
+        { q: "What language is commonly spoken in Curaçao alongside Dutch?", a: "Papiamentu", w: ["French", "Hindi", "Mandarin"] }
+      ]},
+      { name: "Aruba", x: 0.52, y: 0.78, questions: [
+        { q: "What country does Aruba belong to?", a: "The Netherlands", w: ["Spain", "France", "United States"] },
+        { q: "What iconic twisted trees grow on Aruba's coast?", a: "Divi-divi trees", w: ["Palm trees", "Baobab trees", "Mangroves"] },
+        { q: "What is Aruba's famous slogan?", a: "One Happy Island", w: ["Island of Spice", "Nature Island", "Land of Many Rivers"] }
+      ]},
+      { name: "Belize", x: 0.12, y: 0.48, questions: [
+        { q: "What is the capital of Belize?", a: "Belmopan", w: ["Belize City", "Georgetown", "Bridgetown"] },
+        { q: "What is the famous underwater sinkhole off Belize's coast?", a: "The Great Blue Hole", w: ["The Deep End", "The Ocean Pit", "The Blue Lagoon"] },
+        { q: "What ancient civilization left ruins in Belize?", a: "The Maya", w: ["The Aztecs", "The Inca", "The Romans"] }
+      ]},
+      { name: "Suriname", x: 0.88, y: 0.92, questions: [
+        { q: "What is the capital of Suriname?", a: "Paramaribo", w: ["Georgetown", "Cayenne", "Bogota"] },
+        { q: "What European language is the official language of Suriname?", a: "Dutch", w: ["French", "Spanish", "Portuguese"] },
+        { q: "What makes Suriname unique in South America?", a: "It's the smallest country", w: ["It's the largest", "It has no rivers", "It has no coast"] }
+      ]},
+      { name: "Bermuda", x: 0.58, y: 0.02, questions: [
+        { q: "What is the capital of Bermuda?", a: "Hamilton", w: ["Nassau", "St. George's", "Georgetown"] },
+        { q: "What mysterious area is Bermuda associated with?", a: "The Bermuda Triangle", w: ["The Bermuda Square", "The Bermuda Circle", "The Lost Zone"] },
+        { q: "What color are Bermuda's famous rooftops?", a: "White", w: ["Red", "Blue", "Green"] }
+      ]}
+    ]
+  },
+  {
+    name: "Island Champion",
+    emoji: "🏆",
+    difficulty: "Hard",
+    desc: "The ultimate challenge! These tricky questions cover culture, history, and geography across the Caribbean.",
+    fact: "<strong>Fun Fact:</strong> Over 40 million people live in the Caribbean islands, speaking dozens of languages including English, Spanish, French, Dutch, and Creole!",
+    optionCount: 4,
+    islands: [
+      { name: "Turks & Caicos", x: 0.42, y: 0.25, questions: [
+        { q: "Which country governs Turks and Caicos?", a: "United Kingdom", w: ["United States", "France", "Canada"] },
+        { q: "What is Turks and Caicos most famous for?", a: "Beautiful beaches and diving", w: ["Mountains", "Rainforests", "Volcanoes"] },
+        { q: "What marine animal can you see in Turks and Caicos' waters?", a: "Humpback whales", w: ["Polar bears", "Penguins", "Seals"] }
+      ]},
+      { name: "Cayman Islands", x: 0.25, y: 0.50, questions: [
+        { q: "What is the capital of the Cayman Islands?", a: "George Town", w: ["Kingston", "Nassau", "Hamilton"] },
+        { q: "What type of marine animal has a famous attraction in Grand Cayman?", a: "Stingrays (Stingray City)", w: ["Sharks", "Jellyfish", "Octopus"] },
+        { q: "What is the Cayman Islands known for in the business world?", a: "Banking and finance", w: ["Farming", "Mining", "Manufacturing"] }
+      ]},
+      { name: "Martinique", x: 0.78, y: 0.58, questions: [
+        { q: "Which country does Martinique belong to?", a: "France", w: ["Spain", "Netherlands", "United Kingdom"] },
+        { q: "What language is spoken in Martinique?", a: "French", w: ["Spanish", "Dutch", "English"] },
+        { q: "What devastating eruption happened in Martinique in 1902?", a: "Mount Pelée erupted", w: ["Mount Etna", "Krakatoa", "Vesuvius"] }
+      ]},
+      { name: "Guadeloupe", x: 0.75, y: 0.48, questions: [
+        { q: "Which country does Guadeloupe belong to?", a: "France", w: ["Spain", "Netherlands", "Portugal"] },
+        { q: "What shape are the two main islands of Guadeloupe said to form?", a: "A butterfly", w: ["A heart", "A star", "A fish"] },
+        { q: "What is the national park in Guadeloupe famous for?", a: "Tropical rainforest and waterfall hikes", w: ["Deserts", "Ice caves", "Coral only"] }
+      ]},
+      { name: "Bonaire", x: 0.63, y: 0.78, questions: [
+        { q: "What are Bonaire, Curaçao, and Aruba collectively called?", a: "ABC Islands", w: ["XYZ Islands", "Caribbean Trio", "Dutch Three"] },
+        { q: "What water sport is Bonaire world-famous for?", a: "Scuba diving", w: ["Water polo", "Jet skiing", "Kayaking only"] },
+        { q: "What pink-colored birds are commonly seen in Bonaire?", a: "Flamingos", w: ["Parrots", "Pelicans", "Hummingbirds"] }
+      ]},
+      { name: "Anguilla", x: 0.70, y: 0.38, questions: [
+        { q: "Which country governs Anguilla?", a: "United Kingdom", w: ["France", "Netherlands", "Spain"] },
+        { q: "What is Anguilla most celebrated for?", a: "Stunning beaches", w: ["Mountains", "Volcanoes", "Rainforests"] },
+        { q: "What boat race is a national sport in Anguilla?", a: "Sailing", w: ["Rowing", "Kayaking", "Surfing"] }
+      ]},
+      { name: "British Virgin Islands", x: 0.64, y: 0.35, questions: [
+        { q: "What is the capital of the British Virgin Islands?", a: "Road Town", w: ["Charlotte Amalie", "George Town", "Spanish Town"] },
+        { q: "How many islands make up the BVI?", a: "About 60", w: ["5", "10", "200"] },
+        { q: "What famous bar in the BVI is only reachable by boat?", a: "The Soggy Dollar Bar", w: ["The Wet Penny", "The Sandy Coin", "The Sea Shell"] }
+      ]},
+      { name: "US Virgin Islands", x: 0.60, y: 0.38, questions: [
+        { q: "What is the capital of the US Virgin Islands?", a: "Charlotte Amalie", w: ["Road Town", "Christiansted", "Cruz Bay"] },
+        { q: "The USVI was purchased from which country?", a: "Denmark", w: ["Spain", "France", "Netherlands"] },
+        { q: "On which island is the capital located?", a: "St. Thomas", w: ["St. Croix", "St. John", "Water Island"] }
+      ]},
+      { name: "Puerto Rico", x: 0.52, y: 0.35, questions: [
+        { q: "What is the capital of Puerto Rico?", a: "San Juan", w: ["Ponce", "Mayagüez", "Bayamón"] },
+        { q: "What historic fortress is in Old San Juan?", a: "El Morro", w: ["Fort George", "Brimstone Hill", "Citadelle"] },
+        { q: "What genre of music is Puerto Rico famous for?", a: "Reggaeton", w: ["Calypso", "Soca", "Mento"] }
+      ]},
+      { name: "Cuba", x: 0.20, y: 0.35, questions: [
+        { q: "What is the capital of Cuba?", a: "Havana", w: ["Santiago", "Trinidad", "Varadero"] },
+        { q: "What classic cars are Cuba famous for?", a: "1950s American cars", w: ["Modern Ferraris", "British buses", "Japanese trucks"] },
+        { q: "What style of music originated in Cuba?", a: "Son Cubano/Salsa", w: ["Reggae", "Soca", "Merengue"] }
+      ]}
+    ]
+  }
+];
+
+// ─── ENCOURAGEMENT PHRASES ───
+const ENCOURAGE = {
+  correct: [
+    "Nice one!", "You got it!", "Smart cookie!", "Brilliant!", "Way to go!",
+    "That's right!", "You're a star!", "Amazing!", "Keep it up!", "Island expert!"
+  ],
+  wrong: [
+    "Good try!", "Almost!", "You'll get the next one!", "Keep going!",
+    "Don't worry!", "Learning is fun!", "Nice try!", "Onwards!"
+  ],
+  newIsland: [
+    "New island ahead!", "Let's explore!", "Off we go!",
+    "Adventure awaits!", "Here we come!", "Hop hop hop!"
+  ],
+  roundComplete: [
+    "Round complete!", "Awesome job!", "You're incredible!",
+    "What a journey!", "Superstar explorer!"
+  ]
+};
+function randomFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ─── GAME STATE ───
+let state = {
+  phase: 'start', // start, roundIntro, playing, victory
+  round: 0,
+  island: 0,
+  question: 0,
+  score: 0,
+  totalStars: 0,
+  roundScores: [0, 0, 0],
+  roundCorrect: [0, 0, 0],
+  roundStars: [0, 0, 0],
+  currentCorrect: 0,   // correct this round
+  attempts: {},         // key: "r-i-q" -> number of attempts
+  answeredCurrent: false,
+  isAnimating: false
+};
+
+// ─── DOM REFS ───
+const $ = id => document.getElementById(id);
+const topBar = $('top-bar');
+const progressLabel = $('progress-label');
+const starCount = $('star-count');
+const scoreCount = $('score-count');
+const startScreen = $('start-screen');
+const roundScreen = $('round-screen');
+const mapScreen = $('map-screen');
+const victoryScreen = $('victory-screen');
+const questionPanel = $('question-panel');
+const mangoGuide = $('mango-guide');
+const speechBubble = $('speech-bubble');
+const hopOverlay = $('hop-overlay');
+const hopMsg = $('hop-msg');
+const canvas = $('map-canvas');
+const ctx = canvas.getContext('2d');
+
+// ─── SCREEN MANAGEMENT ───
+function showScreen(screen) {
+  [startScreen, roundScreen, mapScreen, victoryScreen].forEach(s => {
+    s.classList.remove('visible');
+    s.classList.add('hidden');
+  });
+  screen.classList.remove('hidden');
+  screen.classList.add('visible');
+}
+
+// ─── SPEECH BUBBLE ───
+let speechTimeout = null;
+function showSpeech(text, dur=2500) {
+  clearTimeout(speechTimeout);
+  speechBubble.textContent = text;
+  speechBubble.classList.add('show');
+  speechTimeout = setTimeout(() => speechBubble.classList.remove('show'), dur);
+}
+
+// ─── UPDATE HUD ───
+function updateHUD() {
+  const rd = ROUNDS[state.round];
+  progressLabel.textContent = `Island ${state.island + 1}/10 — Q ${state.question + 1}/3`;
+  starCount.textContent = `★ ${state.totalStars}/9`;
+  scoreCount.textContent = `${state.score} pts`;
+  $('round-label').textContent = `${rd.emoji} Round ${state.round + 1}: ${rd.name}`;
+}
+
+// ─── MAP DRAWING ───
+let mapW = 0, mapH = 0;
+let islandPositions = []; // [{x, y, status}]
+
+function resizeCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * window.devicePixelRatio;
+  canvas.height = rect.height * window.devicePixelRatio;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+  ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+  mapW = rect.width;
+  mapH = rect.height;
+}
+
+function calcIslandPositions() {
+  const rd = ROUNDS[state.round];
+  const padTop = 75, padBottom = 220, padX = 40;
+  const usableW = mapW - padX * 2;
+  const usableH = mapH - padTop - padBottom;
+  islandPositions = rd.islands.map((isl, i) => ({
+    x: padX + isl.x * usableW,
+    y: padTop + isl.y * usableH,
+    name: isl.name,
+    status: i < state.island ? 'done' : i === state.island ? 'current' : 'locked'
+  }));
+}
+
+let animFrame = 0;
+function drawMap() {
+  animFrame++;
+  ctx.clearRect(0, 0, mapW, mapH);
+
+  // Draw ocean pattern
+  for (let i = 0; i < 30; i++) {
+    const ox = ((i * 137 + animFrame * 0.3) % (mapW + 100)) - 50;
+    const oy = ((i * 97 + animFrame * 0.15) % (mapH + 100)) - 50;
+    ctx.beginPath();
+    ctx.arc(ox, oy, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(105,240,174,0.08)';
+    ctx.fill();
+  }
+
+  // Draw dashed path connecting islands
+  if (islandPositions.length > 1) {
+    ctx.beginPath();
+    ctx.setLineDash([6, 6]);
+    ctx.strokeStyle = 'rgba(255,210,63,0.2)';
+    ctx.lineWidth = 2;
+    ctx.moveTo(islandPositions[0].x, islandPositions[0].y);
+    for (let i = 1; i < islandPositions.length; i++) {
+      ctx.lineTo(islandPositions[i].x, islandPositions[i].y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw active path (completed)
+    if (state.island > 0) {
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(0,200,83,0.5)';
+      ctx.lineWidth = 2.5;
+      ctx.moveTo(islandPositions[0].x, islandPositions[0].y);
+      for (let i = 1; i <= Math.min(state.island, islandPositions.length - 1); i++) {
+        ctx.lineTo(islandPositions[i].x, islandPositions[i].y);
+      }
+      ctx.stroke();
+    }
+  }
+
+  // Draw islands
+  islandPositions.forEach((pos, i) => {
+    const isCurrent = pos.status === 'current';
+    const isDone = pos.status === 'done';
+    const baseR = isCurrent ? 18 : 14;
+    const r = isCurrent ? baseR + Math.sin(animFrame * 0.06) * 3 : baseR;
+
+    // Glow for current
+    if (isCurrent) {
+      const glow = ctx.createRadialGradient(pos.x, pos.y, r, pos.x, pos.y, r * 3);
+      glow.addColorStop(0, 'rgba(255,210,63,0.25)');
+      glow.addColorStop(1, 'rgba(255,210,63,0)');
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, r * 3, 0, Math.PI * 2);
+      ctx.fillStyle = glow;
+      ctx.fill();
+    }
+
+    // Island circle
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
+    if (isDone) {
+      ctx.fillStyle = '#00C853';
+      ctx.fill();
+      ctx.strokeStyle = '#69F0AE';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    } else if (isCurrent) {
+      ctx.fillStyle = '#FFD23F';
+      ctx.fill();
+      ctx.strokeStyle = '#FFBE0B';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.08)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // Star on completed
+    if (isDone) {
+      ctx.font = `bold ${r * 0.9}px sans-serif`;
+      ctx.fillStyle = '#FFD23F';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('★', pos.x, pos.y);
+    }
+
+    // Island number for current/locked
+    if (!isDone) {
+      ctx.font = `bold ${isCurrent ? 14 : 11}px 'General Sans', sans-serif`;
+      ctx.fillStyle = isCurrent ? '#0A1628' : 'rgba(255,255,255,0.4)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(i + 1, pos.x, pos.y);
+    }
+
+    // Name label
+    const labelY = pos.y + r + 14;
+    ctx.font = `${isCurrent ? '600' : '400'} ${isCurrent ? 12 : 10}px 'General Sans', sans-serif`;
+    ctx.fillStyle = isCurrent ? '#FFD23F' : isDone ? '#69F0AE' : 'rgba(255,255,255,0.35)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(pos.name, pos.x, labelY);
+  });
+}
+
+let mapAnimId = null;
+function startMapLoop() {
+  if (mapAnimId) cancelAnimationFrame(mapAnimId);
+  function loop() {
+    drawMap();
+    mapAnimId = requestAnimationFrame(loop);
+  }
+  loop();
+}
+function stopMapLoop() {
+  if (mapAnimId) cancelAnimationFrame(mapAnimId);
+  mapAnimId = null;
+}
+
+// ─── QUESTION LOGIC ───
+function showQuestion() {
+  const rd = ROUNDS[state.round];
+  const isl = rd.islands[state.island];
+  const qData = isl.questions[state.question];
+  state.answeredCurrent = false;
+
+  $('q-island').textContent = `${rd.emoji} ${isl.name}`;
+  $('q-progress').textContent = `Island ${state.island + 1}/10 · Q ${state.question + 1}/3`;
+  $('q-text').textContent = qData.q;
+
+  // Build options
+  const options = [qData.a, ...qData.w.slice(0, rd.optionCount - 1)];
+  // Shuffle
+  for (let i = options.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [options[i], options[j]] = [options[j], options[i]];
+  }
+
+  const optContainer = $('q-options');
+  optContainer.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'q-option';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => handleAnswer(btn, opt, qData.a, options));
+    optContainer.appendChild(btn);
+  });
+
+  questionPanel.classList.add('open');
+  mangoGuide.classList.add('hide-for-q');
+  updateHUD();
+}
+
+function handleAnswer(btn, chosen, correct, allOptions) {
+  if (state.answeredCurrent || state.isAnimating) return;
+
+  const key = `${state.round}-${state.island}-${state.question}`;
+  if (!state.attempts[key]) state.attempts[key] = 0;
+  state.attempts[key]++;
+
+  const allBtns = document.querySelectorAll('.q-option');
+
+  if (chosen === correct) {
+    state.answeredCurrent = true;
+    btn.classList.add('correct');
+    allBtns.forEach(b => { if (b !== btn) b.classList.add('disabled'); });
+    sfxCorrect();
+
+    // Score
+    const pts = state.attempts[key] === 1 ? 10 : 5;
+    state.score += pts;
+    state.roundScores[state.round] += pts;
+    state.currentCorrect++;
+    state.roundCorrect[state.round]++;
+
+    showSpeech(randomFrom(ENCOURAGE.correct));
+
+    setTimeout(() => advanceQuestion(), 1000);
+  } else {
+    btn.classList.add('wrong');
+    btn.classList.add('disabled');
+    sfxWrong();
+
+    // If first wrong attempt, show correct answer and move on
+    if (state.attempts[key] >= 1) {
+      state.answeredCurrent = true;
+      allBtns.forEach(b => {
+        b.classList.add('disabled');
+        if (b.textContent === correct) b.classList.add('show-correct');
+      });
+      showSpeech(randomFrom(ENCOURAGE.wrong));
+      setTimeout(() => advanceQuestion(), 1500);
+    }
+  }
+}
+
+function advanceQuestion() {
+  state.question++;
+  if (state.question >= 3) {
+    // Island complete
+    state.question = 0;
+    state.island++;
+    questionPanel.classList.remove('open');
+    mangoGuide.classList.remove('hide-for-q');
+
+    if (state.island >= 10) {
+      // Round complete
+      completeRound();
+    } else {
+      // Hop to next island
+      showHopAnimation();
+    }
+  } else {
+    // Next question same island
+    showQuestion();
+  }
+}
+
+function showHopAnimation() {
+  state.isAnimating = true;
+  const rd = ROUNDS[state.round];
+  const nextIsland = rd.islands[state.island];
+
+  calcIslandPositions();
+  hopMsg.textContent = `🌊 Hopping to ${nextIsland.name}!`;
+  hopOverlay.classList.add('show');
+  sfxHop();
+  showSpeech(randomFrom(ENCOURAGE.newIsland), 2000);
+
+  setTimeout(() => {
+    hopOverlay.classList.remove('show');
+    state.isAnimating = false;
+    showQuestion();
+  }, 1400);
+}
+
+function completeRound() {
+  state.isAnimating = true;
+  sfxRoundWin();
+
+  // Calculate stars for this round
+  const c = state.roundCorrect[state.round];
+  let stars = 0;
+  if (c >= 30) stars = 3;
+  else if (c >= 24) stars = 2;
+  else if (c >= 18) stars = 1;
+  state.roundStars[state.round] = stars;
+  state.totalStars += stars;
+
+  showSpeech(randomFrom(ENCOURAGE.roundComplete), 3000);
+
+  setTimeout(() => {
+    state.isAnimating = false;
+    state.round++;
+    if (state.round >= 3) {
+      showVictory();
+    } else {
+      state.island = 0;
+      state.question = 0;
+      state.currentCorrect = 0;
+      if (state.round > 0 && !window.__unlocked) {
+        showGate();
+        return;
+      }
+      showRoundIntro();
+    }
+  }, 1800);
+}
+
+// ─── ROUND INTRO ───
+function showRoundIntro() {
+  stopMapLoop();
+  const rd = ROUNDS[state.round];
+  $('round-number').textContent = `Round ${state.round + 1} of 3`;
+  $('round-title').textContent = `${rd.emoji} ${rd.name}`;
+  $('round-desc').textContent = rd.desc;
+  $('round-fact').innerHTML = rd.fact;
+  showScreen(roundScreen);
+  topBar.style.display = 'flex';
+  updateHUD();
+}
+
+function startRound() {
+  showScreen(mapScreen);
+  resizeCanvas();
+  calcIslandPositions();
+  startMapLoop();
+  sfxClick();
+  setTimeout(() => {
+    showSpeech(`Let's explore ${ROUNDS[state.round].islands[0].name}!`, 2000);
+    showQuestion();
+  }, 600);
+}
+
+// ─── VICTORY ───
+function showVictory() {
+  stopMapLoop();
+  questionPanel.classList.remove('open');
+  mangoGuide.classList.remove('hide-for-q');
+
+  const totalQ = 90;
+  const totalCorrect = state.roundCorrect.reduce((a, b) => a + b, 0);
+
+  $('v-subtitle').textContent = `You visited 30 islands and answered ${totalCorrect}/${totalQ} questions correctly!`;
+  $('v-score').textContent = `${state.score} Points`;
+
+  let starStr = '';
+  for (let i = 0; i < state.totalStars; i++) starStr += '⭐';
+  for (let i = state.totalStars; i < 9; i++) starStr += '☆';
+  $('v-stars-big').textContent = starStr;
+
+  const breakdown = $('v-breakdown');
+  breakdown.innerHTML = '';
+  for (let r = 0; r < 3; r++) {
+    const rd = ROUNDS[r];
+    let starsDisp = '';
+    for (let s = 0; s < state.roundStars[r]; s++) starsDisp += '⭐';
+    for (let s = state.roundStars[r]; s < 3; s++) starsDisp += '☆';
+    breakdown.innerHTML += `
+      <div class="vb-row">
+        <span class="vb-label">${rd.emoji} R${r + 1}: ${rd.name}</span>
+        <span class="vb-val">${state.roundCorrect[r]}/30</span>
+        <span class="vb-stars">${starsDisp}</span>
+        <span class="vb-val">${state.roundScores[r]} pts</span>
+      </div>`;
+  }
+  breakdown.innerHTML += `
+    <div class="vb-row" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
+      <span class="vb-label">Total</span>
+      <span class="vb-val">${totalCorrect}/90</span>
+      <span class="vb-stars">★ ${state.totalStars}/9</span>
+      <span class="vb-val">${state.score} pts</span>
+    </div>`;
+
+  showScreen(victoryScreen);
+  sfxRoundWin();
+  spawnConfetti();
+}
+
+// ─── CONFETTI ───
+function spawnConfetti() {
+  const colors = ['#FFD23F', '#00C853', '#69F0AE', '#FF6B6B', '#FF9F43', '#4FC3F7', '#BA68C8'];
+  const container = document.getElementById('game-container');
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDuration = (2 + Math.random() * 3) + 's';
+    piece.style.animationDelay = (Math.random() * 1.5) + 's';
+    piece.style.width = (4 + Math.random() * 8) + 'px';
+    piece.style.height = (4 + Math.random() * 8) + 'px';
+    container.appendChild(piece);
+    setTimeout(() => piece.remove(), 6000);
+  }
+}
+
+// ─── RESET GAME ───
+function resetGame() {
+  state = {
+    phase: 'start', round: 0, island: 0, question: 0,
+    score: 0, totalStars: 0,
+    roundScores: [0, 0, 0], roundCorrect: [0, 0, 0], roundStars: [0, 0, 0],
+    currentCorrect: 0, attempts: {},
+    answeredCurrent: false, isAnimating: false
+  };
+  topBar.style.display = 'none';
+  questionPanel.classList.remove('open');
+  mangoGuide.classList.remove('hide-for-q');
+  showScreen(startScreen);
+}
+
+// ─── EVENT LISTENERS ───
+$('btn-start').addEventListener('click', () => {
+  initAudio();
+  sfxClick();
+  state.phase = 'roundIntro';
+  showRoundIntro();
+});
+
+$('btn-round-go').addEventListener('click', () => {
+  sfxClick();
+  state.phase = 'playing';
+  startRound();
+});
+
+$('btn-replay').addEventListener('click', () => {
+  sfxClick();
+  resetGame();
+});
+
+// Resize handling
+window.addEventListener('resize', () => {
+  if (state.phase === 'playing') {
+    resizeCanvas();
+    calcIslandPositions();
+  }
+});
+
+// Keyboard accessibility
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    if (state.phase === 'start') {
+      $('btn-start').click();
+    } else if (state.phase === 'roundIntro') {
+      $('btn-round-go').click();
+    }
+  }
+});
+
+// Initial state
+topBar.style.display = 'none';
+showScreen(startScreen);
+
+
+// ===== FREE-TO-PAID GATE =====
+const GATE_CONFIG = {"charImg":"./images/mango_moko.png","charAlt":"Mango Moko","gateTitle":"Ready for more islands?","gateSubtitle":"You've explored the first 10 islands! Unlock all 30 Caribbean islands, 90 trivia questions, and 3 more games.","freeMaxRound":0,"gateCheck":"ISLAND"};
+function showGate() {
+  const g = document.getElementById('gateOverlay');
+  const img = document.getElementById('gateCharImg');
+  const title = document.getElementById('gateTitle');
+  const subtitle = document.getElementById('gateSubtitle');
+  img.src = GATE_CONFIG.charImg;
+  img.alt = GATE_CONFIG.charAlt;
+  title.textContent = GATE_CONFIG.gateTitle;
+  subtitle.textContent = GATE_CONFIG.gateSubtitle;
+  g.classList.add('visible');
+}
+function isGated() { return false; } // Set to true when auth is wired up
+
+</script>
+
+<div class="gate-overlay" id="gateOverlay">
+  <div class="gate-lock">🔒</div>
+  <img src="./images/mango_moko.png" alt="Mango Moko" class="gate-character" id="gateCharImg">
+  <h2 class="gate-title" id="gateTitle">Want to keep playing?</h2>
+  <p class="gate-subtitle" id="gateSubtitle"></p>
+  <div class="gate-features">
+    <div class="gate-feature">All levels in all 4 games</div>
+    <div class="gate-feature">Full Likkle Legends learning portal</div>
+    <div class="gate-feature">Caribbean stories, songs, and activities</div>
+    <div class="gate-feature">New content every month</div>
+  </div>
+  <a href="https://www.likklelegends.com/#pricing" class="gate-cta">Start the $10 Legend Intro Pass →</a>
+  <a href="index.html" class="gate-free-btn">← Back to Free Games</a>
+  <p class="gate-guarantee">🛡️ 30-day money-back guarantee. Cancel anytime.</p>
+</div>
+
+</body>
+</html>

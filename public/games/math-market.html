@@ -1,0 +1,1647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>R.O.T.I.'s Math Market</title>
+<link href="https://api.fontshare.com/v2/css?f[]=chillax@400,500,600,700&f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & TOKENS ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --font-display: 'Chillax', sans-serif;
+  --font-body: 'General Sans', sans-serif;
+  --teal: #2EC4B6;
+  --teal-dark: #01B4A0;
+  --teal-glow: rgba(46,196,182,0.3);
+  --gold: #FFD23F;
+  --gold-dark: #E6B800;
+  --gold-glow: rgba(255,210,63,0.35);
+  --dark-blue: #0A1628;
+  --dark-blue-light: #122240;
+  --navy: #1A2D50;
+  --white: #F7F6F2;
+  --cream: #FFF8E7;
+  --coral: #FF6B6B;
+  --green: #4ADE80;
+  --green-dark: #22C55E;
+  --orange: #FF9F43;
+  --purple: #A78BFA;
+  --wood-light: #D4A574;
+  --wood: #B8834A;
+  --wood-dark: #8B6233;
+  --awning-red: #E74C3C;
+  --awning-cream: #FFECD2;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+  --transition: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--dark-blue);
+  color: var(--white);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ===== BACKGROUND ===== */
+.bg-scene {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg, #0B1A30 0%, #122848 40%, #1A3A5C 70%, #2A6478 100%);
+}
+.bg-scene::before {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 30%;
+  background: linear-gradient(180deg, transparent, rgba(46,196,182,0.08));
+}
+/* Stars */
+.bg-stars {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1.5px 1.5px at 25% 8%, rgba(255,210,63,0.6), transparent),
+    radial-gradient(1px 1px at 40% 22%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 55% 5%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1.5px 1.5px at 70% 18%, rgba(46,196,182,0.5), transparent),
+    radial-gradient(1px 1px at 85% 12%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 15% 35%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 60% 30%, rgba(255,210,63,0.4), transparent),
+    radial-gradient(1.5px 1.5px at 90% 25%, rgba(255,255,255,0.5), transparent);
+}
+
+/* ===== SCREENS ===== */
+.screen {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 1rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.screen.active {
+  opacity: 1; pointer-events: auto;
+}
+
+/* ===== BACK LINK ===== */
+.back-link {
+  position: fixed; top: 0.75rem; left: 0.75rem; z-index: 100;
+  font-family: var(--font-body); font-size: 0.85rem; font-weight: 600;
+  color: var(--gold); text-decoration: none;
+  background: rgba(10,22,40,0.7); backdrop-filter: blur(8px);
+  padding: 0.4rem 0.75rem; border-radius: var(--radius-full);
+  border: 1px solid rgba(255,210,63,0.25);
+  transition: all var(--transition);
+}
+.back-link:hover { background: rgba(255,210,63,0.15); }
+.back-link::before { content: '← '; }
+/* Back link hidden during gameplay via JS class on body */
+body.playing .back-link { display: none; }
+
+/* ===== START SCREEN ===== */
+.start-screen {
+  text-align: center;
+  gap: 1rem;
+}
+
+.start-roti-img {
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--gold);
+  box-shadow: 0 0 30px var(--gold-glow), 0 0 60px rgba(46,196,182,0.15);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.start-title {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+
+.start-subtitle {
+  font-family: var(--font-display); font-weight: 500;
+  font-size: clamp(0.95rem, 2.5vw, 1.2rem);
+  color: var(--teal);
+  margin-top: -0.25rem;
+}
+
+.level-preview {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem;
+  width: 100%; max-width: 400px;
+  margin: 0.25rem auto;
+}
+
+.level-preview-item {
+  display: flex; align-items: center; gap: 0.4rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.6rem;
+  font-size: 0.72rem; font-weight: 500;
+  color: rgba(247,246,242,0.7);
+}
+
+.level-preview-item .lp-num {
+  font-family: var(--font-display); font-weight: 700;
+  color: var(--gold); font-size: 0.75rem;
+  min-width: 1.1rem;
+}
+
+.btn-play {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  color: var(--dark-blue);
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  border: none; border-radius: var(--radius-xl);
+  padding: 1rem 2.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 20px var(--gold-glow);
+  transition: all var(--transition);
+  margin-top: 0.25rem;
+}
+.btn-play:hover { transform: translateY(-2px); box-shadow: 0 6px 30px var(--gold-glow); }
+.btn-play:active { transform: translateY(0); }
+
+/* ===== HUD ===== */
+.hud {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  display: none; flex-direction: column;
+  background: rgba(10,22,40,0.92); backdrop-filter: blur(10px);
+  border-bottom: 2px solid rgba(46,196,182,0.2);
+  padding: 0.5rem 0.75rem 0.4rem;
+}
+.hud.visible { display: flex; }
+
+.hud-back {
+  font-family: var(--font-body); font-size: 0.7rem; font-weight: 600;
+  color: var(--gold); text-decoration: none;
+  opacity: 0.7;
+}
+.hud-back:hover { opacity: 1; }
+.hud-back::before { content: '← '; }
+
+.hud-top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.4rem; font-size: 0.8rem; font-weight: 600;
+  flex-wrap: nowrap;
+}
+
+.hud-level {
+  font-family: var(--font-display); font-weight: 700;
+  color: var(--gold); font-size: 0.85rem;
+}
+.hud-question { color: rgba(247,246,242,0.7); }
+.hud-score {
+  display: flex; align-items: center; gap: 0.3rem;
+  color: var(--gold); font-variant-numeric: tabular-nums;
+}
+.hud-stars {
+  display: flex; align-items: center; gap: 0.2rem;
+  font-size: 0.85rem;
+}
+.hud-stars .star-count {
+  font-size: 0.8rem; color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-progress {
+  width: 100%; height: 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px; margin-top: 0.35rem;
+  overflow: hidden;
+}
+.hud-progress-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+  transition: width 0.4s ease;
+  min-width: 8px;
+}
+
+/* ===== MARKET STALL ===== */
+.game-area {
+  position: fixed; inset: 0; z-index: 10;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  padding-top: 68px;
+  overflow-y: auto;
+}
+.game-area.visible { display: flex; }
+
+.market-stall {
+  width: 100%; max-width: 640px;
+  margin: 0 auto;
+  padding: 0.5rem 0.75rem 1rem;
+  display: flex; flex-direction: column;
+}
+
+/* Awning */
+.awning {
+  width: 100%; height: 28px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--awning-red) 0px, var(--awning-red) 28px,
+    var(--awning-cream) 28px, var(--awning-cream) 56px
+  );
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  position: relative;
+}
+.awning::after {
+  content: '';
+  position: absolute; bottom: -8px; left: 0; right: 0; height: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--awning-red) 0px, var(--awning-red) 14px,
+    transparent 14px, transparent 28px
+  );
+  clip-path: polygon(0% 0%, 3.5% 100%, 7% 0%, 10.5% 100%, 14% 0%, 17.5% 100%, 21% 0%, 24.5% 100%, 28% 0%, 31.5% 100%, 35% 0%, 38.5% 100%, 42% 0%, 45.5% 100%, 49% 0%, 52.5% 100%, 56% 0%, 59.5% 100%, 63% 0%, 66.5% 100%, 70% 0%, 73.5% 100%, 77% 0%, 80.5% 100%, 84% 0%, 87.5% 100%, 91% 0%, 94.5% 100%, 98% 0%, 100% 0%);
+}
+
+/* Stall body */
+.stall-body {
+  background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood) 100%);
+  border-left: 4px solid var(--wood-dark);
+  border-right: 4px solid var(--wood-dark);
+  border-bottom: 6px solid var(--wood-dark);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 0.75rem;
+  display: flex; flex-direction: column; gap: 0.6rem;
+}
+
+/* Character row */
+.character-row {
+  display: flex; align-items: flex-start; gap: 0.6rem;
+}
+
+.roti-helper {
+  flex-shrink: 0; width: 56px; height: 56px;
+  border-radius: 50%; object-fit: cover;
+  border: 3px solid var(--gold);
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.speech-bubble {
+  position: relative;
+  background: var(--cream); color: var(--dark-blue);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem; font-weight: 500;
+  line-height: 1.35;
+  flex: 1;
+  box-shadow: var(--shadow-sm);
+}
+.speech-bubble::before {
+  content: '';
+  position: absolute; left: -8px; top: 16px;
+  border: 6px solid transparent;
+  border-right-color: var(--cream);
+}
+
+.customer-emoji {
+  position: absolute; right: 0.5rem; top: -0.2rem;
+  font-size: 1.4rem;
+}
+
+/* Fruit display */
+.fruit-display {
+  background: rgba(10,22,40,0.15);
+  border: 2px dashed rgba(139,98,51,0.4);
+  border-radius: var(--radius-md);
+  padding: 0.6rem;
+  min-height: 56px;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 0.15rem;
+  font-size: 1.8rem;
+  line-height: 1;
+  position: relative;
+}
+.fruit-display .plus-sign,
+.fruit-display .equals-sign {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1.4rem; color: var(--dark-blue);
+  margin: 0 0.25rem;
+}
+
+.fruit-group {
+  display: flex; flex-wrap: wrap; gap: 0.1rem;
+  justify-content: center; align-items: center;
+}
+.fruit-item {
+  display: inline-block;
+  transition: all 0.4s ease;
+}
+.fruit-item.removed {
+  opacity: 0.2; transform: scale(0.7);
+  text-decoration: line-through;
+  position: relative;
+}
+.fruit-item.removed::after {
+  content: '✕';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; color: var(--coral);
+  font-weight: 700;
+}
+
+/* Price tag (for level 6) */
+.price-tag {
+  display: inline-flex; align-items: center; gap: 0.2rem;
+  background: var(--gold); color: var(--dark-blue);
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.15rem 0.5rem; border-radius: var(--radius-full);
+  margin: 0.15rem;
+}
+
+/* Answer buttons */
+.answers {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+.answer-btn {
+  display: flex; align-items: center; gap: 0.75rem;
+  width: 100%; min-height: 60px;
+  font-family: var(--font-display); font-weight: 600;
+  font-size: 1.2rem;
+  background: var(--dark-blue-light);
+  color: var(--white);
+  border: 2px solid rgba(46,196,182,0.25);
+  border-radius: var(--radius-lg);
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  -webkit-tap-highlight-color: transparent;
+}
+.answer-btn:hover:not(:disabled) {
+  border-color: var(--teal);
+  background: rgba(46,196,182,0.1);
+  transform: translateY(-1px);
+}
+.answer-btn:active:not(:disabled) { transform: translateY(0); }
+.answer-btn .btn-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(46,196,182,0.15);
+  color: var(--teal);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 700;
+  flex-shrink: 0;
+}
+.answer-btn .btn-label { flex: 1; text-align: left; }
+
+.answer-btn.correct {
+  background: rgba(74,222,128,0.15);
+  border-color: var(--green);
+  color: var(--green);
+  animation: popCorrect 0.4s ease;
+}
+.answer-btn.correct .btn-num {
+  background: var(--green); color: var(--dark-blue);
+}
+
+.answer-btn.wrong {
+  background: rgba(255,107,107,0.1);
+  border-color: var(--coral);
+  color: rgba(255,107,107,0.6);
+  animation: shakeWrong 0.4s ease;
+}
+.answer-btn.wrong .btn-num {
+  background: rgba(255,107,107,0.2); color: var(--coral);
+}
+
+.answer-btn:disabled {
+  opacity: 0.45; cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes shakeWrong {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(4px); }
+}
+@keyframes popCorrect {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+
+/* Encouragement text */
+.encouragement {
+  text-align: center; font-family: var(--font-display);
+  font-weight: 600; font-size: 0.9rem;
+  min-height: 1.4rem;
+  margin-top: 0.25rem;
+}
+.encouragement.correct-msg { color: var(--green); }
+.encouragement.wrong-msg { color: var(--coral); }
+
+/* ===== COIN ANIMATION ===== */
+.flying-coin {
+  position: fixed; z-index: 200;
+  width: 28px; height: 28px;
+  background: radial-gradient(circle at 40% 35%, var(--gold), var(--gold-dark));
+  border-radius: 50%;
+  border: 2px solid var(--gold-dark);
+  font-size: 0.7rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--dark-blue);
+  pointer-events: none;
+}
+
+/* ===== LEVEL COMPLETE OVERLAY ===== */
+.overlay {
+  position: fixed; inset: 0; z-index: 80;
+  background: rgba(10,22,40,0.9);
+  backdrop-filter: blur(8px);
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 1.5rem; text-align: center;
+  gap: 0.75rem;
+}
+.overlay.visible { display: flex; }
+
+.overlay-title {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.overlay-level-name {
+  font-family: var(--font-display); font-weight: 600;
+  font-size: 1.1rem; color: var(--teal);
+}
+
+.overlay-stars {
+  font-size: 2.5rem; letter-spacing: 0.3rem;
+  line-height: 1;
+}
+.overlay-stars .star-on { color: var(--gold); }
+.overlay-stars .star-off { color: rgba(255,255,255,0.15); }
+
+.overlay-accuracy {
+  font-size: 0.95rem; color: rgba(247,246,242,0.8);
+  font-weight: 500;
+}
+
+.overlay-fact {
+  background: rgba(46,196,182,0.1);
+  border: 1px solid rgba(46,196,182,0.2);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1rem;
+  max-width: 420px;
+  font-size: 0.82rem; font-weight: 500;
+  color: rgba(247,246,242,0.75);
+  line-height: 1.4;
+}
+.overlay-fact strong { color: var(--teal); }
+
+.btn-next {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--dark-blue);
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  border: none; border-radius: var(--radius-xl);
+  padding: 0.85rem 2.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px var(--teal-glow);
+  transition: all var(--transition);
+  margin-top: 0.25rem;
+}
+.btn-next:hover { transform: translateY(-2px); box-shadow: 0 6px 24px var(--teal-glow); }
+
+/* ===== VICTORY SCREEN ===== */
+.victory-screen { gap: 0.75rem; }
+
+.victory-roti {
+  width: 120px; height: 120px;
+  border-radius: 50%; object-fit: cover;
+  border: 4px solid var(--gold);
+  box-shadow: 0 0 40px var(--gold-glow);
+  animation: float 3s ease-in-out infinite;
+}
+
+.victory-title {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.6rem, 4.5vw, 2.5rem);
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.victory-badge {
+  font-family: var(--font-display); font-weight: 600;
+  font-size: 1.1rem; color: var(--teal);
+}
+
+.victory-score {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 2rem; color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+.victory-score small { font-size: 1rem; color: rgba(247,246,242,0.5); font-weight: 500; }
+
+.victory-breakdown {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem;
+  width: 100%; max-width: 420px;
+}
+.victory-breakdown-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.vb-item {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem; text-align: center;
+}
+.vb-item .vb-label {
+  font-size: 0.6rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.04em; color: rgba(247,246,242,0.5);
+  margin-bottom: 0.15rem;
+}
+.vb-item .vb-stars { font-size: 1rem; line-height: 1; }
+
+.victory-buttons {
+  display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center;
+  margin-top: 0.25rem;
+}
+.btn-victory {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 1rem; border: none; border-radius: var(--radius-xl);
+  padding: 0.8rem 2rem; cursor: pointer;
+  transition: all var(--transition);
+}
+.btn-victory:hover { transform: translateY(-2px); }
+.btn-victory.primary {
+  background: linear-gradient(135deg, var(--gold), var(--orange));
+  color: var(--dark-blue);
+}
+.btn-victory.secondary {
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.15);
+  color: var(--white);
+}
+
+/* ===== CONFETTI ===== */
+.confetti-piece {
+  position: fixed; z-index: 300;
+  width: 8px; height: 12px;
+  pointer-events: none;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  .fruit-display { font-size: 1.5rem; padding: 0.4rem; }
+  .speech-bubble { font-size: 0.82rem; padding: 0.5rem 0.6rem; }
+  .roti-helper { width: 44px; height: 44px; }
+  .answer-btn { min-height: 54px; font-size: 1.05rem; }
+  .stall-body { padding: 0.5rem; }
+  .level-preview { grid-template-columns: 1fr; }
+  .victory-breakdown { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 640px) {
+  .fruit-display { font-size: 2rem; }
+  .answers { flex-direction: row; }
+  .answer-btn { flex: 1; flex-direction: column; text-align: center; min-height: 70px; }
+  .answer-btn .btn-label { text-align: center; }
+}
+
+/* ===== SUBSCRIPTION GATE ===== */
+.gate-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(10, 22, 40, 0.95);
+  backdrop-filter: blur(12px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  animation: gateFadeIn 0.4s ease;
+}
+.gate-overlay.visible { display: flex; }
+@keyframes gateFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.gate-lock { font-size: 4rem; margin-bottom: 1rem; animation: gateBounce 1s ease infinite alternate; }
+@keyframes gateBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
+.gate-title {
+  font-family: var(--font-display, 'Chillax', sans-serif);
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, #FFD23F, #FF6B35);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+.gate-subtitle {
+  font-size: 1.1rem;
+  color: #8EA4C8;
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+  line-height: 1.5;
+}
+.gate-character {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(255, 210, 63, 0.4);
+  margin-bottom: 1rem;
+  box-shadow: 0 0 30px rgba(255, 210, 63, 0.2);
+}
+.gate-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+.gate-feature {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.95rem; color: #B8C8E0;
+}
+.gate-feature::before { content: '✅'; }
+.gate-cta {
+  display: inline-block;
+  padding: 0.9rem 2rem;
+  border-radius: 14px;
+  font-family: var(--font-display, 'Chillax', sans-serif);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  background: linear-gradient(135deg, #FFD23F, #FF6B35);
+  border: none; cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.35);
+}
+.gate-cta:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(255, 107, 53, 0.45); }
+.gate-free-btn {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 10px;
+  font-family: var(--font-body, 'General Sans', sans-serif);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #8EA4C8;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.gate-free-btn:hover { background: rgba(255,255,255,0.1); color: #F0F4FF; }
+.gate-guarantee {
+  margin-top: 1rem;
+  font-size: 0.78rem;
+  color: #5A6E8C;
+}
+
+</style>
+</head>
+<body>
+
+<div class="bg-scene"><div class="bg-stars"></div></div>
+<a href="index.html" class="back-link">Games</a>
+
+<!-- ===== START SCREEN ===== -->
+<div id="startScreen" class="screen start-screen active">
+  <img src="./images/roti-new.jpg" alt="R.O.T.I. — a cute gold-and-teal robot" class="start-roti-img">
+  <h1 class="start-title">R.O.T.I.'s Math Market</h1>
+  <p class="start-subtitle">6 Levels of Caribbean Math Fun!</p>
+  <div class="level-preview">
+    <div class="level-preview-item"><span class="lp-num">1</span> Counting Coconuts</div>
+    <div class="level-preview-item"><span class="lp-num">2</span> Fruit Addition</div>
+    <div class="level-preview-item"><span class="lp-num">3</span> Sharing with Friends</div>
+    <div class="level-preview-item"><span class="lp-num">4</span> Big Market Day</div>
+    <div class="level-preview-item"><span class="lp-num">5</span> Market Mix-Up</div>
+    <div class="level-preview-item"><span class="lp-num">6</span> Making Change</div>
+  </div>
+  <button class="btn-play" id="btnPlay">🏪 Open the Market!</button>
+</div>
+
+<!-- ===== HUD ===== -->
+<div id="hud" class="hud">
+  <div class="hud-top">
+    <a href="index.html" class="hud-back">Games</a>
+    <span class="hud-level" id="hudLevel">Level 1/6</span>
+    <span class="hud-question" id="hudQuestion">Q 1/10</span>
+    <span class="hud-stars">⭐ <span class="star-count" id="hudStars">0</span>/18</span>
+    <span class="hud-score">🪙 <span id="hudScore">0</span></span>
+  </div>
+  <div class="hud-progress"><div class="hud-progress-fill" id="hudProgress" style="width:0%"></div></div>
+</div>
+
+<!-- ===== GAME AREA ===== -->
+<div id="gameArea" class="game-area">
+  <div class="market-stall">
+    <div class="awning"></div>
+    <div class="stall-body">
+      <div class="character-row">
+        <img src="./images/roti-new.jpg" alt="R.O.T.I." class="roti-helper">
+        <div class="speech-bubble" id="speechBubble">
+          Welcome to the market!
+          <span class="customer-emoji" id="customerEmoji">🧑</span>
+        </div>
+      </div>
+      <div class="fruit-display" id="fruitDisplay"></div>
+      <div class="answers" id="answersContainer"></div>
+      <div class="encouragement" id="encouragement"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LEVEL COMPLETE OVERLAY ===== -->
+<div id="levelOverlay" class="overlay">
+  <div class="overlay-title" id="overlayTitle">Level Complete!</div>
+  <div class="overlay-level-name" id="overlayLevelName"></div>
+  <div class="overlay-stars" id="overlayStars"></div>
+  <div class="overlay-accuracy" id="overlayAccuracy"></div>
+  <div class="overlay-fact" id="overlayFact"></div>
+  <button class="btn-next" id="btnNext">Next Level →</button>
+</div>
+
+<!-- ===== VICTORY SCREEN ===== -->
+<div id="victoryScreen" class="screen victory-screen">
+  <img src="./images/roti-new.jpg" alt="R.O.T.I. celebrating" class="victory-roti">
+  <h2 class="victory-title" id="victoryTitle">Math Master!</h2>
+  <div class="victory-badge" id="victoryBadge"></div>
+  <div class="victory-score" id="victoryScore">0 <small>/ 600</small></div>
+  <div class="victory-breakdown" id="victoryBreakdown"></div>
+  <div class="victory-buttons">
+    <button class="btn-victory primary" id="btnReplay">🔄 Play Again</button>
+    <a href="index.html" class="btn-victory secondary" style="text-decoration:none;">🏠 Back to Games</a>
+  </div>
+</div>
+
+<script>
+/* ===================================================================
+   R.O.T.I.'s Math Market — Deep Edition
+   6 Levels × 10 Questions = 60 total
+   =================================================================== */
+
+// ===== AUDIO ENGINE =====
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playTone(freq, duration, type = 'sine', vol = 0.15) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+function sfxCorrect() {
+  playTone(523, 0.1, 'sine', 0.15);
+  setTimeout(() => playTone(659, 0.1, 'sine', 0.15), 80);
+  setTimeout(() => playTone(784, 0.15, 'sine', 0.18), 160);
+}
+
+function sfxWrong() {
+  playTone(200, 0.15, 'square', 0.1);
+  setTimeout(() => playTone(160, 0.2, 'square', 0.08), 100);
+}
+
+function sfxCoin() {
+  playTone(1200, 0.06, 'sine', 0.12);
+  setTimeout(() => playTone(1600, 0.08, 'sine', 0.1), 50);
+}
+
+function sfxLevelUp() {
+  const notes = [523, 587, 659, 784, 880, 1047];
+  notes.forEach((f, i) => {
+    setTimeout(() => playTone(f, 0.15, 'sine', 0.13), i * 80);
+  });
+}
+
+function sfxVictory() {
+  const notes = [523, 659, 784, 1047, 784, 1047, 1319];
+  notes.forEach((f, i) => {
+    setTimeout(() => playTone(f, 0.2, 'triangle', 0.12), i * 120);
+  });
+}
+
+// ===== DATA =====
+const FRUITS = [
+  { name: 'mango', emoji: '🥭', plural: 'mangoes', price: 2 },
+  { name: 'coconut', emoji: '🥥', plural: 'coconuts', price: 3 },
+  { name: 'banana', emoji: '🍌', plural: 'bananas', price: 1 },
+  { name: 'pineapple', emoji: '🍍', plural: 'pineapples', price: 4 },
+  { name: 'pepper', emoji: '🌶️', plural: 'peppers', price: 1 },
+  { name: 'lime', emoji: '🍋', plural: 'limes', price: 1 },
+];
+
+const MARKET_ITEMS = [
+  ...FRUITS,
+  { name: 'avocado', emoji: '🥑', plural: 'avocados', price: 3 },
+  { name: 'ginger', emoji: '🫚', plural: 'gingers', price: 2 },
+  { name: 'coconut water', emoji: '🥥', plural: 'coconut waters', price: 5 },
+  { name: 'sorrel juice', emoji: '🧃', plural: 'sorrel juices', price: 4 },
+];
+
+const CHARACTERS = ['Mango Moko', 'Tanty Spice', 'Steelpan Sam', 'Dilly Doubles'];
+const CUSTOMERS = ['👦🏽', '👧🏾', '🧒🏽', '👦🏿', '👧🏽', '🧑🏾', '👩🏽', '👨🏾', '👶🏽', '🧓🏾'];
+
+const LEVEL_NAMES = [
+  'Counting Coconuts',
+  'Fruit Addition',
+  'Sharing with Friends',
+  'Big Market Day',
+  'Market Mix-Up',
+  'Making Change'
+];
+
+const LEVEL_FACTS = [
+  "Did you know? In Trinidad, market vendors are called 'hucksters'!",
+  "Fun fact: Bajan flying fish is sold fresh at Oistins Fish Market in Barbados!",
+  "Market tip: In Jamaica, the Coronation Market in Kingston is one of the biggest in the Caribbean!",
+  "Did you know? The Queen's Park Savannah in Trinidad hosts the biggest food market during Carnival!",
+  "Fun fact: In Guyana, the Stabroek Market has been open since 1842!",
+];
+
+const ENCOURAGEMENTS = [
+  "Wicked! 🎉", "Big up yuhself! 🌟", "Sweet like sugar cane! 🎶",
+  "You smart, yuh know! 💪", "Nice one! 🥳", "Real champion! ⭐",
+  "Fantastic work! 🌴", "Lime time! You nailed it! 🍋",
+  "You on fire! 🔥", "Market legend! 🏪",
+  "Brilliant! 🌟", "That's the way! 💫",
+];
+
+const TRY_AGAIN = [
+  "Try again, star! 💪", "Almost! Give it another go! 🌟",
+  "Not quite — you got this! 💫", "One more try! 🎯",
+];
+
+// ===== GAME STATE =====
+// Expose for testing
+window._gameState = null;
+const state = {
+  currentLevel: 0,    // 0-5
+  currentQuestion: 0,  // 0-9
+  score: 0,
+  totalStars: 0,
+  levelStars: [0,0,0,0,0,0],
+  levelCorrectFirst: [0,0,0,0,0,0],
+  firstTry: true,
+  answered: false,
+  questions: [],
+};
+
+// ===== DOM REFS =====
+const $ = id => document.getElementById(id);
+const startScreen = $('startScreen');
+const hud = $('hud');
+const gameArea = $('gameArea');
+const hudLevel = $('hudLevel');
+const hudQuestion = $('hudQuestion');
+const hudStars = $('hudStars');
+const hudScore = $('hudScore');
+const hudProgress = $('hudProgress');
+const speechBubble = $('speechBubble');
+const customerEmoji = $('customerEmoji');
+const fruitDisplay = $('fruitDisplay');
+const answersContainer = $('answersContainer');
+const encouragement = $('encouragement');
+const levelOverlay = $('levelOverlay');
+const overlayTitle = $('overlayTitle');
+const overlayLevelName = $('overlayLevelName');
+const overlayStars = $('overlayStars');
+const overlayAccuracy = $('overlayAccuracy');
+const overlayFact = $('overlayFact');
+const btnNext = $('btnNext');
+const victoryScreen = $('victoryScreen');
+const victoryTitle = $('victoryTitle');
+const victoryBadge = $('victoryBadge');
+const victoryScore = $('victoryScore');
+const victoryBreakdown = $('victoryBreakdown');
+
+// ===== UTILITIES =====
+function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = rand(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+function generateWrongAnswers(correct, min, max, count = 2) {
+  const wrongs = new Set();
+  // Try nearby values first
+  const nearby = [correct - 1, correct + 1, correct - 2, correct + 2, correct + 3, correct - 3];
+  for (const n of shuffle(nearby)) {
+    if (n >= min && n <= max && n !== correct) wrongs.add(n);
+    if (wrongs.size >= count) break;
+  }
+  // Fill remaining with random
+  let attempts = 0;
+  while (wrongs.size < count && attempts < 50) {
+    const w = rand(min, max);
+    if (w !== correct) wrongs.add(w);
+    attempts++;
+  }
+  return [...wrongs].slice(0, count);
+}
+
+// ===== QUESTION GENERATORS =====
+function generateLevel1() {
+  // Counting 1-10
+  const questions = [];
+  for (let i = 0; i < 10; i++) {
+    const fruit = pick(FRUITS);
+    const count = rand(1, 10);
+    const wrongs = generateWrongAnswers(count, 1, 10);
+    questions.push({
+      type: 'counting',
+      speech: `How many ${fruit.plural} do you see?`,
+      fruit, count, answer: count,
+      options: shuffle([count, ...wrongs]),
+      visual: { type: 'count', emoji: fruit.emoji, count },
+    });
+  }
+  return questions;
+}
+
+function generateLevel2() {
+  // Addition up to 10
+  const questions = [];
+  for (let i = 0; i < 10; i++) {
+    const fruit = pick(FRUITS);
+    const a = rand(1, 7);
+    const b = rand(1, 10 - a);
+    const answer = a + b;
+    const wrongs = generateWrongAnswers(answer, 2, 10);
+    questions.push({
+      type: 'addition',
+      speech: `R.O.T.I. has ${a} ${fruit.emoji} and gets ${b} more ${fruit.emoji}. How many now?`,
+      fruit, a, b, answer,
+      options: shuffle([answer, ...wrongs]),
+      visual: { type: 'addition', emoji: fruit.emoji, a, b },
+    });
+  }
+  return questions;
+}
+
+function generateLevel3() {
+  // Subtraction up to 10
+  const questions = [];
+  for (let i = 0; i < 10; i++) {
+    const fruit = pick(FRUITS);
+    const total = rand(3, 10);
+    const sub = rand(1, total);
+    const answer = total - sub;
+    const character = pick(CHARACTERS);
+    const wrongs = generateWrongAnswers(answer, 0, 10);
+    questions.push({
+      type: 'subtraction',
+      speech: `R.O.T.I. had ${total} ${fruit.emoji} and gave ${sub} to ${character}. How many left?`,
+      fruit, total, sub, answer, character,
+      options: shuffle([answer, ...wrongs]),
+      visual: { type: 'subtraction', emoji: fruit.emoji, total, sub },
+    });
+  }
+  return questions;
+}
+
+function generateLevel4() {
+  // Addition up to 20
+  const questions = [];
+  for (let i = 0; i < 10; i++) {
+    const fruitA = pick(FRUITS);
+    let fruitB = pick(FRUITS);
+    while (fruitB.name === fruitA.name) fruitB = pick(FRUITS);
+    const a = rand(5, 12);
+    const b = rand(Math.max(1, 11 - a), 20 - a);
+    const answer = a + b;
+    const wrongs = generateWrongAnswers(answer, 6, 20);
+    questions.push({
+      type: 'addition-big',
+      speech: `A customer buys ${a} ${fruitA.emoji} and ${b} ${fruitB.emoji}. How many fruits total?`,
+      fruitA, fruitB, a, b, answer,
+      options: shuffle([answer, ...wrongs]),
+      visual: { type: 'addition-two', emojiA: fruitA.emoji, emojiB: fruitB.emoji, a, b },
+    });
+  }
+  return questions;
+}
+
+function generateLevel5() {
+  // Mixed addition & subtraction up to 20
+  const questions = [];
+  for (let i = 0; i < 10; i++) {
+    const fruit = pick(FRUITS);
+    const isAdd = Math.random() < 0.5;
+    if (isAdd) {
+      const a = rand(3, 12);
+      const b = rand(3, 20 - a);
+      const answer = a + b;
+      const wrongs = generateWrongAnswers(answer, 3, 20);
+      const phrases = [
+        `Got a delivery of ${a} ${fruit.emoji}, already had ${b}. How many now?`,
+        `R.O.T.I. had ${b} ${fruit.emoji} and got ${a} more. How many total?`,
+        `${pick(CHARACTERS)} brought ${a} ${fruit.emoji}. R.O.T.I. already had ${b}. How many now?`,
+      ];
+      questions.push({
+        type: 'mixed-add',
+        speech: pick(phrases),
+        fruit, a, b, answer,
+        options: shuffle([answer, ...wrongs]),
+        visual: { type: 'addition', emoji: fruit.emoji, a, b },
+      });
+    } else {
+      const total = rand(10, 20);
+      const sub = rand(3, total - 2);
+      const answer = total - sub;
+      const wrongs = generateWrongAnswers(answer, 0, 20);
+      const phrases = [
+        `R.O.T.I. had ${total} ${fruit.emoji}. Sold ${sub}. How many left?`,
+        `Started with ${total} ${fruit.emoji}, ${pick(CHARACTERS)} bought ${sub}. How many remain?`,
+        `${total} ${fruit.emoji} on the shelf. ${sub} got sold. How many now?`,
+      ];
+      questions.push({
+        type: 'mixed-sub',
+        speech: pick(phrases),
+        fruit, total, sub, answer,
+        options: shuffle([answer, ...wrongs]),
+        visual: { type: 'subtraction', emoji: fruit.emoji, total, sub },
+      });
+    }
+  }
+  return questions;
+}
+
+function generateLevel6() {
+  // Money problems
+  const questions = [];
+  const itemPool = MARKET_ITEMS.filter(it => it.price >= 1);
+
+  for (let i = 0; i < 10; i++) {
+    const pType = i % 3; // rotate: total cost, making change, multi-item
+
+    if (pType === 0) {
+      // "X costs $Y each. Customer buys Z. How much total?"
+      const item = pick(itemPool);
+      const qty = rand(2, Math.min(5, Math.floor(20 / item.price)));
+      const answer = item.price * qty;
+      const wrongs = generateWrongAnswers(answer, 1, 20);
+      questions.push({
+        type: 'money-total',
+        speech: `${item.emoji} ${item.plural.charAt(0).toUpperCase() + item.plural.slice(1)} cost $${item.price} each. A customer buys ${qty}. How much total?`,
+        item, qty, answer,
+        options: shuffle([answer, ...wrongs]),
+        visual: { type: 'money', items: [{ emoji: item.emoji, price: item.price, qty }] },
+        isMoney: true,
+      });
+    } else if (pType === 1) {
+      // "Item costs $X. Customer pays $Y. How much change?"
+      const item = pick(itemPool.filter(it => it.price <= 8));
+      const qty = rand(1, Math.min(3, Math.floor(15 / item.price)));
+      const cost = item.price * qty;
+      const paid = cost + rand(1, Math.min(10, 20 - cost));
+      const answer = paid - cost;
+      const wrongs = generateWrongAnswers(answer, 0, 15);
+      const qtyText = qty > 1 ? `${qty} ${item.plural}` : `a ${item.name}`;
+      questions.push({
+        type: 'money-change',
+        speech: `${pick(CHARACTERS)} buys ${qtyText} at $${item.price} each (= $${cost}). Pays $${paid}. How much change?`,
+        item, qty, cost, paid, answer,
+        options: shuffle([answer, ...wrongs]),
+        visual: { type: 'money-change', emoji: item.emoji, cost, paid },
+        isMoney: true,
+      });
+    } else {
+      // Multi-item: "Buys X of A and Y of B. How much total?"
+      const itemA = pick(itemPool);
+      let itemB = pick(itemPool);
+      while (itemB.name === itemA.name) itemB = pick(itemPool);
+      const qtyA = rand(1, Math.min(3, Math.floor(12 / itemA.price)));
+      const maxB = Math.floor((20 - itemA.price * qtyA) / itemB.price);
+      const qtyB = rand(1, Math.max(1, maxB));
+      const answer = itemA.price * qtyA + itemB.price * qtyB;
+      const wrongs = generateWrongAnswers(answer, 2, 20);
+      questions.push({
+        type: 'money-multi',
+        speech: `${pick(CHARACTERS)} buys ${qtyA} ${itemA.emoji} at $${itemA.price} each and ${qtyB} ${itemB.emoji} at $${itemB.price} each. How much total?`,
+        itemA, itemB, qtyA, qtyB, answer,
+        options: shuffle([answer, ...wrongs]),
+        visual: { type: 'money-multi', items: [
+          { emoji: itemA.emoji, price: itemA.price, qty: qtyA },
+          { emoji: itemB.emoji, price: itemB.price, qty: qtyB },
+        ]},
+        isMoney: true,
+      });
+    }
+  }
+  return questions;
+}
+
+const LEVEL_GENERATORS = [generateLevel1, generateLevel2, generateLevel3, generateLevel4, generateLevel5, generateLevel6];
+
+// ===== VISUAL RENDERERS =====
+function renderVisual(visual, q) {
+  fruitDisplay.innerHTML = '';
+
+  if (visual.type === 'count') {
+    const group = document.createElement('div');
+    group.className = 'fruit-group';
+    for (let i = 0; i < visual.count; i++) {
+      const span = document.createElement('span');
+      span.className = 'fruit-item';
+      span.textContent = visual.emoji;
+      span.style.animationDelay = `${i * 60}ms`;
+      group.appendChild(span);
+    }
+    fruitDisplay.appendChild(group);
+  }
+  else if (visual.type === 'addition') {
+    const gA = document.createElement('div');
+    gA.className = 'fruit-group';
+    for (let i = 0; i < visual.a; i++) {
+      const s = document.createElement('span');
+      s.className = 'fruit-item'; s.textContent = visual.emoji;
+      gA.appendChild(s);
+    }
+    fruitDisplay.appendChild(gA);
+
+    const plus = document.createElement('span');
+    plus.className = 'plus-sign'; plus.textContent = '+';
+    fruitDisplay.appendChild(plus);
+
+    const gB = document.createElement('div');
+    gB.className = 'fruit-group';
+    for (let i = 0; i < visual.b; i++) {
+      const s = document.createElement('span');
+      s.className = 'fruit-item'; s.textContent = visual.emoji;
+      gB.appendChild(s);
+    }
+    fruitDisplay.appendChild(gB);
+
+    const eq = document.createElement('span');
+    eq.className = 'equals-sign'; eq.textContent = '= ?';
+    fruitDisplay.appendChild(eq);
+  }
+  else if (visual.type === 'addition-two') {
+    const gA = document.createElement('div');
+    gA.className = 'fruit-group';
+    for (let i = 0; i < Math.min(visual.a, 12); i++) {
+      const s = document.createElement('span');
+      s.className = 'fruit-item'; s.textContent = visual.emojiA;
+      gA.appendChild(s);
+    }
+    if (visual.a > 12) {
+      const more = document.createElement('span');
+      more.className = 'fruit-item'; more.textContent = `+${visual.a - 12}`;
+      more.style.fontSize = '0.9rem'; more.style.color = 'var(--dark-blue)';
+      gA.appendChild(more);
+    }
+    fruitDisplay.appendChild(gA);
+
+    const plus = document.createElement('span');
+    plus.className = 'plus-sign'; plus.textContent = '+';
+    fruitDisplay.appendChild(plus);
+
+    const gB = document.createElement('div');
+    gB.className = 'fruit-group';
+    for (let i = 0; i < Math.min(visual.b, 12); i++) {
+      const s = document.createElement('span');
+      s.className = 'fruit-item'; s.textContent = visual.emojiB;
+      gB.appendChild(s);
+    }
+    if (visual.b > 12) {
+      const more = document.createElement('span');
+      more.className = 'fruit-item'; more.textContent = `+${visual.b - 12}`;
+      more.style.fontSize = '0.9rem'; more.style.color = 'var(--dark-blue)';
+      gB.appendChild(more);
+    }
+    fruitDisplay.appendChild(gB);
+
+    const eq = document.createElement('span');
+    eq.className = 'equals-sign'; eq.textContent = '= ?';
+    fruitDisplay.appendChild(eq);
+  }
+  else if (visual.type === 'subtraction') {
+    const group = document.createElement('div');
+    group.className = 'fruit-group';
+    for (let i = 0; i < Math.min(visual.total, 20); i++) {
+      const s = document.createElement('span');
+      s.className = 'fruit-item';
+      s.textContent = visual.emoji;
+      s.dataset.index = i;
+      group.appendChild(s);
+    }
+    fruitDisplay.appendChild(group);
+
+    // Animate removal after short delay
+    setTimeout(() => {
+      const items = group.querySelectorAll('.fruit-item');
+      for (let i = visual.total - visual.sub; i < items.length; i++) {
+        items[i].classList.add('removed');
+      }
+    }, 500);
+  }
+  else if (visual.type === 'money') {
+    visual.items.forEach(item => {
+      const row = document.createElement('div');
+      row.style.display = 'flex'; row.style.flexWrap = 'wrap';
+      row.style.alignItems = 'center'; row.style.justifyContent = 'center';
+      row.style.gap = '0.2rem';
+      for (let i = 0; i < item.qty; i++) {
+        const s = document.createElement('span');
+        s.className = 'fruit-item'; s.textContent = item.emoji;
+        row.appendChild(s);
+      }
+      const tag = document.createElement('span');
+      tag.className = 'price-tag';
+      tag.textContent = `$${item.price} each`;
+      row.appendChild(tag);
+      fruitDisplay.appendChild(row);
+    });
+  }
+  else if (visual.type === 'money-change') {
+    const row = document.createElement('div');
+    row.style.display = 'flex'; row.style.alignItems = 'center';
+    row.style.justifyContent = 'center'; row.style.gap = '0.5rem';
+    row.style.flexWrap = 'wrap';
+
+    const costTag = document.createElement('span');
+    costTag.className = 'price-tag';
+    costTag.textContent = `Cost: $${visual.cost}`;
+    costTag.style.background = 'var(--coral)'; costTag.style.color = '#fff';
+
+    const paidTag = document.createElement('span');
+    paidTag.className = 'price-tag';
+    paidTag.textContent = `Paid: $${visual.paid}`;
+    paidTag.style.background = 'var(--green)'; paidTag.style.color = 'var(--dark-blue)';
+
+    const arrow = document.createElement('span');
+    arrow.style.fontSize = '1.3rem'; arrow.textContent = '→';
+
+    const changeTag = document.createElement('span');
+    changeTag.className = 'price-tag';
+    changeTag.textContent = 'Change = ?';
+    changeTag.style.background = 'var(--teal)'; changeTag.style.color = '#fff';
+
+    row.append(paidTag, arrow, costTag, arrow.cloneNode(true), changeTag);
+    fruitDisplay.appendChild(row);
+  }
+  else if (visual.type === 'money-multi') {
+    visual.items.forEach(item => {
+      const row = document.createElement('div');
+      row.style.display = 'flex'; row.style.flexWrap = 'wrap';
+      row.style.alignItems = 'center'; row.style.justifyContent = 'center';
+      row.style.gap = '0.2rem'; row.style.marginBottom = '0.25rem';
+      for (let i = 0; i < item.qty; i++) {
+        const s = document.createElement('span');
+        s.className = 'fruit-item'; s.textContent = item.emoji;
+        row.appendChild(s);
+      }
+      const tag = document.createElement('span');
+      tag.className = 'price-tag';
+      tag.textContent = `× $${item.price} = $${item.price * item.qty}`;
+      row.appendChild(tag);
+      fruitDisplay.appendChild(row);
+    });
+    const total = document.createElement('div');
+    total.className = 'price-tag';
+    total.style.fontSize = '1rem'; total.style.marginTop = '0.25rem';
+    total.textContent = 'Total = ?';
+    fruitDisplay.appendChild(total);
+  }
+}
+
+// ===== COIN ANIMATION =====
+function animateCoin(startEl) {
+  const coin = document.createElement('div');
+  coin.className = 'flying-coin';
+  coin.textContent = '$';
+
+  const rect = startEl.getBoundingClientRect();
+  coin.style.left = rect.left + rect.width / 2 - 14 + 'px';
+  coin.style.top = rect.top + 'px';
+  document.body.appendChild(coin);
+
+  const scoreEl = hudScore.getBoundingClientRect();
+  const dx = scoreEl.left - rect.left;
+  const dy = scoreEl.top - rect.top;
+
+  coin.animate([
+    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+    { transform: `translate(${dx}px, ${dy}px) scale(0.3)`, opacity: 0.4 },
+  ], { duration: 600, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' })
+  .onfinish = () => { coin.remove(); sfxCoin(); };
+}
+
+// ===== CONFETTI =====
+function spawnConfetti(count = 40) {
+  const colors = ['#FFD23F', '#2EC4B6', '#FF6B6B', '#A78BFA', '#4ADE80', '#FF9F43'];
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.background = pick(colors);
+    piece.style.left = rand(5, 95) + '%';
+    piece.style.top = '-20px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    piece.style.width = rand(6, 10) + 'px';
+    piece.style.height = rand(8, 14) + 'px';
+    document.body.appendChild(piece);
+
+    const xDrift = rand(-60, 60);
+    const rotation = rand(0, 720);
+    piece.animate([
+      { transform: `translate(0, 0) rotate(0deg)`, opacity: 1 },
+      { transform: `translate(${xDrift}px, ${window.innerHeight + 40}px) rotate(${rotation}deg)`, opacity: 0.3 },
+    ], { duration: rand(1200, 2500), easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)', delay: rand(0, 300) })
+    .onfinish = () => piece.remove();
+  }
+}
+
+// ===== HUD UPDATE =====
+function updateHUD() {
+  hudLevel.textContent = `Level ${state.currentLevel + 1}/6`;
+  hudQuestion.textContent = `Q ${state.currentQuestion + 1}/10`;
+  hudStars.textContent = state.totalStars;
+  hudScore.textContent = state.score;
+  // Progress: each level is worth ~16.67%, each question within is 1.67%
+  const progress = ((state.currentLevel * 10 + state.currentQuestion) / 60) * 100;
+  hudProgress.style.width = progress + '%';
+}
+
+// ===== SHOW QUESTION =====
+function showQuestion() {
+  window._gameState = state;
+  state.answered = false;
+  state.firstTry = true;
+  encouragement.textContent = '';
+  encouragement.className = 'encouragement';
+
+  const q = state.questions[state.currentQuestion];
+  customerEmoji.textContent = pick(CUSTOMERS);
+  speechBubble.childNodes[0].textContent = q.speech + ' ';
+
+  renderVisual(q.visual, q);
+
+  // Build answer buttons
+  answersContainer.innerHTML = '';
+  const labels = ['A', 'B', 'C'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    const prefix = q.isMoney ? '$' : '';
+    btn.innerHTML = `<span class="btn-num">${labels[i]}</span><span class="btn-label">${prefix}${opt}</span>`;
+    btn.dataset.value = opt;
+    btn.addEventListener('click', () => handleAnswer(btn, opt, q));
+    answersContainer.appendChild(btn);
+  });
+
+  updateHUD();
+}
+
+// ===== HANDLE ANSWER =====
+function handleAnswer(btn, selected, q) {
+  if (state.answered || btn.disabled) return;
+
+  if (selected === q.answer) {
+    // Correct!
+    state.answered = true;
+    btn.classList.add('correct');
+    const points = state.firstTry ? 10 : 5;
+    state.score += points;
+    if (state.firstTry) {
+      state.levelCorrectFirst[state.currentLevel]++;
+    }
+
+    sfxCorrect();
+    animateCoin(btn);
+
+    encouragement.textContent = pick(ENCOURAGEMENTS);
+    encouragement.className = 'encouragement correct-msg';
+
+    // Disable all buttons
+    answersContainer.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+
+    updateHUD();
+
+    // Next question after delay
+    setTimeout(() => {
+      state.currentQuestion++;
+      if (state.currentQuestion >= 10) {
+        endLevel();
+      } else {
+        showQuestion();
+      }
+    }, 1200);
+  } else {
+    // Wrong
+    state.firstTry = false;
+    btn.classList.add('wrong');
+    btn.disabled = true;
+    sfxWrong();
+    encouragement.textContent = pick(TRY_AGAIN);
+    encouragement.className = 'encouragement wrong-msg';
+  }
+}
+
+// ===== END LEVEL =====
+function endLevel() {
+  const correct = state.levelCorrectFirst[state.currentLevel];
+  let stars = 0;
+  if (correct >= 10) stars = 3;
+  else if (correct >= 8) stars = 2;
+  else if (correct >= 6) stars = 1;
+
+  state.levelStars[state.currentLevel] = stars;
+  state.totalStars = state.levelStars.reduce((a, b) => a + b, 0);
+
+  sfxLevelUp();
+  spawnConfetti(30);
+
+  // Show overlay
+  const isLast = state.currentLevel >= 5;
+  overlayTitle.textContent = isLast ? 'All Levels Complete!' : 'Level Complete!';
+  overlayLevelName.textContent = LEVEL_NAMES[state.currentLevel];
+
+  let starHTML = '';
+  for (let i = 0; i < 3; i++) {
+    starHTML += i < stars ? '<span class="star-on">⭐</span>' : '<span class="star-off">☆</span>';
+  }
+  overlayStars.innerHTML = starHTML;
+  overlayAccuracy.textContent = `${correct}/10 correct on first try`;
+
+  if (state.currentLevel < 5) {
+    overlayFact.innerHTML = `<strong>🏝️ Caribbean Fact:</strong> ${LEVEL_FACTS[state.currentLevel]}`;
+    btnNext.textContent = `Next Level: ${LEVEL_NAMES[state.currentLevel + 1]} →`;
+  } else {
+    overlayFact.innerHTML = `<strong>🏝️ Caribbean Fact:</strong> ${LEVEL_FACTS[4]}`;
+    btnNext.textContent = '🏆 See Your Results!';
+  }
+
+  gameArea.classList.remove('visible');
+  levelOverlay.classList.add('visible');
+  updateHUD();
+}
+
+// ===== NEXT LEVEL =====
+btnNext.addEventListener('click', () => {
+  initAudio();
+  levelOverlay.classList.remove('visible');
+
+  if (state.currentLevel >= 5) {
+    showVictory();
+    return;
+  }
+
+  const nextLvl = state.currentLevel + 1;
+  if (nextLvl > 2 && !window.__unlocked) {
+    showGate();
+    return;
+  }
+  state.currentLevel++;
+  state.currentQuestion = 0;
+  state.questions = LEVEL_GENERATORS[state.currentLevel]();
+
+  gameArea.classList.add('visible');
+  showQuestion();
+});
+
+// ===== VICTORY =====
+function showVictory() {
+  hud.classList.remove('visible');
+  gameArea.classList.remove('visible');
+  document.body.classList.remove('playing');
+  sfxVictory();
+  spawnConfetti(60);
+
+  const total = state.score;
+  const totalStars = state.totalStars;
+
+  let title, badge;
+  if (totalStars >= 16) { title = 'Math Master!'; badge = '🏆 You conquered the market!'; }
+  else if (totalStars >= 12) { title = 'Market Expert!'; badge = '🌟 Amazing math skills!'; }
+  else if (totalStars >= 8) { title = 'Rising Star!'; badge = '⭐ Great progress! Keep practicing!'; }
+  else { title = 'Keep Practicing!'; badge = '💪 You\'ll get there, champion!'; }
+
+  victoryTitle.textContent = title;
+  victoryBadge.textContent = badge;
+  victoryScore.innerHTML = `${total} <small>/ 600</small>`;
+
+  // Level breakdown
+  let breakdownHTML = '';
+  LEVEL_NAMES.forEach((name, i) => {
+    let starsHTML = '';
+    for (let s = 0; s < 3; s++) {
+      starsHTML += s < state.levelStars[i] ? '⭐' : '☆';
+    }
+    breakdownHTML += `<div class="vb-item">
+      <div class="vb-label">${name}</div>
+      <div class="vb-stars">${starsHTML}</div>
+    </div>`;
+  });
+  victoryBreakdown.innerHTML = breakdownHTML;
+
+  victoryScreen.classList.add('active');
+  startScreen.classList.remove('active');
+}
+
+// ===== START GAME =====
+$('btnPlay').addEventListener('click', () => {
+  initAudio();
+  startScreen.classList.remove('active');
+
+  state.currentLevel = 0;
+  state.currentQuestion = 0;
+  state.score = 0;
+  state.totalStars = 0;
+  state.levelStars = [0,0,0,0,0,0];
+  state.levelCorrectFirst = [0,0,0,0,0,0];
+  state.questions = LEVEL_GENERATORS[0]();
+
+  document.body.classList.add('playing');
+  hud.classList.add('visible');
+  gameArea.classList.add('visible');
+  showQuestion();
+});
+
+// ===== REPLAY =====
+$('btnReplay').addEventListener('click', () => {
+  victoryScreen.classList.remove('active');
+
+  state.currentLevel = 0;
+  state.currentQuestion = 0;
+  state.score = 0;
+  state.totalStars = 0;
+  state.levelStars = [0,0,0,0,0,0];
+  state.levelCorrectFirst = [0,0,0,0,0,0];
+  state.questions = LEVEL_GENERATORS[0]();
+
+  document.body.classList.add('playing');
+  hud.classList.add('visible');
+  gameArea.classList.add('visible');
+  showQuestion();
+});
+
+
+
+// ===== FREE-TO-PAID GATE =====
+const GATE_CONFIG = {"charImg":"./images/roti-new.jpg","charAlt":"R.O.T.I.","gateTitle":"You're doing great! Want more math?","gateSubtitle":"You've completed the free levels! Unlock all 6 levels of Caribbean math — counting, addition, subtraction, and making change — plus 3 more games.","freeMaxLevel":1,"gateCheck":"MATH"};
+function showGate() {
+  const g = document.getElementById('gateOverlay');
+  const img = document.getElementById('gateCharImg');
+  const title = document.getElementById('gateTitle');
+  const subtitle = document.getElementById('gateSubtitle');
+  img.src = GATE_CONFIG.charImg;
+  img.alt = GATE_CONFIG.charAlt;
+  title.textContent = GATE_CONFIG.gateTitle;
+  subtitle.textContent = GATE_CONFIG.gateSubtitle;
+  g.classList.add('visible');
+}
+function isGated() { return false; } // Set to true when auth is wired up
+
+</script>
+
+<div class="gate-overlay" id="gateOverlay">
+  <div class="gate-lock">🔒</div>
+  <img src="./images/roti-new.jpg" alt="R.O.T.I." class="gate-character" id="gateCharImg">
+  <h2 class="gate-title" id="gateTitle">Want to keep playing?</h2>
+  <p class="gate-subtitle" id="gateSubtitle"></p>
+  <div class="gate-features">
+    <div class="gate-feature">All levels in all 4 games</div>
+    <div class="gate-feature">Full Likkle Legends learning portal</div>
+    <div class="gate-feature">Caribbean stories, songs, and activities</div>
+    <div class="gate-feature">New content every month</div>
+  </div>
+  <a href="https://www.likklelegends.com/#pricing" class="gate-cta">Start the $10 Legend Intro Pass →</a>
+  <a href="index.html" class="gate-free-btn">← Back to Free Games</a>
+  <p class="gate-guarantee">🛡️ 30-day money-back guarantee. Cancel anytime.</p>
+</div>
+
+</body>
+</html>

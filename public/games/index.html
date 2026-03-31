@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Likkle Legends — Game Zone</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=chillax@400,500,600,700&f[]=general-sans@400,500,600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --font-display: 'Chillax', sans-serif;
+      --font-body: 'General Sans', sans-serif;
+      --yellow: #FFD23F;
+      --orange: #FF6B35;
+      --teal: #01B4A0;
+      --blue: #2EC4B6;
+      --pink: #FF69B4;
+      --purple: #9B5DE5;
+      --green: #00C853;
+      --red: #FF1744;
+      --bg: #0A1628;
+      --surface: #132240;
+      --text: #F0F4FF;
+      --text-muted: #8EA4C8;
+    }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      min-height: 100dvh;
+      font-family: var(--font-body);
+      color: var(--text);
+      background: var(--bg);
+      overflow-x: hidden;
+    }
+
+    /* Animated Background */
+    .bg-ocean {
+      position: fixed; inset: 0; z-index: 0;
+      background: linear-gradient(180deg, #0A1628 0%, #0D2137 40%, #0F2B4A 70%, #134A6E 100%);
+    }
+    .bg-ocean::before {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
+      background: radial-gradient(ellipse at 50% 100%, rgba(1,180,160,0.12) 0%, transparent 70%);
+    }
+
+    /* Stars */
+    .stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .star {
+      position: absolute;
+      width: 3px; height: 3px;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle 3s ease-in-out infinite alternate;
+    }
+    @keyframes twinkle { 0%{opacity:0.15} 100%{opacity:0.9} }
+
+    /* Floating decorations */
+    .floater {
+      position: fixed;
+      font-size: 2rem;
+      opacity: 0.07;
+      pointer-events: none;
+      z-index: 1;
+      animation: floatAnim 20s ease-in-out infinite;
+    }
+    @keyframes floatAnim {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-30px) rotate(5deg); }
+      50% { transform: translateY(-10px) rotate(-3deg); }
+      75% { transform: translateY(-25px) rotate(4deg); }
+    }
+
+    /* Header */
+    .header {
+      position: relative; z-index: 10;
+      padding: 2.5rem 1.5rem 1rem;
+      text-align: center;
+    }
+    .logo-row {
+      display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+    .logo-img {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      object-fit: cover;
+      box-shadow: 0 4px 20px rgba(255,210,63,0.25);
+    }
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--yellow), var(--orange));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle {
+      font-family: var(--font-display);
+      font-size: clamp(0.95rem, 2.2vw, 1.25rem);
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+    .home-link {
+      display: inline-block;
+      margin-top: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .home-link:hover { color: var(--yellow); }
+
+    /* Games Grid */
+    .games-section {
+      position: relative; z-index: 10;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    /* Game Card */
+    .game-card {
+      background: var(--surface);
+      border-radius: 20px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease;
+      border: 2px solid rgba(255,255,255,0.05);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+    .game-card:hover {
+      transform: translateY(-8px) scale(1.015);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+    }
+    .game-card:hover .card-banner img {
+      transform: scale(1.08);
+    }
+
+    /* Banner with character image */
+    .card-banner {
+      height: 220px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-banner img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    .card-banner .banner-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(0deg, var(--surface) 0%, transparent 60%);
+    }
+    .card-banner .banner-icon {
+      position: absolute;
+      top: 12px; right: 12px;
+      font-size: 2rem;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+      z-index: 2;
+    }
+
+    /* Card body */
+    .card-body {
+      padding: 1.25rem 1.5rem 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-character {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+      padding: 0.2rem 0.7rem;
+      border-radius: 100px;
+      width: fit-content;
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.15rem, 2vw, 1.4rem);
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      line-height: 1.2;
+    }
+    .card-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 0.75rem;
+      flex: 1;
+    }
+    .card-tags {
+      display: flex; flex-wrap: wrap; gap: 0.35rem;
+      margin-bottom: 1rem;
+    }
+    .tag {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.18rem 0.55rem;
+      border-radius: 100px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-muted);
+    }
+    .play-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1.4rem;
+      border-radius: 12px;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, filter 0.2s;
+      width: 100%;
+      text-align: center;
+    }
+    .play-btn:hover { transform: scale(1.03); filter: brightness(1.1); }
+
+    /* Character theme colors */
+    .char-mango .card-character { background: rgba(0,200,83,0.15); color: #69F0AE; }
+    .char-mango .play-btn { background: linear-gradient(135deg, #00C853, #2E7D32); }
+
+    .char-tanty .card-character { background: rgba(255,105,180,0.15); color: #FF8FCC; }
+    .char-tanty .play-btn { background: linear-gradient(135deg, #FF69B4, #C2185B); }
+
+    .char-roti .card-character { background: rgba(46,196,182,0.15); color: #2EC4B6; }
+    .char-roti .play-btn { background: linear-gradient(135deg, #2EC4B6, #00796B); }
+
+    .char-scorcha .card-character { background: rgba(255,23,68,0.15); color: #FF5252; }
+    .char-scorcha .play-btn { background: linear-gradient(135deg, #FF1744, #D50000); }
+
+    /* Footer */
+    .footer {
+      position: relative; z-index: 10;
+      text-align: center;
+      padding: 1.5rem 2rem 2.5rem;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+    .footer a { color: var(--yellow); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* Responsive */
+    @media (max-width: 800px) {
+      .games-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+      .card-banner { height: 200px; }
+    }
+    @media (max-width: 480px) {
+      .header { padding: 1.5rem 1rem 0.75rem; }
+      .games-section { padding: 1.25rem 1rem 3rem; }
+      .card-banner { height: 170px; }
+      .card-body { padding: 1rem 1.15rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-ocean"></div>
+<div class="stars" id="stars"></div>
+
+<div class="floater" style="top:8%;left:4%;animation-delay:0s">🌴</div>
+<div class="floater" style="top:25%;right:6%;animation-delay:3s">🐠</div>
+<div class="floater" style="top:55%;left:2%;animation-delay:6s">🌊</div>
+<div class="floater" style="top:75%;right:4%;animation-delay:9s">🦜</div>
+
+<header class="header">
+  <div class="logo-row">
+    <img src="./images/logo.png" alt="Likkle Legends" class="logo-img">
+    <h1 class="logo-text">Likkle Legends</h1>
+  </div>
+  <p class="subtitle">Game Zone — Learn, Play, Explore the Caribbean</p>
+  <a href="https://www.likklelegends.com" class="home-link">← Back to likklelegends.com</a>
+</header>
+
+<main class="games-section">
+  <div class="games-grid">
+
+    <!-- Mango's Island Hop -->
+    <a href="island-hop.html" class="game-card char-mango">
+      <div class="card-banner">
+        <img src="./images/mango_moko.png" alt="Mango Moko">
+        <div class="banner-overlay"></div>
+        <span class="banner-icon">🏝️</span>
+      </div>
+      <div class="card-body">
+        <div class="card-character">🦋 Mango Moko</div>
+        <h2 class="card-title">Mango's Island Hop</h2>
+        <p class="card-desc">Hop across the Caribbean islands answering trivia about flags, capitals, and fun facts with Mango Moko as your guide.</p>
+        <div class="card-tags">
+          <span class="tag">Geography</span>
+          <span class="tag">Trivia</span>
+          <span class="tag">Ages 4-8</span>
+        </div>
+        <div class="play-btn">▶ Play Now</div>
+      </div>
+    </a>
+
+    <!-- Tanty's Kitchen -->
+    <a href="tantys-kitchen.html" class="game-card char-tanty">
+      <div class="card-banner">
+        <img src="./images/tanty_spice_avatar.jpg" alt="Tanty Spice">
+        <div class="banner-overlay"></div>
+        <span class="banner-icon">🍲</span>
+      </div>
+      <div class="card-body">
+        <div class="card-character">👵🏾 Tanty Spice</div>
+        <h2 class="card-title">Tanty's Kitchen</h2>
+        <p class="card-desc">Drag the right ingredients into the pot and cook 5 real Caribbean dishes with Tanty Spice guiding every step.</p>
+        <div class="card-tags">
+          <span class="tag">Cooking</span>
+          <span class="tag">Sorting</span>
+          <span class="tag">Ages 3-8</span>
+        </div>
+        <div class="play-btn">▶ Play Now</div>
+      </div>
+    </a>
+
+    <!-- R.O.T.I.'s Math Market -->
+    <a href="math-market.html" class="game-card char-roti">
+      <div class="card-banner">
+        <img src="./images/roti-new.jpg" alt="R.O.T.I.">
+        <div class="banner-overlay"></div>
+        <span class="banner-icon">🧮</span>
+      </div>
+      <div class="card-body">
+        <div class="card-character">🤖 R.O.T.I.</div>
+        <h2 class="card-title">R.O.T.I.'s Math Market</h2>
+        <p class="card-desc">Count fruit, add prices, and make change at a Caribbean market stall. Math gets tastier with R.O.T.I.</p>
+        <div class="card-tags">
+          <span class="tag">Math</span>
+          <span class="tag">Counting</span>
+          <span class="tag">Ages 4-8</span>
+        </div>
+        <div class="play-btn">▶ Play Now</div>
+      </div>
+    </a>
+
+    <!-- Scorcha's Spelling Blaze -->
+    <a href="spelling-blaze.html" class="game-card char-scorcha">
+      <div class="card-banner">
+        <img src="./images/scorcha_pepper.jpg" alt="Scorcha Pepper">
+        <div class="banner-overlay"></div>
+        <span class="banner-icon">🔥</span>
+      </div>
+      <div class="card-body">
+        <div class="card-character">🌶️ Scorcha Pepper</div>
+        <h2 class="card-title">Scorcha's Spelling Blaze</h2>
+        <p class="card-desc">Spell Caribbean words before the fire timer burns out. Race Scorcha Pepper to earn blazing badges.</p>
+        <div class="card-tags">
+          <span class="tag">Spelling</span>
+          <span class="tag">Speed</span>
+          <span class="tag">Ages 5-8</span>
+        </div>
+        <div class="play-btn">▶ Play Now</div>
+      </div>
+    </a>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <p>🏝️ <a href="https://www.likklelegends.com">Likkle Legends</a> — Caribbean learning that feels like home.</p>
+</footer>
+
+<script>
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 50; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 55 + '%';
+    const size = (Math.random() * 2 + 1) + 'px';
+    s.style.width = size; s.style.height = size;
+    s.style.animationDelay = Math.random() * 3 + 's';
+    s.style.animationDuration = (Math.random() * 3 + 2) + 's';
+    starsEl.appendChild(s);
+  }
+</script>
+</body>
+</html>

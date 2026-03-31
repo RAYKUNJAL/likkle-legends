@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Scorcha's Spelling Blaze | Likkle Legends</title>
+<link href="https://api.fontshare.com/v2/css?f[]=chillax@400,500,600,700&f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & TOKENS ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --font-display: 'Chillax', sans-serif;
+  --font-body: 'General Sans', sans-serif;
+  --color-bg: #0A1628;
+  --color-surface: #111D33;
+  --color-surface-2: #162440;
+  --color-red: #FF1744;
+  --color-red-light: #FF5252;
+  --color-orange: #FF6B35;
+  --color-yellow: #FFD54F;
+  --color-green: #4CAF50;
+  --color-green-bright: #69F0AE;
+  --color-ember: #FF8A00;
+  --color-text: #F5F0E8;
+  --color-text-muted: #8A95A8;
+  --color-text-hint: #B8C4D8;
+  --color-gold: #FFB300;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+  --transition-ui: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  overflow: hidden;
+  position: relative;
+}
+
+/* ===== BACKGROUND EMBERS ===== */
+.ember-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ember-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-orange);
+  opacity: 0;
+  animation: ember-rise linear infinite;
+}
+
+@keyframes ember-rise {
+  0% { opacity: 0; transform: translateY(0) scale(1); }
+  10% { opacity: 0.7; }
+  80% { opacity: 0.2; }
+  100% { opacity: 0; transform: translateY(-100vh) scale(0.3); }
+}
+
+/* ===== BACK LINK ===== */
+.back-link {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color var(--transition-ui);
+}
+.back-link:hover { color: var(--color-text); }
+.back-link svg { width: 18px; height: 18px; }
+
+/* ===== BADGE COUNTER ===== */
+.badge-counter {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 107, 53, 0.15);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--color-orange);
+  font-variant-numeric: tabular-nums;
+}
+.badge-counter.visible { display: flex; }
+
+/* ===== STREAK COUNTER ===== */
+.streak-counter {
+  position: fixed;
+  top: 60px;
+  right: 16px;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-yellow);
+  font-variant-numeric: tabular-nums;
+  animation: streak-pulse 0.6s ease infinite alternate;
+}
+.streak-counter.visible { display: flex; }
+
+@keyframes streak-pulse {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}
+
+/* ===== SCREENS ===== */
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+}
+.screen.active { display: flex; }
+.screen { z-index: 20; }
+
+/* ===== START SCREEN ===== */
+.start-screen {
+  text-align: center;
+  gap: 12px;
+}
+
+.game-logo {
+  width: min(200px, 40vw);
+  height: min(200px, 40vw);
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--color-orange);
+  box-shadow: 0 0 40px rgba(255, 107, 53, 0.4), 0 0 80px rgba(255, 23, 68, 0.2);
+  animation: logo-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes logo-glow {
+  from { box-shadow: 0 0 40px rgba(255, 107, 53, 0.4), 0 0 80px rgba(255, 23, 68, 0.2); }
+  to { box-shadow: 0 0 60px rgba(255, 107, 53, 0.6), 0 0 100px rgba(255, 23, 68, 0.3); }
+}
+
+.game-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(28px, 7vw, 48px);
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--color-yellow), var(--color-orange), var(--color-red));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 8px rgba(255, 107, 53, 0.4));
+}
+
+.game-subtitle {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(14px, 3vw, 18px);
+  color: var(--color-text-muted);
+}
+
+.game-stats-preview {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.stat-pill {
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  border-radius: var(--radius-full);
+  padding: 6px 16px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-orange);
+}
+
+.round-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0;
+  width: min(400px, 90vw);
+}
+
+.round-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.round-preview-item .round-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--color-orange);
+  min-width: 20px;
+}
+
+.round-preview-item .round-name {
+  flex: 1;
+  text-align: left;
+}
+
+.round-preview-item .round-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-hint);
+  font-size: 12px;
+}
+
+.difficulty-note {
+  font-size: 13px;
+  color: var(--color-red-light);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* ===== BUTTONS ===== */
+.btn-fire {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-red), var(--color-orange));
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 14px 36px;
+  cursor: pointer;
+  transition: transform var(--transition-ui), box-shadow var(--transition-ui);
+  box-shadow: 0 4px 20px rgba(255, 23, 68, 0.4);
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-fire:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 30px rgba(255, 23, 68, 0.5);
+}
+
+.btn-fire:active { transform: scale(0.97); }
+
+.btn-fire::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--color-yellow), var(--color-orange), var(--color-red), var(--color-orange));
+  background-size: 300% 300%;
+  animation: fire-border 2s ease infinite;
+  z-index: -1;
+  filter: blur(6px);
+  opacity: 0.6;
+}
+
+@keyframes fire-border {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.btn-secondary {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--color-text);
+  background: var(--color-surface-2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  padding: 12px 28px;
+  cursor: pointer;
+  transition: all var(--transition-ui);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-secondary:hover {
+  background: var(--color-surface);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ===== GAMEPLAY SCREEN ===== */
+.gameplay-screen {
+  justify-content: flex-start;
+  padding-top: 56px;
+  gap: 0;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(600px, 92vw);
+  margin-bottom: 8px;
+}
+
+.round-label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(13px, 3vw, 16px);
+  color: var(--color-orange);
+}
+
+.word-counter {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Timer */
+.timer-container {
+  width: min(600px, 92vw);
+  height: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.timer-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--color-green), var(--color-green-bright));
+  transition: width 0.1s linear;
+  position: relative;
+}
+
+.timer-bar.warning {
+  background: linear-gradient(90deg, var(--color-yellow), var(--color-orange));
+}
+
+.timer-bar.danger {
+  background: linear-gradient(90deg, var(--color-orange), var(--color-red));
+  animation: danger-pulse 0.4s ease infinite alternate;
+}
+
+@keyframes danger-pulse {
+  from { opacity: 0.8; }
+  to { opacity: 1; }
+}
+
+.timer-embers {
+  position: absolute;
+  right: 0;
+  top: -4px;
+  width: 20px;
+  height: 18px;
+  pointer-events: none;
+  display: none;
+}
+
+.timer-bar.danger ~ .timer-embers { display: block; }
+
+.timer-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.timer-text.warning-text { color: var(--color-yellow); }
+.timer-text.danger-text { color: var(--color-red); animation: danger-pulse 0.4s ease infinite alternate; }
+
+/* Hint */
+.hint-area {
+  width: min(600px, 92vw);
+  text-align: center;
+  margin-bottom: 10px;
+  min-height: 28px;
+}
+
+.hint-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-hint);
+  transition: all 0.3s ease;
+}
+
+.hint-text.pulsing {
+  animation: hint-glow 1s ease infinite alternate;
+}
+
+@keyframes hint-glow {
+  from { color: var(--color-text-hint); text-shadow: none; }
+  to { color: var(--color-yellow); text-shadow: 0 0 12px rgba(255, 213, 79, 0.5); }
+}
+
+/* Word Display */
+.word-display {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  min-height: 64px;
+  align-items: center;
+}
+
+.letter-slot {
+  width: clamp(40px, 10vw, 54px);
+  height: clamp(44px, 11vw, 58px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 5vw, 32px);
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-ui);
+}
+
+.letter-slot.filled {
+  background: var(--color-surface-2);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text);
+}
+
+.letter-slot.blank {
+  background: rgba(255, 107, 53, 0.08);
+  border: 2px solid var(--color-orange);
+  color: transparent;
+  box-shadow: 0 0 16px rgba(255, 107, 53, 0.2), inset 0 0 12px rgba(255, 107, 53, 0.1);
+  animation: blank-glow 1.5s ease infinite alternate;
+}
+
+.letter-slot.blank.active {
+  border-color: var(--color-yellow);
+  box-shadow: 0 0 20px rgba(255, 213, 79, 0.4), inset 0 0 16px rgba(255, 213, 79, 0.15);
+}
+
+@keyframes blank-glow {
+  from { box-shadow: 0 0 12px rgba(255, 107, 53, 0.15), inset 0 0 8px rgba(255, 107, 53, 0.08); }
+  to { box-shadow: 0 0 20px rgba(255, 107, 53, 0.3), inset 0 0 14px rgba(255, 107, 53, 0.15); }
+}
+
+.letter-slot.correct-flash {
+  background: rgba(76, 175, 80, 0.3) !important;
+  border-color: var(--color-green) !important;
+  color: var(--color-green-bright) !important;
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.4) !important;
+  animation: none !important;
+}
+
+.letter-slot.wrong-flash {
+  background: rgba(255, 23, 68, 0.3) !important;
+  border-color: var(--color-red) !important;
+  box-shadow: 0 0 20px rgba(255, 23, 68, 0.4) !important;
+  animation: shake 0.3s ease !important;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.letter-slot.word-complete {
+  background: rgba(76, 175, 80, 0.25) !important;
+  border-color: var(--color-green) !important;
+  color: var(--color-green-bright) !important;
+  animation: word-pop 0.4s ease !important;
+}
+
+@keyframes word-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.letter-slot.reveal {
+  background: rgba(255, 23, 68, 0.15) !important;
+  border-color: var(--color-red-light) !important;
+  color: var(--color-red-light) !important;
+  animation: none !important;
+}
+
+/* Scorcha Avatar */
+.scorcha-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.scorcha-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-red);
+  box-shadow: 0 0 20px rgba(255, 23, 68, 0.3);
+  transition: all 0.3s ease;
+}
+
+.scorcha-img.shake {
+  animation: scorcha-shake 0.5s ease;
+}
+
+.scorcha-img.bounce {
+  animation: scorcha-bounce 0.6s ease;
+}
+
+@keyframes scorcha-shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(-8px) rotate(-5deg); }
+  75% { transform: translateX(8px) rotate(5deg); }
+}
+
+@keyframes scorcha-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-16px) scale(1.1); }
+  60% { transform: translateY(-8px) scale(1.05); }
+}
+
+/* Letter Options */
+.letter-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: min(340px, 85vw);
+  margin-bottom: 12px;
+}
+
+.letter-btn {
+  width: clamp(52px, 14vw, 62px);
+  height: clamp(52px, 14vw, 62px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 5vw, 28px);
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(145deg, var(--color-orange), var(--color-red));
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all var(--transition-ui);
+  -webkit-tap-highlight-color: transparent;
+  justify-self: center;
+  box-shadow: 0 4px 12px rgba(255, 23, 68, 0.3);
+}
+
+.letter-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(255, 23, 68, 0.5);
+}
+
+.letter-btn:active:not(:disabled) {
+  transform: scale(0.93);
+}
+
+.letter-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+  transform: scale(0.9);
+}
+
+.letter-btn.used-correct {
+  background: linear-gradient(145deg, var(--color-green), #2E7D32) !important;
+  border-color: var(--color-green) !important;
+}
+
+.letter-btn.used-wrong {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* ===== ROUND TRANSITION SCREEN ===== */
+.transition-screen {
+  text-align: center;
+  gap: 16px;
+}
+
+.transition-round-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 5vw, 32px);
+  background: linear-gradient(135deg, var(--color-yellow), var(--color-orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.transition-score {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(36px, 8vw, 54px);
+}
+
+.transition-rating {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(18px, 4vw, 24px);
+  color: var(--color-yellow);
+}
+
+.transition-flames {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.transition-streak {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.transition-scorcha {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-red);
+  transition: all 0.3s ease;
+}
+
+.transition-scorcha.frustrated {
+  width: 70px;
+  height: 70px;
+  opacity: 0.7;
+  animation: scorcha-shake 0.8s ease infinite;
+}
+
+.transition-scorcha.triumphant {
+  width: 120px;
+  height: 120px;
+  animation: scorcha-bounce 0.8s ease infinite;
+  box-shadow: 0 0 30px rgba(255, 23, 68, 0.5);
+}
+
+.fun-fact-box {
+  background: rgba(255, 213, 79, 0.08);
+  border: 1px solid rgba(255, 213, 79, 0.2);
+  border-radius: var(--radius-md);
+  padding: 12px 20px;
+  max-width: min(420px, 88vw);
+  font-size: 14px;
+  color: var(--color-yellow);
+  line-height: 1.5;
+}
+
+/* ===== ROUND INTRO SCREEN ===== */
+.round-intro-screen {
+  text-align: center;
+  gap: 16px;
+}
+
+.round-intro-number {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-text-muted);
+}
+
+.round-intro-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(30px, 7vw, 46px);
+  background: linear-gradient(135deg, var(--color-yellow), var(--color-orange), var(--color-red));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.round-intro-detail {
+  font-size: 15px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.round-intro-timer-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: rgba(255, 107, 53, 0.1);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-orange);
+}
+
+/* ===== VICTORY SCREEN ===== */
+.victory-screen {
+  text-align: center;
+  gap: 12px;
+  padding: 24px 24px 60px;
+  justify-content: flex-start;
+  padding-top: 40px;
+}
+
+.victory-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(22px, 5vw, 36px);
+  line-height: 1.2;
+}
+
+.victory-title.legend {
+  background: linear-gradient(135deg, var(--color-yellow), #FFD700, var(--color-orange));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.victory-title.blazing {
+  background: linear-gradient(135deg, var(--color-orange), var(--color-red));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.victory-title.warm {
+  color: var(--color-yellow);
+}
+
+.victory-title.cold {
+  color: var(--color-text-muted);
+}
+
+.victory-subtitle {
+  font-size: 16px;
+  color: var(--color-text-muted);
+}
+
+.victory-badges {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(36px, 8vw, 54px);
+  color: var(--color-orange);
+}
+
+.victory-streak {
+  font-size: 14px;
+  color: var(--color-text-hint);
+}
+
+.round-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: min(400px, 88vw);
+  margin: 4px 0;
+}
+
+.round-breakdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 13px;
+}
+
+.round-breakdown-item .rb-name {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.round-breakdown-item .rb-score {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--color-orange);
+  font-variant-numeric: tabular-nums;
+}
+
+.word-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 4px;
+  width: min(480px, 92vw);
+  margin: 4px 0;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.word-result {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.word-result.mastered {
+  background: rgba(76, 175, 80, 0.12);
+  color: var(--color-green-bright);
+  border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.word-result.missed {
+  background: rgba(255, 23, 68, 0.1);
+  color: var(--color-red-light);
+  border: 1px solid rgba(255, 23, 68, 0.15);
+}
+
+.victory-scorcha {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-red);
+}
+
+.victory-scorcha.defeated {
+  opacity: 0.5;
+  width: 60px;
+  height: 60px;
+  filter: grayscale(0.5);
+}
+
+.victory-scorcha.triumphant {
+  box-shadow: 0 0 30px rgba(255, 23, 68, 0.5);
+  animation: scorcha-bounce 1s ease infinite;
+}
+
+.victory-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ===== PARTICLES ===== */
+.particle-burst {
+  position: fixed;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: particle-fly 0.6s ease-out forwards;
+}
+
+@keyframes particle-fly {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--px), var(--py)) scale(0); }
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+
+/* ===== MOBILE ===== */
+@media (max-width: 480px) {
+  .gameplay-screen { padding-top: 48px; }
+  .game-header { width: 95vw; }
+  .timer-container { width: 95vw; }
+  .hint-area { width: 95vw; }
+  .word-display { gap: 4px; }
+  .letter-options { width: min(300px, 90vw); gap: 8px; }
+  .scorcha-img { width: 60px; height: 60px; }
+  .letter-slot { width: clamp(34px, 12vw, 42px); height: clamp(38px, 13vw, 46px); font-size: clamp(18px, 5vw, 24px); }
+  .letter-btn { width: clamp(46px, 16vw, 56px); height: clamp(46px, 16vw, 56px); font-size: clamp(20px, 5vw, 26px); }
+  .back-link { top: 10px; left: 10px; font-size: 12px; }
+  .badge-counter { top: 10px; right: 10px; font-size: 15px; padding: 4px 10px; }
+  .streak-counter { top: 48px; right: 10px; font-size: 12px; }
+}
+
+@media (max-height: 700px) {
+  .gameplay-screen { padding-top: 44px; }
+  .scorcha-img { width: 56px; height: 56px; }
+  .hint-area { margin-bottom: 6px; }
+  .word-display { margin-bottom: 10px; }
+  .letter-options { gap: 6px; }
+}
+
+/* ===== SUBSCRIPTION GATE ===== */
+.gate-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(10, 22, 40, 0.95);
+  backdrop-filter: blur(12px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  animation: gateFadeIn 0.4s ease;
+}
+.gate-overlay.visible { display: flex; }
+@keyframes gateFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.gate-lock { font-size: 4rem; margin-bottom: 1rem; animation: gateBounce 1s ease infinite alternate; }
+@keyframes gateBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-10px); } }
+.gate-title {
+  font-family: var(--font-display, 'Chillax', sans-serif);
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, #FFD23F, #FF6B35);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+.gate-subtitle {
+  font-size: 1.1rem;
+  color: #8EA4C8;
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+  line-height: 1.5;
+}
+.gate-character {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid rgba(255, 210, 63, 0.4);
+  margin-bottom: 1rem;
+  box-shadow: 0 0 30px rgba(255, 210, 63, 0.2);
+}
+.gate-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+.gate-feature {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.95rem; color: #B8C8E0;
+}
+.gate-feature::before { content: '✅'; }
+.gate-cta {
+  display: inline-block;
+  padding: 0.9rem 2rem;
+  border-radius: 14px;
+  font-family: var(--font-display, 'Chillax', sans-serif);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  background: linear-gradient(135deg, #FFD23F, #FF6B35);
+  border: none; cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.35);
+}
+.gate-cta:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(255, 107, 53, 0.45); }
+.gate-free-btn {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.6rem 1.5rem;
+  border-radius: 10px;
+  font-family: var(--font-body, 'General Sans', sans-serif);
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #8EA4C8;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.gate-free-btn:hover { background: rgba(255,255,255,0.1); color: #F0F4FF; }
+.gate-guarantee {
+  margin-top: 1rem;
+  font-size: 0.78rem;
+  color: #5A6E8C;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Background Embers -->
+<div class="ember-bg" id="emberBg"></div>
+
+<!-- Back Link -->
+<a href="index.html" class="back-link" tabindex="-1">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  Games
+</a>
+
+<!-- Badge Counter -->
+<div class="badge-counter" id="badgeCounter">🔥 <span id="badgeCount">0</span></div>
+
+<!-- Streak Counter -->
+<div class="streak-counter" id="streakCounter">🔥 Streak: <span id="streakCount">0</span></div>
+
+<!-- ===== START SCREEN ===== -->
+<div class="screen start-screen active" id="startScreen">
+  <img src="./images/scorcha_pepper.jpg" alt="Scorcha Pepper" class="game-logo">
+  <h1 class="game-title">Scorcha's Spelling Blaze</h1>
+  <p class="game-subtitle">6 Rounds of Caribbean Spelling!</p>
+  <div class="game-stats-preview">
+    <span class="stat-pill">6 Rounds</span>
+    <span class="stat-pill">48 Words</span>
+  </div>
+  <div class="round-preview">
+    <div class="round-preview-item"><span class="round-num">R1</span><span class="round-name">Warm Up</span><span class="round-time">20s</span></div>
+    <div class="round-preview-item"><span class="round-num">R2</span><span class="round-name">Getting Hotter</span><span class="round-time">18s</span></div>
+    <div class="round-preview-item"><span class="round-num">R3</span><span class="round-name">Island Heat</span><span class="round-time">16s</span></div>
+    <div class="round-preview-item"><span class="round-num">R4</span><span class="round-name">Blazing</span><span class="round-time">14s</span></div>
+    <div class="round-preview-item"><span class="round-num">R5</span><span class="round-name">Inferno</span><span class="round-time">12s</span></div>
+    <div class="round-preview-item"><span class="round-num">R6</span><span class="round-name">Scorcha's Boss Round</span><span class="round-time">10s</span></div>
+  </div>
+  <p class="difficulty-note">Timer gets faster each round!</p>
+  <button class="btn-fire" id="startBtn">Accept the Challenge!</button>
+</div>
+
+<!-- ===== ROUND INTRO SCREEN ===== -->
+<div class="screen round-intro-screen" id="roundIntroScreen">
+  <img src="./images/scorcha_pepper.jpg" alt="Scorcha Pepper" class="scorcha-img" style="width:100px;height:100px;">
+  <p class="round-intro-number" id="roundIntroNumber">Round 1 of 6</p>
+  <h2 class="round-intro-name" id="roundIntroName">Warm Up</h2>
+  <p class="round-intro-detail" id="roundIntroDetail">3-4 letter words · 1 missing letter</p>
+  <div class="round-intro-timer-info" id="roundIntroTimer">⏱ 20 seconds per word</div>
+  <button class="btn-fire" id="roundStartBtn">Let's Go!</button>
+</div>
+
+<!-- ===== GAMEPLAY SCREEN ===== -->
+<div class="screen gameplay-screen" id="gameplayScreen">
+  <div class="game-header">
+    <span class="round-label" id="roundLabel">Round 1/6 — Warm Up</span>
+    <span class="word-counter" id="wordCounter">Word 1/8</span>
+  </div>
+
+  <div class="timer-text" id="timerText">20s</div>
+  <div class="timer-container">
+    <div class="timer-bar" id="timerBar" style="width:100%"></div>
+  </div>
+
+  <div class="hint-area">
+    <p class="hint-text" id="hintText"></p>
+  </div>
+
+  <div class="word-display" id="wordDisplay"></div>
+
+  <div class="scorcha-area">
+    <img src="./images/scorcha_pepper.jpg" alt="Scorcha" class="scorcha-img" id="scorchaGameplay">
+  </div>
+
+  <div class="letter-options" id="letterOptions"></div>
+</div>
+
+<!-- ===== ROUND TRANSITION SCREEN ===== -->
+<div class="screen transition-screen" id="transitionScreen">
+  <p class="transition-round-title" id="transRoundTitle">Round 1 Complete!</p>
+  <p class="transition-score" id="transScore">6/8</p>
+  <p class="transition-rating" id="transRating">HOT!</p>
+  <p class="transition-flames" id="transFlames">🔥🔥</p>
+  <img src="./images/scorcha_pepper.jpg" alt="Scorcha" class="transition-scorcha" id="transScocha">
+  <p class="transition-streak" id="transStreak">Current streak: 4</p>
+  <div class="fun-fact-box" id="funFactBox">Did you know?</div>
+  <button class="btn-fire" id="nextRoundBtn">Next Round</button>
+</div>
+
+<!-- ===== VICTORY SCREEN ===== -->
+<div class="screen victory-screen" id="victoryScreen">
+  <img src="./images/scorcha_pepper.jpg" alt="Scorcha" class="victory-scorcha" id="victoryScocha">
+  <h2 class="victory-title" id="victoryTitle">SPELLING LEGEND!</h2>
+  <p class="victory-subtitle" id="victorySubtitle">Scorcha is DEFEATED!</p>
+  <p class="victory-badges" id="victoryBadges">🔥 42/48</p>
+  <p class="victory-streak" id="victoryStreak">Best streak: 12 words</p>
+  <div class="round-breakdown" id="roundBreakdown"></div>
+  <div class="word-results" id="wordResults"></div>
+  <div class="victory-buttons">
+    <button class="btn-fire" id="replayBtn">Challenge Again!</button>
+    <a href="index.html" class="btn-secondary" style="text-decoration:none;">Back to Games</a>
+  </div>
+</div>
+
+<script>
+// ===== AUDIO ENGINE =====
+const AudioEngine = (() => {
+  let ctx;
+  const init = () => {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+  };
+
+  const play = (freq, dur, type = 'square', vol = 0.15) => {
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(vol, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + dur);
+  };
+
+  const letterClick = () => play(600, 0.06, 'square', 0.1);
+
+  const correctChime = () => {
+    play(523, 0.12, 'sine', 0.15);
+    setTimeout(() => play(659, 0.12, 'sine', 0.15), 60);
+    setTimeout(() => play(784, 0.15, 'sine', 0.12), 120);
+  };
+
+  const wrongBuzz = () => {
+    play(150, 0.2, 'sawtooth', 0.12);
+    setTimeout(() => play(120, 0.15, 'sawtooth', 0.1), 80);
+  };
+
+  const wordComplete = () => {
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((n, i) => setTimeout(() => play(n, 0.2, 'sine', 0.12), i * 80));
+  };
+
+  const timerTick = () => play(1000, 0.03, 'square', 0.06);
+
+  const roundComplete = () => {
+    const notes = [392, 523, 659, 784, 1047];
+    notes.forEach((n, i) => setTimeout(() => play(n, 0.25, 'sine', 0.1), i * 100));
+  };
+
+  const victory = () => {
+    const notes = [523, 659, 784, 1047, 784, 1047, 1319];
+    notes.forEach((n, i) => setTimeout(() => play(n, 0.3, 'sine', 0.1), i * 120));
+  };
+
+  const defeat = () => {
+    play(300, 0.3, 'sawtooth', 0.1);
+    setTimeout(() => play(250, 0.3, 'sawtooth', 0.1), 200);
+    setTimeout(() => play(200, 0.5, 'sawtooth', 0.08), 400);
+  };
+
+  return { init, letterClick, correctChime, wrongBuzz, wordComplete, timerTick, roundComplete, victory, defeat };
+})();
+
+// ===== GAME DATA =====
+const ROUNDS = [
+  {
+    name: "Warm Up",
+    missingCount: 1,
+    timePerWord: 20,
+    words: [
+      { word: "SUN", hint: "Bright in the sky" },
+      { word: "HAT", hint: "Wear on your head" },
+      { word: "RED", hint: "Color of Scorcha" },
+      { word: "FIG", hint: "Small sweet fruit" },
+      { word: "JAM", hint: "Spread on bread" },
+      { word: "YAM", hint: "Root vegetable" },
+      { word: "BAY", hint: "Part of the sea" },
+      { word: "CUP", hint: "Drink from this" },
+      { word: "RUM", hint: "Not for kids — Caribbean drink" },
+      { word: "NET", hint: "Catch fish with this" },
+      { word: "POT", hint: "Cook in this" },
+      { word: "PAN", hint: "Fry food in this" }
+    ]
+  },
+  {
+    name: "Getting Hotter",
+    missingCount: 1,
+    timePerWord: 18,
+    words: [
+      { word: "FISH", hint: "From the sea" },
+      { word: "LIME", hint: "Green citrus" },
+      { word: "CORN", hint: "Roast on the street" },
+      { word: "RICE", hint: "Staple grain" },
+      { word: "CRAB", hint: "Has claws" },
+      { word: "PALM", hint: "Tropical tree" },
+      { word: "DRUM", hint: "Beat to make music" },
+      { word: "BIRD", hint: "Flies in the sky" },
+      { word: "GOAT", hint: "Farm animal" },
+      { word: "SAND", hint: "On the beach" },
+      { word: "WAVE", hint: "In the ocean" },
+      { word: "RAIN", hint: "Falls from clouds" },
+      { word: "SALT", hint: "Season your food" },
+      { word: "COAL", hint: "For the barbecue" }
+    ]
+  },
+  {
+    name: "Island Heat",
+    missingCount: 2,
+    timePerWord: 16,
+    words: [
+      { word: "MANGO", hint: "Sweet tropical fruit" },
+      { word: "GUAVA", hint: "Pink inside fruit" },
+      { word: "BEACH", hint: "Sand and sea" },
+      { word: "OCEAN", hint: "Big blue water" },
+      { word: "SPICE", hint: "Makes food tasty" },
+      { word: "DANCE", hint: "Move to the music" },
+      { word: "FEAST", hint: "Big meal together" },
+      { word: "SUGAR", hint: "Sweet crystals" },
+      { word: "CORAL", hint: "In the reef" },
+      { word: "FRESH", hint: "Just picked" },
+      { word: "STEEL", hint: "Steelpan metal" },
+      { word: "FLOAT", hint: "On Carnival day" },
+      { word: "PARROT", hint: "Colorful bird" },
+      { word: "ISLAND", hint: "Surrounded by water" }
+    ]
+  },
+  {
+    name: "Blazing",
+    missingCount: 2,
+    timePerWord: 14,
+    words: [
+      { word: "PELAU", hint: "One-pot rice dish" },
+      { word: "DOUBLES", hint: "Trinidad street food" },
+      { word: "CALLALOO", hint: "Green leafy dish" },
+      { word: "BANANA", hint: "Yellow curved fruit" },
+      { word: "PEPPER", hint: "Scorcha's family" },
+      { word: "MARKET", hint: "Where you buy food" },
+      { word: "REGGAE", hint: "Jamaican music" },
+      { word: "TROPHY", hint: "Win a prize" },
+      { word: "SORREL", hint: "Hibiscus drink" },
+      { word: "MASQUE", hint: "Carnival mask" },
+      { word: "PITONS", hint: "St. Lucia mountains" },
+      { word: "CRICKET", hint: "Bat and ball sport" },
+      { word: "PAPAYA", hint: "Tropical melon" },
+      { word: "NUTMEG", hint: "Grenada's spice" }
+    ]
+  },
+  {
+    name: "Inferno",
+    missingCount: 3,
+    timePerWord: 12,
+    words: [
+      { word: "CARNIVAL", hint: "Big celebration" },
+      { word: "STEELPAN", hint: "Musical instrument" },
+      { word: "TAMARIND", hint: "Tangy pod fruit" },
+      { word: "COCONUT", hint: "Hairy brown fruit" },
+      { word: "DASHEEN", hint: "Root vegetable" },
+      { word: "HIBISCUS", hint: "Tropical flower" },
+      { word: "FESTIVAL", hint: "Time to celebrate" },
+      { word: "BARBECUE", hint: "Grill outside" },
+      { word: "PLANTAIN", hint: "Cooking banana" },
+      { word: "MARACAS", hint: "Shaker instrument" },
+      { word: "PASSPORT", hint: "Travel document" },
+      { word: "TREASURE", hint: "Pirate's gold" },
+      { word: "PARADISE", hint: "Island heaven" },
+      { word: "TROPICAL", hint: "Warm and sunny" }
+    ]
+  },
+  {
+    name: "Scorcha's Boss Round",
+    missingCount: 3,
+    timePerWord: 10,
+    words: [
+      { word: "PINEAPPLE", hint: "Spiky sweet fruit" },
+      { word: "SUGARCANE", hint: "Sweet stalk plant" },
+      { word: "BREADFRUIT", hint: "Starchy island fruit" },
+      { word: "CARIBBEAN", hint: "Our island home" },
+      { word: "HUMMINGBIRD", hint: "Tiny fast bird" },
+      { word: "BOUGAINVILLEA", hint: "Purple flowering vine" },
+      { word: "MASQUERADE", hint: "Costume parade" },
+      { word: "CALYPSO", hint: "Trinidad music style" },
+      { word: "TOBAGO", hint: "Trinidad's sister island" },
+      { word: "LIMBO", hint: "Dance under the bar" },
+      { word: "SOCA", hint: "Caribbean party music" },
+      { word: "ROTI", hint: "Wrapped flatbread meal" }
+    ]
+  }
+];
+
+// Boss round: for shorter words use fewer missing, for 8+ use up to 4
+function getMissingCount(round, wordLen) {
+  if (round === 5) {
+    if (wordLen <= 4) return Math.min(2, wordLen - 1);
+    if (wordLen <= 6) return 3;
+    if (wordLen >= 9) return 4;
+    return 3;
+  }
+  return Math.min(ROUNDS[round].missingCount, wordLen - 1);
+}
+
+const FUN_FACTS = [
+  "Did you know? Trinidad and Tobago has TWO islands!",
+  "Fun fact: Jamaica's Blue Mountain coffee is one of the most expensive in the world!",
+  "Spelling tip: Caribbean words come from many languages — Spanish, French, Hindi, African languages, and English!",
+  "Did you know? The steelpan was invented in Trinidad and is the only acoustic instrument invented in the 20th century!",
+  "Final challenge! Scorcha is bringing the HEAT!"
+];
+
+// ===== GAME STATE =====
+let state = {
+  currentRound: 0,
+  currentWordIndex: 0,
+  roundWords: [],
+  totalBadges: 0,
+  roundBadges: [],
+  currentStreak: 0,
+  bestStreak: 0,
+  allWordResults: [],
+  // Per word
+  blanks: [],
+  blanksFilled: 0,
+  correctLetters: [],
+  options: [],
+  timerMax: 20,
+  timerLeft: 20,
+  timerInterval: null,
+  hintTimeout: null,
+  wordActive: false,
+  timePenalty: 0,
+  roundScore: 0,
+  tickingStarted: false,
+  wordStartTime: 0
+};
+
+// ===== DOM REFS =====
+const $ = id => document.getElementById(id);
+
+// ===== EMBER BACKGROUND =====
+function createEmbers() {
+  const bg = $('emberBg');
+  bg.innerHTML = '';
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'ember-particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.bottom = '-10px';
+    p.style.animationDuration = (6 + Math.random() * 10) + 's';
+    p.style.animationDelay = (Math.random() * 8) + 's';
+    p.style.width = (2 + Math.random() * 4) + 'px';
+    p.style.height = p.style.width;
+    const colors = ['#FF6B35', '#FF8A00', '#FF1744', '#FFD54F'];
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    bg.appendChild(p);
+  }
+}
+
+// ===== PARTICLE BURST =====
+function particleBurst(x, y, color = '#4CAF50') {
+  const container = document.createElement('div');
+  container.className = 'particle-burst';
+  container.style.left = x + 'px';
+  container.style.top = y + 'px';
+  for (let i = 0; i < 12; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (i / 12) * Math.PI * 2;
+    const dist = 30 + Math.random() * 40;
+    p.style.setProperty('--px', Math.cos(angle) * dist + 'px');
+    p.style.setProperty('--py', Math.sin(angle) * dist + 'px');
+    p.style.background = color;
+    p.style.width = (3 + Math.random() * 5) + 'px';
+    p.style.height = p.style.width;
+    container.appendChild(p);
+  }
+  document.body.appendChild(container);
+  setTimeout(() => container.remove(), 700);
+}
+
+// ===== UTILITY =====
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pickRandom(arr, n) {
+  return shuffle(arr).slice(0, n);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+// ===== SCREEN MANAGEMENT =====
+
+// Start
+$('startBtn').addEventListener('click', () => {
+  AudioEngine.init();
+  startGame();
+});
+
+$('roundStartBtn').addEventListener('click', () => {
+  startRound();
+});
+
+$('nextRoundBtn').addEventListener('click', () => {
+  if (state.currentRound > 1 && !window.__unlocked) {
+    showGate();
+    return;
+  }
+  state.currentRound++;
+  showRoundIntro();
+});
+
+$('replayBtn').addEventListener('click', () => {
+  startGame();
+});
+
+// ===== GAME FLOW =====
+function startGame() {
+  state.currentRound = 0;
+  state.totalBadges = 0;
+  state.roundBadges = [];
+  state.currentStreak = 0;
+  state.bestStreak = 0;
+  state.allWordResults = [];
+  $('badgeCount').textContent = '0';
+  $('badgeCounter').classList.add('visible');
+  $('streakCounter').classList.remove('visible');
+  showRoundIntro();
+}
+
+function showRoundIntro() {
+  const r = state.currentRound;
+  const round = ROUNDS[r];
+  $('roundIntroNumber').textContent = `Round ${r + 1} of 6`;
+  $('roundIntroName').textContent = round.name;
+
+  const missingText = round.missingCount === 1 ? '1 missing letter' :
+    r === 5 ? '3-4 missing letters' : `${round.missingCount} missing letters`;
+  const lenRange = r === 0 ? '3-4' : r === 1 ? '4-5' : r === 2 ? '5-6' : r === 3 ? '6-7' : r === 4 ? '7-8' : '8+';
+  $('roundIntroDetail').textContent = `${lenRange} letter words · ${missingText}`;
+  $('roundIntroTimer').innerHTML = `⏱ ${round.timePerWord} seconds per word`;
+
+  showScreen('roundIntroScreen');
+}
+
+function startRound() {
+  const r = state.currentRound;
+  const round = ROUNDS[r];
+  state.roundWords = pickRandom(round.words, 8);
+  state.currentWordIndex = 0;
+  state.roundScore = 0;
+  showScreen('gameplayScreen');
+  $('roundLabel').textContent = `Round ${r + 1}/6 — ${round.name}`;
+  startWord();
+}
+
+function startWord() {
+  const r = state.currentRound;
+  const round = ROUNDS[r];
+  const wordData = state.roundWords[state.currentWordIndex];
+  const word = wordData.word.toUpperCase();
+
+  $('wordCounter').textContent = `Word ${state.currentWordIndex + 1}/8`;
+
+  // Determine blanks
+  const missing = getMissingCount(r, word.length);
+  const indices = [];
+  const available = [];
+  for (let i = 0; i < word.length; i++) available.push(i);
+  const blanks = pickRandom(available, missing);
+  blanks.sort((a, b) => a - b);
+
+  state.blanks = blanks;
+  state.blanksFilled = 0;
+  state.correctLetters = blanks.map(i => word[i]);
+  state.wordActive = true;
+  state.tickingStarted = false;
+  state.wordStartTime = Date.now();
+
+  // Build word display
+  const display = $('wordDisplay');
+  display.innerHTML = '';
+  for (let i = 0; i < word.length; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'letter-slot';
+    slot.dataset.index = i;
+    if (blanks.includes(i)) {
+      slot.classList.add('blank');
+      if (i === blanks[0]) slot.classList.add('active');
+    } else {
+      slot.classList.add('filled');
+      slot.textContent = word[i];
+    }
+    display.appendChild(slot);
+  }
+
+  // Build letter options: correct missing letters + decoys
+  // Use unique correct letters for the button pool, but track how many of each we need
+  const correctSet = [...state.correctLetters];
+  const uniqueCorrect = [...new Set(correctSet)];
+  const vowels = 'AEIOU'.split('');
+  const consonants = 'BCDFGHJKLMNPQRSTVWXYZ'.split('');
+  const decoyCount = 8 - uniqueCorrect.length;
+  let decoys = [];
+  const usedLetters = new Set(uniqueCorrect);
+
+  // Mix vowels and consonants for decoys
+  let safety = 0;
+  while (decoys.length < decoyCount && safety < 100) {
+    safety++;
+    const pool = Math.random() < 0.4 ? vowels : consonants;
+    const letter = pool[Math.floor(Math.random() * pool.length)];
+    if (!usedLetters.has(letter)) {
+      decoys.push(letter);
+      usedLetters.add(letter);
+    }
+  }
+
+  state.options = shuffle([...uniqueCorrect, ...decoys]);
+  const optionsEl = $('letterOptions');
+  optionsEl.innerHTML = '';
+  state.options.forEach((letter, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'letter-btn';
+    btn.textContent = letter;
+    btn.dataset.letter = letter;
+    btn.dataset.index = i;
+    btn.addEventListener('click', () => onLetterClick(btn));
+    optionsEl.appendChild(btn);
+  });
+
+  // Hint
+  $('hintText').textContent = wordData.hint;
+  $('hintText').classList.remove('pulsing');
+  if (state.hintTimeout) clearTimeout(state.hintTimeout);
+  state.hintTimeout = setTimeout(() => {
+    if (state.wordActive) $('hintText').classList.add('pulsing');
+  }, 5000);
+
+  // Timer
+  state.timerMax = round.timePerWord;
+  state.timerLeft = round.timePerWord;
+  state.timePenalty = 0;
+  updateTimerDisplay();
+  startTimer();
+
+  // Scorcha
+  $('scorchaGameplay').className = 'scorcha-img';
+}
+
+// ===== LETTER CLICK =====
+function onLetterClick(btn) {
+  if (!state.wordActive) return;
+  if (btn.disabled) return;
+
+  AudioEngine.letterClick();
+  const letter = btn.dataset.letter;
+  const nextBlankIdx = state.blanks[state.blanksFilled];
+  const expectedLetter = state.correctLetters[state.blanksFilled];
+
+  if (letter === expectedLetter) {
+    // Correct!
+    // Check if this letter is needed for more blanks
+    const remainingNeeded = state.correctLetters.slice(state.blanksFilled + 1).filter(l => l === letter).length;
+    if (remainingNeeded === 0) {
+      btn.disabled = true;
+      btn.classList.add('used-correct');
+    }
+    const slot = $('wordDisplay').children[nextBlankIdx];
+    slot.textContent = letter;
+    slot.classList.remove('blank', 'active');
+    slot.classList.add('correct-flash');
+
+    // Get position for particle
+    const rect = slot.getBoundingClientRect();
+    particleBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, '#4CAF50');
+
+    AudioEngine.correctChime();
+
+    state.blanksFilled++;
+
+    // Activate next blank
+    if (state.blanksFilled < state.blanks.length) {
+      const nextSlot = $('wordDisplay').children[state.blanks[state.blanksFilled]];
+      nextSlot.classList.add('active');
+    }
+
+    // Check if word complete
+    if (state.blanksFilled >= state.blanks.length) {
+      wordMastered();
+    }
+  } else {
+    // Wrong!
+    btn.classList.add('used-wrong');
+    btn.disabled = true;
+    const slot = $('wordDisplay').children[nextBlankIdx];
+    slot.classList.add('wrong-flash');
+    setTimeout(() => slot.classList.remove('wrong-flash'), 400);
+
+    AudioEngine.wrongBuzz();
+
+    // Time penalty
+    state.timePenalty += 2;
+    state.timerLeft = Math.max(0, state.timerLeft - 2);
+    updateTimerDisplay();
+
+    // Scorcha happy
+    $('scorchaGameplay').classList.add('bounce');
+    setTimeout(() => $('scorchaGameplay').classList.remove('bounce'), 600);
+
+    if (state.timerLeft <= 0) {
+      wordFailed();
+    }
+  }
+}
+
+// ===== KEYBOARD SUPPORT =====
+document.addEventListener('keydown', (e) => {
+  if (!state.wordActive) return;
+  const key = e.key.toUpperCase();
+  if (key.length !== 1 || key < 'A' || key > 'Z') return;
+
+  e.preventDefault();
+
+  // Find first non-disabled button with this letter
+  const btns = $('letterOptions').querySelectorAll('.letter-btn:not(:disabled)');
+  for (const btn of btns) {
+    if (btn.dataset.letter === key) {
+      onLetterClick(btn);
+      break;
+    }
+  }
+});
+
+// ===== WORD OUTCOMES =====
+function wordMastered() {
+  state.wordActive = false;
+  clearInterval(state.timerInterval);
+  if (state.hintTimeout) clearTimeout(state.hintTimeout);
+
+  // Flash all letters
+  const slots = $('wordDisplay').children;
+  for (let i = 0; i < slots.length; i++) {
+    slots[i].classList.add('word-complete');
+  }
+
+  // Particle burst in center
+  const display = $('wordDisplay');
+  const rect = display.getBoundingClientRect();
+  particleBurst(rect.left + rect.width / 2, rect.top + rect.height / 2, '#FFD54F');
+  particleBurst(rect.left + rect.width / 2 - 30, rect.top + rect.height / 2, '#FF6B35');
+  particleBurst(rect.left + rect.width / 2 + 30, rect.top + rect.height / 2, '#4CAF50');
+
+  AudioEngine.wordComplete();
+
+  // Score
+  state.totalBadges++;
+  state.roundScore++;
+  $('badgeCount').textContent = state.totalBadges;
+
+  // Speed bonus
+  const elapsed = (Date.now() - state.wordStartTime) / 1000;
+  const halfTime = state.timerMax / 2;
+  const speedBonus = elapsed < halfTime ? 5 : 0;
+  state.totalBadges += speedBonus > 0 ? 0 : 0; // badges are just 1 per word
+
+  // Streak
+  state.currentStreak++;
+  if (state.currentStreak > state.bestStreak) state.bestStreak = state.currentStreak;
+  $('streakCount').textContent = state.currentStreak;
+  if (state.currentStreak >= 2) $('streakCounter').classList.add('visible');
+
+  // Record
+  state.allWordResults.push({
+    word: state.roundWords[state.currentWordIndex].word,
+    mastered: true,
+    round: state.currentRound
+  });
+
+  // Scorcha frustrated
+  $('scorchaGameplay').classList.add('shake');
+
+  setTimeout(() => {
+    $('scorchaGameplay').classList.remove('shake');
+    nextWord();
+  }, 1200);
+}
+
+function wordFailed() {
+  state.wordActive = false;
+  clearInterval(state.timerInterval);
+  if (state.hintTimeout) clearTimeout(state.hintTimeout);
+
+  // Reveal correct letters
+  const word = state.roundWords[state.currentWordIndex].word.toUpperCase();
+  const slots = $('wordDisplay').children;
+  for (let i = 0; i < word.length; i++) {
+    slots[i].textContent = word[i];
+    slots[i].classList.remove('blank', 'active', 'correct-flash');
+    if (state.blanks.includes(i) && i >= state.blanks[state.blanksFilled]) {
+      slots[i].classList.add('reveal');
+    }
+  }
+
+  // Reset streak
+  state.currentStreak = 0;
+  $('streakCounter').classList.remove('visible');
+
+  // Record
+  state.allWordResults.push({
+    word: state.roundWords[state.currentWordIndex].word,
+    mastered: false,
+    round: state.currentRound
+  });
+
+  // Scorcha triumphant
+  $('scorchaGameplay').classList.add('bounce');
+  AudioEngine.wrongBuzz();
+
+  setTimeout(() => {
+    $('scorchaGameplay').classList.remove('bounce');
+    nextWord();
+  }, 1500);
+}
+
+function nextWord() {
+  state.currentWordIndex++;
+  if (state.currentWordIndex >= 8) {
+    endRound();
+  } else {
+    startWord();
+  }
+}
+
+// ===== TIMER =====
+function startTimer() {
+  if (state.timerInterval) clearInterval(state.timerInterval);
+  const startTime = Date.now();
+  const maxMs = state.timerMax * 1000;
+  let lastTickSecond = -1;
+
+  state.timerInterval = setInterval(() => {
+    if (!state.wordActive) {
+      clearInterval(state.timerInterval);
+      return;
+    }
+
+    const elapsed = Date.now() - startTime + (state.timePenalty * 1000);
+    const remaining = Math.max(0, maxMs - elapsed) / 1000;
+    state.timerLeft = remaining;
+    updateTimerDisplay();
+
+    // Ticking in last 5 seconds
+    if (remaining <= 5 && remaining > 0) {
+      const sec = Math.ceil(remaining);
+      if (sec !== lastTickSecond) {
+        lastTickSecond = sec;
+        AudioEngine.timerTick();
+      }
+    }
+
+    if (remaining <= 0) {
+      clearInterval(state.timerInterval);
+      wordFailed();
+    }
+  }, 50);
+}
+
+function updateTimerDisplay() {
+  const pct = (state.timerLeft / state.timerMax) * 100;
+  const bar = $('timerBar');
+  bar.style.width = pct + '%';
+
+  bar.classList.remove('warning', 'danger');
+  const timerTextEl = $('timerText');
+  timerTextEl.classList.remove('warning-text', 'danger-text');
+
+  if (pct <= 25) {
+    bar.classList.add('danger');
+    timerTextEl.classList.add('danger-text');
+  } else if (pct <= 50) {
+    bar.classList.add('warning');
+    timerTextEl.classList.add('warning-text');
+  }
+
+  timerTextEl.textContent = Math.ceil(state.timerLeft) + 's';
+}
+
+// ===== ROUND END =====
+function endRound() {
+  AudioEngine.roundComplete();
+  state.roundBadges.push(state.roundScore);
+  $('badgeCount').textContent = state.totalBadges;
+
+  if (state.currentRound >= 5) {
+    showVictoryScreen();
+    return;
+  }
+
+  // Transition screen
+  const r = state.currentRound;
+  $('transRoundTitle').textContent = `Round ${r + 1} Complete!`;
+  $('transScore').textContent = `${state.roundScore}/8`;
+
+  let rating, flames;
+  if (state.roundScore === 8) { rating = 'BLAZING!'; flames = '🔥🔥🔥'; }
+  else if (state.roundScore >= 6) { rating = 'HOT!'; flames = '🔥🔥'; }
+  else if (state.roundScore >= 4) { rating = 'WARM'; flames = '🔥'; }
+  else { rating = "Scorcha wins this round..."; flames = ''; }
+
+  $('transRating').textContent = rating;
+  $('transFlames').textContent = flames;
+  $('transStreak').textContent = state.currentStreak > 0 ? `Current streak: ${state.currentStreak}` : '';
+
+  // Scorcha reaction
+  const scorcha = $('transScocha');
+  scorcha.className = 'transition-scorcha';
+  if (state.roundScore >= 6) {
+    scorcha.classList.add('frustrated');
+  } else {
+    scorcha.classList.add('triumphant');
+  }
+
+  // Fun fact
+  $('funFactBox').textContent = FUN_FACTS[r] || '';
+
+  showScreen('transitionScreen');
+}
+
+// ===== VICTORY =====
+function showVictoryScreen() {
+  // roundBadges already has all 6 entries from endRound
+  const total = state.roundBadges.reduce((a, b) => a + b, 0);
+  state.totalBadges = total;
+
+  let titleText, subtitleText, titleClass;
+  if (total >= 40) {
+    titleText = 'SPELLING LEGEND!';
+    subtitleText = 'Scorcha is DEFEATED!';
+    titleClass = 'legend';
+    AudioEngine.victory();
+  } else if (total >= 30) {
+    titleText = 'BLAZING SPELLER!';
+    subtitleText = 'Scorcha is worried!';
+    titleClass = 'blazing';
+    AudioEngine.victory();
+  } else if (total >= 20) {
+    titleText = 'Getting Hotter!';
+    subtitleText = 'Keep practicing!';
+    titleClass = 'warm';
+    AudioEngine.roundComplete();
+  } else {
+    titleText = 'Scorcha wins this time...';
+    subtitleText = 'Try again!';
+    titleClass = 'cold';
+    AudioEngine.defeat();
+  }
+
+  const vTitle = $('victoryTitle');
+  vTitle.textContent = titleText;
+  vTitle.className = 'victory-title ' + titleClass;
+  $('victorySubtitle').textContent = subtitleText;
+  $('victoryBadges').textContent = `🔥 ${total}/48`;
+  $('victoryStreak').textContent = `Best streak: ${state.bestStreak} word${state.bestStreak !== 1 ? 's' : ''}`;
+
+  // Scorcha
+  const scorcha = $('victoryScocha');
+  scorcha.className = 'victory-scorcha';
+  if (total >= 30) {
+    scorcha.classList.add('defeated');
+  } else {
+    scorcha.classList.add('triumphant');
+  }
+
+  // Round breakdown
+  const breakdown = $('roundBreakdown');
+  breakdown.innerHTML = '';
+  const roundNames = ROUNDS.map(r => r.name);
+  // Note: roundBadges was pushed once extra, last entry is from endRound for round 6
+  // Actually endRound pushes first, then showVictory pushes again. Let's fix.
+  // We pushed in endRound: rounds 0-4, then showVictory pushes round 5.
+  // Actually looking at the flow: endRound returns early and calls showVictory for round 5.
+  // showVictory pushes roundScore. So roundBadges has 5 items from endRound + 1 from showVictory = 6.
+  // Wait, re-reading: endRound pushes then checks. For rounds 0-4, it pushes then shows transition.
+  // For round 5 (currentRound=5), it pushes then calls showVictory. But showVictory ALSO pushes.
+  // Let me fix: remove the push from showVictory.
+
+  // The roundBadges now has entries for all completed rounds.
+  for (let i = 0; i < 6; i++) {
+    const score = state.roundBadges[i] || 0;
+    const item = document.createElement('div');
+    item.className = 'round-breakdown-item';
+    const flameStr = score === 8 ? '🔥🔥🔥' : score >= 6 ? '🔥🔥' : score >= 4 ? '🔥' : '—';
+    item.innerHTML = `<span class="rb-name">R${i + 1}: ${roundNames[i]}</span><span class="rb-score">${score}/8 ${flameStr}</span>`;
+    breakdown.appendChild(item);
+  }
+
+  // Word results
+  const results = $('wordResults');
+  results.innerHTML = '';
+  state.allWordResults.forEach(wr => {
+    const el = document.createElement('div');
+    el.className = 'word-result ' + (wr.mastered ? 'mastered' : 'missed');
+    el.textContent = wr.word;
+    results.appendChild(el);
+  });
+
+  $('badgeCounter').classList.remove('visible');
+  $('streakCounter').classList.remove('visible');
+  showScreen('victoryScreen');
+}
+
+// ===== INIT =====
+createEmbers();
+
+
+
+// ===== FREE-TO-PAID GATE =====
+const GATE_CONFIG = {"charImg":"./images/scorcha_pepper.jpg","charAlt":"Scorcha Pepper","gateTitle":"Scorcha wants a rematch!","gateSubtitle":"You've blazed through the free rounds! Unlock all 6 rounds of Caribbean spelling — 48 words total — plus 3 more games.","freeMaxRound":1,"gateCheck":"SPELLING"};
+function showGate() {
+  const g = document.getElementById('gateOverlay');
+  const img = document.getElementById('gateCharImg');
+  const title = document.getElementById('gateTitle');
+  const subtitle = document.getElementById('gateSubtitle');
+  img.src = GATE_CONFIG.charImg;
+  img.alt = GATE_CONFIG.charAlt;
+  title.textContent = GATE_CONFIG.gateTitle;
+  subtitle.textContent = GATE_CONFIG.gateSubtitle;
+  g.classList.add('visible');
+}
+function isGated() { return false; } // Set to true when auth is wired up
+
+</script>
+
+<div class="gate-overlay" id="gateOverlay">
+  <div class="gate-lock">🔒</div>
+  <img src="./images/scorcha_pepper.jpg" alt="Scorcha Pepper" class="gate-character" id="gateCharImg">
+  <h2 class="gate-title" id="gateTitle">Want to keep playing?</h2>
+  <p class="gate-subtitle" id="gateSubtitle"></p>
+  <div class="gate-features">
+    <div class="gate-feature">All levels in all 4 games</div>
+    <div class="gate-feature">Full Likkle Legends learning portal</div>
+    <div class="gate-feature">Caribbean stories, songs, and activities</div>
+    <div class="gate-feature">New content every month</div>
+  </div>
+  <a href="https://www.likklelegends.com/#pricing" class="gate-cta">Start the $10 Legend Intro Pass →</a>
+  <a href="index.html" class="gate-free-btn">← Back to Free Games</a>
+  <p class="gate-guarantee">🛡️ 30-day money-back guarantee. Cancel anytime.</p>
+</div>
+
+</body>
+</html>
