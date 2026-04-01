@@ -361,21 +361,26 @@ export default function AdminGameBuilderPage() {
 
                             <div className="flex gap-3">
                                 <select
+                                    id="question-emoji"
                                     value={currentQuestion.emoji}
                                     onChange={(e) => setCurrentQuestion(prev => ({ ...prev, emoji: e.target.value }))}
                                     className="px-3 py-2 border border-gray-200 rounded-xl text-2xl"
                                     title="Question emoji"
+                                    aria-label="Select emoji for question"
                                 >
                                     {['🌴', '🥭', '🦜', '🥁', '🌊', '☀️', '🏝️', '🎵', '🍌', '🐢'].map(e => (
                                         <option key={e} value={e}>{e}</option>
                                     ))}
                                 </select>
                                 <input
+                                    id="question-text"
                                     type="text"
                                     value={currentQuestion.question}
                                     onChange={(e) => setCurrentQuestion(prev => ({ ...prev, question: e.target.value }))}
                                     placeholder="What is Jamaica's national fruit?"
                                     className="flex-1 px-4 py-2 border border-gray-200 rounded-xl"
+                                    aria-label="Question text"
+                                    aria-required="true"
                                 />
                             </div>
 
@@ -407,11 +412,13 @@ export default function AdminGameBuilderPage() {
                             </div>
 
                             <input
+                                id="question-funfact"
                                 type="text"
                                 value={currentQuestion.funFact}
                                 onChange={(e) => setCurrentQuestion(prev => ({ ...prev, funFact: e.target.value }))}
                                 placeholder="Fun fact shown after answering..."
                                 className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm"
+                                aria-label="Fun fact"
                             />
 
                             <button
@@ -460,10 +467,12 @@ export default function AdminGameBuilderPage() {
 
                             <div className="flex gap-3">
                                 <select
+                                    id="card-symbol"
                                     value={currentCard.symbol}
                                     onChange={(e) => setCurrentCard(prev => ({ ...prev, symbol: e.target.value }))}
                                     className="px-4 py-3 border border-gray-200 rounded-xl text-3xl w-20"
                                     title="Card symbol"
+                                    aria-label="Select symbol for memory card"
                                 >
                                     <option value="">?</option>
                                     {['🥭', '🥥', '🍍', '🍌', '🦜', '🦀', '🐢', '🏝️', '⛵', '🥁', '🌴', '🌺', '🐠', '🦎', '🎵'].map(e => (
@@ -471,11 +480,14 @@ export default function AdminGameBuilderPage() {
                                     ))}
                                 </select>
                                 <input
+                                    id="card-name"
                                     type="text"
                                     value={currentCard.name}
                                     onChange={(e) => setCurrentCard(prev => ({ ...prev, name: e.target.value }))}
                                     placeholder="Name (e.g., Mango)"
                                     className="flex-1 px-4 py-3 border border-gray-200 rounded-xl"
+                                    aria-label="Card name"
+                                    aria-required="true"
                                 />
                                 <button
                                     onClick={addCard}
@@ -552,26 +564,34 @@ export default function AdminGameBuilderPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <input
+                                    id="word1"
                                     type="text"
                                     value={currentWordPair.word1}
                                     onChange={(e) => setCurrentWordPair(prev => ({ ...prev, word1: e.target.value }))}
                                     placeholder="Word 1 (e.g., Wah Gwan)"
                                     className="px-4 py-3 border border-gray-200 rounded-xl"
+                                    aria-label="Word 1"
+                                    aria-required="true"
                                 />
                                 <input
+                                    id="word2"
                                     type="text"
                                     value={currentWordPair.word2}
                                     onChange={(e) => setCurrentWordPair(prev => ({ ...prev, word2: e.target.value }))}
                                     placeholder="Word 2 (e.g., What's up)"
                                     className="px-4 py-3 border border-gray-200 rounded-xl"
+                                    aria-label="Word 2"
+                                    aria-required="true"
                                 />
                             </div>
                             <input
+                                id="word-hint"
                                 type="text"
                                 value={currentWordPair.hint}
                                 onChange={(e) => setCurrentWordPair(prev => ({ ...prev, hint: e.target.value }))}
                                 placeholder="Hint for kids..."
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl"
+                                aria-label="Hint for word pair"
                             />
                             <button
                                 onClick={addWordPair}
@@ -727,13 +747,15 @@ export default function AdminGameBuilderPage() {
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Game Title *</label>
+                                    <label htmlFor="game-title" className="block text-sm font-bold text-gray-700 mb-2">Game Title *</label>
                                     <input
+                                        id="game-title"
                                         type="text"
                                         value={formData.title}
                                         onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                                         className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
                                         placeholder="e.g., Caribbean Culture Quiz"
+                                        aria-required="true"
                                     />
                                 </div>
 
@@ -757,8 +779,9 @@ export default function AdminGameBuilderPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Category</label>
+                                    <label htmlFor="game-category" className="block text-sm font-bold text-gray-700 mb-2">Category</label>
                                     <select
+                                        id="game-category"
                                         value={formData.category}
                                         onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                                         className="w-full px-4 py-3 border border-gray-200 rounded-xl"
@@ -796,8 +819,9 @@ export default function AdminGameBuilderPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                                    <label htmlFor="game-description" className="block text-sm font-bold text-gray-700 mb-2">Description</label>
                                     <textarea
+                                        id="game-description"
                                         value={formData.description}
                                         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                                         className="w-full px-4 py-3 border border-gray-200 rounded-xl"
@@ -836,8 +860,9 @@ export default function AdminGameBuilderPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">XP Reward</label>
+                                <label htmlFor="game-xp" className="block text-sm font-bold text-gray-700 mb-2">XP Reward</label>
                                 <input
+                                    id="game-xp"
                                     type="number"
                                     title="XP Reward"
                                     aria-label="XP Reward amount"
@@ -850,8 +875,9 @@ export default function AdminGameBuilderPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Access Tier</label>
+                                <label htmlFor="game-tier" className="block text-sm font-bold text-gray-700 mb-2">Access Tier</label>
                                 <select
+                                    id="game-tier"
                                     value={formData.tier_required}
                                     onChange={(e) => setFormData(prev => ({ ...prev, tier_required: e.target.value }))}
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl"
@@ -865,8 +891,9 @@ export default function AdminGameBuilderPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Game URL Slug</label>
+                                <label htmlFor="game-url" className="block text-sm font-bold text-gray-700 mb-2">Game URL Slug</label>
                                 <input
+                                    id="game-url"
                                     type="text"
                                     value={formData.game_url}
                                     onChange={(e) => setFormData(prev => ({ ...prev, game_url: e.target.value.toLowerCase().replace(/\s+/g, '-') }))}
