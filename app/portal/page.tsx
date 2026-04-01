@@ -391,6 +391,7 @@ export default function ChildPortalPage() {
                 if (!plan?.plan_data?.weeks) return;
 
                 // Determine today's activities from the plan
+                            try {
                 const dayIndex = new Date().getDay(); // 0=Sun, 1=Mon...
                 const weekdayIndex = Math.max(0, dayIndex - 1); // Mon=0, Fri=4
                 const week = plan.plan_data.weeks[0]; // Use week 1 for daily view
