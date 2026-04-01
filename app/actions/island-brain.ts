@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { GeneratedContent, ContentType, ContentRequest } from '@/lib/types';
 import { IslandBrainOrchestrator } from '@/lib/agent-orchestrator';
 import { generateContentAudio } from '@/lib/services/audio-service';
+import { logAdminAction, logAdminActionError } from '@/lib/audit-logger';
 
 /**
  * Server-safe User Verification with Timeout
@@ -78,33 +79,114 @@ export async function approveContentAction(token: string, contentId: string) {
     const user = await verifyUser(token);
     const admin = await getAdminClient();
 
-    const { error } = await admin
-        .from('generated_content')
-        .update({
-            is_approved_for_kid: true,
-            approved_at: new Date().toISOString()
-        })
-        .eq('id', contentId)
-        .eq('family_id', user.id);
+    try {
+        // Fetch current content to log before/after
+        const { data: currentContent } = await admin
+            .from('generated_content')
+            .select('*')
+            .eq('id', contentId)
+            .single();
 
-    if (error) throw new Error(error.message);
-    revalidatePath('/parent');
-    return { success: true };
+        const { error } = await admin
+            .from('generated_content')
+            .update({
+                admin_status: 'approved',
+                is_approved_for_kid: true,
+                approved_at: new Date().toISOString()
+            })
+            .eq('id', contentId)
+            .eq('family_id', user.id);
+
+        if (error) throw new Error(error.message);
+
+        // Log the approval action
+        await logAdminAction(
+            admin,
+            user.id,
+            user.email || 'unknown',
+            'approve_content',
+            'generated_content',
+            contentId,
+            {
+                before: { admin_status: currentContent?.admin_status || 'pending' },
+                after: { admin_status: 'approved' },
+                content_type: currentContent?.content_type,
+                island_id: currentContent?.island_id,
+            }
+        );
+
+        revalidatePath('/parent');
+        revalidatePath('/admin/island-orchestrator');
+        return { success: true };
+    } catch (error: any) {
+        // Log the error
+        await logAdminActionError(
+            admin,
+            user.id,
+            user.email || 'unknown',
+            'approve_content',
+            'generated_content',
+            error.message,
+            contentId
+        );
+        throw error;
+    }
 }
 
 export async function rejectContentAction(token: string, contentId: string) {
     const user = await verifyUser(token);
     const admin = await getAdminClient();
 
-    const { error } = await admin
-        .from('generated_content')
-        .delete()
-        .eq('id', contentId)
-        .eq('family_id', user.id);
+    try {
+        // Fetch current content to log what's being deleted
+        const { data: currentContent } = await admin
+            .from('generated_content')
+            .select('*')
+            .eq('id', contentId)
+            .single();
 
-    if (error) throw new Error(error.message);
-    revalidatePath('/parent');
-    return { success: true };
+        const { error } = await admin
+            .from('generated_content')
+            .update({
+                admin_status: 'rejected'
+            })
+            .eq('id', contentId)
+            .eq('family_id', user.id);
+
+        if (error) throw new Error(error.message);
+
+        // Log the rejection action
+        await logAdminAction(
+            admin,
+            user.id,
+            user.email || 'unknown',
+            'reject_content',
+            'generated_content',
+            contentId,
+            {
+                before: { admin_status: currentContent?.admin_status || 'pending' },
+                after: { admin_status: 'rejected' },
+                content_type: currentContent?.content_type,
+                island_id: currentContent?.island_id,
+            }
+        );
+
+        revalidatePath('/parent');
+        revalidatePath('/admin/island-orchestrator');
+        return { success: true };
+    } catch (error: any) {
+        // Log the error
+        await logAdminActionError(
+            admin,
+            user.id,
+            user.email || 'unknown',
+            'reject_content',
+            'generated_content',
+            error.message,
+            contentId
+        );
+        throw error;
+    }
 }
 
 export async function runAgentGeneration(
