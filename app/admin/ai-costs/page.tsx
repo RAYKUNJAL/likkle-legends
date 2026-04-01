@@ -98,7 +98,9 @@ export default function AdminAICostsPage() {
                     </div>
                     <div className="flex items-center gap-3">
                         <select
+                            id="window-days"
                             title="Window"
+                            aria-label="Select time window for cost data"
                             value={windowDays}
                             onChange={(e) => setWindowDays(Number(e.target.value))}
                             className="px-3 py-2 rounded-xl border border-gray-200 text-sm font-bold"
@@ -192,6 +194,8 @@ export default function AdminAICostsPage() {
                             <label key={task} className="text-sm font-bold text-gray-700">
                                 <span className="block mb-1 capitalize">{task.replace("_", " ")}</span>
                                 <input
+                                    id={`task-routing-${task}`}
+                                    type="text"
                                     value={model}
                                     onChange={(e) =>
                                         setControls((prev) => ({
@@ -321,10 +325,12 @@ function NumberField({
     value: number;
     onChange: (v: number) => void;
 }) {
+    const fieldId = `number-field-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
     return (
-        <label className="text-sm font-bold text-gray-700">
+        <label htmlFor={fieldId} className="text-sm font-bold text-gray-700">
             <span className="block mb-1">{label}</span>
             <input
+                id={fieldId}
                 type="number"
                 step="0.01"
                 value={Number.isFinite(value) ? value : 0}

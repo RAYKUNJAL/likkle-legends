@@ -293,14 +293,16 @@ export default function AdminAssetDashboard() {
                     <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Title *</label>
+                                <label htmlFor="asset-title" className="block text-sm font-bold text-gray-700 mb-2">Title *</label>
                                 <div className="flex gap-2">
                                     <input
+                                        id="asset-title"
                                         type="text"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20"
                                         placeholder="e.g. Steelpan Serenade"
+                                        aria-required="true"
                                     />
                                     <button
                                         onClick={handleMagicAI}
@@ -315,8 +317,9 @@ export default function AdminAssetDashboard() {
 
                             {activeTab === 'songs' && (
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Artist / Island</label>
+                                    <label htmlFor="asset-artist" className="block text-sm font-bold text-gray-700 mb-2">Artist / Island</label>
                                     <input
+                                        id="asset-artist"
                                         type="text"
                                         value={formData.artist}
                                         onChange={(e) => setFormData({ ...formData, artist: e.target.value })}
@@ -327,8 +330,9 @@ export default function AdminAssetDashboard() {
                             )}
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                                <label htmlFor="asset-description" className="block text-sm font-bold text-gray-700 mb-2">Description</label>
                                 <textarea
+                                    id="asset-description"
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-200 rounded-xl"
@@ -339,8 +343,9 @@ export default function AdminAssetDashboard() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Tier Required</label>
+                                    <label htmlFor="asset-tier" className="block text-sm font-bold text-gray-700 mb-2">Tier Required</label>
                                     <select
+                                        id="asset-tier"
                                         aria-label="Tier Required"
                                         value={formData.tier_required}
                                         onChange={(e) => setFormData({ ...formData, tier_required: e.target.value })}
@@ -353,8 +358,9 @@ export default function AdminAssetDashboard() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Status</label>
+                                    <label htmlFor="asset-status" className="block text-sm font-bold text-gray-700 mb-2">Status</label>
                                     <select
+                                        id="asset-status"
                                         aria-label="Status"
                                         value={formData.is_active ? 'true' : 'false'}
                                         onChange={(e) => setFormData({ ...formData, is_active: e.target.value === 'true' })}

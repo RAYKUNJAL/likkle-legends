@@ -248,13 +248,16 @@ const TantyRecordingStudio: React.FC = () => {
                         <div className="flex flex-col md:flex-row justify-between items-center gap-6 bg-blue-50 p-6 rounded-[2.5rem]">
                             <div className="flex items-center gap-4 w-full md:w-auto">
                                 <input
+                                    id="tanty-search"
                                     type="text"
                                     placeholder="Search legends..."
                                     className="p-4 bg-white rounded-2xl border-2 border-transparent focus:border-blue-200 outline-none font-bold w-full md:w-64"
                                     value={searchQuery}
                                     onChange={e => setSearchQuery(e.target.value)}
+                                    aria-label="Search stories and letters"
                                 />
                                 <select
+                                    id="tanty-filter"
                                     className="p-4 bg-white rounded-2xl font-black text-xs uppercase outline-none"
                                     value={filterType}
                                     onChange={e => setFilterType(e.target.value as any)}

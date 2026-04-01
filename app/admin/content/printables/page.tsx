@@ -195,7 +195,8 @@ function EditModal({
                                 <div>
                                     <p className="text-xs text-gray-400 mb-1">Or paste a URL:</p>
                                     <input
-                                        type="text"
+                                        id="printable-preview-url"
+                                        type="url"
                                         value={form.preview_url || ''}
                                         onChange={e => set('preview_url', e.target.value)}
                                         placeholder="https://..."
@@ -208,20 +209,23 @@ function EditModal({
 
                     {/* Title */}
                     <div>
-                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Title *</label>
+                        <label htmlFor="printable-title" className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Title *</label>
                         <input
+                            id="printable-title"
                             type="text"
                             value={form.title || ''}
                             onChange={e => set('title', e.target.value)}
                             placeholder="e.g. Caribbean Alphabet A-M"
                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm font-bold focus:outline-none focus:border-amber-400"
+                            aria-required="true"
                         />
                     </div>
 
                     {/* Description */}
                     <div>
-                        <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Description</label>
+                        <label htmlFor="printable-description" className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Description</label>
                         <textarea
+                            id="printable-description"
                             value={form.description || ''}
                             onChange={e => set('description', e.target.value)}
                             rows={2}
@@ -233,8 +237,9 @@ function EditModal({
                     {/* Category + Tier row */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Category</label>
+                            <label htmlFor="printable-category" className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Category</label>
                             <select
+                                id="printable-category"
                                 value={form.category || 'coloring'}
                                 onChange={e => set('category', e.target.value)}
                                 aria-label="Category"
@@ -244,8 +249,9 @@ function EditModal({
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Tier Required</label>
+                            <label htmlFor="printable-tier" className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Tier Required</label>
                             <select
+                                id="printable-tier"
                                 value={form.tier_required || 'free'}
                                 onChange={e => set('tier_required', e.target.value)}
                                 aria-label="Tier required"
@@ -267,11 +273,13 @@ function EditModal({
                             </label>
                             <p className="text-xs text-gray-400">Or use the portal route URL (e.g. <code className="bg-gray-100 px-1 rounded">/portal/printables/caribbean-alphabet-a-m</code>)</p>
                             <input
+                                id="printable-pdf-url"
                                 type="text"
                                 value={form.pdf_url || ''}
                                 onChange={e => set('pdf_url', e.target.value)}
                                 placeholder="/portal/printables/my-worksheet or https://..."
                                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-amber-400"
+                                aria-required="true"
                             />
                         </div>
                     </div>
@@ -407,11 +415,13 @@ export default function PrintablesAdminPage() {
                     <div className="relative flex-1">
                         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
+                            id="printables-search"
                             type="text"
                             placeholder="Search by title or description..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-amber-400 bg-white"
+                            aria-label="Search worksheets"
                         />
                         {searchQuery && (
                             <button type="button" aria-label="Clear search" onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg">×</button>
