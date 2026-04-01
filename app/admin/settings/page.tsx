@@ -93,11 +93,11 @@ export default function AdminSettingsPage() {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Platform Mode</label>
+                                <label htmlFor="platform-mode" className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Platform Mode</label>
                                 <select
+                                    id="platform-mode"
                                     value={config.platform_mode}
                                     onChange={(e) => setConfig({ ...config, platform_mode: e.target.value })}
-                                    title="Platform Mode"
                                     className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold text-gray-900 outline-none focus:ring-2 focus:ring-primary/20"
                                 >
                                     <option value="production">Production (Live)</option>
@@ -107,9 +107,9 @@ export default function AdminSettingsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Default Currency</label>
+                                <label htmlFor="default-currency" className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Default Currency</label>
                                 <select
-                                    title="Default Currency"
+                                    id="default-currency"
                                     value={config.currency}
                                     onChange={(e) => setConfig({ ...config, currency: e.target.value })}
                                     className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl font-bold text-gray-900 outline-none focus:ring-2 focus:ring-primary/20"
@@ -147,16 +147,17 @@ export default function AdminSettingsPage() {
                         <div className="space-y-6">
                             <div>
                                 <div className="flex justify-between mb-2">
-                                    <label className="text-xs font-black text-gray-400 uppercase tracking-widest">Creativity (Temp)</label>
+                                    <label htmlFor="creativity-temp" className="text-xs font-black text-gray-400 uppercase tracking-widest">Creativity (Temp)</label>
                                     <span className="text-xs font-bold text-accent">{config.creativity}</span>
                                 </div>
                                 <input
-                                    title="Creativity Temperature"
+                                    id="creativity-temp"
                                     type="range"
                                     className="w-full accent-accent"
                                     min="0" max="1" step="0.05"
                                     value={config.creativity}
                                     onChange={(e) => setConfig({ ...config, creativity: parseFloat(e.target.value) })}
+                                    aria-label="Adjust creativity temperature for AI generation"
                                 />
                             </div>
 

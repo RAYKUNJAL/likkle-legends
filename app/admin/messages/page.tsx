@@ -175,10 +175,12 @@ export default function AdminMessagesPage() {
                                     Send a Reply
                                 </h4>
                                 <textarea
+                                    id="reply-text"
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}
                                     className="w-full h-40 p-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none"
                                     placeholder="Type your response here..."
+                                    aria-label="Reply message to send to parent"
                                 />
                                 <div className="flex justify-end gap-3">
                                     <button

@@ -142,10 +142,12 @@ export default function AdminPersonalityPage() {
                                 </div>
                                 <p className="text-sm text-gray-500 mb-4">This defines the core behavior, tone, and specific Caribbean dialect of the character.</p>
                                 <textarea
+                                    id="system-prompt"
                                     value={personality.system_prompt}
                                     onChange={(e) => setPersonality({ ...personality, system_prompt: e.target.value })}
                                     className="w-full h-48 p-6 bg-slate-50 border border-gray-100 rounded-2xl font-mono text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                     placeholder="e.g. You are a warm, wise Caribbean grandmother..."
+                                    aria-label="System instructions and character core behavior"
                                 />
                             </div>
 
@@ -157,10 +159,12 @@ export default function AdminPersonalityPage() {
                                 </div>
                                 <p className="text-sm text-gray-500 mb-4">Add specific cultural facts, island lore, or stories this character should know.</p>
                                 <textarea
+                                    id="knowledge-base"
                                     value={personality.knowledge_base}
                                     onChange={(e) => setPersonality({ ...personality, knowledge_base: e.target.value })}
                                     className="w-full h-48 p-6 bg-slate-50 border border-gray-100 rounded-2xl text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                     placeholder="e.g. Tobago is known for the Goat Races. The steelpan was invented in Trinidad..."
+                                    aria-label="World knowledge and facts the character should know"
                                 />
                             </div>
 

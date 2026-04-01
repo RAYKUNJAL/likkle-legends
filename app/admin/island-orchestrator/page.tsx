@@ -345,11 +345,13 @@ export default function IslandOrchestratorPage() {
                         <div className="space-y-6">
                             {/* Island Selection */}
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-3">Island</label>
+                                <label htmlFor="island-select" className="block text-sm font-bold text-slate-700 mb-3">Island</label>
                                 <select
+                                    id="island-select"
                                     value={islandId}
                                     onChange={(e) => setIslandId(e.target.value)}
                                     className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-primary transition-all"
+                                    aria-label="Select island for content generation"
                                 >
                                     {islandOptions.map(opt => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -359,11 +361,13 @@ export default function IslandOrchestratorPage() {
 
                             {/* Character Selection */}
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-3">Host Character</label>
+                                <label htmlFor="character-select" className="block text-sm font-bold text-slate-700 mb-3">Host Character</label>
                                 <select
+                                    id="character-select"
                                     value={characterId}
                                     onChange={(e) => setCharacterId(e.target.value)}
                                     className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-primary transition-all"
+                                    aria-label="Select host character for content"
                                 >
                                     {characterOptions.map(opt => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -392,14 +396,17 @@ export default function IslandOrchestratorPage() {
 
                             {/* Topic/Description */}
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-3">Topic or Description</label>
+                                <label htmlFor="topic-input" className="block text-sm font-bold text-slate-700 mb-3">Topic or Description</label>
                                 <textarea
+                                    id="topic-input"
                                     value={topic}
                                     onChange={(e) => setTopic(e.target.value)}
                                     placeholder="e.g., A lesson about Caribbean sea turtles..."
                                     className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-primary transition-all resize-none"
                                     rows={4}
                                     disabled={isGenerating}
+                                    aria-label="Topic or description for content generation"
+                                    aria-required="true"
                                 />
                             </div>
 

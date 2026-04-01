@@ -237,12 +237,13 @@ export default function LaunchVerificationPage() {
 
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-[10px] font-black uppercase text-white/40 mb-2 block">Select Parent</label>
+                                    <label htmlFor="verify-select-parent" className="text-[10px] font-black uppercase text-white/40 mb-2 block">Select Parent</label>
                                     <select
+                                        id="verify-select-parent"
                                         value={selectedProfileId}
                                         onChange={(e) => setSelectedProfileId(e.target.value)}
-                                        title="Select Parent Profile"
                                         className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                        aria-label="Select parent profile for simulation"
                                     >
                                         {profiles.map(p => <option key={p.id} value={p.id} className="text-black">{p.full_name} ({p.email})</option>)}
                                     </select>
@@ -250,12 +251,13 @@ export default function LaunchVerificationPage() {
 
                                 {children.length > 0 && (
                                     <div>
-                                        <label className="text-[10px] font-black uppercase text-white/40 mb-2 block">Select Child</label>
+                                        <label htmlFor="verify-select-child" className="text-[10px] font-black uppercase text-white/40 mb-2 block">Select Child</label>
                                         <select
+                                            id="verify-select-child"
                                             value={selectedChildId}
                                             onChange={(e) => setSelectedChildId(e.target.value)}
-                                            title="Select Child Profile"
                                             className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            aria-label="Select child profile for XP simulation"
                                         >
                                             {children.map(c => <option key={c.id} value={c.id} className="text-black">{c.first_name} (XP: {c.total_xp})</option>)}
                                         </select>

@@ -165,11 +165,13 @@ export default function LeadsPage() {
                     <div className="relative flex-1 w-full">
                         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
+                            id="leads-search"
                             type="text"
                             placeholder="Search by email or name..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary focus:outline-none"
+                            aria-label="Search leads by email or name"
                         />
                     </div>
                     <div className="flex gap-2">

@@ -271,6 +271,7 @@ function MediaManagerContent() {
 
                     <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
                         <select
+                            id="media-filter-tier"
                             value={filterTier}
                             onChange={(e) => setFilterTier(e.target.value)}
                             className="bg-transparent border-none text-xs font-bold focus:ring-0"
@@ -283,6 +284,7 @@ function MediaManagerContent() {
                         </select>
                         <div className="w-px h-4 bg-gray-200" />
                         <select
+                            id="media-filter-status"
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                             className="bg-transparent border-none text-xs font-bold focus:ring-0"
@@ -385,14 +387,16 @@ function MediaManagerContent() {
                     <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-2">Title *</label>
+                                <label htmlFor="media-title" className="block text-sm font-bold text-gray-700 mb-2">Title *</label>
                                 <div className="flex gap-2">
                                     <input
+                                        id="media-title"
                                         type="text"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20"
                                         placeholder="Enter title..."
+                                        aria-required="true"
                                     />
                                     <button
                                         onClick={handleMagicAI}
@@ -424,6 +428,7 @@ function MediaManagerContent() {
                                         value={formData.tier_required}
                                         onChange={(e) => setFormData({ ...formData, tier_required: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-xl"
+                                        aria-label="Select tier requirement for media"
                                     >
                                         <option value="free">Free</option>
                                         <option value="starter_mailer">Starter Mailer</option>
@@ -438,6 +443,7 @@ function MediaManagerContent() {
                                         value={formData.age_track}
                                         onChange={(e) => setFormData({ ...formData, age_track: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-xl"
+                                        aria-label="Select age track for media"
                                     >
                                         <option value="all">All Ages</option>
                                         <option value="mini">Mini (4-5)</option>
@@ -451,6 +457,7 @@ function MediaManagerContent() {
                                         value={formData.category}
                                         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                         className="w-full px-4 py-2 border border-gray-200 rounded-xl"
+                                        aria-label="Select category for media"
                                     >
                                         <option value="story">Story</option>
                                         <option value="learning">Learning</option>

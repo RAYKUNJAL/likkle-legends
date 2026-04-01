@@ -179,11 +179,13 @@ export default function LegendAIStudio() {
                             Mission Brief
                         </h3>
                         <textarea
+                            id="mission-brief"
                             value={prompt}
                             onChange={(e) => setPrompt(e.target.value)}
                             placeholder={activeAgent === 'manager' ? "e.g. Why the sea is blue in Tobago..." : "Provide a theme or title..."}
                             className="w-full bg-white/10 border border-white/20 rounded-2xl p-4 text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 mb-6"
                             rows={4}
+                            aria-label="Mission brief for agent deployment"
                         />
                         <button
                             onClick={handleGenerate}

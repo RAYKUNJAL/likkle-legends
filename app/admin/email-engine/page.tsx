@@ -263,12 +263,13 @@ export default function AdminEmailEnginePage() {
                         </div>
                         <div className="p-8 space-y-6">
                             <div>
-                                <label className="block text-sm font-black text-gray-700 mb-2 uppercase tracking-widest">Select Template</label>
+                                <label htmlFor="broadcast-template" className="block text-sm font-black text-gray-700 mb-2 uppercase tracking-widest">Select Template</label>
                                 <select
+                                    id="broadcast-template"
                                     value={broadcastTemplate}
                                     onChange={(e) => setBroadcastTemplate(e.target.value)}
                                     className="w-full bg-gray-50 border-2 border-gray-100 p-4 rounded-2xl font-bold focus:border-primary focus:ring-0"
-                                    aria-label="Select Template"
+                                    aria-label="Select broadcast email template"
                                 >
                                     <option value="WELCOME">Welcome (Manual)</option>
                                     <option value="ONBOARDING_DAY_7">Village Update (Value)</option>

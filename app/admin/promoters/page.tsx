@@ -122,11 +122,13 @@ export default function AdminPromoterDashboard() {
                 <div className="relative w-full md:w-96">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-900/20" size={20} />
                     <input
+                        id="promoter-search"
                         type="text"
                         placeholder="Search by name, code, or email..."
                         className="w-full h-12 pl-12 pr-4 bg-orange-50/30 rounded-xl border-2 border-transparent focus:border-orange-200 outline-none text-sm font-bold transition-all"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
+                        aria-label="Search promoters by name, referral code, or email"
                     />
                 </div>
                 <div className="flex gap-2 w-full md:w-auto">

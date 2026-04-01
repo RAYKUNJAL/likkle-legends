@@ -262,32 +262,38 @@ export default function AdminRadioPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase text-gray-400 ml-2">Track Title</label>
+                            <label htmlFor="radio-track-title" className="text-[10px] font-black uppercase text-gray-400 ml-2">Track Title</label>
                             <input
+                                id="radio-track-title"
                                 required
                                 value={editingSong?.title || ''}
                                 onChange={e => setEditingSong({ ...editingSong, title: e.target.value })}
                                 className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-primary transition-all"
+                                aria-required="true"
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase text-gray-400 ml-2">Artist / Character</label>
+                            <label htmlFor="radio-artist" className="text-[10px] font-black uppercase text-gray-400 ml-2">Artist / Character</label>
                             <input
+                                id="radio-artist"
                                 required
                                 value={editingSong?.artist || ''}
                                 onChange={e => setEditingSong({ ...editingSong, artist: e.target.value })}
                                 className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-primary transition-all"
+                                aria-required="true"
                             />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                            <label className="text-[10px] font-black uppercase text-gray-400 ml-2">DJ Segment</label>
+                            <label htmlFor="radio-dj-segment" className="text-[10px] font-black uppercase text-gray-400 ml-2">DJ Segment</label>
                             <select
+                                id="radio-dj-segment"
                                 value={editingSong?.category || 'tanty_spice'}
                                 onChange={e => setEditingSong({ ...editingSong, category: e.target.value })}
                                 className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-primary transition-all"
+                                aria-label="Select DJ segment for track"
                             >
                                 <option value="tanty_spice">Tanty Spice Show</option>
                                 <option value="roti">R.O.T.I Learning Lab</option>

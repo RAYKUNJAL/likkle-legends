@@ -193,12 +193,14 @@ export default function AutonomousContentPage() {
                                     <label className="block text-xs font-black uppercase tracking-widest text-white/40 mb-3 ml-2">Custom Mission Brief</label>
                                     <div className="relative">
                                         <input
+                                            id="custom-mission"
                                             type="text"
                                             value={objective}
                                             onChange={(e) => setObjective(e.target.value)}
                                             placeholder="e.g. Design a lesson about sea turtles in Barbados..."
                                             className="w-full bg-white/10 border-2 border-white/20 rounded-2xl pl-6 pr-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-primary focus:bg-white/20 transition-all shadow-inner"
                                             disabled={isGenerating}
+                                            aria-label="Custom mission brief for content generation"
                                         />
                                         {objective && !isGenerating && (
                                             <button

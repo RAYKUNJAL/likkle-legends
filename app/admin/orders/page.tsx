@@ -341,11 +341,13 @@ export default function AdminOrdersPage() {
                                 {selectedOrder.fulfillment_status === 'processing' && (
                                     <div className="flex items-center gap-3 flex-1">
                                         <input
+                                            id="tracking-number"
                                             type="text"
                                             value={trackingInput}
                                             onChange={(e) => setTrackingInput(e.target.value)}
                                             placeholder="Enter tracking number..."
                                             className="flex-1 px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                            aria-label="Enter shipping tracking number for order"
                                         />
                                         <button
                                             onClick={() => handleUpdateStatus(selectedOrder.id, 'shipped', trackingInput)}
