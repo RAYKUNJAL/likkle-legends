@@ -9,6 +9,14 @@ export const metadata: Metadata = {
     alternates: {
         canonical: '/privacy',
     },
+    openGraph: {
+        title: 'Privacy Policy & Data Deletion Instructions',
+        description: "Your family's privacy is our top priority. Read how Likkle Legends protects your data, including explicit instructions for data deletion.",
+        url: '/privacy',
+        siteName: 'Likkle Legends',
+        type: 'website',
+        images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
+    },
 };
 
 export default function PrivacyPage() {

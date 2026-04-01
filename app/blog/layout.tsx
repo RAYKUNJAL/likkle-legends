@@ -8,6 +8,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/blog',
   },
+  openGraph: {
+    title: 'Blog | Likkle Legends',
+    description: 'Caribbean culture, parenting tips, and educational insights for raising proud Caribbean kids.',
+    url: '/blog',
+    siteName: 'Likkle Legends',
+    type: 'website',
+    images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
+  },
 };
 
 export default function BlogLayout({

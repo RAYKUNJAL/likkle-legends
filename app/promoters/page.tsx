@@ -14,6 +14,14 @@ export const metadata: Metadata = {
     alternates: {
         canonical: '/promoters',
     },
+    openGraph: {
+        title: 'Promoter Partner Program | Likkle Legends',
+        description: 'Join our affiliate program and earn 20% recurring commission sharing Caribbean culture.',
+        url: '/promoters',
+        siteName: 'Likkle Legends',
+        type: 'website',
+        images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
+    },
 };
 
 export default async function PromoterPage() {

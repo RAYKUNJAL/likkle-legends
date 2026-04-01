@@ -8,6 +8,14 @@ export const metadata: Metadata = {
     alternates: {
         canonical: '/safety',
     },
+    openGraph: {
+        title: "Kids' Safety Policy",
+        description: "Learn about the safety measures we take to protect your children, including COPPA compliance, ad-free environment, and parental controls.",
+        url: '/safety',
+        siteName: 'Likkle Legends',
+        type: 'website',
+        images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
+    },
 };
 
 export default function SafetyPage() {

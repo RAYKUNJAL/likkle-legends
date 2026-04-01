@@ -9,6 +9,14 @@ export const metadata: Metadata = {
     alternates: {
         canonical: '/faq',
     },
+    openGraph: {
+        title: 'Frequently Asked Questions',
+        description: 'Find answers about Likkle Legends Mail Club, subscription plans, shipping, and how we help children connect with their Caribbean heritage.',
+        url: '/faq',
+        siteName: 'Likkle Legends',
+        type: 'website',
+        images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
+    },
 };
 
 export default function FAQPage() {

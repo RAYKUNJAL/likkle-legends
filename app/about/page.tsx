@@ -11,6 +11,14 @@ export const metadata: Metadata = {
     alternates: {
         canonical: '/about',
     },
+    openGraph: {
+        title: 'Our Story',
+        description: 'Learn how Likkle Legends was born from a desire to celebrate Caribbean heritage and empower the next generation of Global Legends.',
+        url: '/about',
+        siteName: 'Likkle Legends',
+        type: 'website',
+        images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
+    },
 };
 
 export default function AboutPage() {

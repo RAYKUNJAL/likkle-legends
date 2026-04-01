@@ -11,6 +11,14 @@ export const metadata: Metadata = {
     alternates: {
         canonical: '/characters',
     },
+    openGraph: {
+        title: 'Meet the Likkle Legends',
+        description: 'Learn about Dilly Doubles, Mango Moko, and Steelpan Sam - the guides on your child\'s Caribbean adventure.',
+        url: '/characters',
+        siteName: 'Likkle Legends',
+        type: 'website',
+        images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
+    },
 };
 
 import CharacterDetailCard from '@/components/character/CharacterDetailCard';

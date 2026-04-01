@@ -7,6 +7,17 @@ import { Truck, RotateCcw } from 'lucide-react';
 export const metadata: Metadata = {
     title: 'Shipping & Returns',
     description: 'Learn about our global shipping times, free shipping offers, and our hassle-free 30-day return policy.',
+    alternates: {
+        canonical: '/shipping',
+    },
+    openGraph: {
+        title: 'Shipping & Returns',
+        description: 'Learn about our global shipping times, free shipping offers, and our hassle-free 30-day return policy.',
+        url: '/shipping',
+        siteName: 'Likkle Legends',
+        type: 'website',
+        images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
+    },
 };
 
 export default function ShippingPage() {

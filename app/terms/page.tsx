@@ -9,6 +9,14 @@ export const metadata: Metadata = {
     alternates: {
         canonical: '/terms',
     },
+    openGraph: {
+        title: 'Terms of Use',
+        description: 'Read the terms and conditions for using the Likkle Legends Mail Club service, including subscription, shipping, and digital content policies.',
+        url: '/terms',
+        siteName: 'Likkle Legends',
+        type: 'website',
+        images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
+    },
 };
 
 export default function TermsPage() {

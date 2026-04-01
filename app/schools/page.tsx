@@ -22,6 +22,14 @@ export const metadata: Metadata = {
     alternates: {
         canonical: '/schools',
     },
+    openGraph: {
+        title: 'Likkle Legends for Schools | Caribbean Cultural Curriculum',
+        description: 'Empower your students with authentic Caribbean storytelling, music, and interactive cultural experiences. Group licensing and school partnerships available.',
+        url: '/schools',
+        siteName: 'Likkle Legends',
+        type: 'website',
+        images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
+    },
 };
 
 export default function SchoolsPage() {
