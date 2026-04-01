@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getAuthenticatedUser } from '@/lib/api-auth';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -8,12 +9,23 @@ const supabaseAdmin = createClient(supabaseUrl || '', supabaseServiceKey || '');
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Verify user authentication before checking trial eligibility
+    const authenticatedUser = await getAuthenticatedUser(request);
+
+    if (!authenticatedUser) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { userId } = await request.json();
 
-    if (!userId) {
+    // SECURITY: Verify that requested userId matches authenticated user
+    if (userId && userId !== authenticatedUser.id) {
       return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
+        { error: 'Forbidden - Cannot check trial for another user' },
+        { status: 403 }
       );
     }
 
@@ -21,7 +33,7 @@ export async function POST(request: NextRequest) {
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('trial_used, trial_ended_at, subscription_status')
-      .eq('id', userId)
+      .eq('id', authenticatedUser.id)
       .single();
 
     if (!profile) {

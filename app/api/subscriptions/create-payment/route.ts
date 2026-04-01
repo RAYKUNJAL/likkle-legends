@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
             return_url: returnUrl || 'https://likklelegends.com/portal',
             cancel_url: cancelUrl || 'https://likklelegends.com/pricing',
           },
-          custom_id: userId || '',
+          custom_id: authenticatedUser.id,
         }),
       }
     );
