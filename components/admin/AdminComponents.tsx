@@ -85,6 +85,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
                 { id: 'content', label: 'Content Library', icon: BookOpen, href: '/admin/content' },
                 { id: 'media', label: 'Media Library', icon: Video, href: '/admin/media' },
                 { id: 'blog', label: 'Blog Manager', icon: FileText, href: '/admin/blog' },
+                { id: 'island-orchestrator', label: 'Island Orchestrator', icon: Sparkles, href: '/admin/island-orchestrator' },
                 { id: 'auto-content', label: 'Fresh Content Agent', icon: Zap, href: '/admin/auto-content' },
                 { id: 'content-calendar', label: 'Content Calendar', icon: Calendar, href: '/admin/content-calendar' },
                 { id: 'ai-review', label: 'AI Verification Queue', icon: Sparkles, href: '/admin/ai-review' },

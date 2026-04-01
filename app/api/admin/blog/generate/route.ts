@@ -3,9 +3,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { generateAndSavePost, BlogGenerationRequest } from '@/lib/services/blog-agent';
+import { requireAdminToken } from '@/lib/api/require-admin-token';
 
 export async function POST(request: NextRequest) {
     try {
+        // Validate admin token before processing
+        await requireAdminToken(request);
+
         console.log('Blog Generation API called');
         console.log('API Key present:', !!process.env.GOOGLE_GENERATIVE_AI_API_KEY);
 
@@ -49,6 +53,9 @@ export async function POST(request: NextRequest) {
         });
 
     } catch (error: any) {
+        if (error instanceof NextResponse) {
+            return error;
+        }
         console.error('Blog generation API error:', error);
         return NextResponse.json(
             { error: error.message || 'Failed to generate blog post' },

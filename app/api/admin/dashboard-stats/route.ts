@@ -1,21 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-const supabaseAdmin = createClient(supabaseUrl || '', supabaseServiceKey || '');
+import { requireAdminToken } from '@/lib/api/require-admin-token';
+import { createAdminClient } from '@/lib/admin';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin access via Authorization header
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Validate admin token before processing
+    await requireAdminToken(request);
+
+    const supabaseAdmin = createAdminClient();
 
     // Get stats
     const { count: totalUsers } = await supabaseAdmin
@@ -52,7 +44,10 @@ export async function GET(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof NextResponse) {
+      return error;
+    }
     console.error('Admin stats error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch stats' },

@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/admin";
 import { supabase } from "@/lib/storage";
+import { logAdminAction, logAdminActionError, AdminAction, ResourceType } from "@/lib/audit-logger";
 
 type ModelPrice = {
     inputPer1M: number;
@@ -106,6 +107,27 @@ function resolveModelFromUsageRow(row: any): string {
     if (tier === 'tier_2_strong') return 'gemini-3.1-pro-preview';
     if (tier === 'tier_1_mid' || tier === 'tier_0_low_cost') return 'gemini-3.1-flash-preview';
     return 'unknown';
+}
+
+// Helper to get admin user info from token (for audit logging)
+async function getAdminUserInfo(token: string) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!url || !anonKey) throw new Error("Supabase config missing");
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const admin = createClient(url, serviceKey || anonKey, {
+        auth: { persistSession: false, autoRefreshToken: false }
+    });
+
+    const { data: { user }, error } = await admin.auth.getUser(token);
+    if (error || !user) {
+        throw new Error(`Failed to get user info: ${error?.message || 'Unknown error'}`);
+    }
+
+    return { id: user.id, email: user.email || '' };
 }
 
 // Helper to verify admin access
@@ -304,15 +326,68 @@ export async function updateOrderStatusAdmin(token: string, orderId: string, sta
         updates.delivered_at = new Date().toISOString();
     }
 
-    const { data, error } = await admin
-        .from('orders')
-        .update(updates)
-        .eq('id', orderId)
-        .select()
-        .single();
+    try {
+        const { data, error } = await admin
+            .from('orders')
+            .update(updates)
+            .eq('id', orderId)
+            .select()
+            .single();
 
-    if (error) throw error;
-    return data;
+        if (error) throw error;
+
+        // Log the action (non-blocking)
+        try {
+            const adminUser = await getAdminUserInfo(token);
+            const serviceAdmin = await verifyAdmin(token); // Get service role admin client for logging
+            const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (url && serviceKey) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const loggingClient = createClient(url, serviceKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+                logAdminAction(
+                    loggingClient,
+                    adminUser.id,
+                    adminUser.email,
+                    'update_order_status',
+                    'order',
+                    orderId,
+                    { new_status: status, tracking_number: trackingNumber }
+                );
+            }
+        } catch (auditError) {
+            console.error('Failed to log order status update:', auditError);
+        }
+
+        return data;
+    } catch (error) {
+        // Log the error (non-blocking)
+        try {
+            const adminUser = await getAdminUserInfo(token);
+            const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (url && serviceKey) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const loggingClient = createClient(url, serviceKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+                logAdminActionError(
+                    loggingClient,
+                    adminUser.id,
+                    adminUser.email,
+                    'update_order_status',
+                    'order',
+                    error instanceof Error ? error.message : String(error),
+                    orderId
+                );
+            }
+        } catch (auditError) {
+            console.error('Failed to log order status error:', auditError);
+        }
+        throw error;
+    }
 }
 
 export async function getAdminContent(token: string, category: 'songs' | 'videos' | 'printables' | 'storybooks') {
@@ -489,15 +564,75 @@ export async function updateReviewStatus(token: string, id: string, status: 'app
     const admin = await verifyAdmin(token);
 
     console.log(`updateReviewStatus: Setting ${id} to ${status}...`);
-    const { data, error } = await admin
+
+    // Get the current content before updating for audit trail
+    const { data: oldData } = await admin
         .from('generated_content')
-        .update({ admin_status: status })
+        .select('admin_status')
         .eq('id', id)
-        .select()
         .single();
 
-    if (error) throw error;
-    return data;
+    try {
+        const { data, error } = await admin
+            .from('generated_content')
+            .update({ admin_status: status })
+            .eq('id', id)
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Log the action (non-blocking)
+        try {
+            const adminUser = await getAdminUserInfo(token);
+            const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (url && serviceKey) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const loggingClient = createClient(url, serviceKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+                logAdminAction(
+                    loggingClient,
+                    adminUser.id,
+                    adminUser.email,
+                    'update_review_status',
+                    'generated_content',
+                    id,
+                    { before: { admin_status: oldData?.admin_status }, after: { admin_status: status } }
+                );
+            }
+        } catch (auditError) {
+            console.error('Failed to log review status update:', auditError);
+        }
+
+        return data;
+    } catch (error) {
+        // Log the error (non-blocking)
+        try {
+            const adminUser = await getAdminUserInfo(token);
+            const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (url && serviceKey) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const loggingClient = createClient(url, serviceKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+                logAdminActionError(
+                    loggingClient,
+                    adminUser.id,
+                    adminUser.email,
+                    'update_review_status',
+                    'generated_content',
+                    error instanceof Error ? error.message : String(error),
+                    id
+                );
+            }
+        } catch (auditError) {
+            console.error('Failed to log review status error:', auditError);
+        }
+        throw error;
+    }
 }
 
 export async function deleteGeneratedContent(token: string, id: string) {
