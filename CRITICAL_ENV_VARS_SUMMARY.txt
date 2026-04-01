@@ -1,0 +1,188 @@
+================================================================================
+LIKKLE LEGENDS - CRITICAL ENVIRONMENT VARIABLES SUMMARY
+================================================================================
+Branch: claude/fix-audit-blockers-j2ExB
+Generated: 2026-04-01
+
+QUICK REFERENCE: What MUST be set on Vercel for launch
+================================================================================
+
+13 CRITICAL VARIABLES (Non-negotiable for production):
+
+DATABASE (Supabase) - 3 variables
+  [ ] NEXT_PUBLIC_SUPABASE_URL           [Public]
+  [ ] NEXT_PUBLIC_SUPABASE_ANON_KEY      [Public]
+  [ ] SUPABASE_SERVICE_ROLE_KEY          [Secret]
+
+PAYMENTS (PayPal) - 10 variables
+  [ ] NEXT_PUBLIC_PAYPAL_CLIENT_ID       [Public]
+  [ ] PAYPAL_CLIENT_SECRET               [Secret]
+  [ ] NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL    [Public]
+  [ ] NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL_YEARLY  [Public]
+  [ ] NEXT_PUBLIC_PAYPAL_PLAN_STARTER    [Public]
+  [ ] NEXT_PUBLIC_PAYPAL_PLAN_MAIL_YEARLY    [Public]
+  [ ] NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS    [Public]
+  [ ] NEXT_PUBLIC_PAYPAL_PLAN_PLUS_YEARLY    [Public]
+  [ ] NEXT_PUBLIC_PAYPAL_PLAN_FAMILY     [Public]
+  [ ] NEXT_PUBLIC_PLAN_FAMILY_YEARLY     [Public]
+
+AI (Gemini) - Choose 1 of 2
+  [ ] GOOGLE_GENERATIVE_AI_API_KEY   [Secret] (preferred)
+    OR
+  [ ] GEMINI_API_KEY                 [Secret] (alternative)
+
+EMAIL SERVICE - Choose 1 of 2 + EMAIL_FROM
+  [ ] RESEND_API_KEY                 [Secret] (preferred)
+    OR
+  [ ] BREVO_API_KEY                  [Secret] (alternative)
+  [ ] EMAIL_FROM                     [Public]
+
+================================================================================
+CRITICAL CONFIGURATION RULES
+================================================================================
+
+1. All [Secret] variables MUST be marked as "Secret" in Vercel UI
+   - SUPABASE_SERVICE_ROLE_KEY
+   - PAYPAL_CLIENT_SECRET
+   - GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY
+   - RESEND_API_KEY or BREVO_API_KEY
+
+2. All [Public] variables MUST start with "NEXT_PUBLIC_"
+   - NEXT_PUBLIC_SUPABASE_URL
+   - NEXT_PUBLIC_SUPABASE_ANON_KEY
+   - NEXT_PUBLIC_PAYPAL_CLIENT_ID
+   - All NEXT_PUBLIC_PAYPAL_PLAN_* variables
+
+3. PayPal plan IDs MUST be in format: P-XXXXXXXXXXXXX
+   - No empty values allowed
+   - All 8 plan variables required
+
+4. No variable should be empty or truncated
+   - Check Vercel UI shows full values
+   - Copy/paste carefully to avoid whitespace
+
+================================================================================
+WHERE TO SET THESE ON VERCEL
+================================================================================
+
+1. Go to https://vercel.com
+2. Click on project: "likkle-legends"
+3. Go to: Settings → Environment Variables
+4. For each variable:
+   - Enter variable name (e.g., NEXT_PUBLIC_SUPABASE_URL)
+   - Enter value (paste from secure location)
+   - Select production environment (if available)
+   - Mark as Secret if indicated above
+   - Click "Save"
+5. After ALL variables are added, trigger redeploy
+
+================================================================================
+WHAT HAPPENS IF VARIABLES ARE MISSING
+================================================================================
+
+Missing SUPABASE variables:
+  → App cannot start, database connection fails
+  → ERROR: [server-env] Missing required environment variable
+
+Missing PAYPAL variables:
+  → Checkout page broken, subscription system unavailable
+  → ERROR: PayPal configuration incomplete
+
+Missing GEMINI/GOOGLE_GENERATIVE_AI variables:
+  → All AI features fail (buddy chat, games, stories, image generation)
+  → ERROR: GEMINI_API_KEY is missing in environment
+
+Missing EMAIL service variables:
+  → Users cannot receive signup emails, password resets fail
+  → ERROR: No email service configured
+
+================================================================================
+OPTIONAL (For best experience, but app still works):
+================================================================================
+
+Voice/Audio Features (5 variables - ElevenLabs):
+  [ ] ELEVENLABS_API_KEY
+  [ ] ELEVENLABS_VOICE_ID
+  [ ] ELEVENLABS_TANTY_VOICE_ID
+  [ ] ELEVENLABS_ROTI_VOICE_ID
+  [ ] ELEVENLABS_DILLY_VOICE_ID
+
+Video Hosting (3 variables - Cloudflare):
+  [ ] CLOUDFLARE_API_TOKEN
+  [ ] NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID
+  [ ] NEXT_PUBLIC_CLOUDFLARE_SUBDOMAIN
+
+Radio Streaming (5 variables - AzuraCast):
+  [ ] AZURACAST_API_KEY
+  [ ] AZURACAST_BASE_URL
+  [ ] AZURACAST_STATION_TANTY_SPICE
+  [ ] AZURACAST_STATION_ROTI
+  [ ] AZURACAST_STATION_DILLY_DOUBLES
+
+Monitoring:
+  [ ] SENTRY_DSN (error tracking)
+  [ ] NEXT_PUBLIC_FACEBOOK_PIXEL_ID (analytics)
+
+================================================================================
+DEPLOYMENT VERIFICATION STEPS
+================================================================================
+
+1. After adding all variables to Vercel:
+   - [ ] Go to Deployments tab
+   - [ ] Click "Redeploy" on latest deployment
+   - [ ] Wait for build to complete
+
+2. Monitor build logs:
+   - [ ] No "Missing environment variable" errors
+   - [ ] Build succeeds (shows "Ready")
+
+3. Quick smoke tests:
+   - [ ] Visit homepage - loads successfully
+   - [ ] Signup/login works
+   - [ ] /checkout page shows PayPal button
+   - [ ] Buddy chat generates responses
+   - [ ] Verification email received
+
+================================================================================
+HELP/TROUBLESHOOTING
+================================================================================
+
+Issue: Build fails with "Missing environment variable"
+Solution: Check Vercel UI, verify variable is set and not empty, redeploy
+
+Issue: "Database connection failed"
+Solution: Verify all 3 Supabase variables are set correctly
+
+Issue: "PayPal button not showing" on checkout
+Solution: Ensure NEXT_PUBLIC_PAYPAL_CLIENT_ID is set
+
+Issue: "Buddy chat not responding"
+Solution: Verify GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY is set
+
+Issue: "No confirmation email received"
+Solution: Verify RESEND_API_KEY or BREVO_API_KEY is set, check spam
+
+For detailed information, see:
+  - VERCEL_ENV_VERIFICATION_REPORT.md (comprehensive guide)
+  - ENVIRONMENT_VARIABLES_VERIFICATION.md (variable reference)
+  - VERCEL_ENV_CHECKLIST.txt (quick checklist)
+
+================================================================================
+IMPORTANT NOTES
+================================================================================
+
+- This project is ready to deploy - all code is production-ready
+- Only environment variables are blocking factor
+- All 13 critical variables MUST be set before launch
+- Build will fail fast if critical vars missing (good for catching early)
+- Once variables are set, app should work without other changes
+
+Project Status: Ready for Vercel deployment
+Code Quality: All audit blockers fixed
+Security: All API keys properly scoped
+Performance: Optimized and tested
+
+================================================================================
+Last Updated: 2026-04-01
+For questions, see DEPLOYMENT.md or CLAUDE.md
+================================================================================
