@@ -442,7 +442,8 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
             {step === 'shipping' && (
                 <div className="max-w-xl mx-auto">
                     <h2 className="text-3xl font-black text-center text-gray-900 mb-2">Shipping Address</h2>
-                    <p className="text-center text-gray-500 mb-8">Where should we send your monthly Likkle Legends mail?</p>
+                    <p className="text-center text-gray-500 mb-2">Where should we send your monthly Likkle Legends mail?</p>
+                    <p className="text-center text-sm text-orange-600 font-medium mb-8">We currently ship to addresses within the United States only. Canada and the UK are coming soon.</p>
 
                     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 space-y-4">
                         <div>

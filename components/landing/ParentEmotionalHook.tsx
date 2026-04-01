@@ -77,7 +77,7 @@ export default function ParentEmotionalHook() {
                         Your child's Caribbean adventure<br className="hidden md:block" /> is one click away.
                     </h3>
                     <p className="text-white/80 text-lg mb-8 max-w-lg mx-auto">
-                        First month just <strong>$10</strong>. Cancel anytime. Ships worldwide.
+                        First month just <strong>$10</strong>. Cancel anytime. USA shipping only.
                     </p>
                     <Link
                         href="/signup?plan=starter_mailer"

@@ -51,19 +51,25 @@ export default function ShippingPage() {
 
                             <div className="space-y-6">
                                 <h3 className="text-2xl font-black text-deep">Delivery Estimates</h3>
+                                <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 mb-6">
+                                    <p className="text-orange-900 font-bold text-lg">Currently Available: United States Only</p>
+                                    <p className="text-orange-700 text-sm mt-2">We're working on expanding to Canada and the UK. Join our waitlist to be notified when international shipping launches.</p>
+                                </div>
                                 <div className="grid gap-4">
                                     {[
-                                        { region: "Caribbean", time: "3–7 Business Days", icon: "🏝️" },
-                                        { region: "United States", time: "5–10 Business Days", icon: "🇺🇸" },
-                                        { region: "Canada & UK", time: "7–14 Business Days", icon: "🌍" },
-                                        { region: "Rest of World", time: "10–21 Business Days", icon: "✈️" },
+                                        { region: "United States", time: "5–10 Business Days", icon: "🇺🇸", available: true },
+                                        { region: "Canada", time: "Coming Soon", icon: "🍁", available: false },
+                                        { region: "United Kingdom", time: "Coming Soon", icon: "🇬🇧", available: false },
                                     ].map((item, i) => (
-                                        <div key={i} className="flex items-center justify-between p-6 border border-zinc-100 rounded-2xl hover:border-primary/20 transition-colors">
+                                        <div key={i} className={`flex items-center justify-between p-6 border rounded-2xl transition-colors ${item.available ? 'border-green-200 bg-green-50' : 'border-zinc-100 opacity-60'}`}>
                                             <div className="flex items-center gap-4">
                                                 <span className="text-2xl">{item.icon}</span>
-                                                <span className="font-bold text-deep">{item.region}</span>
+                                                <div>
+                                                    <span className="font-bold text-deep block">{item.region}</span>
+                                                    {!item.available && <span className="text-xs text-zinc-500">Not yet available</span>}
+                                                </div>
                                             </div>
-                                            <span className="font-black text-primary">{item.time}</span>
+                                            <span className={`font-black ${item.available ? 'text-primary' : 'text-zinc-400'}`}>{item.time}</span>
                                         </div>
                                     ))}
                                 </div>

@@ -62,7 +62,7 @@ export default function FinalCTA() {
                         <span>•</span>
                         <span>Cancel anytime</span>
                         <span>•</span>
-                        <span>Ships worldwide</span>
+                        <span>USA shipping only</span>
                     </div>
                 </motion.div>
             </div>

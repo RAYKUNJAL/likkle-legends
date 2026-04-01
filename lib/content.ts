@@ -53,9 +53,9 @@ export const siteContent = {
             badges: [
                 "500+ happy families",
                 "Cancel anytime",
-                "Ships worldwide"
+                "USA shipping only"
             ],
-            ticker_text: "Trusted by 500+ families in New York, London, Toronto, and across the Caribbean."
+            ticker_text: "Trusted by 500+ families in New York, London, Toronto, and across the Caribbean. Digital access available worldwide."
         },
         hero_media: {
             type: "image",

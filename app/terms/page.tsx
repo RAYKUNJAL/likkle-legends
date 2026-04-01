@@ -49,7 +49,7 @@ export default function TermsPage() {
                                     Physical Mail Delivery
                                 </h2>
                                 <p className="leading-relaxed">
-                                    Letters are shipped by the 15th of each month. While we ship worldwide, delivery times may vary based on international postal services. We are not responsible for delays caused by local customs or carrier issues.
+                                    Letters are shipped by the 15th of each month to addresses within the United States only. Canada and the UK are coming soon. For digital content, access is available worldwide. We are not responsible for delays caused by carrier issues.
                                 </p>
                             </section>
 
