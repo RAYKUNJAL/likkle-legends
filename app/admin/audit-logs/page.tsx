@@ -172,11 +172,13 @@ export default function AuditLogsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Action</label>
+                                <label htmlFor="filter-action" className="block text-sm font-semibold text-gray-700 mb-2">Action</label>
                                 <select
+                                    id="filter-action"
                                     name="action"
                                     value={filters.action}
                                     onChange={handleFilterChange}
+                                    aria-label="Filter audit logs by action type"
                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <option value="">All Actions</option>
@@ -189,11 +191,13 @@ export default function AuditLogsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Resource Type</label>
+                                <label htmlFor="filter-resource-type" className="block text-sm font-semibold text-gray-700 mb-2">Resource Type</label>
                                 <select
+                                    id="filter-resource-type"
                                     name="resource_type"
                                     value={filters.resource_type}
                                     onChange={handleFilterChange}
+                                    aria-label="Filter audit logs by resource type"
                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <option value="">All Types</option>
@@ -206,11 +210,13 @@ export default function AuditLogsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                <label htmlFor="filter-status" className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
                                 <select
+                                    id="filter-status"
                                     name="status"
                                     value={filters.status}
                                     onChange={handleFilterChange}
+                                    aria-label="Filter audit logs by action status"
                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
                                     <option value="">All Statuses</option>

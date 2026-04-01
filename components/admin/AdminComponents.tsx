@@ -328,10 +328,12 @@ export function SearchBar({ value, onChange, placeholder = 'Search...', onRefres
             <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700" size={20} />
                 <input
+                    id="admin-search"
                     type="text"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
+                    aria-label={placeholder}
                     className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                 />
             </div>

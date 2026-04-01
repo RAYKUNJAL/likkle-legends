@@ -385,10 +385,10 @@ export default function AdminAffiliatesPage() {
                             <p className="text-sm text-gray-500 mb-2">Referral Link</p>
                             <div className="flex items-center gap-2">
                                 <input
+                                    id="referral-link"
                                     type="text"
                                     readOnly
-                                    title="Referral link"
-                                    aria-label="Referral link"
+                                    aria-label="Referral link for affiliate to share"
                                     value={`https://likklelegends.com/?ref=${selectedPromoter.referral_code}`}
                                     className="flex-1 px-4 py-2 bg-gray-100 rounded-lg text-sm"
                                 />

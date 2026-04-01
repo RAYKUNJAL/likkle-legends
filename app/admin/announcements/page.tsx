@@ -309,7 +309,7 @@ export default function AdminAnnouncementsPage() {
                                 <label htmlFor="target_audience" className="block text-sm font-bold text-gray-700 mb-2">Target Audience</label>
                                 <select
                                     id="target_audience"
-                                    title="Target Audience"
+                                    aria-label="Select target audience for announcement"
                                     value={formData.target_audience}
                                     onChange={(e) => setFormData(prev => ({ ...prev, target_audience: e.target.value }))}
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -325,7 +325,7 @@ export default function AdminAnnouncementsPage() {
                                 <label htmlFor="tier_required" className="block text-sm font-bold text-gray-700 mb-2">Tier Required (optional)</label>
                                 <select
                                     id="tier_required"
-                                    title="Subscription Tier Required"
+                                    aria-label="Select subscription tier required for announcement"
                                     value={formData.tier_required}
                                     onChange={(e) => setFormData(prev => ({ ...prev, tier_required: e.target.value }))}
                                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
