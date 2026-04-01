@@ -194,11 +194,13 @@ export default function AdminPixelsPage() {
                                     <h3 className="font-black text-gray-900">Snapchat Pixel</h3>
                                 </div>
                                 <input
+                                    id="snapchat-pixel-id"
                                     type="text"
                                     value={settings.snapchat_pixel_id}
                                     onChange={(e) => updateField('snapchat_pixel_id', e.target.value)}
                                     className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-mono"
                                     placeholder="Enter Pixel ID"
+                                    aria-label="Snapchat Pixel ID"
                                 />
                             </div>
                         </div>
