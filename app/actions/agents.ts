@@ -89,9 +89,60 @@ export async function runModuleManagerAgent(token: string, objective: string, ag
         if (!apiKey) throw new Error("GEMINI_API_KEY is missing.");
 
         const data = await withTimeout(moduleManagerAgent.buildCompleteModule(objective, ageGroup), 35000);
+
+        // Log the action (non-blocking)
+        try {
+            const adminUser = await getAdminUserInfo(token);
+            const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (url && serviceKey) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const loggingClient = createClient(url, serviceKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+                logAdminAction(
+                    loggingClient,
+                    adminUser.id,
+                    adminUser.email,
+                    'generate_content',
+                    'module',
+                    undefined,
+                    { objective, ageGroup, module_title: data.title }
+                );
+            }
+        } catch (auditError) {
+            console.error('Failed to log module generation:', auditError);
+        }
+
         return { success: true, data };
     } catch (error: any) {
         console.error("Agent Execution Failed:", error);
+
+        // Log the error (non-blocking)
+        try {
+            const adminUser = await getAdminUserInfo(token);
+            const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (url && serviceKey) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const loggingClient = createClient(url, serviceKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+                logAdminActionError(
+                    loggingClient,
+                    adminUser.id,
+                    adminUser.email,
+                    'generate_content',
+                    'module',
+                    error.message || "Unknown error occurred during generation.",
+                    undefined,
+                    { objective, ageGroup }
+                );
+            }
+        } catch (auditError) {
+            console.error('Failed to log module generation error:', auditError);
+        }
+
         return { success: false, error: error.message || "Unknown error occurred during generation." };
     }
 }
@@ -114,6 +165,45 @@ export async function publishModuleToLive(token: string, module: any) {
 
         const hasError = Object.values(results).some((r: any) => !r.success);
 
+        // Log the action (non-blocking)
+        try {
+            const adminUser = await getAdminUserInfo(token);
+            const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (url && serviceKey) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const loggingClient = createClient(url, serviceKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+                const status = hasError ? 'error' : 'success';
+                const action = hasError ? logAdminActionError : logAdminAction;
+                if (hasError) {
+                    logAdminActionError(
+                        loggingClient,
+                        adminUser.id,
+                        adminUser.email,
+                        'publish_module',
+                        'module',
+                        "Some assets failed to publish. Check results for details.",
+                        undefined,
+                        { module_title: module.title, results }
+                    );
+                } else {
+                    logAdminAction(
+                        loggingClient,
+                        adminUser.id,
+                        adminUser.email,
+                        'publish_module',
+                        'module',
+                        undefined,
+                        { module_title: module.title, published_assets: Object.keys(results) }
+                    );
+                }
+            }
+        } catch (auditError) {
+            console.error('Failed to log publish action:', auditError);
+        }
+
         return {
             success: !hasError,
             results,
@@ -121,6 +211,32 @@ export async function publishModuleToLive(token: string, module: any) {
         };
     } catch (error: any) {
         console.error("Publishing failed:", error);
+
+        // Log the error (non-blocking)
+        try {
+            const adminUser = await getAdminUserInfo(token);
+            const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (url && serviceKey) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const loggingClient = createClient(url, serviceKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+                logAdminActionError(
+                    loggingClient,
+                    adminUser.id,
+                    adminUser.email,
+                    'publish_module',
+                    'module',
+                    error.message || "Unknown error occurred during publishing.",
+                    undefined,
+                    { module_title: module.title }
+                );
+            }
+        } catch (auditError) {
+            console.error('Failed to log publish error:', auditError);
+        }
+
         return { success: false, error: error.message };
     }
 }
