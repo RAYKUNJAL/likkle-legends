@@ -199,6 +199,7 @@ export async function runAgentGeneration(
     try {
         const user = await verifyUser(token);
         const userId = user.id;
+        const admin = await getAdminClient();
 
         // SECURITY: API Key should NEVER use NEXT_PUBLIC_ prefix
         const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
@@ -225,9 +226,47 @@ export async function runAgentGeneration(
             timeout
         ]);
 
+        // Log the generation action
+        await logAdminAction(
+            admin,
+            user.id,
+            user.email || 'unknown',
+            'generate_content',
+            'generated_content',
+            content.content_id,
+            {
+                metadata: {
+                    content_type: contentType,
+                    island_id: islandId,
+                    topic: prompt,
+                    constraints: constraints,
+                    status: 'pending',
+                    safety_passed: content.qa_report?.safety_passed,
+                    cultural_passed: content.qa_report?.cultural_passed,
+                    quality_score: content.qa_report?.quality_score,
+                }
+            }
+        );
+
         return { success: true, content };
     } catch (error: any) {
         console.error("Agent Generation Failed:", error);
+
+        try {
+            const user = await verifyUser(token);
+            const admin = await getAdminClient();
+            await logAdminActionError(
+                admin,
+                user.id,
+                user.email || 'unknown',
+                'generate_content',
+                'generated_content',
+                error.message || "Unknown error occurred"
+            );
+        } catch (logError) {
+            console.error("Failed to log generation error:", logError);
+        }
+
         return { success: false, error: error.message || "Unknown error occurred" };
     }
 }

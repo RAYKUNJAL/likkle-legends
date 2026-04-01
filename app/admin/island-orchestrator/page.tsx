@@ -237,23 +237,12 @@ export default function IslandOrchestratorPage() {
         try {
             const token = await getToken();
 
-            // Log audit action
-            const auditAction = {
-                action: 'island_orchestrator_generate',
-                island_id: islandId,
-                character_id: characterId,
-                content_type: contentType,
-                topic: topic,
-                age_group: ageGroup,
-                timestamp: new Date().toISOString(),
-                admin_email: (await supabase.auth.getUser()).data.user?.email,
-            };
-            console.log('[AUDIT]', auditAction);
-
+            // Audit logging is now handled in the server action (runAgentGeneration)
             const result = await runAgentGeneration(token, contentType, topic, islandId, {
                 child_age: ageGroup === 'mini' ? '3-5' : '6-8',
                 dialect_level: 'light',
-                cultural_density: 'medium'
+                cultural_density: 'medium',
+                host_character_id: characterId
             });
 
             if (result.success && result.content) {
@@ -281,16 +270,7 @@ export default function IslandOrchestratorPage() {
         try {
             const token = await getToken();
 
-            // Log audit action
-            const auditAction = {
-                action: 'island_orchestrator_approve',
-                content_id: item.content_id,
-                content_type: item.content_type,
-                timestamp: new Date().toISOString(),
-                admin_email: (await supabase.auth.getUser()).data.user?.email,
-            };
-            console.log('[AUDIT]', auditAction);
-
+            // Audit logging is now handled in the server action (approveContentAction)
             await approveContentAction(token, item.content_id);
             toast.success("Content approved!", { id: toastId });
             setGeneratedItems(prev => prev.map(i =>
@@ -312,19 +292,14 @@ export default function IslandOrchestratorPage() {
         try {
             const token = await getToken();
 
-            // Log audit action
-            const auditAction = {
-                action: 'island_orchestrator_reject',
-                content_id: item.content_id,
-                content_type: item.content_type,
-                timestamp: new Date().toISOString(),
-                admin_email: (await supabase.auth.getUser()).data.user?.email,
-            };
-            console.log('[AUDIT]', auditAction);
-
+            // Audit logging is now handled in the server action (rejectContentAction)
             await rejectContentAction(token, item.content_id);
-            toast.success("Content rejected and removed", { id: toastId });
-            setGeneratedItems(prev => prev.filter(i => i.content_id !== item.content_id));
+            toast.success("Content rejected", { id: toastId });
+            setGeneratedItems(prev => prev.map(i =>
+                i.content_id === item.content_id
+                    ? { ...i, admin_status: 'rejected' }
+                    : i
+            ));
             if (selectedItem?.content_id === item.content_id) {
                 setSelectedItem(null);
             }

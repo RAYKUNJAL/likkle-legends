@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminToken } from '@/lib/api/require-admin-token';
 import { createAdminClient } from '@/lib/admin';
+import { logAdminAction, extractIpAddress } from '@/lib/audit-logger';
 
 export async function GET(request: NextRequest) {
   try {
     // Validate admin token before processing
-    await requireAdminToken(request);
+    const adminInfo = await requireAdminToken(request);
 
     const supabaseAdmin = createAdminClient();
 
@@ -30,6 +31,30 @@ export async function GET(request: NextRequest) {
 
     // Calculate stats
     const estimatedMonthlyRevenue = (activeSubscriptions || 0) * 9.99; // Average plan price
+
+    // Log the action (non-blocking) - viewing stats is a read operation
+    try {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (url && serviceKey && adminInfo) {
+        const { createClient } = await import('@supabase/supabase-js');
+        const loggingClient = createClient(url, serviceKey, {
+          auth: { persistSession: false, autoRefreshToken: false }
+        });
+        logAdminAction(
+          loggingClient,
+          adminInfo.user.id,
+          adminInfo.user.email || '',
+          'other',
+          'setting',
+          undefined,
+          { action: 'viewed_dashboard_stats' },
+          extractIpAddress(Object.fromEntries(request.headers))
+        );
+      }
+    } catch (auditError) {
+      console.error('Failed to log dashboard stats view:', auditError);
+    }
 
     return NextResponse.json(
       {

@@ -1021,3 +1021,86 @@ export async function updateUserPlanAction(userId: string, newPlan: string) {
         return { success: false };
     }
 }
+
+// Audit Logs Functions
+export async function getAuditLogs(
+    token: string,
+    filters?: {
+        admin_email?: string;
+        action?: string;
+        resource_type?: string;
+        status?: 'success' | 'error';
+        date_from?: string;
+        date_to?: string;
+    },
+    limit = 50,
+    offset = 0
+) {
+    const admin = await verifyAdmin(token);
+
+    let query = admin
+        .from('admin_audit_logs')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false });
+
+    if (filters?.admin_email) {
+        query = query.eq('admin_email', filters.admin_email);
+    }
+    if (filters?.action) {
+        query = query.eq('action', filters.action);
+    }
+    if (filters?.resource_type) {
+        query = query.eq('resource_type', filters.resource_type);
+    }
+    if (filters?.status) {
+        query = query.eq('status', filters.status);
+    }
+    if (filters?.date_from) {
+        query = query.gte('created_at', filters.date_from);
+    }
+    if (filters?.date_to) {
+        query = query.lte('created_at', filters.date_to);
+    }
+
+    query = query.range(offset, offset + limit - 1);
+
+    const { data, error, count } = await query;
+
+    if (error) throw error;
+
+    return { logs: data || [], total: count || 0 };
+}
+
+export async function getAuditLogStats(token: string) {
+    const admin = await verifyAdmin(token);
+
+    // Get last 30 days of data
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    const [
+        { data: allLogs },
+        { data: successLogs },
+        { data: errorLogs }
+    ] = await Promise.all([
+        admin
+            .from('admin_audit_logs')
+            .select('id', { count: 'exact', head: true })
+            .gte('created_at', thirtyDaysAgo),
+        admin
+            .from('admin_audit_logs')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'success')
+            .gte('created_at', thirtyDaysAgo),
+        admin
+            .from('admin_audit_logs')
+            .select('id', { count: 'exact', head: true })
+            .eq('status', 'error')
+            .gte('created_at', thirtyDaysAgo)
+    ]);
+
+    return {
+        totalLogs: allLogs?.length || 0,
+        successfulActions: successLogs?.length || 0,
+        failedActions: errorLogs?.length || 0
+    };
+}
