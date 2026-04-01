@@ -274,7 +274,7 @@ export default function TantysPorchSection() {
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id as any)}
-                                        className={`px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all ${activeTab === tab.id ? tab.activeColor : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                        className={`px-4 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary ${activeTab === tab.id ? tab.activeColor : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                             }`}
                                     >
                                         {tab.label}

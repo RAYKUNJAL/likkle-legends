@@ -131,14 +131,14 @@ export default function PromoterDashboard({ stats }: { stats: PromoterStats }) {
                                         />
                                         <button
                                             onClick={copyLink}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-700 hover:text-primary transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg p-0.5"
                                         >
                                             {copied ? <Check size={24} className="text-green-500" /> : <Copy size={24} />}
                                         </button>
                                     </div>
                                     <button
                                         onClick={() => window.open(`https://twitter.com/intent/tweet?text=Check%20out%20Likkle%20Legends!&url=${encodeURIComponent(stats.referralLink)}`, '_blank')}
-                                        className="px-6 py-4 bg-black text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800"
+                                        className="px-6 py-4 bg-black text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 focus:outline-2 focus:outline-offset-2 focus:outline-white"
                                     >
                                         Share on X
                                     </button>

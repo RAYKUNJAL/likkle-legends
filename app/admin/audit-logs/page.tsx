@@ -158,14 +158,16 @@ export default function AuditLogsPage() {
                     {showFilters && (
                         <div className="grid grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Admin Email</label>
+                                <label htmlFor="admin-email" className="block text-sm font-semibold text-gray-700 mb-2">Admin Email</label>
                                 <input
+                                    id="admin-email"
                                     type="text"
                                     name="admin_email"
                                     value={filters.admin_email}
                                     onChange={handleFilterChange}
                                     placeholder="Search by email..."
                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    aria-label="Filter by admin email"
                                 />
                             </div>
 
@@ -218,24 +220,28 @@ export default function AuditLogsPage() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">From Date</label>
+                                <label htmlFor="date-from" className="block text-sm font-semibold text-gray-700 mb-2">From Date</label>
                                 <input
+                                    id="date-from"
                                     type="datetime-local"
                                     name="date_from"
                                     value={filters.date_from}
                                     onChange={handleFilterChange}
                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    aria-label="Filter from date"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">To Date</label>
+                                <label htmlFor="date-to" className="block text-sm font-semibold text-gray-700 mb-2">To Date</label>
                                 <input
+                                    id="date-to"
                                     type="datetime-local"
                                     name="date_to"
                                     value={filters.date_to}
                                     onChange={handleFilterChange}
                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    aria-label="Filter to date"
                                 />
                             </div>
                         </div>
