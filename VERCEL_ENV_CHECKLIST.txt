@@ -1,0 +1,133 @@
+================================================================================
+LIKKLE LEGENDS - VERCEL ENVIRONMENT VARIABLES QUICK CHECKLIST
+================================================================================
+
+Location: https://vercel.com > likkle-legends > Settings > Environment Variables
+
+CRITICAL VARIABLES (Must be set for app to work)
+================================================================================
+
+DATABASE (Supabase)
+[ ] NEXT_PUBLIC_SUPABASE_URL          Value: ________________  Public
+[ ] NEXT_PUBLIC_SUPABASE_ANON_KEY     Value: ________________  Public
+[ ] SUPABASE_SERVICE_ROLE_KEY         Value: ________________  Secret
+
+PAYMENTS (PayPal)
+[ ] NEXT_PUBLIC_PAYPAL_CLIENT_ID      Value: ________________  Public
+[ ] PAYPAL_CLIENT_SECRET              Value: ________________  Secret
+
+AI/CONTENT (Gemini/Google)
+[ ] GOOGLE_GENERATIVE_AI_API_KEY      Value: ________________  Secret
+    OR
+[ ] GEMINI_API_KEY                    Value: ________________  Secret
+
+EMAIL SERVICE (choose one)
+[ ] RESEND_API_KEY                    Value: ________________  Secret
+    OR
+[ ] BREVO_API_KEY                     Value: ________________  Secret
+[ ] EMAIL_FROM                        Value: ________________  Public
+
+PAYPAL SUBSCRIPTION PLANS (8 total - all required)
+================================================================================
+[ ] NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL           Value: P-__________  Public
+[ ] NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL_YEARLY    Value: P-__________  Public
+[ ] NEXT_PUBLIC_PAYPAL_PLAN_STARTER           Value: P-__________  Public
+[ ] NEXT_PUBLIC_PAYPAL_PLAN_MAIL_YEARLY       Value: P-__________  Public
+[ ] NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS           Value: P-__________  Public
+[ ] NEXT_PUBLIC_PAYPAL_PLAN_PLUS_YEARLY       Value: P-__________  Public
+[ ] NEXT_PUBLIC_PAYPAL_PLAN_FAMILY            Value: P-__________  Public
+[ ] NEXT_PUBLIC_PLAN_FAMILY_YEARLY            Value: P-__________  Public
+
+VOICE/AUDIO (Recommended)
+================================================================================
+[ ] ELEVENLABS_API_KEY                Value: ________________  Secret
+[ ] ELEVENLABS_VOICE_ID               Value: ________________  Secret
+    (Fallback: eppqEXVumQ3CfdndcIB)
+[ ] ELEVENLABS_TANTY_VOICE_ID         Value: ________________  Secret
+    (Fallback: JfiM1myzVx7xU2MZOAJS)
+[ ] ELEVENLABS_ROTI_VOICE_ID          Value: ________________  Secret
+    (Fallback: eppqEXVumQ3CfdndcIB)
+[ ] ELEVENLABS_DILLY_VOICE_ID         Value: ________________  Secret
+    (Fallback: eppqEXVumQ3CfdndcIB)
+
+OPTIONAL (Nice to have)
+================================================================================
+[ ] CLOUDFLARE_API_TOKEN              Value: ________________  Secret
+[ ] AZURACAST_API_KEY                 Value: ________________  Secret
+[ ] AZURACAST_BASE_URL                Value: ________________  Secret
+[ ] SENTRY_DSN                        Value: ________________  Public
+
+VERIFICATION STEPS
+================================================================================
+
+1. SECRET VARIABLES CHECK
+   [ ] SUPABASE_SERVICE_ROLE_KEY is marked "Secret"
+   [ ] PAYPAL_CLIENT_SECRET is marked "Secret"
+   [ ] RESEND_API_KEY (or BREVO_API_KEY) is marked "Secret"
+   [ ] ELEVENLABS_API_KEY is marked "Secret"
+
+2. PUBLIC VARIABLE NAMES CHECK
+   [ ] NEXT_PUBLIC_SUPABASE_URL has "NEXT_PUBLIC_" prefix
+   [ ] NEXT_PUBLIC_SUPABASE_ANON_KEY has "NEXT_PUBLIC_" prefix
+   [ ] NEXT_PUBLIC_PAYPAL_CLIENT_ID has "NEXT_PUBLIC_" prefix
+   [ ] All NEXT_PUBLIC_PAYPAL_PLAN_* have "NEXT_PUBLIC_" prefix
+
+3. PAYPAL PLAN IDS FORMAT CHECK
+   [ ] All plan IDs start with "P-" (e.g., P-XXXXX)
+   [ ] No empty values for any PayPal plan
+
+4. EMAIL SERVICE CHECK
+   [ ] At least ONE of: RESEND_API_KEY or BREVO_API_KEY is set
+   [ ] EMAIL_FROM is set to a valid email address
+
+5. DEPLOYMENT TEST
+   [ ] After adding/updating variables, trigger redeploy
+   [ ] Monitor Vercel build logs for env var errors
+   [ ] Check for any "missing environment variable" warnings
+
+COMMON ISSUES
+================================================================================
+
+"PayPal subscription plan not found" during checkout?
+→ Check that NEXT_PUBLIC_PAYPAL_PLAN_* variables are set correctly
+→ PayPal plan IDs should be in format: P-XXXXXXXXXXXXX
+
+"Emails not sending" after signup?
+→ Verify RESEND_API_KEY or BREVO_API_KEY is set
+→ Check EMAIL_FROM has valid email format
+
+"AI features not working"?
+→ Verify GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY is set
+→ Check API key is valid and hasn't expired
+
+"Database connection failed"?
+→ Verify all three Supabase variables are set
+→ Check values are not truncated or malformed
+
+DATABASE TROUBLESHOOTING
+================================================================================
+
+If you see "Error: [server-env] Missing required environment variable":
+
+Required Supabase Variables:
+- SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL)
+- SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY)
+- SUPABASE_SERVICE_ROLE_KEY (server-side only)
+
+All three must be non-empty. The code will accept either naming convention
+(with or without NEXT_PUBLIC_ prefix for URL and anon key).
+
+CUSTOM DOMAIN NOTE
+================================================================================
+
+When setting NEXT_PUBLIC_APP_URL for production:
+- Development: http://localhost:3000
+- Preview/Staging: https://[branch].vercel.app
+- Production: https://likkle-legends.com (or custom domain)
+
+This is used for email links and redirects after authentication.
+
+================================================================================
+Report Date: 2026-04-01
+For detailed information, see: ENVIRONMENT_VARIABLES_VERIFICATION.md
+================================================================================
