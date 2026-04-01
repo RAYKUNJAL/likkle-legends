@@ -32,13 +32,13 @@ export const CookieConsentBanner: React.FC = () => {
                 <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                     <button
                         onClick={() => setShow(false)}
-                        className="px-6 py-4 md:py-3 rounded-2xl font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 text-xs w-full md:w-auto transition-colors"
+                        className="px-6 py-4 md:py-3 rounded-2xl font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 text-xs w-full md:w-auto transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-gray-600"
                     >
                         Decline
                     </button>
                     <button
                         onClick={handleAccept}
-                        className="px-8 py-4 md:py-3 rounded-2xl bg-orange-500 text-white font-black text-xs uppercase tracking-widest shadow-lg hover:bg-orange-600 active:scale-95 transition-all w-full md:w-auto"
+                        className="px-8 py-4 md:py-3 rounded-2xl bg-orange-500 text-white font-black text-xs uppercase tracking-widest shadow-lg hover:bg-orange-600 active:scale-95 transition-all w-full md:w-auto focus:outline-2 focus:outline-offset-2 focus:outline-white"
                     >
                         Irie, Accept!
                     </button>

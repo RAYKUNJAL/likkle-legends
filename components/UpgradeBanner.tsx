@@ -39,7 +39,7 @@ const UpgradeBanner: React.FC = () => {
           </Link>
           <button
             onClick={() => setIsVisible(false)}
-            className="p-2 text-gray-400 hover:text-white"
+            className="p-2 text-gray-700 hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-white rounded-lg transition-colors"
             aria-label="Dismiss upgrade banner"
           >
             <X size={20} />

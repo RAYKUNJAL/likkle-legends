@@ -101,23 +101,27 @@ export default function AdminPixelsPage() {
                             </div>
                             <div className="grid gap-4">
                                 <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">Pixel ID</label>
+                                    <label htmlFor="fb-pixel-id" className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">Pixel ID</label>
                                     <input
+                                        id="fb-pixel-id"
                                         type="text"
                                         value={settings.facebook_pixel_id}
                                         onChange={(e) => updateField('facebook_pixel_id', e.target.value)}
                                         className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-mono"
                                         placeholder="e.g. 1234567890"
+                                        aria-label="Facebook Pixel ID"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">Meta Domain Verification</label>
+                                    <label htmlFor="meta-verification" className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">Meta Domain Verification</label>
                                     <input
+                                        id="meta-verification"
                                         type="text"
                                         value={settings.meta_verification_code}
                                         onChange={(e) => updateField('meta_verification_code', e.target.value)}
                                         className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-mono"
                                         placeholder="e.g. abcdefg123456"
+                                        aria-label="Meta domain verification code"
                                     />
                                 </div>
                             </div>
@@ -136,23 +140,27 @@ export default function AdminPixelsPage() {
                             </div>
                             <div className="grid md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">GA4 Measurement ID</label>
+                                    <label htmlFor="ga4-id" className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">GA4 Measurement ID</label>
                                     <input
+                                        id="ga4-id"
                                         type="text"
                                         value={settings.google_analytics_id}
                                         onChange={(e) => updateField('google_analytics_id', e.target.value)}
                                         className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-mono"
                                         placeholder="e.g. G-XXXXXXX"
+                                        aria-label="Google Analytics 4 measurement ID"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">GTM ID</label>
+                                    <label htmlFor="gtm-id" className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2 px-1">GTM ID</label>
                                     <input
+                                        id="gtm-id"
                                         type="text"
                                         value={settings.google_tag_manager_id}
                                         onChange={(e) => updateField('google_tag_manager_id', e.target.value)}
                                         className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-mono"
                                         placeholder="e.g. GTM-XXXXXX"
+                                        aria-label="Google Tag Manager ID"
                                     />
                                 </div>
                             </div>
@@ -168,11 +176,13 @@ export default function AdminPixelsPage() {
                                     <h3 className="font-black text-gray-900">TikTok Pixel</h3>
                                 </div>
                                 <input
+                                    id="tiktok-pixel-id"
                                     type="text"
                                     value={settings.tiktok_pixel_id}
                                     onChange={(e) => updateField('tiktok_pixel_id', e.target.value)}
                                     className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none font-mono"
                                     placeholder="Enter Pixel ID"
+                                    aria-label="TikTok Pixel ID"
                                 />
                             </div>
 

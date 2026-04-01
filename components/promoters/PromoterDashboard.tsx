@@ -50,21 +50,21 @@ export default function PromoterDashboard({ stats }: { stats: PromoterStats }) {
                     <nav className="space-y-2">
                         <button
                             onClick={() => setActiveTab('overview')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'overview' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-500 hover:bg-gray-50'
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary ${activeTab === 'overview' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-700 hover:bg-gray-50'
                                 }`}
                         >
                             <TrendingUp size={20} /> Overview
                         </button>
                         <button
                             onClick={() => setActiveTab('resources')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'resources' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-500 hover:bg-gray-50'
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary ${activeTab === 'resources' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-700 hover:bg-gray-50'
                                 }`}
                         >
                             <Download size={20} /> Assets & Swipes
                         </button>
                         <button
                             onClick={() => setActiveTab('settings')}
-                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${activeTab === 'settings' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-500 hover:bg-gray-50'
+                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary ${activeTab === 'settings' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-700 hover:bg-gray-50'
                                 }`}
                         >
                             <Settings size={20} /> Payout Settings

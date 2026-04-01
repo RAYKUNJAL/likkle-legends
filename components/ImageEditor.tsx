@@ -124,7 +124,7 @@ const ImageEditor: React.FC = () => {
         {selectedImage && !locked && (
           <button
             onClick={() => { setSelectedImage(null); setGeneratedImage(null); setPrompt(''); }}
-            className="text-xs text-gray-400 hover:text-red-500 underline text-center"
+            className="text-xs text-gray-700 hover:text-red-600 underline text-center focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1"
           >
             Start Over
           </button>

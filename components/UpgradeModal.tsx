@@ -129,7 +129,7 @@ export default function UpgradeModal({ isOpen, onClose, requiredTier = 'legends_
 
                     <button
                         onClick={onClose}
-                        className="w-full py-3 text-gray-400 font-bold text-sm hover:text-gray-600 transition-colors"
+                        className="w-full py-3 text-gray-700 font-bold text-sm hover:text-gray-900 transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg"
                     >
                         Maybe later
                     </button>

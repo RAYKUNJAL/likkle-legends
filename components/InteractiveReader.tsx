@@ -464,13 +464,13 @@ export default function InteractiveReader({ title, pages, guide, onClose, storyI
                         <div className="max-w-xl mx-auto flex flex-col gap-6">
                             {/* Pro Progress Bar */}
                             <div className="relative group">
-                                <div className="h-3 bg-orange-100 rounded-full overflow-hidden cursor-pointer shadow-inner" onClick={e => {
+                                <button onClick={e => {
                                     if (!audioRef.current) return;
                                     const rect = e.currentTarget.getBoundingClientRect();
                                     audioRef.current.currentTime = ((e.clientX - rect.left) / rect.width) * audioDuration;
-                                }}>
+                                }} className="h-3 bg-orange-100 rounded-full overflow-hidden cursor-pointer shadow-inner w-full border-none p-0" aria-label="Audio progress bar">
                                     <motion.div className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-amber-500" animate={{ width: `${(audioProgress / (audioDuration || 1)) * 100}%` }} transition={{ duration: 0.1 }} />
-                                </div>
+                                </button>
                                 {audioError && <p className="absolute -top-6 left-0 right-0 text-center text-[9px] font-black text-red-500 uppercase tracking-widest">{audioError}</p>}
                             </div>
 

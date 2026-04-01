@@ -179,7 +179,7 @@ export default function LibraryGrid({ isLandingPage = false }: LibraryGridProps)
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            </button>
                         )}
 
 

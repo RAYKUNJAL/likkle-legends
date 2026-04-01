@@ -116,7 +116,7 @@ const StorybookWidget: React.FC = () => {
               onClick={() => setActiveItem(null)}
               aria-label="Close details"
               title="Close details"
-              className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+              className="absolute top-2 right-2 text-gray-700 hover:text-red-600 focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg p-0.5 transition-colors"
             >
               <X size={18} />
             </button>

@@ -542,7 +542,7 @@ const CharacterBuilder: React.FC = () => {
               setAccessory('none');
               setHeadwear('none');
             }}
-            className="p-2 rounded-full text-gray-400 hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-full text-gray-700 hover:bg-gray-100 transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-primary"
             title="Reset"
           >
             <RefreshCw size={20} />

@@ -166,15 +166,15 @@ export default function NotificationBell() {
                                             {!notification.is_read && (
                                                 <button
                                                     onClick={() => handleMarkAsRead(notification.id)}
-                                                    className="shrink-0 text-gray-400 hover:text-gray-600"
+                                                    className="shrink-0 text-gray-700 hover:text-gray-900 focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg p-0.5"
                                                     aria-label="Mark as read"
                                                 >
                                                     <Check size={14} />
                                                 </button>
                                             )}
                                         </div>
-                                        <p className="text-sm text-gray-500 line-clamp-2">{notification.body}</p>
-                                        <p className="text-xs text-gray-400 mt-1">{formatTime(notification.created_at)}</p>
+                                        <p className="text-sm text-gray-700 line-clamp-2">{notification.body}</p>
+                                        <p className="text-xs text-gray-700 mt-1">{formatTime(notification.created_at)}</p>
 
                                         {notification.action_url && (
                                             <Link

@@ -245,20 +245,20 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                             <button
                                 onClick={() => setPaymentBillingCycle('month')}
                                 disabled={activeTier === 'plan_family_legacy'}
-                                className={`px-6 py-3 rounded-xl font-bold transition-all ${paymentBillingCycle === 'month'
+                                className={`px-6 py-3 rounded-xl font-bold transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary ${paymentBillingCycle === 'month'
                                     ? 'bg-primary text-white shadow-sm'
                                     : activeTier === 'plan_family_legacy'
-                                        ? 'text-gray-300 cursor-not-allowed'
-                                        : 'text-gray-500 hover:text-gray-700'
+                                        ? 'text-gray-400 cursor-not-allowed'
+                                        : 'text-gray-700 hover:text-gray-900'
                                     }`}
                             >
                                 Monthly
                             </button>
                             <button
                                 onClick={() => setPaymentBillingCycle('year')}
-                                className={`px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${paymentBillingCycle === 'year'
+                                className={`px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 focus:outline-2 focus:outline-offset-2 focus:outline-primary ${paymentBillingCycle === 'year'
                                     ? 'bg-primary text-white shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                    : 'text-gray-700 hover:text-gray-900'
                                     }`}
                             >
                                 Annual

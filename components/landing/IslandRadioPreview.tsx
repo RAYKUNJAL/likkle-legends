@@ -110,7 +110,7 @@ export default function IslandRadioPreview({ content }: { content: any }) {
                         <div className="relative">
                             <div className="aspect-square max-w-xs mx-auto">
                                 <div className={`absolute inset-0 bg-gradient-to-br from-emerald-500/30 to-amber-500/30 rounded-full blur-[60px] transition-all duration-1000 ${isPlaying ? 'scale-110 opacity-100' : 'scale-100 opacity-50'}`} />
-                                <div className="relative bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-[2.5rem] p-8 border border-white/10 shadow-2xl overflow-hidden group cursor-pointer" onClick={togglePlay}>
+                                <button onClick={togglePlay} className="relative bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-[2.5rem] p-8 border border-white/10 shadow-2xl overflow-hidden group cursor-pointer w-full h-full" aria-label={isPlaying ? 'Pause radio' : 'Play radio'}>
 
                                     {/* Play Overlay */}
                                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
@@ -147,7 +147,7 @@ export default function IslandRadioPreview({ content }: { content: any }) {
                                             ))}
                                         </div>
                                     </div>
-                                </div>
+                                </button>
                             </div>
                         </div>
                     </div>

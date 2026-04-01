@@ -90,7 +90,7 @@ const ParentDashboard: React.FC = () => {
                 <div className="space-y-4">
                   {missions.map((mission, idx) => (
                     <div key={idx} className="border border-gray-100 rounded-xl p-5 hover:border-primary/30 transition-colors flex gap-4 items-start group bg-gray-50/50">
-                      <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 font-bold text-gray-400 group-hover:text-primary group-hover:border-primary transition-colors">
+                      <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center shrink-0 font-bold text-gray-700 group-hover:text-primary group-hover:border-primary transition-colors">
                         {idx + 1}
                       </div>
                       <div>

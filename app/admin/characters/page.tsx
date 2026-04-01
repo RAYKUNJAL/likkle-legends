@@ -403,6 +403,7 @@ export default function AdminCharactersPage() {
                                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 placeholder="e.g., Tanty Spice"
+                                aria-required="true"
                             />
                         </div>
 
@@ -483,6 +484,7 @@ export default function AdminCharactersPage() {
                                 onChange={(e) => setFormData(prev => ({ ...prev, voice_id: e.target.value }))}
                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 placeholder="Paste voice ID from ElevenLabs..."
+                                aria-required="true"
                             />
                         </div>
 
