@@ -3,7 +3,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { getTantySystemInstruction, TANTY_ISLAND_ENGINE } from "@/services/tantyConfig";
 
-const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
+const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
 
 const FALLBACK_RESPONSES = [
   "Bless up, likkle legend! Tanty thinkin' on dat. Tell me more, what's on yuh mind today?",

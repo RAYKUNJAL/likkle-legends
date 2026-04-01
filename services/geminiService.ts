@@ -172,30 +172,20 @@ export async function generateBirthdaySong(childName: string, guide: string = "T
     if (typeof window === 'undefined') return null;
     const ctx = getGlobalAudioContext();
 
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null);
-    if (!apiKey) return null;
-
-    const ai = new GoogleGenAI({ apiKey });
-
-    const prompt = `Sing a short, magical Caribbean birthday song for ${childName}. 
-    Guide: ${guide}.
-    Personality: Warm, grandmotherly, musical.
-    Structure: Verse mentioning ${childName} growing tall like a coconut tree, Chorus with happy celebration.
-    Use rhythmic Patois inflections.`;
-
+    // Call backend API instead of using client-side API key
     try {
-        const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
-            contents: [{ parts: [{ text: prompt }] }],
-            config: {
-                responseModalities: [Modality.AUDIO],
-                speechConfig: {
-                    voiceConfig: { prebuiltVoiceConfig: { voiceName: TANTY_ISLAND_ENGINE.vocal_blueprint.gemini_voice_name } },
-                }
-            }
+        const response = await fetch('/api/gemini/birthday-song', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ childName, guide })
         });
 
-        const audioDataBase64 = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        if (!response.ok) {
+            console.warn("Birthday song generation failed");
+            return null;
+        }
+
+        const audioDataBase64 = await response.text();
         if (audioDataBase64) {
             const rawBytes = decodeBase64(audioDataBase64);
             return await decodeAudioDataFromRaw(rawBytes.buffer as ArrayBufferLike, ctx);

@@ -14,8 +14,8 @@ async function verifyAdmin(token: string) {
         .eq('id', user.id)
         .single();
 
-    const isDevAdmin = user.email === 'admin@likklelegends.com' || user.email?.includes('raykunjal');
-    if (!adminUser && !isDevAdmin) throw new Error("Forbidden");
+    // Check for explicit admin role in database only (removed email-based privilege escalation)
+    if (!adminUser) throw new Error("Forbidden");
 
     return adminClient;
 }

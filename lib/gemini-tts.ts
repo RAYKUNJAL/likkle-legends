@@ -36,10 +36,10 @@ export async function generateGeminiSpeech(
     // Allow override, otherwise use profile default
     const voiceName = options.voiceName || profile.voiceName;
 
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
     if (!apiKey) {
-        console.warn('Gemini API key not configured (NEXT_PUBLIC_GEMINI_API_KEY or GEMINI_API_KEY)');
+        console.warn('Gemini API key not configured (GEMINI_API_KEY or GOOGLE_GENERATIVE_AI_API_KEY)');
         return null;
     }
 

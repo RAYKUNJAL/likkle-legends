@@ -1,18 +1,29 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { anansiOrchestrator } from '@/lib/ai-content-generator/orchestrator';
+import { getAuthenticatedUser } from '@/lib/api-auth';
 
 export async function POST(req: NextRequest) {
     try {
-        const { userId, message } = await req.json();
+        // SECURITY: Extract user ID from authenticated session only
+        const authenticatedUser = await getAuthenticatedUser(req);
 
-        if (!userId || !message) {
-            return NextResponse.json({ error: "Missing userId or message" }, { status: 400 });
+        if (!authenticatedUser) {
+            return NextResponse.json(
+                { error: 'Unauthorized - Authentication required' },
+                { status: 401 }
+            );
         }
 
-        console.log(`🧠 Brain Request from User: ${userId}`);
+        const { message } = await req.json();
 
-        const response = await anansiOrchestrator.processRequest(userId, message);
+        if (!message) {
+            return NextResponse.json({ error: "Missing message" }, { status: 400 });
+        }
+
+        console.log(`🧠 Brain Request from User: ${authenticatedUser.id}`);
+
+        const response = await anansiOrchestrator.processRequest(authenticatedUser.id, message);
 
         return NextResponse.json(response);
     } catch (error: any) {

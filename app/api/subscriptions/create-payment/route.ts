@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthenticatedUser, verifyUserAccess } from '@/lib/api-auth';
 
 const PAYPAL_BASE = process.env.PAYPAL_ENV === 'sandbox'
   ? 'https://api-m.sandbox.paypal.com'
@@ -28,7 +29,25 @@ async function getPayPalAccessToken(): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    // SECURITY: Verify user authentication before processing payment
+    const authenticatedUser = await getAuthenticatedUser(request);
+
+    if (!authenticatedUser) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { planId, userId, returnUrl, cancelUrl } = await request.json();
+
+    // SECURITY: Verify that requested userId matches authenticated user
+    if (userId && userId !== authenticatedUser.id) {
+      return NextResponse.json(
+        { error: 'Forbidden - Cannot create payment for another user' },
+        { status: 403 }
+      );
+    }
 
     if (!planId) {
       return NextResponse.json(
