@@ -82,10 +82,11 @@ export default function ResetPassword() {
 
                 <form className="space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-2">
-                        <label className="text-xs font-black text-deep/30 uppercase tracking-widest px-1">New Password</label>
+                        <label htmlFor="new-password" className="text-xs font-black text-deep/30 uppercase tracking-widest px-1">New Password</label>
                         <div className="relative">
                             <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-deep/20" size={20} />
                             <input
+                                id="new-password"
                                 type={showPassword ? 'text' : 'password'}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -93,11 +94,13 @@ export default function ResetPassword() {
                                 className="w-full bg-zinc-50 border-none focus:ring-4 focus:ring-primary/10 rounded-2xl py-5 pl-14 pr-12 text-lg text-deep font-bold placeholder:text-deep/20 focus:outline-none transition-all"
                                 required
                                 minLength={6}
+                                aria-required="true"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute right-5 top-1/2 -translate-y-1/2 text-deep/30 hover:text-primary transition-colors focus:outline-none"
+                                aria-label="Toggle password visibility"
                             >
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
@@ -105,10 +108,11 @@ export default function ResetPassword() {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-xs font-black text-deep/30 uppercase tracking-widest px-1">Confirm Password</label>
+                        <label htmlFor="confirm-password" className="text-xs font-black text-deep/30 uppercase tracking-widest px-1">Confirm Password</label>
                         <div className="relative">
                             <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-deep/20" size={20} />
                             <input
+                                id="confirm-password"
                                 type={showPassword ? 'text' : 'password'}
                                 value={confirm}
                                 onChange={(e) => setConfirm(e.target.value)}
@@ -116,6 +120,7 @@ export default function ResetPassword() {
                                 className="w-full bg-zinc-50 border-none focus:ring-4 focus:ring-primary/10 rounded-2xl py-5 pl-14 pr-12 text-lg text-deep font-bold placeholder:text-deep/20 focus:outline-none transition-all"
                                 required
                                 minLength={6}
+                                aria-required="true"
                             />
                         </div>
                     </div>

@@ -102,7 +102,7 @@ export const InteractiveHero = ({ content }: InteractiveHeroProps) => {
                             <div className="flex -space-x-2">
                                 {[1, 2, 3, 4].map((i) => (
                                     <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-zinc-200 overflow-hidden">
-                                        <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="User" />
+                                        <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt={`Caribbean family member avatar ${i}`} />
                                     </div>
                                 ))}
                             </div>

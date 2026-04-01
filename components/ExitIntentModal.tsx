@@ -43,7 +43,7 @@ const ExitIntentModal: React.FC = () => {
       <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden relative animate-scale-up">
         <button
           onClick={() => setIsVisible(false)}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10 p-2"
+          className="absolute top-4 right-4 text-gray-700 hover:text-gray-900 transition-colors z-10 p-2 focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg"
           aria-label="Close modal"
         >
           <X size={24} />
@@ -91,7 +91,7 @@ const ExitIntentModal: React.FC = () => {
             </Button>
             <button
               onClick={() => setIsVisible(false)}
-              className="w-full text-center text-xs text-gray-400 mt-4 hover:text-gray-600 underline"
+              className="w-full text-center text-xs text-gray-700 mt-4 hover:text-gray-900 underline focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1"
             >
               No thanks, I don't want to save money
             </button>

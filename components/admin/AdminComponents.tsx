@@ -212,7 +212,7 @@ export function StatCard({ label, value, delta, deltaType = 'positive', icon: Ic
                     </span>
                 )}
             </div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</p>
+            <p className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">{label}</p>
             <h3 className="text-3xl font-black text-gray-900">{value}</h3>
         </div>
     );
@@ -261,7 +261,7 @@ export function DataTable<T extends { id: string }>({
     if (data.length === 0) {
         return (
             <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-                <p className="text-gray-400">{emptyMessage}</p>
+                <p className="text-gray-700">{emptyMessage}</p>
             </div>
         );
     }
@@ -273,12 +273,12 @@ export function DataTable<T extends { id: string }>({
                     <thead className="bg-gray-50 border-b border-gray-100">
                         <tr>
                             {columns.map((col) => (
-                                <th key={col.key as string} className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                <th key={col.key as string} className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                                     {col.label}
                                 </th>
                             ))}
                             {actions && (
-                                <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
                                     Actions
                                 </th>
                             )}
@@ -326,19 +326,19 @@ export function SearchBar({ value, onChange, placeholder = 'Search...', onRefres
     return (
         <div className="flex items-center gap-4 mb-6">
             <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700" size={20} />
                 <input
                     type="text"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
-                    className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
                 />
             </div>
             {onRefresh && (
                 <button
                     onClick={onRefresh}
-                    className="p-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                    className="p-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-primary"
                     title="Refresh"
                 >
                     <RefreshCw size={20} className="text-gray-600" />
@@ -437,14 +437,14 @@ export function FileUpload({ accept, maxSize = 100, onUpload, label, description
                     ) : isSuccess ? (
                         <CheckCircle2 size={28} />
                     ) : (
-                        <Upload className="text-gray-400" size={28} />
+                        <Upload className="text-gray-700" size={28} />
                     )}
                 </div>
                 <p className="font-bold text-gray-900 mb-1">
                     {isUploading ? 'Uploading...' : isSuccess ? 'Success!' : label}
                 </p>
-                {description && <p className="text-sm text-gray-500">{description}</p>}
-                {!isUploading && !isSuccess && <p className="text-xs text-gray-400 mt-2">Max file size: {maxSize}MB</p>}
+                {description && <p className="text-sm text-gray-700">{description}</p>}
+                {!isUploading && !isSuccess && <p className="text-xs text-gray-700 mt-2">Max file size: {maxSize}MB</p>}
             </label>
 
             {error && (
@@ -484,7 +484,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
             <div className={`relative bg-white rounded-3xl shadow-2xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-hidden`}>
                 <div className="flex items-center justify-between p-6 border-b border-gray-100">
                     <h2 className="text-xl font-black text-gray-900">{title}</h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                    <button onClick={onClose} className="text-gray-700 hover:text-gray-900 focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg p-1">
                         ×
                     </button>
                 </div>
@@ -539,9 +539,9 @@ export function ActionButton({ icon: Icon, onClick, variant = 'default', title }
             onClick={(e) => { e.stopPropagation(); onClick(); }}
             title={title}
             aria-label={title}
-            className={`p-2 rounded-lg transition-colors ${variant === 'danger'
-                ? 'hover:bg-red-100 text-gray-400 hover:text-red-600'
-                : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+            className={`p-2 rounded-lg transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-primary ${variant === 'danger'
+                ? 'hover:bg-red-100 text-red-600 hover:text-red-700'
+                : 'hover:bg-gray-100 text-gray-700 hover:text-gray-800'
                 }`}
         >
             <Icon size={18} />
@@ -567,14 +567,14 @@ export function EmptyState({ icon: Icon, title, description, action }: EmptyStat
     return (
         <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Icon className="text-gray-400" size={28} />
+                <Icon className="text-gray-700" size={28} />
             </div>
             <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
-            <p className="text-gray-500 mb-6">{description}</p>
+            <p className="text-gray-700 mb-6">{description}</p>
             {action && (
                 <button
                     onClick={action.onClick}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-white"
                 >
                     <Plus size={20} />
                     {action.label}
@@ -601,9 +601,9 @@ export function Tabs({ tabs, activeTab, onChange }: TabsProps) {
                 <button
                     key={tab.id}
                     onClick={() => onChange(tab.id)}
-                    className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${activeTab === tab.id
+                    className={`px-4 py-2 rounded-lg font-bold text-sm transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary ${activeTab === tab.id
                         ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700'
+                        : 'text-gray-700 hover:text-gray-900'
                         }`}
                 >
                     {tab.label}

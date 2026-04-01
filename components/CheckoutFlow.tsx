@@ -455,6 +455,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                 onChange={(e) => setShippingData({ ...shippingData, name: e.target.value })}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
                                 placeholder="Recipient Name"
+                                aria-required="true"
                             />
                         </div>
                         <div>
@@ -466,6 +467,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                 onChange={(e) => setShippingData({ ...shippingData, line1: e.target.value })}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
                                 placeholder="Street address"
+                                aria-required="true"
                             />
                         </div>
                         <div>
@@ -488,6 +490,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                     value={shippingData.city}
                                     onChange={(e) => setShippingData({ ...shippingData, city: e.target.value })}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                                    aria-required="true"
                                 />
                             </div>
                             <div>
@@ -498,6 +501,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                     value={shippingData.state}
                                     onChange={(e) => setShippingData({ ...shippingData, state: e.target.value })}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                                    aria-required="true"
                                 />
                             </div>
                         </div>
@@ -510,6 +514,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                     value={shippingData.postalCode}
                                     onChange={(e) => setShippingData({ ...shippingData, postalCode: e.target.value })}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                                    aria-required="true"
                                 />
                             </div>
                             <div>
@@ -520,6 +525,7 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                     value={shippingData.country}
                                     onChange={(e) => setShippingData({ ...shippingData, country: e.target.value })}
                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20"
+                                    aria-required="true"
                                 />
                             </div>
                         </div>

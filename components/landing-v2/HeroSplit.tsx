@@ -37,7 +37,7 @@ export const HeroSplit = ({ content }: HeroSplitProps) => {
                             <div className="flex -space-x-2">
                                 {[1, 2, 3].map(i => (
                                     <div key={i} className="w-6 h-6 rounded-full border-2 border-white bg-zinc-100 overflow-hidden">
-                                        <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="user" />
+                                        <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt={`Parent user avatar ${i}`} />
                                     </div>
                                 ))}
                             </div>

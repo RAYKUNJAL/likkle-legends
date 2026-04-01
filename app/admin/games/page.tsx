@@ -505,7 +505,7 @@ export default function AdminGameBuilderPage() {
                                                 className="flex items-center gap-2 px-3 py-2 bg-purple-100 text-purple-700 rounded-xl text-sm font-bold hover:bg-purple-200 transition-colors"
                                             >
                                                 <div className="relative w-6 h-6 shrink-0">
-                                                    <Image src={char.image_url} alt="" fill className="rounded-full object-cover" />
+                                                    <Image src={char.image_url} alt={`${char.name} character avatar`} fill className="rounded-full object-cover" />
                                                 </div>
                                                 {char.name}
                                             </button>
@@ -636,7 +636,7 @@ export default function AdminGameBuilderPage() {
                                 <div className="flex items-center gap-3">
                                     {game.thumbnail_url ? (
                                         <div className="relative w-14 h-14 shrink-0">
-                                            <Image src={game.thumbnail_url} alt="" fill className="object-cover rounded-xl" />
+                                            <Image src={game.thumbnail_url} alt={`${game.title} game thumbnail`} fill className="object-cover rounded-xl" />
                                         </div>
                                     ) : (
                                         <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl flex items-center justify-center">
@@ -776,7 +776,7 @@ export default function AdminGameBuilderPage() {
                                     <label className="block text-sm font-bold text-gray-700 mb-2">Thumbnail</label>
                                     {formData.thumbnail_url ? (
                                         <div className="relative aspect-video rounded-xl overflow-hidden">
-                                            <Image src={formData.thumbnail_url} alt="" fill className="object-cover" />
+                                            <Image src={formData.thumbnail_url} alt="Game thumbnail preview" fill className="object-cover" />
                                             <button
                                                 onClick={() => setFormData(prev => ({ ...prev, thumbnail_url: '' }))}
                                                 className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg"

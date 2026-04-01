@@ -194,12 +194,13 @@ function SignupForm() {
 
                     <form className="space-y-8" onSubmit={handleSignup}>
                             <div>
-                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Child's Name</label>
+                                <label htmlFor="childName-signup" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Child's Name</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
                                         <User size={20} />
                                     </div>
                                     <input
+                                        id="childName-signup"
                                         type="text"
                                         name="childName"
                                         value={formData.childName}
@@ -207,17 +208,19 @@ function SignupForm() {
                                         placeholder="Kai..."
                                         className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
                                         required
+                                        aria-required="true"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Email Address</label>
+                                <label htmlFor="email-signup" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Email Address</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
                                         <Mail size={20} />
                                     </div>
                                     <input
+                                        id="email-signup"
                                         type="email"
                                         name="email"
                                         value={formData.email}
@@ -225,17 +228,19 @@ function SignupForm() {
                                         placeholder="you@heritage.com"
                                         className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
                                         required
+                                        aria-required="true"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Create Password</label>
+                                <label htmlFor="password-signup" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Create Password</label>
                                 <div className="relative">
                                     <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
                                         <Lock size={20} />
                                     </div>
                                     <input
+                                        id="password-signup"
                                         type={showPassword ? "text" : "password"}
                                         name="password"
                                         value={formData.password}
@@ -244,11 +249,13 @@ function SignupForm() {
                                         className="block w-full pl-14 pr-12 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
                                         required
                                         minLength={6}
+                                        aria-required="true"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="absolute inset-y-0 right-0 pr-5 flex items-center text-zinc-400 hover:text-primary transition-colors focus:outline-none"
+                                        aria-label="Toggle password visibility"
                                     >
                                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                     </button>
@@ -264,6 +271,7 @@ function SignupForm() {
                                     onChange={handleChange}
                                     className="mt-1 w-5 h-5 rounded border-zinc-200 text-primary focus:ring-primary/20"
                                     required
+                                    aria-required="true"
                                 />
                                 <label htmlFor="coppa-consent" className="text-sm text-deep/50 leading-tight">
                                     I confirm I am a parent or legal guardian and agree to the{' '}

@@ -107,7 +107,7 @@ export const DashboardOverview: React.FC = () => {
                 <div className="bg-white p-8 rounded-[2.5rem] border-2 border-blue-50 shadow-sm">
                     <h3 className="font-heading font-black text-xl text-blue-950 mb-6">Village Chatter</h3>
                     <div className="space-y-6">
-                        {activity.length === 0 && !loading && <p className="text-sm text-gray-400">No recent activity.</p>}
+                        {activity.length === 0 && !loading && <p className="text-sm text-gray-700">No recent activity.</p>}
                         {activity.map((item, i) => (
                             <div key={i} className="flex gap-4 items-start">
                                 <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0">
@@ -116,12 +116,12 @@ export const DashboardOverview: React.FC = () => {
                                 <div>
                                     <p className="text-sm font-bold text-blue-950"><span className="text-orange-500">{item.author}</span> posted</p>
                                     <p className="text-xs text-blue-900/60 truncate max-w-[180px]">"{item.caption}"</p>
-                                    <p className="text-[10px] text-gray-400 mt-1">{new Date(item.created_at).toLocaleDateString()}</p>
+                                    <p className="text-[10px] text-gray-700 mt-1">{new Date(item.created_at).toLocaleDateString()}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <button className="w-full mt-6 py-3 bg-blue-50 text-blue-600 rounded-xl font-black text-xs uppercase hover:bg-blue-100 transition-colors">View All Feed</button>
+                    <button className="w-full mt-6 py-3 bg-blue-50 text-blue-600 rounded-xl font-black text-xs uppercase hover:bg-blue-100 transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-blue-600">View All Feed</button>
                 </div>
             </div>
         </div>

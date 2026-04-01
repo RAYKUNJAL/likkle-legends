@@ -235,7 +235,7 @@ export default function AdminAssetDashboard() {
                                 <div className="flex items-center gap-3">
                                     <div className="relative w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
                                         {(asset.thumbnail_url || asset.cover_image_url || asset.preview_url) ? (
-                                            <Image src={asset.thumbnail_url || asset.cover_image_url || asset.preview_url} alt="" fill className="object-cover" />
+                                            <Image src={asset.thumbnail_url || asset.cover_image_url || asset.preview_url} alt={`${asset.title} thumbnail`} fill className="object-cover" />
                                         ) : (
                                             activeTab === 'songs' ? <Music className="text-gray-400" /> : <Video className="text-gray-400" />
                                         )}

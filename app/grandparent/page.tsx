@@ -138,7 +138,7 @@ export default function GrandparentDashboardPage() {
                     <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
                         <div className="w-24 h-24 bg-white/20 backdrop-blur-md rounded-[2rem] flex items-center justify-center text-6xl shadow-inner">
                             {child.avatar_url ? (
-                                <img src={child.avatar_url} alt="" className="w-full h-full object-cover rounded-[2rem]" />
+                                <img src={child.avatar_url} alt={`${child.first_name}'s profile avatar`} className="w-full h-full object-cover rounded-[2rem]" />
                             ) : '🐢'}
                         </div>
                         <div className="flex-1 text-center md:text-left">

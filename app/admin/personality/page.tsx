@@ -115,7 +115,7 @@ export default function AdminPersonalityPage() {
                                 className={`w-full p-4 rounded-2xl flex items-center gap-3 transition-all ${selectedChar?.id === char.id ? 'bg-white shadow-md border-2 border-primary' : 'bg-gray-50 border-2 border-transparent hover:bg-white hover:border-gray-200'}`}
                             >
                                 <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
-                                    <img src={char.image_url} alt="" className="w-full h-full object-cover" />
+                                    <img src={char.image_url} alt={`${char.name} character avatar`} className="w-full h-full object-cover" />
                                 </div>
                                 <div className="text-left">
                                     <p className="font-bold text-gray-900 leading-tight">{char.name}</p>

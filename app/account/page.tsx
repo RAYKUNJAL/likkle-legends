@@ -210,6 +210,7 @@ export default function AccountSettingsPage() {
                                             onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
                                             disabled={!isEditing}
                                             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
+                                            aria-required="true"
                                         />
                                     </div>
 
@@ -224,6 +225,7 @@ export default function AccountSettingsPage() {
                                                 onChange={(e) => setProfile({ ...profile, email: e.target.value })}
                                                 disabled={!isEditing}
                                                 className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:bg-gray-50 disabled:text-gray-500"
+                                                aria-required="true"
                                             />
                                         </div>
                                     </div>
@@ -395,28 +397,32 @@ export default function AccountSettingsPage() {
 
                                     <div className="space-y-4 max-w-md">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                                            <label htmlFor="new-password" className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
                                             <div className="relative">
                                                 <input
+                                                    id="new-password"
                                                     type={showPassword ? 'text' : 'password'}
                                                     value={passwords.newPwd}
                                                     onChange={e => setPasswords(p => ({ ...p, newPwd: e.target.value }))}
                                                     className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl"
                                                     placeholder="Enter new password"
+                                                    aria-required="true"
                                                 />
-                                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" aria-label="Toggle password visibility">
                                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                                 </button>
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                                            <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
                                             <input
+                                                id="confirm-password"
                                                 type="password"
                                                 value={passwords.confirm}
                                                 onChange={e => setPasswords(p => ({ ...p, confirm: e.target.value }))}
                                                 className="w-full px-4 py-3 border border-gray-200 rounded-xl"
                                                 placeholder="Confirm new password"
+                                                aria-required="true"
                                             />
                                         </div>
                                         {pwdMsg && (

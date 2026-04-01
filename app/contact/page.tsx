@@ -99,6 +99,7 @@ export default function ContactPage() {
                 value={formData.name}
                 onChange={handleChange}
                 required
+                aria-required="true"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Your name"
               />
@@ -116,6 +117,7 @@ export default function ContactPage() {
                 value={formData.email}
                 onChange={handleChange}
                 required
+                aria-required="true"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="your@email.com"
               />
@@ -131,6 +133,7 @@ export default function ContactPage() {
                 name="type"
                 value={formData.type}
                 onChange={handleChange}
+                aria-required="true"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="general">General Inquiry</option>

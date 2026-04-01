@@ -171,7 +171,7 @@ export default function VoiceNarrator({
             <div className="flex items-center gap-2">
                 <button
                     onClick={handleRestart}
-                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="p-2 text-gray-600 hover:text-gray-800 focus:outline-2 focus:outline-offset-2 focus:outline-primary transition-colors rounded-lg"
                     title="Restart"
                 >
                     <RefreshCw size={18} />
@@ -179,7 +179,7 @@ export default function VoiceNarrator({
 
                 <button
                     onClick={toggleMute}
-                    className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="p-2 text-gray-600 hover:text-gray-800 focus:outline-2 focus:outline-offset-2 focus:outline-primary transition-colors rounded-lg"
                     title={isMuted ? 'Unmute' : 'Mute'}
                 >
                     {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}

@@ -140,7 +140,7 @@ export default function ParentDashboard() {
                             <button
                                 key={child.id}
                                 onClick={() => setActiveChild(child.id)}
-                                className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${activeChild?.id === child.id ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
+                                className={`px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary ${activeChild?.id === child.id ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-600 hover:text-primary'}`}
                             >
                                 {child.first_name}
                             </button>
@@ -155,21 +155,21 @@ export default function ParentDashboard() {
                 <div className="flex gap-8 mb-12 border-b-2 border-slate-100">
                     <button
                         onClick={() => setActiveTab('overview')}
-                        className={`pb-6 text-xl font-black transition-all relative ${activeTab === 'overview' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-6 text-xl font-black transition-all relative focus:outline-2 focus:outline-offset-2 focus:outline-primary ${activeTab === 'overview' ? 'text-primary' : 'text-slate-600 hover:text-primary'}`}
                     >
                         Overview
                         {activeTab === 'overview' && <motion.div layoutId="activeTab" className="absolute bottom-[-2px] left-0 right-0 h-1 bg-primary" />}
                     </button>
                     <button
                         onClick={() => setActiveTab('assessment')}
-                        className={`pb-6 text-xl font-black transition-all relative ${activeTab === 'assessment' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-6 text-xl font-black transition-all relative focus:outline-2 focus:outline-offset-2 focus:outline-primary ${activeTab === 'assessment' ? 'text-primary' : 'text-slate-600 hover:text-primary'}`}
                     >
                         Assessment
                         {activeTab === 'assessment' && <motion.div layoutId="activeTab" className="absolute bottom-[-2px] left-0 right-0 h-1 bg-primary" />}
                     </button>
                     <button
                         onClick={() => setActiveTab('library')}
-                        className={`pb-6 text-xl font-black transition-all relative ${activeTab === 'library' ? 'text-primary' : 'text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-6 text-xl font-black transition-all relative focus:outline-2 focus:outline-offset-2 focus:outline-primary ${activeTab === 'library' ? 'text-primary' : 'text-slate-600 hover:text-primary'}`}
                     >
                         My Library
                         {activeTab === 'library' && <motion.div layoutId="activeTab" className="absolute bottom-[-2px] left-0 right-0 h-1 bg-primary" />}
@@ -195,7 +195,7 @@ export default function ParentDashboard() {
                                     </div>
                                     <div>
                                         <p className="text-6xl font-black text-slate-900 tracking-tighter mb-2">{activeChild?.stories_completed || 0}</p>
-                                        <h4 className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Stories Read</h4>
+                                        <h4 className="text-slate-600 font-black uppercase tracking-widest text-[10px]">Stories Read</h4>
                                     </div>
                                 </motion.div>
 
@@ -208,7 +208,7 @@ export default function ParentDashboard() {
                                     </div>
                                     <div>
                                         <p className="text-6xl font-black text-slate-900 tracking-tighter mb-2">{activeChild?.songs_listened || 0}</p>
-                                        <h4 className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Songs Listened</h4>
+                                        <h4 className="text-slate-600 font-black uppercase tracking-widest text-[10px]">Songs Listened</h4>
                                     </div>
                                 </motion.div>
 
@@ -222,7 +222,7 @@ export default function ParentDashboard() {
                                     </div>
                                     <div>
                                         <p className="text-6xl font-black text-white tracking-tighter mb-2">{activeChild?.total_xp.toLocaleString()}</p>
-                                        <h4 className="text-white/40 font-black uppercase tracking-widest text-[10px]">Total Legend XP</h4>
+                                        <h4 className="text-white/70 font-black uppercase tracking-widest text-[10px]">Total Legend XP</h4>
                                     </div>
                                 </motion.div>
 
@@ -235,7 +235,7 @@ export default function ParentDashboard() {
                                     </div>
                                     <div>
                                         <p className="text-6xl font-black text-white tracking-tighter mb-2">{activeChild?.current_streak || 0}</p>
-                                        <h4 className="text-white/60 font-black uppercase tracking-widest text-[10px]">Day Learning Streak</h4>
+                                        <h4 className="text-white/80 font-black uppercase tracking-widest text-[10px]">Day Learning Streak</h4>
                                     </div>
                                 </motion.div>
                             </div>
@@ -249,7 +249,7 @@ export default function ParentDashboard() {
                                         <div className="flex items-center justify-between mb-10">
                                             <div>
                                                 <h3 className="text-4xl font-black text-slate-900 tracking-tight mb-1">Cultural Milestones</h3>
-                                                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Heritage Journey Tracking</p>
+                                                <p className="text-slate-600 font-bold uppercase tracking-widest text-xs">Heritage Journey Tracking</p>
                                             </div>
                                             <div className="bg-slate-50 px-6 py-3 rounded-2xl border border-slate-100">
                                                 <p className="text-slate-900 font-black text-xl">{activeChild?.cultural_milestones?.length || 0}/12</p>
@@ -274,12 +274,12 @@ export default function ParentDashboard() {
                                         <div className="flex items-center justify-between mb-10">
                                             <div>
                                                 <h3 className="text-4xl font-black text-slate-900 tracking-tight mb-1">Recent Activity</h3>
-                                                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Live Learning Feed</p>
+                                                <p className="text-slate-600 font-bold uppercase tracking-widest text-xs">Live Learning Feed</p>
                                             </div>
                                             <button
                                                 title="Calendar View"
                                                 aria-label="View activity calendar"
-                                                className="p-4 bg-slate-50 rounded-2xl text-slate-400 hover:text-primary transition-colors"
+                                                className="p-4 bg-slate-50 rounded-2xl text-slate-600 hover:text-primary transition-colors"
                                             >
                                                 <Calendar size={24} />
                                             </button>
@@ -289,7 +289,7 @@ export default function ParentDashboard() {
                                             {activities.length === 0 ? (
                                                 <div className="text-center py-20 border-4 border-dashed border-slate-50 rounded-[3rem]">
                                                     <TrendingUp size={48} className="text-slate-200 mx-auto mb-4" />
-                                                    <p className="text-slate-400 font-black uppercase tracking-widest text-xs">No activity logged yet</p>
+                                                    <p className="text-slate-600 font-black uppercase tracking-widest text-xs">No activity logged yet</p>
                                                 </div>
                                             ) : (
                                                 activities.slice(0, 5).map((activity, idx) => (
@@ -307,7 +307,7 @@ export default function ParentDashboard() {
                                                             <h4 className="text-xl font-black text-slate-900 capitalize tracking-tight leading-tight">
                                                                 Completed {activity.activity_type}
                                                             </h4>
-                                                            <p className="text-slate-400 font-medium text-sm">
+                                                            <p className="text-slate-600 font-medium text-sm">
                                                                 {new Date(activity.created_at).toLocaleDateString()}
                                                             </p>
                                                         </div>
@@ -334,8 +334,8 @@ export default function ParentDashboard() {
                                                     {activeChild.first_name?.charAt(0)}
                                                 </div>
                                                 <h3 className="text-3xl font-black text-slate-900 tracking-tighter mb-1">{activeChild.first_name}</h3>
-                                                <p className="text-slate-400 font-black uppercase tracking-widest text-[10px] mb-8">{currentLevel.name}</p>
-                                                <Link href={`/account/children/${activeChild.id}`} className="mt-8 flex items-center justify-center gap-2 text-slate-400 hover:text-primary font-black uppercase tracking-widest text-xs transition-colors">
+                                                <p className="text-slate-600 font-black uppercase tracking-widest text-[10px] mb-8">{currentLevel.name}</p>
+                                                <Link href={`/account/children/${activeChild.id}`} className="mt-8 flex items-center justify-center gap-2 text-slate-600 hover:text-primary font-black uppercase tracking-widest text-xs transition-colors">
                                                     <Edit size={14} /> Edit Legend Profile
                                                 </Link>
                                             </div>
@@ -355,7 +355,7 @@ export default function ParentDashboard() {
                                             <Star size={32} />
                                         </div>
                                         <h3 className="text-2xl font-black text-slate-900 mb-2">Heritage Radio</h3>
-                                        <p className="text-slate-400 text-sm mb-6">Streaming Caribbean culture 24/7.</p>
+                                        <p className="text-slate-600 text-sm mb-6">Streaming Caribbean culture 24/7.</p>
                                         <Link href="/portal?sec=radio" className="text-primary font-black uppercase tracking-widest text-xs hover:underline">
                                             Open Player
                                         </Link>
@@ -374,7 +374,7 @@ export default function ParentDashboard() {
                             <div className="flex items-center justify-between mb-12">
                                 <div>
                                     <h2 className="text-4xl font-black text-slate-900 tracking-tight">Literacy Assessment</h2>
-                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Detailed Learning Analytics</p>
+                                    <p className="text-slate-600 font-bold uppercase tracking-widest text-sm">Detailed Learning Analytics</p>
                                 </div>
                                 <div className="flex items-center gap-3 bg-emerald-50 text-emerald-600 px-6 py-3 rounded-full font-black text-sm">
                                     <TrendingUp size={20} /> On track for age group
@@ -394,7 +394,7 @@ export default function ParentDashboard() {
                             <div className="mt-16 bg-slate-900 rounded-[3rem] p-12 text-white flex flex-col md:flex-row items-center justify-between gap-8">
                                 <div className="max-w-md">
                                     <h3 className="text-3xl font-black mb-4 tracking-tight">Download Progress Report</h3>
-                                    <p className="text-white/60 font-bold leading-relaxed mb-8">
+                                    <p className="text-white/80 font-bold leading-relaxed mb-8">
                                         Get a detailed PDF report of your child's phonics mastery and cultural learnings to share with teachers.
                                     </p>
                                     <button
@@ -428,7 +428,7 @@ export default function ParentDashboard() {
                             <div className="flex items-center justify-between mb-12">
                                 <div>
                                     <h2 className="text-4xl font-black text-slate-900 tracking-tight">My Library</h2>
-                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Personal Caribbean Collection</p>
+                                    <p className="text-slate-600 font-bold uppercase tracking-widest text-sm">Personal Caribbean Collection</p>
                                 </div>
                             </div>
 

@@ -94,7 +94,7 @@ export default async function BlogPostPage({ params }: Props) {
                         {post.featured_image_url && (
                             <Image
                                 src={post.featured_image_url}
-                                alt=""
+                                alt={`${post.title} featured image background`}
                                 fill
                                 className="object-cover blur-3xl"
                             />

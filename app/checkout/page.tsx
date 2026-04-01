@@ -341,14 +341,18 @@ function CheckoutContent() {
                                             <p className="text-deep/40 text-sm font-medium">Use your primary email for portal access.</p>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-deep/30 px-6">Parent Email</label>
+                                            <label htmlFor="checkout-email" className="text-[10px] font-black uppercase tracking-widest text-deep/30 px-6">Parent Email</label>
                                             <div className="relative">
                                                 <Mail className={`absolute left-6 top-1/2 -translate-y-1/2 transition-colors ${emailError && emailTouched ? 'text-red-400' : 'text-deep/20'}`} size={20} />
                                                 <input
+                                                    id="checkout-email"
                                                     type="email"
                                                     required
                                                     placeholder="you@example.com"
                                                     value={formData.email}
+                                                    aria-required="true"
+                                                    aria-invalid={emailError && emailTouched ? "true" : "false"}
+                                                    aria-describedby={emailError && emailTouched ? "email-error" : undefined}
                                                     onBlur={() => {
                                                         setEmailTouched(true);
                                                         setEmailError(validateEmail(formData.email));
@@ -367,7 +371,7 @@ function CheckoutContent() {
                                                 />
                                             </div>
                                             {emailError && emailTouched && (
-                                                <div className="flex items-center gap-2 px-6 pt-1">
+                                                <div id="email-error" className="flex items-center gap-2 px-6 pt-1">
                                                     <AlertCircle size={14} className="text-red-500 shrink-0" />
                                                     <p className="text-xs font-bold text-red-500">{emailError}</p>
                                                 </div>
@@ -399,14 +403,16 @@ function CheckoutContent() {
 
                                         <div className="space-y-6">
                                             <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase tracking-widest text-deep/30 px-6">Child&apos;s First Name</label>
+                                                <label htmlFor="checkout-childname" className="text-[10px] font-black uppercase tracking-widest text-deep/30 px-6">Child&apos;s First Name</label>
                                                 <div className="relative">
                                                     <User className="absolute left-6 top-1/2 -translate-y-1/2 text-deep/20" size={20} />
                                                     <input
+                                                        id="checkout-childname"
                                                         type="text"
                                                         required
                                                         placeholder="Little Legend's Name"
                                                         value={formData.childName}
+                                                        aria-required="true"
                                                         onChange={e => setFormData({ ...formData, childName: e.target.value })}
                                                         className="w-full pl-14 pr-8 py-5 bg-white border border-zinc-100 rounded-2xl font-bold text-deep focus:outline-none focus:border-primary/30 transition-all shadow-sm"
                                                     />
@@ -437,14 +443,16 @@ function CheckoutContent() {
 
                                             <div className="space-y-4 pt-4">
                                                 <div className="flex items-center justify-between px-6">
-                                                    <label className="text-[10px] font-black uppercase tracking-widest text-deep/30">Primary Heritage</label>
+                                                    <label htmlFor="heritage-search" className="text-[10px] font-black uppercase tracking-widest text-deep/30">Primary Heritage</label>
                                                     <div className="relative group">
                                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-deep/20 group-focus-within:text-primary/40 transition-colors" size={14} />
                                                         <input
+                                                            id="heritage-search"
                                                             type="text"
                                                             placeholder="Search islands..."
                                                             value={searchQuery}
                                                             onChange={(e) => setSearchQuery(e.target.value)}
+                                                            aria-label="Search heritage islands"
                                                             className="pl-9 pr-4 py-2 bg-zinc-50 border border-zinc-100 rounded-xl text-[10px] font-bold text-deep focus:outline-none focus:border-primary/20 transition-all w-32 sm:w-48"
                                                         />
                                                     </div>
@@ -596,10 +604,12 @@ function CheckoutContent() {
                                             <p className="text-xs font-bold text-deep/50 uppercase tracking-wider mb-2">Have a discount code?</p>
                                             <div className="flex gap-2">
                                                 <input
+                                                    id="discount-code"
                                                     type="text"
                                                     value={discountCode}
                                                     onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
                                                     placeholder="Enter code"
+                                                    aria-label="Discount code"
                                                     className="flex-1 px-4 py-2.5 rounded-xl border border-zinc-200 text-sm font-bold focus:border-primary focus:outline-none"
                                                 />
                                                 <button

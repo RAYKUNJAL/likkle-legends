@@ -314,7 +314,7 @@ function MediaManagerContent() {
                                 <div className="flex items-center gap-3">
                                     <div className="relative w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center border border-gray-100">
                                         {getThumbnail(item) ? (
-                                            <Image src={getThumbnail(item)} alt="" fill className="object-cover" />
+                                            <Image src={getThumbnail(item)} alt={`${item.title} media thumbnail`} fill className="object-cover" />
                                         ) : (
                                             activeTab === 'songs' ? <Music className="text-gray-400" /> : <Video className="text-gray-400" />
                                         )}

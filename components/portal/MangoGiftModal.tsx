@@ -103,7 +103,7 @@ const MangoGiftModal: React.FC<MangoGiftModalProps> = ({ senderId, friends, onCl
                                 >
                                     <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-2xl">
                                         {friend.avatar_url ? (
-                                            <img src={friend.avatar_url} alt="" className="w-full h-full object-cover rounded-xl" />
+                                            <img src={friend.avatar_url} alt={`${friend.first_name}'s avatar`} className="w-full h-full object-cover rounded-xl" />
                                         ) : (
                                             <User className="w-6 h-6 text-slate-300" />
                                         )}

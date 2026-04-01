@@ -64,7 +64,7 @@ export default function Sidebar({ view = 'parent' }: SidebarProps) {
                 <div className="relative w-28 h-10">
                     <Image
                         src="/images/logo.png"
-                        alt="Logo"
+                        alt="Likkle Legends logo"
                         fill
                         className="object-contain brightness-0 invert"
                     />

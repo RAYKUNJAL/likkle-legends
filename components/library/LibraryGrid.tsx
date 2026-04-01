@@ -142,7 +142,7 @@ export default function LibraryGrid({ isLandingPage = false }: LibraryGridProps)
                     <>
                         {/* ═══ Featured Hero (First Story) ═══ */}
                         {filter === 'all' && stories.length > 0 && (
-                            <div className="mb-16 relative group cursor-pointer" onClick={() => setSelectedStory(stories[0])}>
+                            <button onClick={() => setSelectedStory(stories[0])} className="mb-16 relative group cursor-pointer bg-transparent border-none p-0 w-full text-left" aria-label={`Select ${stories[0]?.title || 'featured story'}`}>
                                 <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-pink-500 rounded-[2.5rem] transform rotate-1 opacity-20 group-hover:rotate-2 transition-transform duration-500" />
                                 <div className="relative bg-white rounded-[2.5rem] p-6 md:p-12 border-4 border-orange-100 shadow-xl flex flex-col md:flex-row gap-8 md:gap-16 items-center overflow-hidden">
 

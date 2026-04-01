@@ -137,7 +137,7 @@ export default function LeadCaptureModal({
                 {/* Close button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                    className="absolute top-4 right-4 p-2 text-gray-700 hover:text-gray-900 transition-colors z-10 focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg"
                     aria-label="Close"
                 >
                     <X size={24} />
@@ -288,7 +288,7 @@ export default function LeadCaptureModal({
                                 type="button"
                                 onClick={handleSkipDetails}
                                 disabled={isSubmitting}
-                                className="w-full py-2 text-gray-400 text-sm hover:text-gray-600 transition-colors"
+                                className="w-full py-2 text-gray-700 text-sm hover:text-gray-900 transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg"
                             >
                                 Skip for now
                             </button>

@@ -81,7 +81,7 @@ const ImageEditor: React.FC = () => {
             <div className="relative w-full h-full flex items-center justify-center">
               <img
                 src={generatedImage || selectedImage}
-                alt="Workspace"
+                alt="Generated or uploaded image for editing"
                 className="max-h-full max-w-full object-contain"
               />
               {loading && (

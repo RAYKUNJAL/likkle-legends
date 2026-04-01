@@ -249,7 +249,7 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
                                                 <div className="w-32 h-32 bg-slate-100 rounded-2xl flex items-center justify-center border-4 border-[var(--caribbean-sun)]/30 overflow-hidden">
                                                     <img
                                                         src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${passportData.childName || 'Legend'}`}
-                                                        alt="Avatar"
+                                                        alt={`${passportData.childName || 'Legend'}'s digital adventure avatar`}
                                                         className="w-full h-full object-cover"
                                                     />
                                                 </div>

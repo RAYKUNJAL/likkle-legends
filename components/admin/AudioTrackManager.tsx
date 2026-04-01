@@ -358,7 +358,7 @@ export const AudioTrackManager: React.FC = () => {
                                             <div className="w-12 h-12 bg-gray-100 rounded-xl overflow-hidden shrink-0 shadow-sm border border-gray-100">
                                                 <img
                                                     src={song.cover_image_url || '/images/music-placeholder.svg'}
-                                                    alt=""
+                                                    alt={`Album cover for ${song.title} by ${song.artist}`}
                                                     className="w-full h-full object-cover"
                                                 />
                                             </div>

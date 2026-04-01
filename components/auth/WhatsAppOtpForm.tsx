@@ -167,18 +167,20 @@ export default function WhatsAppOtpForm({ onSuccess, isSignup, initialData }: Wh
                         )}
 
                         <div>
-                            <label className="block text-xs font-black text-deep/30 uppercase tracking-[0.2em] mb-3 px-1">WhatsApp Number</label>
+                            <label htmlFor="whatsapp-phone" className="block text-xs font-black text-deep/30 uppercase tracking-[0.2em] mb-3 px-1">WhatsApp Number</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
                                     <Phone size={20} />
                                 </div>
                                 <input
+                                    id="whatsapp-phone"
                                     type="tel"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                     placeholder="+1 (868) 000-0000"
                                     className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-3xl focus:ring-4 focus:ring-emerald-500/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg shadow-inner"
                                     required
+                                    aria-required="true"
                                 />
                             </div>
                             <p className="mt-3 text-[10px] text-deep/30 font-bold uppercase tracking-widest text-center px-4 leading-relaxed">
@@ -235,6 +237,7 @@ export default function WhatsAppOtpForm({ onSuccess, isSignup, initialData }: Wh
 
                         <div className="flex justify-center">
                             <input
+                                id="whatsapp-otp"
                                 type="text"
                                 inputMode="numeric"
                                 autoFocus
@@ -244,6 +247,8 @@ export default function WhatsAppOtpForm({ onSuccess, isSignup, initialData }: Wh
                                 placeholder="000000"
                                 className="w-full max-w-[240px] tracking-[0.5em] text-center py-6 bg-zinc-50 border-none rounded-3xl focus:ring-4 focus:ring-blue-500/10 transition-all text-4xl font-black text-deep placeholder:text-deep/10 shadow-inner"
                                 required
+                                aria-required="true"
+                                aria-label="6-digit verification code"
                             />
                         </div>
 
@@ -305,25 +310,29 @@ export default function WhatsAppOtpForm({ onSuccess, isSignup, initialData }: Wh
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-2 px-1">Child's Name</label>
+                                <label htmlFor="whatsapp-childname" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-2 px-1">Child's Name</label>
                                 <input
+                                    id="whatsapp-childname"
                                     type="text"
                                     value={extraData.childName}
                                     onChange={(e) => setExtraData(prev => ({ ...prev, childName: e.target.value }))}
                                     placeholder="Kai..."
                                     className="w-full px-5 py-4 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-purple-500/10 transition-all font-bold text-deep"
                                     required
+                                    aria-required="true"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-2 px-1">Email Address</label>
+                                <label htmlFor="whatsapp-email" className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-2 px-1">Email Address</label>
                                 <input
+                                    id="whatsapp-email"
                                     type="email"
                                     value={extraData.email}
                                     onChange={(e) => setExtraData(prev => ({ ...prev, email: e.target.value }))}
                                     placeholder="legend@island.com"
                                     className="w-full px-5 py-4 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-purple-500/10 transition-all font-bold text-deep"
                                     required
+                                    aria-required="true"
                                 />
                             </div>
                         </div>

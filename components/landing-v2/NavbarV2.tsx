@@ -40,30 +40,30 @@ export const NavbarV2 = () => {
 
                     {/* Desktop Nav */}
                     <div className="hidden lg:flex items-center gap-10">
-                        <Link href="/#how-it-works" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">How It Works</Link>
-                        <Link href="/#features" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">Digital Magic</Link>
-                        <Link href="/#envelope" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">The Envelope</Link>
-                        <Link href="/#pricing" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">Pricing</Link>
-                        <Link href="/radio" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all">Free Radio</Link>
+                        <Link href="/#how-it-works" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1">How It Works</Link>
+                        <Link href="/#features" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1">Digital Magic</Link>
+                        <Link href="/#envelope" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1">The Envelope</Link>
+                        <Link href="/#pricing" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1">Pricing</Link>
+                        <Link href="/radio" className="text-deep/70 hover:text-primary font-black uppercase tracking-[0.2em] text-[14px] transition-all focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1">Free Radio</Link>
 
                         <div className="flex items-center gap-3 ml-4 pl-4 border-l border-zinc-100">
                             {isLoggedIn ? (
-                                <Link href="/portal" className="group relative flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                                <Link href="/portal" className="group relative flex items-center gap-2 px-8 py-4 bg-primary text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all focus:outline-2 focus:outline-offset-2 focus:outline-white">
                                     <LayoutDashboard size={16} />
                                     <span>My Portal</span>
                                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                                 </Link>
                             ) : (
                                 <>
-                                    <Link href="/login" className="flex items-center gap-2 px-5 py-3 text-deep/70 hover:text-primary font-black text-xs uppercase tracking-[0.15em] transition-all hover:bg-zinc-50 rounded-xl">
+                                    <Link href="/login" className="flex items-center gap-2 px-5 py-3 text-deep/70 hover:text-primary font-black text-xs uppercase tracking-[0.15em] transition-all hover:bg-zinc-50 rounded-xl focus:outline-2 focus:outline-offset-2 focus:outline-primary">
                                         <LogIn size={16} strokeWidth={2.5} />
                                         Log In
                                     </Link>
-                                    <Link href="/signup?plan=mail_club" className="flex items-center gap-2 px-5 py-3 text-primary border-2 border-primary/20 hover:border-primary/40 font-black text-xs uppercase tracking-[0.15em] rounded-xl transition-all hover:bg-primary/5">
+                                    <Link href="/signup?plan=mail_club" className="flex items-center gap-2 px-5 py-3 text-primary border-2 border-primary/20 hover:border-primary/40 font-black text-xs uppercase tracking-[0.15em] rounded-xl transition-all hover:bg-primary/5 focus:outline-2 focus:outline-offset-2 focus:outline-primary">
                                         <Gift size={14} />
                                         Free
                                     </Link>
-                                    <Link href="/checkout" className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all overflow-hidden">
+                                    <Link href="/checkout" className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all overflow-hidden focus:outline-2 focus:outline-offset-2 focus:outline-white">
                                         <span className="relative z-10">Get Started</span>
                                         <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />
                                         <div className="absolute inset-0 bg-primary-gradient opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -74,7 +74,7 @@ export const NavbarV2 = () => {
                     </div>
 
                     {/* Mobile Toggle */}
-                    <button className="lg:hidden w-10 h-10 sm:w-12 sm:h-12 bg-white/50 backdrop-blur-md rounded-xl sm:rounded-2xl flex items-center justify-center text-deep shadow-sm border border-white" onClick={() => setIsOpen(!isOpen)}>
+                    <button className="lg:hidden w-10 h-10 sm:w-12 sm:h-12 bg-white/50 backdrop-blur-md rounded-xl sm:rounded-2xl flex items-center justify-center text-deep shadow-sm border border-white focus:outline-2 focus:outline-offset-2 focus:outline-primary transition-all" onClick={() => setIsOpen(!isOpen)}>
                         {isOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                 </div>
@@ -89,11 +89,11 @@ export const NavbarV2 = () => {
                         exit={{ opacity: 0, y: -20 }}
                         className="lg:hidden absolute top-full left-0 right-0 m-3 sm:m-6 p-6 sm:p-8 bg-white/95 backdrop-blur-3xl rounded-2xl sm:rounded-[3rem] shadow-premium-xl border border-white flex flex-col gap-5 sm:gap-8 z-50 overflow-hidden"
                     >
-                        <Link href="/#how-it-works" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors">How It Works</Link>
-                        <Link href="/#features" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors">Digital Magic</Link>
-                        <Link href="/#envelope" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors">The Envelope</Link>
-                        <Link href="/#pricing" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors">Pricing</Link>
-                        <Link href="/radio" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors">Free Radio</Link>
+                        <Link href="/#how-it-works" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1">How It Works</Link>
+                        <Link href="/#features" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1">Digital Magic</Link>
+                        <Link href="/#envelope" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1">The Envelope</Link>
+                        <Link href="/#pricing" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1">Pricing</Link>
+                        <Link href="/radio" onClick={() => setIsOpen(false)} className="text-2xl sm:text-4xl font-black text-deep tracking-tighter hover:text-primary transition-colors focus:outline-2 focus:outline-offset-2 focus:outline-primary rounded-lg px-2 py-1">Free Radio</Link>
 
                         <div className="pt-5 sm:pt-8 border-t border-zinc-50 flex flex-col gap-3 sm:gap-4">
                             {isLoggedIn ? (

@@ -141,32 +141,36 @@ function LoginForm() {
 
                 <form className="space-y-6" onSubmit={loginMethod === 'password' ? handlePasswordLogin : handleMagicLinkLogin}>
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-deep/60 ml-4 uppercase tracking-widest">Email Address</label>
+                            <label htmlFor="email-login" className="text-sm font-bold text-deep/60 ml-4 uppercase tracking-widest">Email Address</label>
                             <div className="relative">
                                 <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-deep/30" size={20} />
                                 <input
+                                    id="email-login"
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="legend@island.com"
                                     className="w-full bg-zinc-50 border-2 border-border focus:border-primary rounded-3xl py-4 pl-14 pr-6 text-sm focus:outline-none transition-all"
                                     required
+                                    aria-required="true"
                                 />
                             </div>
                         </div>
 
                         {loginMethod === 'password' && (
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-deep/60 ml-4 uppercase tracking-widest">Password</label>
+                                <label htmlFor="password-login" className="text-sm font-bold text-deep/60 ml-4 uppercase tracking-widest">Password</label>
                                 <div className="relative">
                                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-deep/30" size={20} />
                                     <input
+                                        id="password-login"
                                         type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="••••••••"
                                         className="w-full bg-zinc-50 border-2 border-border focus:border-primary rounded-3xl py-4 pl-14 pr-12 text-sm focus:outline-none transition-all"
                                         required={loginMethod === 'password'}
+                                        aria-required="true"
                                     />
                                     <button
                                         type="button"
