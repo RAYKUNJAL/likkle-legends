@@ -52,7 +52,10 @@ export default function VideoHero() {
                                 controls
                                 className="w-full h-full object-cover"
                                 src={bgVideoSrc}
-                            />
+                            >
+                                <track kind="captions" src="/captions/landing-promo-en.vtt" srcLang="en" label="English" default />
+                                <track kind="captions" src="/captions/landing-promo-es.vtt" srcLang="es" label="Español" />
+                            </video>
                         </motion.div>
                         <p className="absolute bottom-6 text-white/40 text-sm font-bold">
                             Click anywhere to close

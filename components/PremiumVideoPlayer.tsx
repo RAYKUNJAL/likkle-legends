@@ -184,7 +184,14 @@ export default function PremiumVideoPlayer({ video, onClose, onComplete }: Premi
                             onCanPlay={() => setIsLoading(false)}
                             muted={isMuted}
                             onClick={togglePlay}
-                        />
+                        >
+                            {video.id && (
+                                <>
+                                    <track kind="captions" src={`/captions/lesson-${video.id}-en.vtt`} srcLang="en" label="English" default />
+                                    <track kind="captions" src={`/captions/lesson-${video.id}-es.vtt`} srcLang="es" label="Español" />
+                                </>
+                            )}
+                        </video>
 
                         {isLoading && (
                             <div className="absolute inset-0 flex items-center justify-center bg-black/40">

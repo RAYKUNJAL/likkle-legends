@@ -391,7 +391,10 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
                                 playsInline
                                 controls={false}
                                 aria-label="Video Player"
-                            />
+                            >
+                                {currentTrack?.id && <track kind="captions" src={`/captions/video-${currentTrack.id}-en.vtt`} srcLang="en" label="English" />}
+                                {currentTrack?.id && <track kind="captions" src={`/captions/video-${currentTrack.id}-es.vtt`} srcLang="es" label="Español" />}
+                            </video>
                         ) : (
                             <canvas
                                 ref={canvasRef}

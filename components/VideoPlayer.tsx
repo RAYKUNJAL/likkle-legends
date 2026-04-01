@@ -8,9 +8,11 @@ interface VideoPlayerProps {
     poster?: string;
     onEnded?: () => void;
     autoPlay?: boolean;
+    captionSrc?: string;
+    captionLabel?: string;
 }
 
-export default function VideoPlayer({ src, poster, onEnded, autoPlay = false }: VideoPlayerProps) {
+export default function VideoPlayer({ src, poster, onEnded, autoPlay = false, captionSrc, captionLabel = 'English' }: VideoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [isPlaying, setIsPlaying] = useState(autoPlay);
     const [isMuted, setIsMuted] = useState(false);
@@ -98,7 +100,9 @@ export default function VideoPlayer({ src, poster, onEnded, autoPlay = false }: 
                 }}
                 onClick={togglePlay}
                 autoPlay={autoPlay}
-            />
+            >
+                {captionSrc && <track kind="captions" src={captionSrc} srcLang="en" label={captionLabel} />}
+            </video>
 
             {/* Custom Controls Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-6">
