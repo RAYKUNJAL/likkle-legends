@@ -10,7 +10,7 @@ import {
     Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap, Send,
     Database, Smartphone, Accessibility, Lock, Star, Info, Target, Trophy,
-    DollarSign, X, Calendar
+    DollarSign, X, Calendar, LogSquare
 } from 'lucide-react';
 
 export {
