@@ -10,7 +10,7 @@ import {
     Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap, Send,
     Database, Smartphone, Accessibility, Lock, Star, Info, Target, Trophy,
-    DollarSign, X, Calendar, LogSquare
+    DollarSign, X, Calendar, History
 } from 'lucide-react';
 
 export {
@@ -21,7 +21,7 @@ export {
     Plus, Eye, Edit, Trash2, Download, RefreshCw, ShoppingCart,
     Gamepad2, LayoutGrid, Wand2, Sparkles, CheckCircle2, Zap, Send,
     Database, Smartphone, Accessibility, Lock, Star, Info, Target, Trophy,
-    DollarSign, X, Calendar, LogSquare
+    DollarSign, X, Calendar, History
 };
 
 // ==========================================
@@ -111,7 +111,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
             items: [
                 { id: 'cms', label: 'Site CMS', icon: Globe, href: '/admin/cms' },
                 { id: 'verify', label: 'Launch Verification', icon: ShieldCheck, href: '/admin/verify' },
-                { id: 'audit-logs', label: 'Audit Logs', icon: LogSquare, href: '/admin/audit-logs' },
+                { id: 'audit-logs', label: 'Audit Logs', icon: History, href: '/admin/audit-logs' },
                 { id: 'debug', label: 'AI Diagnostics', icon: Activity, href: '/admin/debug' },
                 { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
             ],
