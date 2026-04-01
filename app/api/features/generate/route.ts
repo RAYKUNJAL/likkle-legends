@@ -32,10 +32,10 @@ export async function POST(request: NextRequest) {
             .map((item) => item.name)
             .join(', ')} for kids age ${ageGroup === 'mini' ? '3-5' : '6-8'}.`;
 
+        // SECURITY: API Key should NEVER use NEXT_PUBLIC_ prefix
         const apiKey =
             process.env.GEMINI_API_KEY ||
-            process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-            process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+            process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
         if (!apiKey) {
             return NextResponse.json({ module: buildFallbackModule(suite) });
