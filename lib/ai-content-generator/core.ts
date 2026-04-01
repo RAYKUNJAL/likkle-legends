@@ -4,10 +4,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CONTENT_CONFIG, CHARACTER_PROFILES, IMAGE_STYLE } from './config';
 
-// Ensure environment variables are loaded
+// SECURITY: API Key should NEVER use NEXT_PUBLIC_ prefix
+// API Key must be server-side only
 const API_KEY = process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-    process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY || '';
 
 if (!API_KEY) {
     console.warn('⚠️  WARNING: No Gemini API key found in environment variables');

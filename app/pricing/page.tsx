@@ -7,6 +7,9 @@ import Pricing from '@/components/Pricing';
 export const metadata = {
     title: 'Pricing | Likkle Legends',
     description: 'Start free. Upgrade anytime. Mail club currently ships in the USA, with Canada & UK coming soon.',
+    alternates: {
+        canonical: '/pricing',
+    },
 };
 
 const addons = [

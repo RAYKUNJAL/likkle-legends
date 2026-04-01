@@ -11,9 +11,14 @@ export async function approveContent(type: 'storybooks' | 'songs' | 'games', id:
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Unauthorized');
 
-    const userEmail = session.user.email;
-    const isAdmin = userEmail === 'raykunjal@gmail.com' || userEmail?.includes('admin@');
-    if (!isAdmin) throw new Error('Unauthorized');
+    // Check role-based access control - no email-based escalation
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, is_admin')
+        .eq('id', session.user.id)
+        .single();
+
+    if (profile?.role !== 'admin' && profile?.is_admin !== true) throw new Error('Unauthorized');
 
     const { error } = await supabase
         .from(type)

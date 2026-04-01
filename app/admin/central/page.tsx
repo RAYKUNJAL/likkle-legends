@@ -29,7 +29,7 @@ export default function AdminCentralPage() {
                         .eq('id', user.id)
                         .single();
 
-                    const isAdmin = profile?.role === 'admin' || profile?.is_admin === true || user.email === 'admin@likklelegends.com' || user.email?.includes('raykunjal');
+                    const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
 
                     if (isAdmin) {
                         router.replace('/admin/overview');

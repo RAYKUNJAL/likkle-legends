@@ -9,7 +9,9 @@ export async function runPing(token: string) {
 
 export async function testEnv(token: string) {
     await verifyAdmin(token);
-    const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    // SECURITY: API Key should NEVER use NEXT_PUBLIC_ prefix
+    // Only check server-side variables
+    const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!key) {
         return { status: "error", message: "GEMINI_API_KEY is missing." };
     }
@@ -53,7 +55,9 @@ export async function testAuth(token: string) {
 
 export async function testAI(token: string) {
     await verifyAdmin(token);
-    const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    // SECURITY: API Key should NEVER use NEXT_PUBLIC_ prefix
+    // Only check server-side variables
+    const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!key) return { status: "error", message: "No key for AI test." };
 
     try {

@@ -48,8 +48,14 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
 
             // Client-side role check (optimistic)
             // Server actions will still perform a hard check
-            const userEmail = session.user.email;
-            const isAdmin = userEmail === 'raykunjal@gmail.com' || userEmail?.includes('admin@');
+            // Note: This is optimistic - server-side auth is authoritative
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role, is_admin')
+                .eq('id', session.user.id)
+                .single();
+
+            const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
 
             if (!isAdmin) {
                 // Optionally redirect to portal if not admin

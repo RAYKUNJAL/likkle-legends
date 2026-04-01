@@ -60,7 +60,8 @@ export async function runModuleManagerAgent(token: string, objective: string, ag
 
         await verifyAdmin(token);
 
-        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+        // SECURITY: API Key should NEVER use NEXT_PUBLIC_ prefix
+        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
         if (!apiKey) throw new Error("GEMINI_API_KEY is missing.");
 
         const data = await withTimeout(moduleManagerAgent.buildCompleteModule(objective, ageGroup), 35000);

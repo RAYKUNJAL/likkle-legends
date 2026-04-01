@@ -56,9 +56,6 @@ export const metadata: Metadata = {
     description: siteContent.meta.description,
     images: ['/images/og-image.jpg'],
   },
-  alternates: {
-    canonical: 'https://www.likklelegends.com',
-  },
   icons: {
     icon: [{ url: '/icon.png', type: 'image/png' }],
     shortcut: '/icon.png',

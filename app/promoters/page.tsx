@@ -11,6 +11,9 @@ import PromoterApplication from '@/components/promoters/PromoterApplication';
 export const metadata: Metadata = {
     title: 'Promoter Partner Program | Likkle Legends',
     description: 'Join our affiliate program and earn 20% recurring commission sharing Caribbean culture.',
+    alternates: {
+        canonical: '/promoters',
+    },
 };
 
 export default async function PromoterPage() {

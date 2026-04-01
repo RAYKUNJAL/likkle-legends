@@ -6,6 +6,9 @@ import FAQClient from '@/components/FAQClient';
 export const metadata: Metadata = {
     title: 'Frequently Asked Questions',
     description: 'Find answers about Likkle Legends Mail Club, subscription plans, shipping, and how we help children connect with their Caribbean heritage.',
+    alternates: {
+        canonical: '/faq',
+    },
 };
 
 export default function FAQPage() {

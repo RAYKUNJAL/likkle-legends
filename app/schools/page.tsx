@@ -19,6 +19,9 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
     title: 'Likkle Legends for Schools | Caribbean Cultural Curriculum',
     description: 'Empower your students with authentic Caribbean storytelling, music, and interactive cultural experiences. Group licensing and school partnerships available.',
+    alternates: {
+        canonical: '/schools',
+    },
 };
 
 export default function SchoolsPage() {

@@ -17,10 +17,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return { title: 'Post Not Found' };
     }
 
+    const canonicalUrl = `/blog/${params.slug}`;
+
     return {
         title: post.meta_title || post.title,
         description: post.meta_description || post.excerpt,
         keywords: post.keywords?.join(', '),
+        alternates: {
+            canonical: canonicalUrl,
+        },
         openGraph: {
             title: post.title,
             description: post.excerpt,

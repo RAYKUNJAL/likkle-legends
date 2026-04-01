@@ -3,9 +3,10 @@ import 'dotenv/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 async function main() {
+    // Development script: check server-side keys only
+    // (NEXT_PUBLIC_ prefix should NEVER be used for API keys)
     const apiKey = process.env.GEMINI_API_KEY ||
-        process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-        process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+        process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
     if (!apiKey) {
         console.error('No API key found');

@@ -5,6 +5,9 @@ import Footer from '@/components/Footer';
 export const metadata: Metadata = {
     title: "Kids' Safety Policy",
     description: "Learn about the safety measures we take to protect your children, including COPPA compliance, ad-free environment, and parental controls.",
+    alternates: {
+        canonical: '/safety',
+    },
 };
 
 export default function SafetyPage() {

@@ -5,13 +5,13 @@ export const metadata: Metadata = {
   description:
     "Help your child grow academically while staying connected to Caribbean culture—wherever you live. Stories, songs, activities, and monthly character drops for kids 3-9.",
   alternates: {
-    canonical: "https://www.likklelegends.com/",
+    canonical: "/",
   },
   openGraph: {
     title: "Likkle Legends | Learning That Feels Like Home",
     description:
       "Caribbean-inspired educational stories, songs, and monthly mail for kids 3-9.",
-    url: "https://www.likklelegends.com/",
+    url: "/",
     siteName: "Likkle Legends",
     type: "website",
   },

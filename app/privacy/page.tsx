@@ -6,6 +6,9 @@ import { siteContent } from '@/lib/content';
 export const metadata: Metadata = {
     title: 'Privacy Policy & Data Deletion Instructions',
     description: "Your family's privacy is our top priority. Read how Likkle Legends protects your data, including explicit instructions for data deletion.",
+    alternates: {
+        canonical: '/privacy',
+    },
 };
 
 export default function PrivacyPage() {

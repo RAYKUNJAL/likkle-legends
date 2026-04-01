@@ -8,6 +8,9 @@ import { siteContent } from '@/lib/content';
 export const metadata: Metadata = {
     title: 'Our Story',
     description: 'Learn how Likkle Legends was born from a desire to celebrate Caribbean heritage and empower the next generation of Global Legends.',
+    alternates: {
+        canonical: '/about',
+    },
 };
 
 export default function AboutPage() {

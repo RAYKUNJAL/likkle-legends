@@ -8,6 +8,9 @@ import { Metadata } from 'next';
 export const metadata: Metadata = {
     title: 'Meet the Likkle Legends',
     description: 'Learn about Dilly Doubles, Mango Moko, and Steelpan Sam - the guides on your child\'s Caribbean adventure.',
+    alternates: {
+        canonical: '/characters',
+    },
 };
 
 import CharacterDetailCard from '@/components/character/CharacterDetailCard';

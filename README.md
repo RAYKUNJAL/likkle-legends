@@ -12,11 +12,12 @@ The first Caribbean emotional-learning universe for kids ages 4–8. Integrated 
 - **Tanty's Radio**: Listen to island beats and nursery songs.
 
 ## 🚀 Getting Started
-1. **Set your API Key**:
+1. **Set your API Key** (Server-side only for security):
    Create a `.env.local` file or set the environment variable:
    ```env
-   NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+   GEMINI_API_KEY=your_gemini_api_key
    ```
+   **IMPORTANT**: Never use `NEXT_PUBLIC_` prefix for API keys - they must be server-side only to prevent exposure in the browser.
 2. **Install Dependencies**:
    ```bash
    npm install
