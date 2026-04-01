@@ -639,13 +639,73 @@ export async function deleteGeneratedContent(token: string, id: string) {
     const admin = await verifyAdmin(token);
 
     console.log(`deleteGeneratedContent: Deleting ${id}...`);
-    const { error } = await admin
-        .from('generated_content')
-        .delete()
-        .eq('id', id);
 
-    if (error) throw error;
-    return { success: true };
+    // Get the content before deleting for audit trail
+    const { data: deletedContent } = await admin
+        .from('generated_content')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    try {
+        const { error } = await admin
+            .from('generated_content')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        // Log the action (non-blocking)
+        try {
+            const adminUser = await getAdminUserInfo(token);
+            const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (url && serviceKey) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const loggingClient = createClient(url, serviceKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+                logAdminAction(
+                    loggingClient,
+                    adminUser.id,
+                    adminUser.email,
+                    'delete_generated_content',
+                    'generated_content',
+                    id,
+                    { deleted_content: deletedContent }
+                );
+            }
+        } catch (auditError) {
+            console.error('Failed to log delete action:', auditError);
+        }
+
+        return { success: true };
+    } catch (error) {
+        // Log the error (non-blocking)
+        try {
+            const adminUser = await getAdminUserInfo(token);
+            const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (url && serviceKey) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const loggingClient = createClient(url, serviceKey, {
+                    auth: { persistSession: false, autoRefreshToken: false }
+                });
+                logAdminActionError(
+                    loggingClient,
+                    adminUser.id,
+                    adminUser.email,
+                    'delete_generated_content',
+                    'generated_content',
+                    error instanceof Error ? error.message : String(error),
+                    id
+                );
+            }
+        } catch (auditError) {
+            console.error('Failed to log delete error:', auditError);
+        }
+        throw error;
+    }
 }
 
 export async function getAdminGames(token: string) {

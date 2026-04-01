@@ -6,6 +6,7 @@ import { storyGenerator } from "@/lib/ai-content-generator/generators/story-gene
 import { printableGenerator } from "@/lib/ai-content-generator/generators/printable-generator";
 import { videoGenerator } from "@/lib/ai-content-generator/generators/video-generator";
 import { moduleManagerAgent } from "@/lib/ai-content-generator/agents/ModuleManager";
+import { logAdminAction, logAdminActionError } from "@/lib/audit-logger";
 
 /**
  * Wrapper to prevent AI agents from hanging forever
@@ -15,6 +16,29 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number = 25000): P
         setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs / 1000}s`)), timeoutMs)
     );
     return Promise.race([promise, timeout]);
+}
+
+/**
+ * Helper to get admin user info from token (for audit logging)
+ */
+async function getAdminUserInfo(token: string) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!url || !anonKey) throw new Error("Supabase config missing");
+
+    const { createClient } = await import('@supabase/supabase-js');
+    const admin = createClient(url, serviceKey || anonKey, {
+        auth: { persistSession: false, autoRefreshToken: false }
+    });
+
+    const { data: { user }, error } = await admin.auth.getUser(token);
+    if (error || !user) {
+        throw new Error(`Failed to get user info: ${error?.message || 'Unknown error'}`);
+    }
+
+    return { id: user.id, email: user.email || '' };
 }
 
 export async function runStoryAgent(token: string, params: any) {
