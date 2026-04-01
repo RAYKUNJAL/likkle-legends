@@ -10,6 +10,14 @@ export const metadata = {
     alternates: {
         canonical: '/pricing',
     },
+    openGraph: {
+        title: 'Pricing | Likkle Legends',
+        description: 'Start free. Upgrade anytime. Mail club currently ships in the USA, with Canada & UK coming soon.',
+        url: '/pricing',
+        siteName: 'Likkle Legends',
+        type: 'website',
+        images: [{ url: '/images/og-image.jpg', width: 1200, height: 630, alt: 'Likkle Legends' }],
+    },
 };
 
 const addons = [
