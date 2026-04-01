@@ -100,7 +100,8 @@ export async function updateSession(request: NextRequest) {
                 .eq('id', user.id)
                 .single();
 
-            const isUserAdmin = profile?.role === 'admin' || profile?.is_admin === true || user.email === 'admin@likklelegends.com' || user.email?.includes('raykunjal');
+            // Check for explicit admin role in database only (removed email-based privilege escalation)
+            const isUserAdmin = profile?.role === 'admin' || profile?.is_admin === true;
 
             if (profileError || !isUserAdmin) {
                 console.warn(`[AUTH] Unauthorized admin access attempt by ${user.email} (id: ${user.id}) to ${pathname}`);

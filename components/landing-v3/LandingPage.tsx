@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { siteContent } from "@/lib/content";
 import { NavbarV2 } from "@/components/landing-v2/NavbarV2";
 import { Hero } from "@/components/landing-v3/Hero";
 import { TantyRadioSection } from "@/components/landing-v3/TantyRadioSection";
@@ -18,6 +19,7 @@ import { TripleTier } from "@/components/landing-v2/TripleTier";
 import { AccordionV2 } from "@/components/landing-v2/AccordionV2";
 import { FooterV2 } from "@/components/landing-v2/FooterV2";
 import { BenefitStory } from "@/components/landing-v2/BenefitStory";
+import HowItWorksV2 from "@/components/landing/HowItWorksV2";
 
 const benefitContent = [
     {
@@ -77,6 +79,9 @@ export default function LandingPage() {
 
                 {/* Tanty Radio Section - Audio Brand Personality */}
                 <TantyRadioSection />
+
+                {/* How It Works Section */}
+                <HowItWorksV2 content={siteContent} />
 
                 {/* The "Why it Matters" Story - Primary Trust Section */}
                 <BenefitStory title="The Legacy in the Mailbox." content={benefitContent} />

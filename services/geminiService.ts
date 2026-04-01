@@ -123,11 +123,11 @@ export async function narrateText(text: string): Promise<AudioBuffer | null> {
 
                 // Cache logic would invoke here if we want to store the MP3 buffer or the decoded PCM
                 // For simplicity/consistency with existing cache which expects RAW PCM, we might just store decoded
-                // But existing cache expects ArrayBuffer, let's skip complex caching for now or just cache it if we can. 
-                // However, decoding MP3 consumes the buffer in some contexts. 
+                // But existing cache expects ArrayBuffer, let's skip complex caching for now or just cache it if we can.
+                // However, decoding MP3 consumes the buffer in some contexts.
                 // `decodeAudioData` detaches the buffer. So we can't cache `elevenLabsBuffer` AFTER decoding.
                 // We should cache `elevenLabsBuffer` (the MP3 bytes) if possible, but our current cache structure
-                // in `decodeAudioDataFromRaw` expects RAW int16 PCM. 
+                // in `decodeAudioDataFromRaw` expects RAW int16 PCM.
                 // Let's rely on browser cache for now or just return the decoded buffer.
                 return decoded;
             }
@@ -136,34 +136,23 @@ export async function narrateText(text: string): Promise<AudioBuffer | null> {
         }
     }
 
-    // 3. Fallback to Gemini 3.0 Pro
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null);
-
-    if (!apiKey) {
-        console.warn("API Key missing for narration.");
-        return null;
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
-    const prompt = `Generate high-fidelity speech for the following dialogue using the 'Kore' voice. The speaker is Tanty Spice, a warm, expressive Caribbean grandmother. The tone should be gentle, melodic, and richly emotional. Avoid any robotic flatness. Dialogue: ${text}`;
-
+    // 3. Fallback to Gemini - Call backend API instead of using client-side API key
     try {
-        const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
-            contents: [{ parts: [{ text: prompt }] }],
-            config: {
-                responseModalities: [Modality.AUDIO],
-                speechConfig: {
-                    voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } },
-                }
-            }
+        const response = await fetch('/api/gemini/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, voice: "Kore" })
         });
 
-        const audioDataBase64 = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+        if (!response.ok) {
+            console.warn("Gemini TTS backend call failed");
+            return null;
+        }
 
+        const audioDataBase64 = await response.text();
         if (audioDataBase64) {
             const rawBytes = decodeBase64(audioDataBase64);
-            // 2. Save to Cache (store the raw ArrayBuffer)
+            // Save to Cache (store the raw ArrayBuffer)
             await setCachedAudio(text, rawBytes.buffer as ArrayBufferLike);
 
             return await decodeAudioDataFromRaw(rawBytes.buffer as ArrayBufferLike, ctx);
@@ -239,9 +228,10 @@ async function decodeAudioDataFromRaw(buffer: ArrayBufferLike, ctx: AudioContext
 
 /**
  * STREAMING CHAT
+ * DEPRECATED: Use /api/gemini/stream endpoint instead
  */
 export async function* getTantySpiceResponseStream(userPrompt: string, ageGroup: string = "6-8"): AsyncGenerator<string> {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null);
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
     if (!apiKey) throw new Error("API Key missing.");
 
     const ai = new GoogleGenAI({ apiKey });

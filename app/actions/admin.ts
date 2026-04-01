@@ -138,7 +138,7 @@ export async function verifyAdmin(token: string) {
             throw new Error(`Unauthorized: ${error?.message || 'Invalid session'}`);
         }
 
-        // Check admin status in database
+        // Check admin status in database (removed email-based privilege escalation)
         console.log(`verifyAdmin: Checking permissions for ${user.email}...`);
 
         // Parallel check for admin_users table and profiles table
@@ -147,18 +147,13 @@ export async function verifyAdmin(token: string) {
             admin.from('profiles').select('is_admin, role').eq('id', user.id).single()
         ]);
 
-        const isDevAdmin =
-            user.email === 'admin@likklelegends.com' ||
-            user.email === 'raykunjal@gmail.com' ||
-            user.email?.includes('raykunjal');
-
         const hasAdminRole =
             adminCheck.data?.role === 'admin' ||
             adminCheck.data?.role === 'super_admin' ||
             profileCheck.data?.is_admin === true ||
             profileCheck.data?.role === 'admin';
 
-        if (!hasAdminRole && !isDevAdmin) {
+        if (!hasAdminRole) {
             console.warn(`verifyAdmin: Access denied for ${user.email}`);
             throw new Error("Forbidden: Admin access required");
         }
