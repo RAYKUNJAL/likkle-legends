@@ -1,0 +1,37 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="oceanGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00B4D8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0077B6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="islandGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2D6A4F;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1B4332;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Ocean background -->
+  <rect width="400" height="300" fill="url(#oceanGradient)"/>
+
+  <!-- Wave pattern -->
+  <path d="M0 150 Q50 140 100 150 T200 150 T300 150 T400 150 L400 300 L0 300 Z" fill="#0096C7" opacity="0.3"/>
+
+  <!-- Islands -->
+  <circle cx="100" cy="120" r="45" fill="url(#islandGradient)"/>
+  <circle cx="200" cy="100" r="50" fill="url(#islandGradient)"/>
+  <circle cx="300" cy="130" r="40" fill="url(#islandGradient)"/>
+
+  <!-- Palm trees -->
+  <ellipse cx="100" cy="80" rx="3" ry="15" fill="#8B4513"/>
+  <circle cx="100" cy="70" r="8" fill="#228B22"/>
+
+  <ellipse cx="200" cy="50" rx="3" ry="18" fill="#8B4513"/>
+  <circle cx="200" cy="35" r="10" fill="#228B22"/>
+
+  <ellipse cx="300" cy="90" rx="3" ry="12" fill="#8B4513"/>
+  <circle cx="300" cy="82" r="6" fill="#228B22"/>
+
+  <!-- Sun -->
+  <circle cx="350" cy="40" r="25" fill="#FFD700"/>
+  <circle cx="350" cy="40" r="20" fill="#FFA500" opacity="0.7"/>
+</svg>
