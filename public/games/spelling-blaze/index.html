@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Blaze</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+        }
+        
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        .game-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .level-badge {
+            display: inline-block;
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .game-content {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .word-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 20px 0;
+            font-style: italic;
+        }
+        
+        .timer {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ef4444;
+            margin: 10px 0;
+        }
+        
+        .input-group {
+            margin: 30px 0;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #ef4444;
+        }
+        
+        input[type="text"].correct {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+        
+        input[type="text"].incorrect {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .score-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 20px 0;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #ef4444;
+            color: white;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .btn-primary:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #1f2937;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+        
+        .instructions {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+        
+        .feedback {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 30px;
+        }
+        
+        .feedback.correct {
+            color: #10b981;
+        }
+        
+        .feedback.incorrect {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-icon">🔥</div>
+        <h1>Spelling Blaze</h1>
+        <div class="level-badge">Level 1 (Free Preview)</div>
+        
+        <div class="game-content">
+            <p style="margin-bottom: 20px; color: #4b5563;">
+                Spell the word correctly before time runs out!
+            </p>
+            
+            <div class="timer" id="timer">10s</div>
+            <div class="word-display" id="wordDisplay">---</div>
+            
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="spellInput" 
+                    placeholder="Type the word..." 
+                    autocomplete="off"
+                >
+                <div class="feedback" id="feedback"></div>
+            </div>
+            
+            <div class="score-display" id="scoreDisplay">Score: 0/5</div>
+            
+            <div class="instructions">
+                <strong>Game Rules:</strong> Type the word you see above. 
+                Spell 5 words correctly to complete the level!
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" id="completeBtn" disabled>
+                Complete Level
+            </button>
+            <button class="btn-secondary" id="quitBtn">
+                Quit Game
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        const words = [
+            'RAINBOW',
+            'CARNIVAL',
+            'TROPICAL',
+            'ISLAND',
+            'FESTIVAL'
+        ];
+        
+        let currentWordIndex = 0;
+        let correctSpellings = 0;
+        let timeLeft = 10;
+        let gameActive = true;
+        let timerInterval = null;
+        
+        function startWord() {
+            const word = words[currentWordIndex];
+            document.getElementById('wordDisplay').textContent = word;
+            document.getElementById('spellInput').value = '';
+            document.getElementById('spellInput').focus();
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('spellInput').classList.remove('correct', 'incorrect');
+            
+            timeLeft = 10;
+            updateTimer();
+            startTimer();
+        }
+        
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                if (timeLeft <= 0) {
+                    checkSpelling(true);
+                }
+            }, 1000);
+        }
+        
+        function updateTimer() {
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = timeLeft + 's';
+            if (timeLeft <= 3) {
+                timerEl.style.color = '#dc2626';
+            } else {
+                timerEl.style.color = '#ef4444';
+            }
+        }
+        
+        function checkSpelling(timeout = false) {
+            clearInterval(timerInterval);
+            const input = document.getElementById('spellInput').value.toUpperCase();
+            const correctWord = words[currentWordIndex];
+            
+            const inputField = document.getElementById('spellInput');
+            const feedback = document.getElementById('feedback');
+            
+            if (timeout || input !== correctWord) {
+                inputField.classList.add('incorrect');
+                feedback.classList.add('incorrect');
+                feedback.textContent = timeout ? 'Time\'s up! ❌' : 'Incorrect! ❌';
+            } else {
+                inputField.classList.add('correct');
+                feedback.classList.add('correct');
+                feedback.textContent = 'Correct! ✅';
+                correctSpellings++;
+                updateScore();
+            }
+            
+            inputField.disabled = true;
+            
+            setTimeout(() => {
+                currentWordIndex++;
+                if (currentWordIndex >= words.length) {
+                    completeLevel();
+                } else {
+                    inputField.disabled = false;
+                    startWord();
+                }
+            }, 1500);
+        }
+        
+        function updateScore() {
+            document.getElementById('scoreDisplay').textContent = `Score: ${correctSpellings}/5`;
+            if (correctSpellings === 5) {
+                document.getElementById('completeBtn').disabled = false;
+                document.getElementById('completeBtn').textContent = 'Level Complete! 🎉';
+            }
+        }
+        
+        document.getElementById('spellInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkSpelling();
+            }
+        });
+        
+        document.getElementById('completeBtn').addEventListener('click', () => {
+            completeLevel();
+        });
+        
+        document.getElementById('quitBtn').addEventListener('click', () => {
+            clearInterval(timerInterval);
+            quitGame();
+        });
+        
+        function completeLevel() {
+            clearInterval(timerInterval);
+            window.parent.postMessage({
+                type: 'level_complete',
+                level: 1,
+                score: correctSpellings * 20,
+                gameState: {
+                    wordsCorrect: correctSpellings,
+                    totalWords: words.length
+                }
+            }, '*');
+        }
+        
+        function quitGame() {
+            window.parent.postMessage({
+                type: 'game_quit'
+            }, '*');
+        }
+        
+        window.addEventListener('load', () => {
+            startWord();
+            console.log('Spelling Blaze game loaded');
+        });
+    </script>
+</body>
+</html>

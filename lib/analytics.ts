@@ -112,3 +112,76 @@ export function useScrollTracking() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 }
+
+/**
+ * Game-specific analytics events
+ */
+export const gameAnalyticsEvents = {
+    gameStarted: (gameId: string, userType: 'guest' | 'authenticated', sessionId?: string) => {
+        trackEvent('game_started', {
+            game_id: gameId,
+            user_type: userType,
+            session_id: sessionId,
+            timestamp: new Date().toISOString(),
+        });
+    },
+
+    gameLevelCompleted: (gameId: string, level: number, sessionId?: string) => {
+        trackEvent('game_level_completed', {
+            game_id: gameId,
+            level,
+            session_id: sessionId,
+            timestamp: new Date().toISOString(),
+        });
+    },
+
+    gameScoreEarned: (gameId: string, score: number, level: number, sessionId?: string) => {
+        trackEvent('game_score', {
+            game_id: gameId,
+            score,
+            level,
+            session_id: sessionId,
+            timestamp: new Date().toISOString(),
+        });
+    },
+
+    gameQuit: (gameId: string, timePlayedMinutes: number, finalLevel: number, finalScore: number, sessionId?: string) => {
+        trackEvent('game_quit', {
+            game_id: gameId,
+            time_played_minutes: timePlayedMinutes,
+            final_level: finalLevel,
+            final_score: finalScore,
+            session_id: sessionId,
+            timestamp: new Date().toISOString(),
+        });
+    },
+
+    paywallShown: (gameId: string, reason: 'level_complete' | 'premium_game' | 'guest_session', sessionId?: string) => {
+        trackEvent('game_upgrade_prompt_shown', {
+            game_id: gameId,
+            reason,
+            session_id: sessionId,
+            timestamp: new Date().toISOString(),
+        });
+    },
+
+    paywallClicked: (gameId: string, action: 'subscribe' | 'skip' | 'try_trial', sessionId?: string) => {
+        trackEvent('game_upgrade_clicked', {
+            game_id: gameId,
+            action,
+            session_id: sessionId,
+            timestamp: new Date().toISOString(),
+        });
+    },
+
+    guestConverted: (gameId: string, durationMinutes: number, finalLevel: number, finalScore: number, sessionId?: string) => {
+        trackEvent('guest_converted', {
+            game_id: gameId,
+            duration_minutes: durationMinutes,
+            final_level: finalLevel,
+            final_score: finalScore,
+            session_id: sessionId,
+            timestamp: new Date().toISOString(),
+        });
+    },
+};

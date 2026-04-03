@@ -5,6 +5,7 @@ import { NavbarV2 } from "@/components/landing-v2/NavbarV2";
 import { Hero } from "@/components/landing-v3/Hero";
 import { TantyRadioSection } from "@/components/landing-v3/TantyRadioSection";
 import { MeetTheLegends } from "@/components/landing-v3/MeetTheLegends";
+import { GamePreviewCards } from "@/components/landing-v3/GamePreviewCards";
 import { BlogPreview } from "@/components/landing-v3/BlogPreview";
 import { WaitlistModal } from "@/components/landing-v3/WaitlistModal";
 
@@ -83,6 +84,9 @@ export default function LandingPage() {
 
                 {/* V3 Character Section with Real Assets */}
                 <MeetTheLegends onOpenWaitlist={() => setIsWaitlistOpen(true)} />
+
+                {/* Game Preview Cards - "See Inside" */}
+                <GamePreviewCards />
 
                 {/* Preserved V2 Sections */}
                 <PhysicalDigitalBridge />
