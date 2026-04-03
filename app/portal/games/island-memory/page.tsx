@@ -1,10 +1,7 @@
 "use client";
 
 import IslandMemory from '@/components/games/IslandMemory';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-
+import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
 import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
 import { recordGameResult } from '@/lib/game-progress';
@@ -17,7 +14,6 @@ export default function IslandMemoryPage() {
 
         if (!user || !activeChild) return;
         try {
-            // Log the game activity with the score as XP (capped at 200)
             const xp = Math.min(score, 200);
             await logActivity(
                 user.id,
@@ -34,27 +30,16 @@ export default function IslandMemoryPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-[#0A1628] via-[#0D2137] to-[#134A6E] p-4 md:p-8 flex flex-col relative">
-            <style jsx global>{`
-                .game-page-header {
-                    background: linear-gradient(135deg, rgba(255, 210, 63, 0.1), rgba(255, 107, 53, 0.1));
-                    border-bottom: 2px solid rgba(255, 210, 63, 0.2);
-                }
-            `}</style>
-
-            <header className="game-page-header max-w-7xl mx-auto w-full mb-8 pb-6 rounded-lg">
-                <Link
-                    href="/portal/games"
-                    className="inline-flex items-center gap-2 text-[#FFD23F] hover:text-[#FF6B35] transition-colors font-bold text-lg"
-                >
-                    <ArrowLeft size={20} />
-                    ← Back to Games
-                </Link>
-            </header>
-
-            <div className="flex-1 max-w-4xl mx-auto w-full">
-                <IslandMemory onComplete={handleComplete} />
-            </div>
-        </div>
+        <GameLayoutWrapper
+            gameId="island-memory"
+            title="Island Memory Match"
+            description="Flip cards and match Caribbean fruits, animals, and landmarks to test your memory!"
+            learningFocus="Visual memory, concentration, island vocabulary"
+            characterBadge={{ emoji: '🦋', name: 'Mango Moko', color: '#69F0AE' }}
+            xpReward={200}
+            gradient="from-emerald-400 via-green-500 to-teal-600"
+        >
+            <IslandMemory onComplete={handleComplete} />
+        </GameLayoutWrapper>
     );
 }
