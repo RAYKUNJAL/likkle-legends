@@ -150,7 +150,27 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
     };
 
     const drawVisualizer = () => {
-        if (!canvasRef.current || !analyzerRef.current) return;
+        if (!canvasRef.current) return;
+        if (!analyzerRef.current) {
+            // Cross-origin: draw idle sparkle animation only
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            const sparkle = () => {
+                animationFrameRef.current = requestAnimationFrame(sparkle);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < 20; i++) {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.15})`;
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height;
+                    ctx.beginPath();
+                    ctx.arc(x, y, Math.random() * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            };
+            sparkle();
+            return;
+        }
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
@@ -565,8 +585,11 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
             {/* Hidden audio element */}
             {!isVideo && currentTrack && (
                 <audio
+                    key={currentTrack.id}
                     ref={audioRef}
-                    src={currentTrack?.url}
+                    src={currentTrack.url}
+                    preload="auto"
+                    referrerPolicy="no-referrer"
                     onEnded={handleNextTrack}
                     onError={handleMediaError}
                 />
