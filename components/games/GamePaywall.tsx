@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { GameConfig } from '@/lib/game-config';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { X, CheckCircle, Zap } from 'lucide-react';
 
 interface GamePaywallProps {
