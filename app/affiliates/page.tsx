@@ -30,9 +30,26 @@ export default function AffiliatesPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // In production, submit to backend
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    try {
+      const res = await fetch('/api/affiliates/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setSubmitted(true);
+        setFormData({ full_name: '', email: '', paypal_email: '', instagram: '' });
+        setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (err) {
+      alert('Submission failed. Please try again.');
+      console.error(err);
+    }
   }
 
   return (

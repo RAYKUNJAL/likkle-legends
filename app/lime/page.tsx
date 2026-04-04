@@ -27,6 +27,7 @@ const MARKETPLACE_ITEMS = [
 export default function LimeMarketplace() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
+  const [loading, setLoading] = useState(false);
 
   const filteredItems = MARKETPLACE_ITEMS.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(search.toLowerCase());
@@ -120,12 +121,33 @@ export default function LimeMarketplace() {
                   <div style={{ fontSize: 14, fontWeight: 700, color: G.accent }}>{item.price}</div>
                   <div style={{ fontSize: 11, color: G.muted }}>⭐ {item.rating}</div>
                 </div>
-                <button style={{
-                  width: "100%", padding: 10, background: G.accent, border: "none",
-                  borderRadius: 8, color: "#000", fontWeight: 700, fontSize: 12,
-                  cursor: "pointer", fontFamily: "inherit"
-                }}>
-                  Add to Cart
+                <button
+                  onClick={async () => {
+                    setLoading(true);
+                    try {
+                      const res = await fetch('/api/marketplace/checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ product_id: item.id, payment_method: 'stripe' }),
+                      });
+                      const data = await res.json();
+                      if (data.client_secret) {
+                        window.location.href = `/checkout?order_id=${data.order_id}&client_secret=${data.client_secret}`;
+                      }
+                    } catch (err) {
+                      alert('Checkout failed');
+                    }
+                    setLoading(false);
+                  }}
+                  disabled={loading}
+                  style={{
+                    width: "100%", padding: 10, background: G.accent, border: "none",
+                    borderRadius: 8, color: "#000", fontWeight: 700, fontSize: 12,
+                    cursor: loading ? "not-allowed" : "pointer", fontFamily: "inherit",
+                    opacity: loading ? 0.6 : 1,
+                  }}
+                >
+                  {loading ? "Processing..." : "Buy Now"}
                 </button>
               </div>
             ))}
