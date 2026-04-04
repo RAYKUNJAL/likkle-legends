@@ -17,5 +17,17 @@
     "additionalDirectories": [
       "c:\\Users\\RAY\\.claude\\projects\\c--Users-RAY-OneDrive-Documents-GitHub-likkle-legends\\memory"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh"
+          }
+        ]
+      }
+    ]
   }
 }
