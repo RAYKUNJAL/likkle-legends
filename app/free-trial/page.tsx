@@ -91,8 +91,14 @@ export default function FreeTrialPage() {
         if (typeof window !== 'undefined' && (window as any).fbq) {
           (window as any).fbq('track', 'Lead', { content_name: 'free_trial_signup', currency: 'USD', value: 0 });
         }
-        // Redirect to portal after 2s
-        setTimeout(() => router.push('/portal'), 2000);
+        // Use magic link to establish session — plain router.push has no session cookie
+        setTimeout(() => {
+          if (data.magicLink) {
+            window.location.href = data.magicLink;
+          } else {
+            router.push('/portal');
+          }
+        }, 2000);
       } else {
         // If account already exists, redirect to login
         if (data.error?.includes('already') || data.error?.includes('exists')) {

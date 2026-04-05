@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
     const { data: linkData } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email,
-      options: { redirectTo: `${siteUrl}/portal` },
+      options: { redirectTo: `${siteUrl}/api/auth/callback?next=/portal` },
     });
 
     return NextResponse.json({
