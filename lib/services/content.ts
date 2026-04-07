@@ -153,7 +153,7 @@ export const updatePrintable = (id: string, data: any) => supabase.from('printab
 export const deletePrintable = (id: string) => supabase.from('printables').delete().eq('id', id);
 
 // Support for other tables that might still exist or be added
-export async function getGames() {
+export async function .select(...) {
     if (!isSupabaseConfigured()) {
         return [];
     }
