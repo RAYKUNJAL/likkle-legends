@@ -31,7 +31,7 @@ export interface GenerationOptions {
 
 export class ContentGenerator {
     // COMMERCIAL UPGRADE: Using Gemini 2.5 Pro as primary for highest quality content
-    private defaultModel = 'gemini-2.5-pro';
+    private defaultModel = 'gemini-1.5-flash';
 
     /**
      * Generate text content using Gemini with Timeout Protection
