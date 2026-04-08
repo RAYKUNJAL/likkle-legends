@@ -61,7 +61,7 @@ export class ContentGenerator {
                             temperature: options?.temperature || 0.9,
                             // Increased token limit for complex content 
                             maxOutputTokens: options?.maxTokens || 8192,
-                            responseMimeType: options?.responseMimeType || 'text/plain', // Use configured MIME type
+                            
                         }
                     });
 
@@ -113,7 +113,7 @@ export class ContentGenerator {
 
             text = await this.generateText(fullPrompt, {
                 ...options,
-                responseMimeType: 'application/json' // FORCE JSON MODE
+                
             });
             console.log("--- RAW GEMINI RESPONSE START ---");
             console.log(text);
