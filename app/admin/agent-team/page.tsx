@@ -2,193 +2,275 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
 interface Agent {
-  id: string; name: string; role: string;
-  tier: 'orchestrator' | 'specialist' | 'growth' | 'retention';
-  description: string; model: string;
-  status: 'active' | 'standby' | 'needs_setup' | 'error';
-  lastRun: string; capabilities: string[];
-  triggerAction: string | null; icon: string; color: string; badge?: string;
+  id: string; key: string; name: string; role: string;
+  model: string | null; status: string; tier: string | null;
+  description: string | null; capabilities: string[];
+  auto_trigger: boolean; run_count: number; pending_approvals: number;
+  updated_at: string;
 }
 
-interface AgentLog {
-  id: string; agent_id: string; agent_name: string;
-  action: string; status: 'started' | 'success' | 'error';
-  summary: string | null; details: Record<string, unknown>;
-  duration_ms: number | null; triggered_by: string;
+interface ActivityRow {
+  id: string; created_at: string; agent_key: string; task_type: string | null;
+  subject: string | null; action_summary: string; outcome: string;
+  severity: string; requires_attention: boolean;
+  linked_task_id: string | null; linked_run_id: string | null; meta: Record<string, unknown>;
+}
+
+interface TaskRow {
+  id: string; type: string; priority: string; status: string;
+  created_by: string; assigned_to: string; subject: string | null;
+  approval_required: boolean; created_at: string; updated_at: string;
+  error: { message: string } | null;
+}
+
+interface Approval {
+  id: string; task_id: string; approval_type: string; status: string;
+  requested_by: string; action_summary: string | null; risk_level: string;
   created_at: string;
 }
 
-interface TriggerState { [agentId: string]: 'idle' | 'loading' | 'success' | 'error'; }
+interface RunStats { total: number; success_runs: number; failed_runs: number; pending_approvals: number; }
 
-const TIER_META: Record<string, { label: string; description: string; order: number }> = {
-  orchestrator: { label: '🧩 Tier 1 — Orchestrators', description: 'Master coordinators that route tasks and manage sub-agents', order: 0 },
-  specialist:   { label: '🎓 Tier 2 — Content Specialists', description: 'Deep domain experts generating stories, blogs, and curriculum', order: 1 },
-  growth:       { label: '📈 Tier 3 — Growth & Marketing', description: 'Paid ads, organic social, and creative production', order: 2 },
-  retention:    { label: '💰 Tier 4 — Retention & Revenue', description: 'Email nurture, analytics, and conversion optimisation', order: 3 },
+// ─── Constants ────────────────────────────────────────────────────────────────
+const TIER_ORDER = ['orchestrator', 'operations', 'specialist', 'growth', 'retention'];
+const TIER_META: Record<string, { label: string; color: string }> = {
+  orchestrator: { label: '🧩 Orchestrators',       color: '#8B5CF6' },
+  operations:   { label: '⚙️ Operations Layer',     color: '#3B82F6' },
+  specialist:   { label: '🎓 Content Specialists',  color: '#F59E0B' },
+  growth:       { label: '📈 Growth & Marketing',   color: '#EF4444' },
+  retention:    { label: '💰 Retention & Revenue',  color: '#10B981' },
 };
-
-const STATUS_CONFIG = {
-  active:      { label: 'Active',      dot: 'bg-emerald-400', text: 'text-emerald-400', ring: 'ring-emerald-400/30' },
-  standby:     { label: 'Standby',     dot: 'bg-amber-400',   text: 'text-amber-400',   ring: 'ring-amber-400/30' },
-  needs_setup: { label: 'Needs Setup', dot: 'bg-red-400',     text: 'text-red-400',     ring: 'ring-red-400/30' },
-  error:       { label: 'Error',       dot: 'bg-red-500',     text: 'text-red-500',     ring: 'ring-red-500/30' },
+const STATUS_DOT: Record<string, string> = {
+  active:      'bg-emerald-400 animate-pulse',
+  standby:     'bg-amber-400',
+  needs_setup: 'bg-red-400',
+  error:       'bg-red-500',
 };
-
-const LOG_STATUS_CONFIG = {
-  started: { icon: '⏳', color: 'text-amber-400',   bg: 'bg-amber-400/10',   border: 'border-amber-400/20' },
-  success: { icon: '✅', color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
-  error:   { icon: '❌', color: 'text-red-400',     bg: 'bg-red-400/10',     border: 'border-red-400/20' },
+const STATUS_TEXT: Record<string, string> = {
+  active: 'text-emerald-400', standby: 'text-amber-400',
+  needs_setup: 'text-red-400', error: 'text-red-500',
+};
+const SEVERITY_CONFIG: Record<string, { bg: string; border: string; icon: string }> = {
+  info:     { bg: 'bg-blue-400/8',    border: 'border-blue-400/20',    icon: 'ℹ️' },
+  warning:  { bg: 'bg-amber-400/10',  border: 'border-amber-400/20',   icon: '⚠️' },
+  error:    { bg: 'bg-red-400/10',    border: 'border-red-400/20',     icon: '❌' },
+  critical: { bg: 'bg-red-600/15',    border: 'border-red-600/30',     icon: '🚨' },
+};
+const OUTCOME_COLOR: Record<string, string> = {
+  success: 'text-emerald-400', error: 'text-red-400', failed: 'text-red-400',
+  awaiting_approval: 'text-amber-400', approved: 'text-emerald-400', denied: 'text-red-400',
 };
 
 function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const s = Math.floor(diff / 1000);
-  if (s < 60) return `${s}s ago`;
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (d < 60) return `${d}s ago`;
+  if (d < 3600) return `${Math.floor(d/60)}m ago`;
+  if (d < 86400) return `${Math.floor(d/3600)}h ago`;
+  return `${Math.floor(d/86400)}d ago`;
 }
 
-function AgentCard({ agent, triggerState, onTrigger, onLaunchManus }: {
-  agent: Agent; triggerState: TriggerState;
-  onTrigger: (a: Agent) => void; onLaunchManus: () => void;
+// ─── Agent Card ───────────────────────────────────────────────────────────────
+function AgentCard({ agent, triggering, onTrigger }: {
+  agent: Agent; triggering: boolean; onTrigger: (key: string) => void;
 }) {
-  const status = STATUS_CONFIG[agent.status];
-  const tState = triggerState[agent.id] || 'idle';
+  const tierColor = TIER_META[agent.tier || '']?.color || '#6366F1';
   return (
-    <div className="relative bg-[#0D1B35] border border-white/10 rounded-2xl p-5 flex flex-col gap-4 hover:border-white/20 transition-all"
-      style={{ boxShadow: `0 0 0 1px ${agent.color}15` }}>
-      {agent.badge && (
-        <div className="absolute top-3 right-3">
-          <span className="text-xs font-bold px-2 py-1 rounded-full bg-red-500/20 text-red-300 border border-red-500/30 animate-pulse">{agent.badge}</span>
-        </div>
-      )}
+    <div className="bg-[#0D1B35] border border-white/10 rounded-2xl p-4 flex flex-col gap-3 hover:border-white/20 transition-all"
+      style={{ boxShadow: `0 0 0 1px ${tierColor}12` }}>
       <div className="flex items-start gap-3">
-        <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0"
-          style={{ background: `${agent.color}22`, border: `1px solid ${agent.color}44` }}>{agent.icon}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-white font-bold text-sm">{agent.name}</h3>
-            <span className={`flex items-center gap-1 text-xs font-medium ring-1 px-2 py-0.5 rounded-full ${status.text} ${status.ring}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${status.dot} ${agent.status === 'active' ? 'animate-pulse' : ''}`} />
-              {status.label}
+            <span className="text-white font-bold text-sm">{agent.name}</span>
+            <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded-full ring-1 ring-current ${STATUS_TEXT[agent.status] || 'text-white/40'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[agent.status] || 'bg-white/40'}`} />
+              {agent.status.replace('_', ' ')}
             </span>
+            {agent.pending_approvals > 0 && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                {agent.pending_approvals} pending
+              </span>
+            )}
           </div>
-          <p className="text-white/50 text-xs mt-0.5">{agent.role}</p>
+          <p className="text-white/40 text-xs mt-0.5">{agent.role}</p>
         </div>
       </div>
-      <p className="text-white/60 text-xs leading-relaxed line-clamp-3">{agent.description}</p>
-      <div className="flex items-center justify-between text-xs text-white/40 border-t border-white/5 pt-3">
-        <span className="font-mono bg-white/5 px-2 py-0.5 rounded">{agent.model}</span>
-        <span>Last: {agent.lastRun}</span>
+
+      {agent.description && (
+        <p className="text-white/55 text-xs leading-relaxed line-clamp-2">{agent.description}</p>
+      )}
+
+      <div className="flex items-center justify-between text-xs text-white/30 border-t border-white/5 pt-2">
+        <span className="font-mono bg-white/5 px-2 py-0.5 rounded truncate max-w-[120px]">{agent.model || '—'}</span>
+        <span className="tabular-nums">{agent.run_count} runs</span>
       </div>
-      <div className="flex flex-wrap gap-1">
-        {agent.capabilities.slice(0, 4).map(cap => (
-          <span key={cap} className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-white/40">{cap.replace(/_/g, ' ')}</span>
-        ))}
-        {agent.capabilities.length > 4 && (
-          <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-white/30">+{agent.capabilities.length - 4} more</span>
-        )}
-      </div>
-      {agent.triggerAction ? (
-        <button onClick={() => agent.id === 'manus-ad-manager' ? onLaunchManus() : onTrigger(agent)}
-          disabled={tState === 'loading'}
-          className="w-full py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{
-            background: tState === 'success' ? '#10B98122' : tState === 'error' ? '#EF444422' : `${agent.color}22`,
-            color: tState === 'success' ? '#10B981' : tState === 'error' ? '#EF4444' : agent.color,
-            border: `1px solid ${tState === 'success' ? '#10B98144' : tState === 'error' ? '#EF444444' : `${agent.color}44`}`,
-          }}>
-          {tState === 'loading' ? '⏳ Running...' : tState === 'success' ? '✓ Done!' : tState === 'error' ? '✗ Failed — retry'
-            : agent.id === 'manus-ad-manager' ? '🚀 Launch Manus' : '▶ Trigger Agent'}
+
+      {agent.status !== 'needs_setup' ? (
+        <button onClick={() => onTrigger(agent.key)} disabled={triggering}
+          className="w-full py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-40"
+          style={{ background: `${tierColor}20`, color: tierColor, border: `1px solid ${tierColor}40` }}>
+          {triggering ? '⏳ Running...' : '▶ Run Agent'}
         </button>
       ) : (
-        <div className="w-full py-2.5 rounded-xl text-xs text-center text-white/20 bg-white/5 border border-white/5">
-          Always-on — no manual trigger needed
+        <div className="w-full py-2 rounded-xl text-xs text-center text-red-400/60 bg-red-500/5 border border-red-500/20">
+          ⚙️ Setup required
         </div>
       )}
     </div>
   );
 }
 
-function LiveActivityLog({ logs, loading, onRefresh }: {
-  logs: AgentLog[]; loading: boolean; onRefresh: () => void;
+// ─── Task Board ───────────────────────────────────────────────────────────────
+function TaskBoard({ tasks }: { tasks: Record<string, TaskRow[]> }) {
+  const cols = [
+    { key: 'queued',            label: 'Queued',            color: 'text-white/50' },
+    { key: 'running',           label: 'Running',           color: 'text-blue-400' },
+    { key: 'awaiting_approval', label: 'Awaiting Approval', color: 'text-amber-400' },
+    { key: 'failed',            label: 'Failed',            color: 'text-red-400' },
+    { key: 'done',              label: 'Done',              color: 'text-emerald-400' },
+  ];
+  const total = Object.values(tasks).flat().length;
+  return (
+    <div className="bg-[#0D1B35] border border-white/10 rounded-2xl p-6">
+      <div className="flex items-center gap-3 mb-5">
+        <h2 className="text-white font-black">📋 Task Board</h2>
+        <span className="text-xs text-white/30 bg-white/5 px-2 py-0.5 rounded-full">{total} tasks</span>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {cols.map(col => (
+          <div key={col.key}>
+            <div className={`text-xs font-bold mb-2 ${col.color}`}>
+              {col.label} <span className="opacity-60">({(tasks[col.key] || []).length})</span>
+            </div>
+            <div className="space-y-1.5">
+              {(tasks[col.key] || []).length === 0 ? (
+                <div className="text-white/20 text-xs italic py-2">empty</div>
+              ) : (
+                (tasks[col.key] || []).slice(0, 5).map(t => (
+                  <div key={t.id} className="bg-white/5 border border-white/5 rounded-lg p-2">
+                    <p className="text-white/70 text-xs font-medium truncate">{t.type.replace(/manual_trigger\./,'').replace(/_/g,' ')}</p>
+                    <p className="text-white/30 text-xs">{t.assigned_to} · {timeAgo(t.updated_at)}</p>
+                    {t.error && <p className="text-red-400 text-xs mt-1 truncate">{t.error.message}</p>}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Approval Center ──────────────────────────────────────────────────────────
+function ApprovalCenter({ approvals, onDecide }: {
+  approvals: Approval[]; onDecide: (id: string, decision: 'approved' | 'denied') => void;
+}) {
+  if (approvals.length === 0) return null;
+  return (
+    <div className="bg-[#0D1B35] border border-amber-500/30 rounded-2xl p-6">
+      <div className="flex items-center gap-3 mb-5">
+        <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+        <h2 className="text-amber-300 font-black">⚡ Approval Center</h2>
+        <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30">
+          {approvals.length} pending
+        </span>
+      </div>
+      <div className="space-y-3">
+        {approvals.map(a => (
+          <div key={a.id} className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className="text-white font-semibold text-sm">{a.requested_by.replace('-', ' ')}</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/50">{a.approval_type}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${a.risk_level === 'high' ? 'bg-red-500/20 text-red-300' : 'bg-amber-500/20 text-amber-300'}`}>
+                  {a.risk_level} risk
+                </span>
+              </div>
+              {a.action_summary && <p className="text-white/60 text-xs">{a.action_summary}</p>}
+              <p className="text-white/30 text-xs mt-1">{timeAgo(a.created_at)}</p>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <button onClick={() => onDecide(a.id, 'denied')}
+                className="px-4 py-2 rounded-lg text-xs font-bold bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 transition">
+                ✗ Deny
+              </button>
+              <button onClick={() => onDecide(a.id, 'approved')}
+                className="px-4 py-2 rounded-lg text-xs font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25 transition">
+                ✓ Approve
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Activity Stream ──────────────────────────────────────────────────────────
+function ActivityStream({ logs, loading, onRefresh }: {
+  logs: ActivityRow[]; loading: boolean; onRefresh: () => void;
 }) {
   const [expanded, setExpanded] = useState<string | null>(null);
-
-  if (loading && logs.length === 0) {
-    return (
-      <div className="bg-[#0D1B35] border border-white/10 rounded-2xl p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <h2 className="text-white font-bold text-sm">Live Activity Log</h2>
-        </div>
-        <div className="text-white/30 text-sm text-center py-8">Loading agent history...</div>
-      </div>
-    );
-  }
+  const attentionCount = logs.filter(l => l.requires_attention).length;
 
   return (
     <div className="bg-[#0D1B35] border border-white/10 rounded-2xl p-6">
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <h2 className="text-white font-bold">Live Activity Log</h2>
-          <span className="text-xs text-white/30 bg-white/5 px-2 py-0.5 rounded-full">{logs.length} entries</span>
+          <h2 className="text-white font-black">Live Activity Stream</h2>
+          <span className="text-xs text-white/30 bg-white/5 px-2 py-0.5 rounded-full">{logs.length}</span>
+          {attentionCount > 0 && (
+            <span className="text-xs bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full border border-red-500/30">
+              {attentionCount} need attention
+            </span>
+          )}
         </div>
         <button onClick={onRefresh} disabled={loading}
-          className="text-xs text-white/40 hover:text-white/70 transition flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg">
+          className="text-xs text-white/40 hover:text-white/70 transition bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg">
           {loading ? '↻ Refreshing...' : '↻ Refresh'}
         </button>
       </div>
 
       {logs.length === 0 ? (
-        <div className="text-center py-12 space-y-3">
+        <div className="text-center py-16 space-y-3">
           <div className="text-4xl">🤖</div>
-          <p className="text-white/40 text-sm">No agent activity yet.</p>
-          <p className="text-white/25 text-xs max-w-sm mx-auto">
-            Trigger an agent above or wait for the Monday 9AM cron to run. All activity will appear here with full details.
-          </p>
+          <p className="text-white/40">Awaiting first successful run</p>
+          <p className="text-white/25 text-xs max-w-xs mx-auto">Trigger an agent above. Every action writes a permanent record here.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {logs.map(log => {
-            const cfg = LOG_STATUS_CONFIG[log.status];
+            const cfg = SEVERITY_CONFIG[log.severity] || SEVERITY_CONFIG.info;
+            const hasDetails = log.meta && Object.keys(log.meta).length > 0;
             const isOpen = expanded === log.id;
-            const hasDetails = log.details && Object.keys(log.details).length > 0;
             return (
               <div key={log.id} className={`rounded-xl border ${cfg.border} ${cfg.bg} overflow-hidden`}>
                 <button className="w-full flex items-start gap-3 p-3 text-left"
                   onClick={() => hasDetails && setExpanded(isOpen ? null : log.id)}>
-                  <span className="text-sm mt-0.5 shrink-0">{cfg.icon}</span>
+                  <span className="text-sm shrink-0 mt-0.5">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-xs font-bold ${cfg.color}`}>{log.agent_name}</span>
-                      <span className="text-white/30 text-xs">·</span>
-                      <span className="text-white/50 text-xs">{log.action.replace(/_/g, ' ')}</span>
-                      {log.triggered_by === 'manual' && (
-                        <span className="text-xs px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/20">manual</span>
-                      )}
+                      <span className="text-white/80 text-xs font-semibold">{log.agent_key.replace(/-/g,' ')}</span>
+                      {log.task_type && <span className="text-white/30 text-xs">· {log.task_type.replace(/_/g,' ')}</span>}
+                      <span className={`text-xs font-bold ml-auto ${OUTCOME_COLOR[log.outcome] || 'text-white/40'}`}>{log.outcome}</span>
                     </div>
-                    {log.summary && <p className="text-white/60 text-xs mt-1 leading-relaxed">{log.summary}</p>}
+                    <p className="text-white/60 text-xs mt-0.5 leading-relaxed">{log.action_summary}</p>
+                    {log.requires_attention && (
+                      <span className="text-xs text-red-300 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded-full mt-1 inline-block">needs attention</span>
+                    )}
                   </div>
-                  <div className="shrink-0 text-right">
-                    <div className="text-white/30 text-xs">{timeAgo(log.created_at)}</div>
-                    {log.duration_ms != null && (
-                      <div className="text-white/20 text-xs">{log.duration_ms < 1000 ? `${log.duration_ms}ms` : `${(log.duration_ms / 1000).toFixed(1)}s`}</div>
-                    )}
-                    {hasDetails && (
-                      <div className="text-white/20 text-xs mt-1">{isOpen ? '▲ less' : '▼ details'}</div>
-                    )}
+                  <div className="shrink-0 text-right ml-3">
+                    <div className="text-white/25 text-xs">{timeAgo(log.created_at)}</div>
+                    {hasDetails && <div className="text-white/20 text-xs mt-0.5">{isOpen ? '▲' : '▼'}</div>}
                   </div>
                 </button>
                 {isOpen && hasDetails && (
                   <div className="border-t border-white/10 p-3">
-                    <pre className="text-xs text-white/40 font-mono whitespace-pre-wrap overflow-x-auto">
-                      {JSON.stringify(log.details, null, 2)}
+                    <pre className="text-xs text-white/40 font-mono whitespace-pre-wrap overflow-x-auto max-h-48">
+                      {JSON.stringify(log.meta, null, 2)}
                     </pre>
                   </div>
                 )}
@@ -201,80 +283,83 @@ function LiveActivityLog({ logs, loading, onRefresh }: {
   );
 }
 
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function AgentTeamPage() {
-  const [agents, setAgents]           = useState<Agent[]>([]);
-  const [agentsLoading, setAgentsLoading] = useState(true);
-  const [triggerStates, setTriggerStates] = useState<TriggerState>({});
-  const [showManusModal, setShowManusModal] = useState(false);
-  const [filterTier, setFilterTier]   = useState<string>('all');
-  const [logs, setLogs]               = useState<AgentLog[]>([]);
-  const [logsLoading, setLogsLoading] = useState(true);
-  const [sessionLog, setSessionLog]   = useState<string[]>([]);
+  const [agents,     setAgents]     = useState<Agent[]>([]);
+  const [stats,      setStats]      = useState<RunStats>({ total: 0, success_runs: 0, failed_runs: 0, pending_approvals: 0 });
+  const [logs,       setLogs]       = useState<ActivityRow[]>([]);
+  const [tasks,      setTasks]      = useState<Record<string, TaskRow[]>>({});
+  const [approvals,  setApprovals]  = useState<Approval[]>([]);
+  const [triggering, setTriggering] = useState<Record<string, boolean>>({});
+  const [loading,    setLoading]    = useState({ agents: true, logs: true, tasks: true });
+  const [filterTier, setFilterTier] = useState('all');
+  const [activeTab,  setActiveTab]  = useState<'stream' | 'tasks' | 'approvals'>('stream');
 
-  const addSessionLog = (msg: string) =>
-    setSessionLog(prev => [`${new Date().toLocaleTimeString()} — ${msg}`, ...prev].slice(0, 10));
+  const fetchAgents = useCallback(async () => {
+    try {
+      const res  = await fetch('/api/admin/agents');
+      const data = await res.json();
+      if (data.agents) { setAgents(data.agents); setStats(data.stats); }
+    } catch { /* silent */ }
+    finally { setLoading(l => ({ ...l, agents: false })); }
+  }, []);
 
   const fetchLogs = useCallback(async () => {
-    setLogsLoading(true);
     try {
-      const res = await fetch('/api/admin/agent-logs?limit=50');
+      const res  = await fetch('/api/admin/agent-activity?limit=100');
       const data = await res.json();
       if (data.logs) setLogs(data.logs);
     } catch { /* silent */ }
-    finally { setLogsLoading(false); }
+    finally { setLoading(l => ({ ...l, logs: false })); }
   }, []);
 
-  useEffect(() => {
-    fetch('/api/admin/agents?action=status')
-      .then(r => r.json())
-      .then(data => { if (data.agents) setAgents(data.agents); })
-      .catch(() => {})
-      .finally(() => setAgentsLoading(false));
-  }, []);
-
-  useEffect(() => {
-    fetchLogs();
-    const interval = setInterval(fetchLogs, 30_000);
-    return () => clearInterval(interval);
-  }, [fetchLogs]);
-
-  const triggerAgent = async (agent: Agent) => {
-    if (!agent.triggerAction) return;
-    setTriggerStates(s => ({ ...s, [agent.id]: 'loading' }));
-    addSessionLog(`Triggering ${agent.name}...`);
+  const fetchTasks = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/agents', {
+      const [tasksRes, approvalsRes] = await Promise.all([
+        fetch('/api/admin/agent-tasks'),
+        fetch('/api/admin/approvals'),
+      ]);
+      const tasksData = await tasksRes.json();
+      const approvalsData = await approvalsRes.json();
+      if (tasksData.board) setTasks(tasksData.board);
+      if (approvalsData.approvals) setApprovals(approvalsData.approvals);
+    } catch { /* silent */ }
+    finally { setLoading(l => ({ ...l, tasks: false })); }
+  }, []);
+
+  useEffect(() => {
+    fetchAgents(); fetchLogs(); fetchTasks();
+    const interval = setInterval(() => { fetchLogs(); fetchTasks(); }, 30_000);
+    return () => clearInterval(interval);
+  }, [fetchAgents, fetchLogs, fetchTasks]);
+
+  const triggerAgent = async (key: string) => {
+    setTriggering(t => ({ ...t, [key]: true }));
+    try {
+      const res  = await fetch(`/api/admin/agents/${key}/trigger`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: agent.triggerAction, agentId: agent.id, params: { triggered_by: 'manual' } }),
+        body: JSON.stringify({ params: {} }),
       });
-      const data = await res.json();
-      if (data.success) {
-        setTriggerStates(s => ({ ...s, [agent.id]: 'success' }));
-        addSessionLog(`✓ ${agent.name} completed`);
-        setTimeout(fetchLogs, 2000);
-      } else {
-        setTriggerStates(s => ({ ...s, [agent.id]: 'error' }));
-        addSessionLog(`✗ ${agent.name} failed: ${data.error || 'Unknown error'}`);
-      }
-    } catch {
-      setTriggerStates(s => ({ ...s, [agent.id]: 'error' }));
-      addSessionLog(`✗ ${agent.name} — network error`);
-    }
-    setTimeout(() => setTriggerStates(s => ({ ...s, [agent.id]: 'idle' })), 4000);
+      await res.json();
+      setTimeout(() => { fetchLogs(); fetchTasks(); fetchAgents(); }, 2000);
+    } catch { /* silent */ }
+    finally { setTriggering(t => ({ ...t, [key]: false })); }
   };
 
-  const activeCount  = agents.filter(a => a.status === 'active').length;
-  const needsSetup   = agents.filter(a => a.status === 'needs_setup').length;
-  const tiers        = Object.entries(TIER_META).sort((a, b) => a[1].order - b[1].order);
-  const filteredAgents = filterTier === 'all' ? agents : agents.filter(a => a.tier === filterTier);
+  const decideApproval = async (id: string, decision: 'approved' | 'denied') => {
+    try {
+      await fetch(`/api/admin/approvals/${id}/${decision}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      fetchTasks(); fetchAgents();
+    } catch { /* silent */ }
+  };
 
-  const successCount = logs.filter(l => l.status === 'success').length;
-  const errorCount   = logs.filter(l => l.status === 'error').length;
-  const lastRunAt    = logs[0] ? timeAgo(logs[0].created_at) : 'Never';
+  const tiers = TIER_ORDER.filter(t => agents.some(a => a.tier === t));
+  const filteredAgents = filterTier === 'all' ? agents : agents.filter(a => a.tier === filterTier);
 
   return (
     <div className="min-h-screen bg-[#060D1F] text-white">
+      {/* Header */}
       <div className="border-b border-white/10 bg-[#0A1628]">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -282,109 +367,116 @@ export default function AgentTeamPage() {
               <div className="flex items-center gap-3 mb-1">
                 <a href="/admin/overview" className="text-white/40 hover:text-white text-sm transition">← Admin</a>
                 <span className="text-white/20">/</span>
-                <span className="text-white/60 text-sm">Agent Team</span>
+                <span className="text-white/60 text-sm">Agent OS</span>
               </div>
-              <h1 className="text-3xl font-black text-white">🤖 AI Agent Team</h1>
-              <p className="text-white/50 mt-1 text-sm">Your full squad of AI agents scaling Likkle Legends to $1M ARR</p>
+              <h1 className="text-3xl font-black text-white">🤖 Agent Operating System</h1>
+              <p className="text-white/40 mt-1 text-sm">16 agents · live Supabase state · no fake data</p>
             </div>
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="text-center">
-                <div className="text-2xl font-black text-emerald-400">{activeCount}</div>
-                <div className="text-xs text-white/40">Active</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-black text-blue-400">{successCount}</div>
-                <div className="text-xs text-white/40">Total Runs</div>
-              </div>
-              {errorCount > 0 && (
-                <div className="text-center">
-                  <div className="text-2xl font-black text-red-400">{errorCount}</div>
-                  <div className="text-xs text-white/40">Errors</div>
+            <div className="flex items-center gap-5 flex-wrap">
+              {[
+                { label: 'Total Runs',  value: stats.total,            color: 'text-white' },
+                { label: 'Succeeded',   value: stats.success_runs,     color: 'text-emerald-400' },
+                { label: 'Failed',      value: stats.failed_runs,      color: 'text-red-400' },
+                { label: 'Pending',     value: stats.pending_approvals, color: 'text-amber-400' },
+              ].map(s => (
+                <div key={s.label} className="text-center">
+                  <div className={`text-2xl font-black ${s.color}`}>{s.value}</div>
+                  <div className="text-xs text-white/30">{s.label}</div>
                 </div>
-              )}
-              <div className="text-center">
-                <div className="text-sm font-black text-white/60">{lastRunAt}</div>
-                <div className="text-xs text-white/40">Last Run</div>
-              </div>
-              <button onClick={() => setShowManusModal(true)}
-                className="px-5 py-2.5 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-400 hover:to-orange-400 rounded-xl font-bold text-sm transition shadow-lg shadow-red-500/20">
-                🚀 Launch Manus
-              </button>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-10">
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
-        {/* Tier Filter */}
-        <div className="flex flex-wrap gap-2">
-          {['all', 'orchestrator', 'specialist', 'growth', 'retention'].map(tier => (
-            <button key={tier} onClick={() => setFilterTier(tier)}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold transition ${
-                filterTier === tier ? 'bg-white text-[#060D1F]' : 'bg-white/10 text-white/60 hover:bg-white/20'
-              }`}>
-              {tier === 'all' ? '🌐 All Agents' : TIER_META[tier]?.label?.split(' — ')[0] || tier}
+        {/* Pending Approvals — always top if any */}
+        {approvals.length > 0 && (
+          <ApprovalCenter approvals={approvals} onDecide={decideApproval} />
+        )}
+
+        {/* Tier Filter + Agent Grid */}
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {['all', ...TIER_ORDER].map(tier => (
+              <button key={tier} onClick={() => setFilterTier(tier)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition ${filterTier === tier ? 'bg-white text-[#060D1F]' : 'bg-white/10 text-white/60 hover:bg-white/20'}`}>
+                {tier === 'all' ? '🌐 All' : TIER_META[tier]?.label || tier}
+              </button>
+            ))}
+          </div>
+
+          {loading.agents ? (
+            <div className="text-center py-16 text-white/30">Loading agents from database...</div>
+          ) : (
+            (filterTier === 'all' ? tiers : [filterTier]).map(tierKey => {
+              const tierAgents = filteredAgents.filter(a => a.tier === tierKey);
+              if (tierAgents.length === 0) return null;
+              return (
+                <div key={tierKey}>
+                  <h2 className="text-white/60 text-sm font-bold mb-3" style={{ color: TIER_META[tierKey]?.color }}>
+                    {TIER_META[tierKey]?.label || tierKey}
+                  </h2>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {tierAgents.map(agent => (
+                      <AgentCard key={agent.key} agent={agent}
+                        triggering={triggering[agent.key] || false}
+                        onTrigger={triggerAgent} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Tab switcher: Stream | Tasks | Approvals */}
+        <div className="flex gap-2 border-b border-white/10 pb-0">
+          {([
+            { key: 'stream',    label: `Activity Stream (${logs.length})` },
+            { key: 'tasks',     label: `Task Board (${Object.values(tasks).flat().length})` },
+            { key: 'approvals', label: `Approvals (${approvals.length})`, warn: approvals.length > 0 },
+          ] as { key: 'stream'|'tasks'|'approvals'; label: string; warn?: boolean }[]).map(tab => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-2.5 text-sm font-semibold rounded-t-lg transition border-b-2 ${
+                activeTab === tab.key
+                  ? 'border-white text-white bg-white/5'
+                  : 'border-transparent text-white/40 hover:text-white/70'
+              } ${tab.warn ? 'text-amber-300' : ''}`}>
+              {tab.label}
             </button>
           ))}
         </div>
 
-        {/* Agent Grid */}
-        {agentsLoading ? (
-          <div className="text-center py-20 text-white/40">Loading agent roster...</div>
-        ) : (
-          tiers.map(([tierKey, tierMeta]) => {
-            const tierAgents = filteredAgents.filter(a => a.tier === tierKey);
-            if (tierAgents.length === 0) return null;
-            return (
-              <div key={tierKey}>
-                <div className="mb-4">
-                  <h2 className="text-white font-black text-lg">{tierMeta.label}</h2>
-                  <p className="text-white/40 text-sm">{tierMeta.description}</p>
-                </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {tierAgents.map(agent => (
-                    <AgentCard key={agent.id} agent={agent} triggerState={triggerStates}
-                      onTrigger={triggerAgent} onLaunchManus={() => setShowManusModal(true)} />
-                  ))}
-                </div>
-              </div>
-            );
-          })
+        {activeTab === 'stream'    && <ActivityStream logs={logs} loading={loading.logs} onRefresh={fetchLogs} />}
+        {activeTab === 'tasks'     && <TaskBoard tasks={tasks} />}
+        {activeTab === 'approvals' && (
+          approvals.length > 0
+            ? <ApprovalCenter approvals={approvals} onDecide={decideApproval} />
+            : <div className="text-center py-16 text-white/30 bg-[#0D1B35] border border-white/10 rounded-2xl">No pending approvals</div>
         )}
 
-        {/* Session Log (ephemeral, this session only) */}
-        {sessionLog.length > 0 && (
-          <div className="bg-[#0D1B35] border border-white/10 rounded-2xl p-4">
-            <p className="text-white/40 text-xs font-semibold mb-2">THIS SESSION</p>
-            <div className="space-y-1 font-mono text-xs">
-              {sessionLog.map((e, i) => <div key={i} className="text-white/50">{e}</div>)}
-            </div>
-          </div>
-        )}
-
-        {/* Persistent Supabase Log */}
-        <LiveActivityLog logs={logs} loading={logsLoading} onRefresh={fetchLogs} />
-
-        {/* Setup Checklist */}
+        {/* Setup checklist */}
         <div className="bg-[#0D1B35] border border-amber-500/20 rounded-2xl p-6">
-          <h2 className="text-amber-300 font-black text-lg mb-4">⚡ Setup Checklist</h2>
-          <div className="grid sm:grid-cols-2 gap-3">
+          <h2 className="text-amber-300 font-black mb-4">⚡ Integration Setup</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
-              { key: 'MANUS_WEBHOOK_URL',           label: 'Manus Webhook URL',              desc: 'From manus.im → Your Project → Webhook',        critical: true },
-              { key: 'META_ADS_ACCESS_TOKEN',        label: 'Meta Ads Access Token',          desc: 'Meta Business → System Users → Generate Token', critical: true },
-              { key: 'OPENAI_API_KEY',               label: 'OpenAI API Key',                 desc: 'For GPT-4o ad copy generation',                  critical: false },
-              { key: 'NEXT_PUBLIC_SITE_URL',         label: 'NEXT_PUBLIC_SITE_URL',           desc: 'Set to https://www.likklelegends.com in Vercel ✓', critical: false },
-              { key: 'META_PAGE_ID',                 label: 'Meta Page ID (61587...)',        desc: 'Already added ✓',                                critical: false },
-              { key: 'NEXT_PUBLIC_META_PIXEL_ID',    label: 'Meta Pixel (43859...)',          desc: 'Already added ✓',                                critical: false },
+              { label: 'Manus Webhook URL',       done: false, critical: true,  desc: 'manus.im → Your Project → Webhook' },
+              { label: 'Meta Ads Access Token',   done: false, critical: true,  desc: 'Meta Business → System Users → Token' },
+              { label: 'OpenAI API Key',          done: true,  critical: false, desc: 'For GPT-4o ad copy generation' },
+              { label: 'NEXT_PUBLIC_SITE_URL',    done: true,  critical: false, desc: 'https://www.likklelegends.com ✓' },
+              { label: 'Meta Page ID',            done: true,  critical: false, desc: '61587732686874 ✓' },
+              { label: 'Meta Pixel',              done: true,  critical: false, desc: '4385961946335645 ✓' },
+              { label: 'Supabase Agent OS Tables',done: true,  critical: false, desc: 'agents, tasks, runs, activity, approvals ✓' },
+              { label: 'Email Platform (Brevo)',  done: false, critical: false, desc: 'Connect for real email send stats' },
+              { label: 'Billing Webhooks',        done: false, critical: false, desc: 'PayPal → failed payments, refunds' },
             ].map(item => (
-              <div key={item.key} className="flex items-start gap-3 bg-white/5 rounded-xl p-3 border border-white/5">
-                <span className="text-lg mt-0.5">
-                  {!item.critical || item.desc.includes('✓') ? '✅' : item.critical ? '🔴' : '🟡'}
-                </span>
+              <div key={item.label} className="flex items-start gap-3 bg-white/5 rounded-xl p-3 border border-white/5">
+                <span className="text-lg mt-0.5">{item.done ? '✅' : item.critical ? '🔴' : '🟡'}</span>
                 <div>
                   <p className="text-white/80 text-sm font-semibold">{item.label}</p>
-                  <p className="text-white/40 text-xs mt-0.5 font-mono">{item.desc}</p>
+                  <p className="text-white/35 text-xs mt-0.5 font-mono">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -392,20 +484,6 @@ export default function AgentTeamPage() {
         </div>
 
       </div>
-
-      {showManusModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg bg-[#0D1B35] border border-white/10 rounded-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-white font-bold text-lg">🚀 Launch Manus Ad Agent</h2>
-              <button onClick={() => setShowManusModal(false)} className="text-white/40 hover:text-white text-2xl">×</button>
-            </div>
-            <p className="text-white/60 text-sm">Add <code className="bg-white/10 px-1 rounded">MANUS_WEBHOOK_URL</code> to Vercel env vars then trigger from the agent card below.</p>
-            <button onClick={() => setShowManusModal(false)}
-              className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition">Close</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
