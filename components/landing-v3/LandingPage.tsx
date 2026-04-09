@@ -5,8 +5,8 @@ import { NavbarV2 } from "@/components/landing-v2/NavbarV2";
 import { Hero } from "@/components/landing-v3/Hero";
 import { TantyRadioSection } from "@/components/landing-v3/TantyRadioSection";
 import { MeetTheLegends } from "@/components/landing-v3/MeetTheLegends";
-import { GamePreviewCards } from "@/components/landing-v3/GamePreviewCards";
 import { BlogPreview } from "@/components/landing-v3/BlogPreview";
+import { GameShowcase } from "@/components/landing-v3/GameShowcase";
 import { WaitlistModal } from "@/components/landing-v3/WaitlistModal";
 
 // Preserved V2 Components
@@ -23,7 +23,7 @@ import { BenefitStory } from "@/components/landing-v2/BenefitStory";
 const benefitContent = [
     {
         header: "Physical Surprise",
-        body: "There’s no dopamine hit like actual mail. We bridge the gap between digital games and physical wonder with your child’s name on a real envelope."
+        body: "There's no dopamine hit like actual mail. We bridge the gap between digital games and physical wonder with your child's name on a real envelope."
     },
     {
         header: "Cultural Confidence",
@@ -85,8 +85,8 @@ export default function LandingPage() {
                 {/* V3 Character Section with Real Assets */}
                 <MeetTheLegends onOpenWaitlist={() => setIsWaitlistOpen(true)} />
 
-                {/* Game Preview Cards - "See Inside" */}
-                <GamePreviewCards />
+                {/* Game Showcase Section */}
+                <GameShowcase />
 
                 {/* Preserved V2 Sections */}
                 <PhysicalDigitalBridge />
