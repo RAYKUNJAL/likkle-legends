@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { launchManusAdAgent, buildManusAdBrief } from '@/lib/manus-integration';
+import { getBaseUrl } from '@/lib/utils/base-url';
 
 /**
  * GET /api/admin/agents
@@ -10,8 +11,6 @@ export async function GET(req: NextRequest) {
   const action = searchParams.get('action') || 'status';
 
   if (action === 'status') {
-    // Return the full agent roster with live-ish status
-    // In production these would be real health checks / DB queries
     const agents = getAgentRoster();
     return NextResponse.json({ success: true, agents, timestamp: new Date().toISOString() });
   }
@@ -32,6 +31,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { action, agentId, params } = body;
+    const base = getBaseUrl();
 
     switch (action) {
       // ── Manus Ad Manager ──────────────────────────────────────────────────
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
       // ── Blog Writer ───────────────────────────────────────────────────────
       case 'trigger_blog': {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ''}/api/admin/blog/generate`, {
+        const res = await fetch(`${base}/api/admin/blog/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
 
       // ── Social Media Agent ────────────────────────────────────────────────
       case 'trigger_social': {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ''}/api/admin/social/generate`, {
+        const res = await fetch(`${base}/api/admin/social/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(params || {}),
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 
       // ── Ad Copy Generator ─────────────────────────────────────────────────
       case 'generate_ad_copy': {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ''}/api/admin/ads/generate`, {
+        const res = await fetch(`${base}/api/admin/ads/generate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
 
       // ── Content Director (IslandBrain) ────────────────────────────────────
       case 'trigger_content_batch': {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ''}/api/cron/content-generation`, {
+        const res = await fetch(`${base}/api/cron/content-generation`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
 
       // ── Email Nurture ─────────────────────────────────────────────────────
       case 'trigger_nurture': {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ''}/api/cron/nurture`, {
+        const res = await fetch(`${base}/api/cron/nurture`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ function getAgentRoster() {
       name: 'Email Nurture Agent',
       role: 'Subscriber Retention',
       tier: 'retention',
-      description: 'Runs automated onboarding sequences, re-engagement flows, and win-back campaigns. Personalizes content based on child\'s island heritage and learning progress.',
+      description: "Runs automated onboarding sequences, re-engagement flows, and win-back campaigns. Personalizes content based on child's island heritage and learning progress.",
       model: 'Gemini 2.0 Flash',
       status: 'active',
       lastRun: '-12h',
