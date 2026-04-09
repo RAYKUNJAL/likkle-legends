@@ -9,16 +9,42 @@ const API_KEY = process.env.GEMINI_API_KEY ||
     process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
     process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
 
+// Demo mode for testing without API key
+const DEMO_MODE = !API_KEY && process.env.NODE_ENV === 'production';
+
 if (!API_KEY) {
     console.warn('⚠️  WARNING: No Gemini API key found in environment variables');
-    console.warn('   Please set GEMINI_API_KEY in your .env.local file');
+    console.warn('   Please set GEMINI_API_KEY in Vercel environment variables');
+    if (DEMO_MODE) {
+        console.log('   Running in DEMO MODE with mock responses');
+    }
 }
 
 const getGenAI = () => {
     if (!API_KEY) {
-        throw new Error('Gemini API Key is missing. Check GEMINI_API_KEY environment variable.');
+        throw new Error('Gemini API Key is missing. Check GEMINI_API_KEY environment variable in Vercel settings.');
     }
     return new GoogleGenerativeAI(API_KEY);
+};
+
+// Mock response for demo mode
+const getMockResponse = (type: string): string => {
+    const mocks: { [key: string]: string } = {
+        story: JSON.stringify({
+            title: "Demo Story",
+            summary: "This is a demo story generated in offline mode",
+            pages: [
+                { pageNumber: 1, text: "Once upon a time...", imagePrompt: "Caribbean island scene" }
+            ],
+            moral: "Every story teaches us something",
+            parentNote: { whyItHelps: "Demo", offlineFollowup: "Demo", whatToSayAfter: "Demo" },
+            metadata: { ageTrack: "mini", islandTheme: "Jamaica", readingTimeMinutes: 5, difficultyLevel: 1, tierRequired: "free", patoisWords: [], characterId: "demo", culturalElements: [] },
+            qaReport: { passed: true, issues: [] }
+        }),
+        json: '{"status":"demo","message":"Running in offline mode. Please add GEMINI_API_KEY to Vercel environment variables."}',
+        text: 'Demo response - API key not configured'
+    };
+    return mocks[type] || mocks.text;
 };
 
 export interface GenerationOptions {
@@ -30,14 +56,20 @@ export interface GenerationOptions {
 }
 
 export class ContentGenerator {
-    // COMMERCIAL UPGRADE: Using Gemini 2.5 Pro as primary for highest quality content
-    private defaultModel = 'gemini-2.5-pro';
+    // Using Gemini 2.0 Flash for optimal balance of speed and quality
+    private defaultModel = 'gemini-2.0-flash';
 
     /**
      * Generate text content using Gemini with Timeout Protection
      */
     async generateText(prompt: string, options?: GenerationOptions): Promise<string> {
         try {
+            // Demo mode fallback when API key is missing
+            if (DEMO_MODE) {
+                console.log('📝 Running in demo mode - returning mock content');
+                return getMockResponse('text');
+            }
+
             // If system instruction exists, prepend it to the prompt
             let fullPrompt = prompt;
             if (options?.systemInstruction) {
@@ -46,7 +78,8 @@ export class ContentGenerator {
 
             const modelsToTry = [
                 options?.model || this.defaultModel,
-                'gemini-2.0-flash', // Fallback
+                'gemini-1.5-pro', // Fallback
+                'gemini-1.5-flash', // Secondary fallback
             ];
 
             let lastError = null;
@@ -59,7 +92,7 @@ export class ContentGenerator {
                         model: modelName,
                         generationConfig: {
                             temperature: options?.temperature || 0.9,
-                            // Increased token limit for complex content 
+                            // Increased token limit for complex content
                             maxOutputTokens: options?.maxTokens || 8192,
                             responseMimeType: options?.responseMimeType || 'text/plain', // Use configured MIME type
                         }
@@ -108,6 +141,13 @@ export class ContentGenerator {
     async generateJSON<T>(prompt: string, schema: any, options?: GenerationOptions): Promise<T> {
         let text = '';
         try {
+            // Demo mode fallback when API key is missing
+            if (DEMO_MODE) {
+                console.log('📝 Running in demo mode - returning mock JSON');
+                const mockJson = getMockResponse('json');
+                return JSON.parse(mockJson) as T;
+            }
+
             // Updated prompt to be less aggressive since we use MIME type now, but keep schema reference
             const fullPrompt = `${prompt}\n\nPlease output valid JSON matching this schema:\n${JSON.stringify(schema, null, 2)}`;
 
