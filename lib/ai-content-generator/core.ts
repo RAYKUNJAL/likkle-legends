@@ -1,50 +1,22 @@
 // Core AI Content Generator
-// Orchestrates content generation using Gemini API
+// Orchestrates content generation using Claude API
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Anthropic from '@anthropic-ai/sdk';
 import { CONTENT_CONFIG, CHARACTER_PROFILES, IMAGE_STYLE } from './config';
 
 // Ensure environment variables are loaded
-const API_KEY = process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-    process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
-
-// Demo mode for testing without API key
-const DEMO_MODE = !API_KEY && process.env.NODE_ENV === 'production';
+const API_KEY = process.env.ANTHROPIC_API_KEY || '';
 
 if (!API_KEY) {
-    console.warn('⚠️  WARNING: No Gemini API key found in environment variables');
-    console.warn('   Please set GEMINI_API_KEY in Vercel environment variables');
-    if (DEMO_MODE) {
-        console.log('   Running in DEMO MODE with mock responses');
-    }
+    console.warn('⚠️  WARNING: No Claude API key found in environment variables');
+    console.warn('   Please set ANTHROPIC_API_KEY in Vercel environment variables');
 }
 
-const getGenAI = () => {
+const getClient = () => {
     if (!API_KEY) {
-        throw new Error('Gemini API Key is missing. Check GEMINI_API_KEY environment variable in Vercel settings.');
+        throw new Error('Claude API Key is missing. Set ANTHROPIC_API_KEY in Vercel settings.');
     }
-    return new GoogleGenerativeAI(API_KEY);
-};
-
-// Mock response for demo mode
-const getMockResponse = (type: string): string => {
-    const mocks: { [key: string]: string } = {
-        story: JSON.stringify({
-            title: "Demo Story",
-            summary: "This is a demo story generated in offline mode",
-            pages: [
-                { pageNumber: 1, text: "Once upon a time...", imagePrompt: "Caribbean island scene" }
-            ],
-            moral: "Every story teaches us something",
-            parentNote: { whyItHelps: "Demo", offlineFollowup: "Demo", whatToSayAfter: "Demo" },
-            metadata: { ageTrack: "mini", islandTheme: "Jamaica", readingTimeMinutes: 5, difficultyLevel: 1, tierRequired: "free", patoisWords: [], characterId: "demo", culturalElements: [] },
-            qaReport: { passed: true, issues: [] }
-        }),
-        json: '{"status":"demo","message":"Running in offline mode. Please add GEMINI_API_KEY to Vercel environment variables."}',
-        text: 'Demo response - API key not configured'
-    };
-    return mocks[type] || mocks.text;
+    return new Anthropic({ apiKey: API_KEY });
 };
 
 export interface GenerationOptions {
@@ -52,85 +24,68 @@ export interface GenerationOptions {
     temperature?: number;
     maxTokens?: number;
     systemInstruction?: string;
-    responseMimeType?: string; // New!
+    responseMimeType?: string;
 }
 
 export class ContentGenerator {
-    // Using Gemini 2.0 Flash for optimal balance of speed and quality
-    private defaultModel = 'gemini-2.0-flash';
+    // Using Claude 3.5 Sonnet for quality and speed
+    private defaultModel = 'claude-3-5-sonnet-20241022';
 
     /**
-     * Generate text content using Gemini with Timeout Protection
+     * Generate text content using Claude with Timeout Protection
      */
     async generateText(prompt: string, options?: GenerationOptions): Promise<string> {
         try {
-            // Demo mode fallback when API key is missing
-            if (DEMO_MODE) {
-                console.log('📝 Running in demo mode - returning mock content');
-                return getMockResponse('text');
-            }
+            const client = getClient();
 
-            // If system instruction exists, prepend it to the prompt
-            let fullPrompt = prompt;
+            let systemPrompt = '';
+            let userPrompt = prompt;
+
             if (options?.systemInstruction) {
-                fullPrompt = `${options.systemInstruction}\n\n${prompt}`;
+                systemPrompt = options.systemInstruction;
             }
 
-            const modelsToTry = [
-                options?.model || this.defaultModel,
-                'gemini-1.5-pro', // Fallback
-                'gemini-1.5-flash', // Secondary fallback
-            ];
+            console.log(`🤖 Generating with Claude...`);
 
-            let lastError = null;
+            // WRAP IN TIMEOUT for Vercel Function Limit Protection
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Claude API took too long (>60s)')), 60000)
+            );
 
-            for (const modelName of modelsToTry) {
+            const generationPromise = async () => {
                 try {
-                    console.log(`🤖 Attempting generation with model: ${modelName}...`);
-                    const genAI = getGenAI();
-                    const model = genAI.getGenerativeModel({
-                        model: modelName,
-                        generationConfig: {
-                            temperature: options?.temperature || 0.9,
-                            // Increased token limit for complex content
-                            maxOutputTokens: options?.maxTokens || 8192,
-                            responseMimeType: options?.responseMimeType || 'text/plain', // Use configured MIME type
-                        }
+                    const message = await client.messages.create({
+                        model: options?.model || this.defaultModel,
+                        max_tokens: options?.maxTokens || 4096,
+                        temperature: options?.temperature || 0.9,
+                        ...(systemPrompt && { system: systemPrompt }),
+                        messages: [
+                            {
+                                role: 'user',
+                                content: userPrompt
+                            }
+                        ]
                     });
 
-                    // WRAP IN TIMEOUT for Vercel Function Limit Protection
-                    // Increased to 60 seconds for complex storytelling
-                    const timeoutPromise = new Promise<never>((_, reject) =>
-                        setTimeout(() => reject(new Error(`Timeout - Model ${modelName} took too long (>60s)`)), 60000)
-                    );
+                    const textContent = message.content.find(block => block.type === 'text');
+                    if (!textContent || textContent.type !== 'text') {
+                        throw new Error('No text content in response');
+                    }
 
-                    const generationPromise = async () => {
-                        try {
-                            const result = await model.generateContent(fullPrompt);
-                            const response = await result.response;
-                            return response.text();
-                        } catch (genErr: any) {
-                            throw new Error(`Generation failed: ${genErr.message}`);
-                        }
-                    };
-
-                    // Race against the clock
-                    const text = await Promise.race([generationPromise(), timeoutPromise]);
-
-                    if (text) return text;
-
-                } catch (error: any) {
-                    console.warn(`⚠️  Model ${modelName} failed or timed out: ${error.message}`);
-                    lastError = error;
-                    // Continue to next model in the list
+                    return textContent.text;
+                } catch (genErr: any) {
+                    throw new Error(`Generation failed: ${genErr.message}`);
                 }
-            }
+            };
 
-            console.error('❌ All Gemini models failed.');
-            throw new Error(`Failed to generate text content: ${lastError?.message}`);
+            // Race against the clock
+            const text = await Promise.race([generationPromise(), timeoutPromise]);
+
+            if (text) return text;
+
+            throw new Error('No response from Claude');
         } catch (error: any) {
-            console.error('❌ Unexpected Error in generateText:', error);
-            // Panic fallback to prevent infinite hanging
+            console.error('❌ Error in generateText:', error.message);
             throw new Error(`Critical AI Failure: ${error.message}`);
         }
     }
@@ -141,27 +96,19 @@ export class ContentGenerator {
     async generateJSON<T>(prompt: string, schema: any, options?: GenerationOptions): Promise<T> {
         let text = '';
         try {
-            // Demo mode fallback when API key is missing
-            if (DEMO_MODE) {
-                console.log('📝 Running in demo mode - returning mock JSON');
-                const mockJson = getMockResponse('json');
-                return JSON.parse(mockJson) as T;
-            }
-
-            // Updated prompt to be less aggressive since we use MIME type now, but keep schema reference
-            const fullPrompt = `${prompt}\n\nPlease output valid JSON matching this schema:\n${JSON.stringify(schema, null, 2)}`;
+            const fullPrompt = `${prompt}\n\nOutput ONLY valid JSON matching this schema, no other text:\n${JSON.stringify(schema, null, 2)}`;
 
             text = await this.generateText(fullPrompt, {
                 ...options,
-                responseMimeType: 'application/json' // FORCE JSON MODE
+                temperature: 0.7 // Lower temperature for more consistent JSON
             });
-            console.log("--- RAW GEMINI RESPONSE START ---");
+
+            console.log("--- RAW CLAUDE RESPONSE START ---");
             console.log(text);
-            console.log("--- RAW GEMINI RESPONSE END ---");
+            console.log("--- RAW CLAUDE RESPONSE END ---");
 
             // Clean response - remove markdown code blocks if present
             let cleanedText = text.trim();
-            // Remove markdown code blocks (more robust regex)
             cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
 
             // Extract just the JSON object part if extra text exists
@@ -171,27 +118,11 @@ export class ContentGenerator {
                 cleanedText = cleanedText.substring(firstBrace, lastBrace + 1);
             }
 
-            try {
-                const parsed = JSON.parse(cleanedText);
-                return parsed as T;
-            } catch (parseError: any) {
-                console.warn('⚠️  Initial JSON parse failed. Attempting logic fix...');
-                // Attempt to fix common "control character" errors by escaping unescaped newlines in JSON strings
-                // This is a naive attempt but might save some cases
-                try {
-                    // Replace literal newlines inside strings but keep them outside
-                    const fixedText = cleanedText.replace(/\n/g, '\\n');
-                    const parsed = JSON.parse(fixedText);
-                    return parsed as T;
-                } catch (retryError) {
-                    console.error('❌ JSON Parse Error:', parseError.message);
-                    console.error('Raw content that failed:', cleanedText);
-                    throw parseError;
-                }
-            }
+            const parsed = JSON.parse(cleanedText);
+            return parsed as T;
         } catch (error: any) {
             console.error('Error generating JSON:', error.message);
-            throw new Error(`Failed to generate valid JSON content: ${error.message} (Raw: ${text.substring(0, 200)}...)`);
+            throw new Error(`Failed to generate valid JSON: ${error.message}`);
         }
     }
 
@@ -212,7 +143,6 @@ export class ContentGenerator {
                 fullPrompt = `${prompt}. Style: ${IMAGE_STYLE.base}. Colors: ${IMAGE_STYLE.palette}. Mood: ${IMAGE_STYLE.mood}`;
             }
 
-            // Add safety and quality guidelines
             fullPrompt += `. IMPORTANT: Child-friendly, culturally authentic Caribbean illustration. No violence, scary elements, or inappropriate content. High quality, detailed, warm and inviting.`;
 
             console.log(`🎨 [AI Core] Requesting Gemini Story Maker Image: ${fullPrompt.substring(0, 80)}...`);
@@ -234,7 +164,6 @@ export class ContentGenerator {
     validateContent(content: string): { safe: boolean; issues: string[] } {
         const issues: string[] = [];
 
-        // Basic safety checks
         const forbiddenWords = ['violent', 'scary', 'blood', 'weapon', 'fight'];
         const lowerContent = content.toLowerCase();
 
@@ -244,7 +173,6 @@ export class ContentGenerator {
             }
         });
 
-        // Check reading level (basic Flesch-Kincaid approximation)
         const sentences = content.split(/[.!?]+/).length;
         const words = content.split(/\s+/).length;
         const avgWordsPerSentence = words / sentences;
