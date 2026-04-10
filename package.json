@@ -19,6 +19,7 @@
     "test:supabase": "tsx scripts/test-supabase.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.9",
     "@google/genai": "^1.34.0",
     "@google/generative-ai": "^0.24.1",
     "@google/model-viewer": "^4.1.0",
