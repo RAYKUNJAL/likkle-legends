@@ -195,6 +195,7 @@ export default function ChildPortalPage() {
     const [todaysActivities, setTodaysActivities] = useState<PlanActivity[]>([]);
     const [isPortalIdleReady, setIsPortalIdleReady] = useState(false);
     const [authRetryElapsedMs, setAuthRetryElapsedMs] = useState(0);
+    const [noChildElapsedMs, setNoChildElapsedMs] = useState(0);
     const [showHelpModal, setShowHelpModal] = useState(false);
     const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
     const [todayScreenMinutes, setTodayScreenMinutes] = useState(0);
@@ -270,6 +271,31 @@ export default function ChildPortalPage() {
             }
         }
     }, [user, children, router]);
+
+    useEffect(() => {
+        const isTestMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('test') === 'true';
+        const hasNoChild = !!user && !user.is_admin && !isTestMode && children.length === 0;
+
+        if (!hasNoChild) {
+            setNoChildElapsedMs(0);
+            return;
+        }
+
+        const interval = window.setInterval(() => {
+            setNoChildElapsedMs((prev) => prev + 500);
+        }, 500);
+
+        return () => window.clearInterval(interval);
+    }, [user, children.length]);
+
+    useEffect(() => {
+        if (!user || user.is_admin || children.length > 0 || noChildElapsedMs < 2500) return;
+
+        const params = new URLSearchParams();
+        params.set('uid', user.id);
+        if ((user as any).child_name) params.set('childName', (user as any).child_name);
+        router.push(`/onboarding/welcome?${params.toString()}`);
+    }, [user, children.length, noChildElapsedMs, router]);
 
     useEffect(() => {
         let cancelled = false;
@@ -557,6 +583,27 @@ export default function ChildPortalPage() {
             </div>
         );
     }
+
+    if (!activeChild && children.length === 0) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-100 via-purple-50 to-pink-100 p-6">
+                <div className="max-w-md w-full bg-white p-10 rounded-[2.5rem] shadow-2xl text-center border-4 border-white">
+                    <div className="text-6xl animate-bounce mb-4">🧭</div>
+                    <h2 className="text-2xl font-black text-slate-800 mb-2">Finishing Your Setup...</h2>
+                    <p className="text-slate-500 font-bold mb-6 leading-relaxed">
+                        We need one child profile before opening the island portal.
+                    </p>
+                    <button
+                        onClick={() => router.push(`/onboarding/welcome?uid=${encodeURIComponent(user.id)}`)}
+                        className="w-full bg-[#3ABEF9] text-white px-6 py-4 rounded-2xl font-black text-lg hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-blue-200"
+                    >
+                        Finish Child Setup
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-[#F0F9FF] font-heading overflow-hidden relative">
             {/* Background elements */}
@@ -858,7 +905,7 @@ export default function ChildPortalPage() {
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         {hasSuperPack && (
                                             <button
-                                                onClick={() => setActiveSection('printables')}
+                                                onClick={() => router.push('/portal/super-pack')}
                                                 className="group bg-gradient-to-br from-amber-400 to-orange-500 p-6 rounded-[2rem] shadow-xl hover:scale-105 transition-all text-left relative overflow-hidden"
                                             >
                                                 <div className="relative z-10 flex items-center gap-4">
@@ -873,7 +920,7 @@ export default function ChildPortalPage() {
                                         )}
                                         {hasHeritageStory && (
                                             <button
-                                                onClick={() => router.push('/portal/story-studio')}
+                                                onClick={() => router.push('/portal/heritage-story')}
                                                 className="group bg-gradient-to-br from-blue-500 to-indigo-600 p-6 rounded-[2rem] shadow-xl hover:scale-105 transition-all text-left relative overflow-hidden"
                                             >
                                                 <div className="relative z-10 flex items-center gap-4">

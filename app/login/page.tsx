@@ -24,6 +24,10 @@ function LoginForm() {
         if (errorParam === 'auth-callback-failed') {
             setError("The magic link expired or was already used. Please request a new one.");
         }
+        const emailParam = searchParams.get('email');
+        if (emailParam) {
+            setEmail(emailParam);
+        }
     }, [searchParams]);
 
     const handlePasswordLogin = async (e: React.FormEvent) => {

@@ -1,0 +1,50 @@
+{
+  "name": "Likkle Legends Google Cutover Room",
+  "appId": "likkle-legends",
+  "goals": [
+    "Move runtime from Vercel/Supabase to Firebase App Hosting, Firestore, Storage, and Cloud Run",
+    "Keep the current customer app stable while Google staging is built",
+    "Prove signup, onboarding, checkout, portal, AI generation, and video worker flows before DNS cutover"
+  ],
+  "lanes": [
+    "Infra",
+    "Auth",
+    "Data",
+    "Payments",
+    "AI Agents",
+    "Video Engine",
+    "QA",
+    "Cutover"
+  ],
+  "agents": [
+    {
+      "name": "Codex Lead",
+      "role": "repo integration, verification, release"
+    },
+    {
+      "name": "Paperclip Governor",
+      "role": "tickets, budgets, approvals, audit trail"
+    },
+    {
+      "name": "Gemini Content Team",
+      "role": "lesson, story, blog, and safe script generation"
+    },
+    {
+      "name": "Remotion Video Worker",
+      "role": "queued educational video rendering"
+    },
+    {
+      "name": "Goose Inspector",
+      "role": "bounded local debugging and failure inspection"
+    }
+  ],
+  "gates": [
+    "Firebase staging deploy is green",
+    "Firestore rules and Storage rules are deployed",
+    "PayPal webhook replay is idempotent",
+    "AI daily hard limits are enforced",
+    "Remotion renders write to Cloud Storage",
+    "Signup to child portal flow passes",
+    "Rollback path is documented"
+  ]
+}

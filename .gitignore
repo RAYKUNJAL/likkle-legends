@@ -23,6 +23,8 @@ dist/
 .DS_Store
 *.pem
 .env*
+!.env.example
+!.env.production.example
 *.local
 .vercel
 .tmp

@@ -1,0 +1,18 @@
+budgets:
+  ai_daily_usd_soft_limit: 10
+  ai_daily_usd_hard_limit: 25
+  video_daily_usd_hard_limit: 15
+
+approvals:
+  require_human_for:
+    - production_deploy
+    - payment_config_change
+    - refund_or_capture
+    - destructive_database_change
+    - ai_budget_increase
+    - youtube_public_publish
+
+audit:
+  mirror_to_firestore: true
+  app_id: likkle-legends
+  collection: paperclipEvents

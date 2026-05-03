@@ -1,0 +1,28 @@
+runConfig:
+  minInstances: 0
+  maxInstances: 10
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 1024
+
+env:
+  - variable: NEXT_PUBLIC_APP_ID
+    value: likkle-legends
+  - variable: NEXT_PUBLIC_APP_URL
+    value: https://www.likklelegends.com
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: likkle-legends
+  - variable: FIREBASE_PROJECT_ID
+    value: likkle-legends
+  - variable: FIREBASE_STORAGE_BUCKET
+    value: likkle-legends.appspot.com
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+  - variable: PAYPAL_CLIENT_ID
+    secret: PAYPAL_CLIENT_ID
+  - variable: PAYPAL_CLIENT_SECRET
+    secret: PAYPAL_CLIENT_SECRET
+  - variable: PAYPAL_WEBHOOK_ID
+    secret: PAYPAL_WEBHOOK_ID
+  - variable: PAPERCLIP_GOVERNANCE_TOKEN
+    secret: PAPERCLIP_GOVERNANCE_TOKEN

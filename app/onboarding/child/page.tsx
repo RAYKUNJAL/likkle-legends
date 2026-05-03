@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronRight, ChevronLeft, Sparkles, Volume2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { createChild } from '@/lib/database';
 import { useUser } from '@/components/UserContext';
 import { getTantyVoice } from '@/app/actions/voice';
 
@@ -147,14 +146,25 @@ function ChildOnboardingContent() {
 
         setIsSubmitting(true);
         try {
-            const child = await createChild(userId, {
-                first_name: formData.first_name,
-                age: formData.age,
-                age_track: formData.age < 6 ? 'mini' : 'big',
-                primary_island: formData.primary_island,
-                avatar_id: formData.avatar_id,
+            const res = await fetch('/api/onboarding/children', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    first_name: formData.first_name,
+                    age: formData.age,
+                    age_track: formData.age < 6 ? 'mini' : 'big',
+                    primary_island: formData.primary_island,
+                    avatar_id: formData.avatar_id,
+                }),
             });
-            await refreshChildren();
+
+            const result = await res.json();
+            if (!res.ok || !result.success) {
+                throw new Error(result.error || 'Could not save your profile. Please try again.');
+            }
+
+            const child = result.child;
+            await refreshChildren(userId);
             router.push(`/onboarding/learning-goals?childId=${child.id}`);
         } catch (error: any) {
             console.error('Onboarding error:', error);
