@@ -4,7 +4,13 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabaseAdmin = createClient(supabaseUrl || '', supabaseServiceKey || '');
+function getSupabaseAdmin() {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Supabase admin credentials are not configured');
+  }
+
+  return createClient(supabaseUrl, supabaseServiceKey);
+}
 
 // RBAC roles
 const ROLES = {
@@ -25,8 +31,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!supabaseUrl) {
+      return NextResponse.json(
+        { error: 'Supabase URL is not configured' },
+        { status: 500 }
+      );
+    }
+
     // Verify token with Supabase
-    const supabase = createClient(supabaseUrl || '', '', {
+    const supabase = createClient(supabaseUrl, '', {
       global: {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -44,6 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user role from database
+    const supabaseAdmin = getSupabaseAdmin();
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('role, is_admin')

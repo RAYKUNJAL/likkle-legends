@@ -87,7 +87,7 @@ export default function SubscribePage() {
           }).catch(() => {});
           setSuccess(true);
           setTimeout(() => { window.location.href = '/portal'; }, 2500);
-        } catch {
+        } catch (_e) {
           setPaypalError('Payment could not complete. Please try again.');
           setProcessing(false);
         }

@@ -22,7 +22,7 @@ function SignupForm() {
             // Remove zero-width spaces and other invisible Unicode characters
             value = value.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
             return value || fallback;
-        } catch {
+        } catch (_e) {
             return fallback;
         }
     };
@@ -36,7 +36,7 @@ function SignupForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         childName: getParam('childName', ''),
-        email: '',
+        email: getParam('email', ''),
         password: '',
         agreed: false
     });
@@ -118,6 +118,7 @@ function SignupForm() {
             } else {
                 const planToTier: Record<string, string> = {
                     'starter_mailer': 'starter_mailer',
+                    'digital_explorer': 'digital_explorer',
                     'legends_plus': 'legends_plus',
                     'annual_plus': 'legends_plus',
                     'family_legacy': 'family_legacy',

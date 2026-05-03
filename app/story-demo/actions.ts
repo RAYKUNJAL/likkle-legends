@@ -55,7 +55,7 @@ export async function fetchLatestStory() {
                         }
                     };
                 }
-            } catch {
+            } catch (_e) {
                 // Not JSON, skip this one
                 continue;
             }

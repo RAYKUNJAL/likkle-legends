@@ -91,6 +91,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
         {
             label: 'Growth',
             items: [
+                { id: 'million-dollar-plan', label: '$1M Launch Room', icon: Trophy, href: '/admin/million-dollar-plan' },
                 { id: 'agent-team', label: '🤖 AI Agent Team', icon: Sparkles, href: '/admin/agent-team' },
                 { id: 'campaigns-meta', label: 'Meta Ad Campaigns', icon: Target, href: '/admin/campaigns/meta' },
                 { id: 'commercial', label: 'Commercial Ops', icon: TrendingUp, href: '/admin/commercial' },

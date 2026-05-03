@@ -48,7 +48,7 @@ export default function ViralContestPage() {
                 const data = await res.json();
                 setLeaderboard(data.leaderboard || []);
             }
-        } catch { }
+        } catch (_e) { }
     };
 
     const handleEnter = async (e: React.FormEvent) => {

@@ -66,7 +66,7 @@ export function fireConversionEvent(
         if ((window as any).snaptr) {
             (window as any).snaptr('track', eventName, params);
         }
-    } catch {
+    } catch (_e) {
         // Silently fail if analytics is blocked
     }
 }

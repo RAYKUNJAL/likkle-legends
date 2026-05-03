@@ -47,7 +47,7 @@ export default function StreakWidget({ streakDay, freezeCount, childId, onFreeze
                 // Show modal to buy freeze
                 setShowBuyModal(true);
             }
-        } catch {
+        } catch (_e) {
             toast.error('Something went wrong. Try again.');
         } finally {
             setIsFreezing(false);

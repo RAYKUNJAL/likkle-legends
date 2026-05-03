@@ -107,7 +107,7 @@ export default function FreeTrialPage() {
           setError(data.error || 'Something went wrong. Please try again.');
         }
       }
-    } catch {
+    } catch (_e) {
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);

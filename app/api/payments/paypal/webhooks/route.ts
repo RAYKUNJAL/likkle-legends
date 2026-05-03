@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { sendEmail, SUBSCRIPTION_CONFIRMATION_TEMPLATE, TRIAL_REMINDER_TEMPLATE } from '@/lib/email';
 
-const supabase = supabaseAdmin;
-
 // ── Env validation ────────────────────────────────────────────────────────────
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -11,8 +9,8 @@ const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    throw new Error('Missing Supabase env vars');
+function hasSupabaseWebhookConfig(): boolean {
+    return Boolean(SUPABASE_URL && SUPABASE_SERVICE_KEY);
 }
 
 // Internal mapping of PayPal Plan IDs to our logic tiers
@@ -84,7 +82,7 @@ async function verifyWebhookSignature(
     let certHostname: string;
     try {
         certHostname = new URL(certUrl).hostname;
-    } catch {
+    } catch (_e) {
         console.error('PayPal webhook: cert URL is invalid');
         return false;
     }
@@ -128,6 +126,11 @@ async function verifyWebhookSignature(
 
 // ── Main webhook handler ──────────────────────────────────────────────────────
 export async function POST(request: NextRequest) {
+    if (!hasSupabaseWebhookConfig()) {
+        console.error('PayPal webhook: missing Supabase environment variables');
+        return NextResponse.json({ error: 'Webhook storage is not configured' }, { status: 503 });
+    }
+
     // 1. Read raw body BEFORE parsing — needed for signature verification
     const rawBody = await request.text();
 
@@ -142,12 +145,13 @@ export async function POST(request: NextRequest) {
     let event: any;
     try {
         event = JSON.parse(rawBody);
-    } catch {
+    } catch (_e) {
         return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
     const eventType = event.event_type;
     const resource = event.resource;
+    const supabase = supabaseAdmin;
 
     console.log('PayPal webhook event:', eventType);
 

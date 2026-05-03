@@ -1,7 +1,13 @@
 import { Resend } from 'resend';
 import { NextRequest, NextResponse } from 'next/server';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not configured');
+  }
+
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send email to support
+    const resend = getResend();
     const supportResult = await resend.emails.send({
       from: 'noreply@likklelegends.com',
       to: 'hello@likklelegends.com',

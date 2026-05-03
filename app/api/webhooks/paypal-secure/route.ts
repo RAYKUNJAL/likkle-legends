@@ -6,7 +6,13 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
 
-const supabaseAdmin = createClient(SUPABASE_URL || '', SUPABASE_SERVICE_KEY || '');
+function getSupabaseAdmin() {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    throw new Error('Supabase admin credentials are not configured');
+  }
+
+  return createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+}
 
 // Verify PayPal webhook signature using HMAC-SHA256
 function verifyPayPalSignature(
@@ -68,6 +74,7 @@ export async function POST(request: NextRequest) {
 
     // Handle different PayPal events
     const { event_type, resource } = event;
+    const supabaseAdmin = getSupabaseAdmin();
 
     switch (event_type) {
       case 'BILLING.SUBSCRIPTION.ACTIVATED':

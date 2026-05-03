@@ -115,7 +115,7 @@ export default function ResourcesPage() {
             if (data.magnets?.length > 0) {
                 setMagnets(data.magnets);
             }
-        } catch {
+        } catch (_e) {
             // Use placeholders if API fails
         }
     };
@@ -152,7 +152,7 @@ export default function ResourcesPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ magnet_id: magnetId })
             });
-        } catch {
+        } catch (_e) {
             // Silent fail
         }
     };

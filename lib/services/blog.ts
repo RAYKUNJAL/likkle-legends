@@ -104,7 +104,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     }
 
     // Increment view count (fire and forget)
-    (async () => { try { await supabase.rpc('increment_post_views', { post_slug: slug }); } catch { } })();
+    (async () => { try { await supabase.rpc('increment_post_views', { post_slug: slug }); } catch (_e) { } })();
 
     return data as BlogPost;
 }

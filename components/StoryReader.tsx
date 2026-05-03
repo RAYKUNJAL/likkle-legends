@@ -54,7 +54,7 @@ export default function StoryReader({ title, pages, onClose, onSave }: StoryRead
             } else {
                 toast.error('Bookshelf is a bit wobbly. Try again.');
             }
-        } catch {
+        } catch (_e) {
             toast.error('Island magic failed to save.');
         } finally {
             setIsSaving(false);
@@ -82,7 +82,7 @@ export default function StoryReader({ title, pages, onClose, onSave }: StoryRead
             } else {
                 toast.error('Voice is unavailable right now.');
             }
-        } catch {
+        } catch (_e) {
             toast.error('Something went wrong with narration.');
             setIsPlaying(false);
         } finally {

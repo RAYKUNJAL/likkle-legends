@@ -76,7 +76,7 @@ export default function PremiumVideoPlayer({ video, onClose, onComplete }: Premi
                     if (data.info === 0 && !isCompleted) handleComplete();
                 }
                 if (data?.event === 'onReady') setIsLoading(false);
-            } catch {
+            } catch (_e) {
                 // non-JSON postMessage — ignore
             }
         };

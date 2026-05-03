@@ -21,7 +21,7 @@ const getLocal = <T>(key: string): T | null => {
     try {
         const data = localStorage.getItem(key);
         return data ? JSON.parse(data) : null;
-    } catch { return null; }
+    } catch (_e) { return null; }
 };
 
 const setLocal = (key: string, data: any) => {

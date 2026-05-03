@@ -184,7 +184,7 @@ class SupabaseClientManager {
                     .select('count')
                     .limit(1);
                 details.database = !error;
-            } catch {
+            } catch (_e) {
                 details.database = false;
             }
 
@@ -194,7 +194,7 @@ class SupabaseClientManager {
                     .storage
                     .listBuckets();
                 details.storage = !!data;
-            } catch {
+            } catch (_e) {
                 details.storage = false;
             }
 

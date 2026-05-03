@@ -1,5 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+async function createInitialChild(
+  supabase: SupabaseClient,
+  userId: string,
+  childName: string,
+  island: string
+) {
+  const basePayload = {
+    parent_id: userId,
+    age: 5,
+    age_track: 'mini',
+    avatar_id: 'lion',
+    primary_island: island || 'mixed',
+  };
+
+  let result = await supabase.from('children').insert({
+    ...basePayload,
+    first_name: childName,
+  });
+
+  if (result.error?.message?.includes("Could not find the 'first_name' column")) {
+    result = await supabase.from('children').insert({
+      ...basePayload,
+      full_name: childName,
+    });
+  }
+
+  if (result.error?.message?.includes("Could not find the 'full_name' column")) {
+    result = await supabase.from('children').insert({
+      parent_id: userId,
+      name: childName,
+      island: island || '',
+      created_at: new Date().toISOString(),
+    });
+  }
+
+  if (result.error) {
+    console.error('[Free Trial API] Child creation warning:', result.error.message);
+  }
+}
 
 /**
  * POST /api/auth/free-trial
@@ -57,21 +98,16 @@ export async function POST(req: NextRequest) {
       id: userId,
       email,
       full_name: parentName || '',
-      subscription_status: 'free',
-      subscription_tier: 'free_explorer',
+      subscription_status: 'active',
+      subscription_tier: 'free',
       island_heritage: island || '',
       signup_source: source || 'free_trial_page',
       created_at: new Date().toISOString(),
-    });
+    }, { onConflict: 'id' });
 
     // ── 3. Create first child profile ─────────────────────────────────────
     if (childName) {
-      await supabase.from('children').insert({
-        parent_id: userId,
-        name: childName,
-        island: island || '',
-        created_at: new Date().toISOString(),
-      });
+      await createInitialChild(supabase, userId, childName, island);
     }
 
     // ── 4. Record lead in leads table ──────────────────────────────────────

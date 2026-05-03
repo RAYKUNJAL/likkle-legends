@@ -217,7 +217,7 @@ export function InlineNarrator({ text, voice }: { text: string; voice?: VoiceNar
             audio.onended = () => setIsPlaying(false);
 
             await audio.play();
-        } catch {
+        } catch (_e) {
             console.error('Playback failed');
         } finally {
             setIsLoading(false);

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -162,7 +162,7 @@ export default function CharacterChatPage() {
     const config = useMemo(() => {
         try {
             return getCharacterConfig(characterId);
-        } catch {
+        } catch (_e) {
             return null;
         }
     }, [characterId]);
@@ -301,7 +301,7 @@ export default function CharacterChatPage() {
                     URL.revokeObjectURL(url);
                 };
             }
-        } catch {
+        } catch (_e) {
             setIsSpeaking(false);
         }
     }, [config, characterId]);
@@ -358,7 +358,7 @@ export default function CharacterChatPage() {
             }
 
             if (voiceEnabled) speakText(data.response);
-        } catch {
+        } catch (_e) {
             setErrorMessage('Connection issue. Try again in a moment.');
             setMessages((prev) => [...prev, {
                 role: 'assistant',

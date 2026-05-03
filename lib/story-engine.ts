@@ -103,7 +103,7 @@ export async function generateStory(selection: StoryInputs): Promise<StoryBook |
             // Attempt direct parse first
             try {
                 story = JSON.parse(cleanText);
-            } catch {
+            } catch (_e) {
                 // Try to find the first '{' and last '}' if direct parse fails
                 const start = cleanText.indexOf('{');
                 const end = cleanText.lastIndexOf('}');

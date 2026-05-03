@@ -183,7 +183,7 @@ export async function POST(request: NextRequest) {
             if (typeof tagsField === 'string') {
                 try {
                     metadata.tags = JSON.parse(tagsField);
-                } catch {
+                } catch (_e) {
                     metadata.tags = tagsField.split(',').map(t => t.trim()).filter(Boolean);
                 }
             }

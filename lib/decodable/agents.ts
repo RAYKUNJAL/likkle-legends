@@ -33,7 +33,7 @@ async function callAgent(agentId: keyof typeof SYSTEM_PROMPTS, userPrompt: strin
     const rawText = result.response.text();
     try {
         return JSON.parse(rawText);
-    } catch {
+    } catch (_e) {
         // Try to extract JSON from markdown code fence
         const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/);
         if (jsonMatch) {

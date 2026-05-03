@@ -14,7 +14,9 @@ import {
     Star,
     Briefcase,
     Plus,
-    BarChart
+    BarChart,
+    Sparkles,
+    Trophy
 } from 'lucide-react';
 
 import { useUser } from './UserContext';
@@ -39,6 +41,8 @@ export default function Sidebar({ view = 'parent' }: SidebarProps) {
 
     const adminItems = [
         { name: 'Admin Overview', href: '/admin', icon: LayoutDashboard },
+        { name: '$1M Launch Room', href: '/admin/million-dollar-plan', icon: Trophy },
+        { name: 'AI Agent Team', href: '/admin/agent-team', icon: Sparkles },
         { name: 'Media Library', href: '/admin/media', icon: Music },
         { name: 'Manage Customers', href: '/admin/customers', icon: UserCircle },
         { name: 'Content Library', href: '/admin/content', icon: BookOpen },

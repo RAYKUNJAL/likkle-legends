@@ -53,7 +53,7 @@ export const uploadFile = async (
 
 // --- HELPERS ---
 const getLocal = <T>(key: string): T | null => {
-    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
+    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (_e) { return null; }
 };
 const setLocal = (key: string, val: any) => localStorage.setItem(key, JSON.stringify(val));
 

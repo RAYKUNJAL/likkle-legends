@@ -50,7 +50,7 @@ export async function logActivity(
     try {
         const { updateChallengeProgress } = await import('@/app/actions/challenges');
         await updateChallengeProgress(childId, activityType);
-    } catch {
+    } catch (_e) {
         // Silently skip if challenges table doesn't exist yet
     }
 
@@ -223,7 +223,7 @@ export async function getXPMultiplier(): Promise<number> {
             .maybeSingle();
 
         return Number(data?.value) || 1;
-    } catch {
+    } catch (_e) {
         return 1;
     }
 }

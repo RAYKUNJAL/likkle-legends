@@ -1,18 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { SUBSCRIPTION_PLANS, type SubscriptionTier } from '@/lib/paypal';
 
-const PAYPAL_BASE = process.env.PAYPAL_ENV === 'sandbox'
+const PAYPAL_BASE = process.env.PAYPAL_ENV === 'sandbox' || process.env.NODE_ENV !== 'production'
   ? 'https://api-m.sandbox.paypal.com'
   : 'https://api-m.paypal.com';
 
-const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
-
 async function getPayPalAccessToken(): Promise<string> {
-  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-    throw new Error('PayPal credentials not configured');
+  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+  const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+
+  if (!clientId || !clientSecret) {
+    throw new Error('PayPal credentials are not configured');
   }
 
-  const credentials = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
+  const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
   const res = await fetch(`${PAYPAL_BASE}/v1/oauth2/token`, {
     method: 'POST',
     headers: {
@@ -22,80 +23,55 @@ async function getPayPalAccessToken(): Promise<string> {
     body: 'grant_type=client_credentials',
   });
 
-  const data = await res.json() as { access_token: string };
+  const data = await res.json() as { access_token?: string; error_description?: string };
+  if (!res.ok || !data.access_token) {
+    throw new Error(data.error_description || 'Could not authenticate with PayPal');
+  }
+
   return data.access_token;
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { planId, userId, returnUrl, cancelUrl } = await request.json();
+    const { planId, userId, returnUrl, cancelUrl } = await req.json();
+    const plan = SUBSCRIPTION_PLANS[planId as SubscriptionTier];
 
-    if (!planId) {
-      return NextResponse.json(
-        { error: 'Plan ID is required' },
-        { status: 400 }
-      );
+    if (!plan || plan.id === 'plan_free_forever' || !plan.paypalPlanId) {
+      return NextResponse.json({ error: 'Invalid or unconfigured subscription plan' }, { status: 400 });
     }
 
-    // Get access token
     const accessToken = await getPayPalAccessToken();
-
-    // Create subscription
-    const response = await fetch(
-      `${PAYPAL_BASE}/v1/billing/subscriptions`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
+    const res = await fetch(`${PAYPAL_BASE}/v1/billing/subscriptions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        plan_id: plan.paypalPlanId,
+        application_context: {
+          brand_name: 'Likkle Legends',
+          locale: 'en-US',
+          user_action: 'SUBSCRIBE_NOW',
+          return_url: returnUrl || `${req.nextUrl.origin}/checkout/success`,
+          cancel_url: cancelUrl || `${req.nextUrl.origin}/checkout?cancelled=true`,
         },
-        body: JSON.stringify({
-          plan_id: planId,
-          subscriber: {
-            name: {
-              given_name: 'Subscriber',
-            },
-            email_address: 'subscriber@example.com',
-          },
-          application_context: {
-            brand_name: 'Likkle Legends',
-            locale: 'en-US',
-            user_action: 'SUBSCRIBE_NOW',
-            return_url: returnUrl || 'https://likklelegends.com/portal',
-            cancel_url: cancelUrl || 'https://likklelegends.com/pricing',
-          },
-          custom_id: userId || '',
-        }),
-      }
-    );
+        custom_id: userId || '',
+      }),
+    });
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('PayPal subscription error:', error);
-      return NextResponse.json(
-        { error: 'Failed to create payment' },
-        { status: 500 }
-      );
+    const data = await res.json() as { id?: string; links?: Array<{ rel: string; href: string }>; message?: string };
+    if (!res.ok) {
+      return NextResponse.json({ error: data.message || 'Failed to create payment' }, { status: 502 });
     }
 
-    const data = await response.json() as { id: string; links: Array<{ rel: string; href: string }> };
-
-    // Find approval link
-    const approvalLink = data.links.find((link) => link.rel === 'approve')?.href;
-
-    return NextResponse.json(
-      {
-        success: true,
-        subscriptionId: data.id,
-        approvalUrl: approvalLink,
-      },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      success: true,
+      subscriptionId: data.id,
+      approvalUrl: data.links?.find((link) => link.rel === 'approve')?.href,
+    });
   } catch (error) {
     console.error('Create payment error:', error);
-    return NextResponse.json(
-      { error: 'Payment creation failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Payment creation failed' }, { status: 500 });
   }
 }

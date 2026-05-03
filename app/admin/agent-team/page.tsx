@@ -430,7 +430,7 @@ export default function AgentTeamPage() {
     try {
       const data = await fetch('/api/admin/agents').then(r => r.json());
       if (data.agents) { setAgents(data.agents); setStats(data.stats); }
-    } catch { /**/ }
+    } catch (_e) { /**/ }
     setLoading(l => ({ ...l, agents: false }));
   }, []);
 
@@ -438,7 +438,7 @@ export default function AgentTeamPage() {
     try {
       const data = await fetch('/api/admin/agent-activity?limit=100').then(r => r.json());
       if (data.logs) setLogs(data.logs);
-    } catch { /**/ }
+    } catch (_e) { /**/ }
     setLoading(l => ({ ...l, logs: false }));
   }, []);
 
@@ -450,7 +450,7 @@ export default function AgentTeamPage() {
       ]);
       if (td.board) setTasks(td.board);
       if (ad.approvals) setApprovals(ad.approvals);
-    } catch { /**/ }
+    } catch (_e) { /**/ }
   }, []);
 
   useEffect(() => {
@@ -488,7 +488,7 @@ export default function AgentTeamPage() {
     try {
       await fetch(`/api/admin/approvals/${id}/${decision}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
       fetchTasks(); fetchAgents();
-    } catch { /**/ }
+    } catch (_e) { /**/ }
   };
 
   const tiers = TIER_ORDER.filter(t => agents.some(a => a.tier === t));

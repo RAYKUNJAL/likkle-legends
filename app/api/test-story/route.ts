@@ -48,7 +48,7 @@ export async function GET() {
                         wordCount: parsed.pages[0]?.words?.length || 0
                     });
                 }
-            } catch {
+            } catch (_e) {
                 continue;
             }
         }

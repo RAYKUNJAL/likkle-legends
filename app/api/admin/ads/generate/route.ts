@@ -64,7 +64,7 @@ Respond as JSON: {"variants": [{headline, primary_text, description, cta, emotio
       variants: parsed.variants || [],
       imageUrl: `/games/images/${charData.imageFile}`,
     });
-  } catch {
+  } catch (_e) {
     // Fallback to templates
     const templates = AD_COPY_TEMPLATES[stage as keyof typeof AD_COPY_TEMPLATES] || AD_COPY_TEMPLATES.tofu;
     return NextResponse.json({

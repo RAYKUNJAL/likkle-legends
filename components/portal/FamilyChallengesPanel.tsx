@@ -53,7 +53,7 @@ export default function FamilyChallengesPanel() {
             try {
                 const data = await getFamilyChallenges();
                 setChallenges(data);
-            } catch {
+            } catch (_e) {
                 toast.error('Could not load challenges');
             } finally {
                 setLoading(false);
@@ -94,7 +94,7 @@ export default function FamilyChallengesPanel() {
             } else {
                 toast.error(result.error || 'Failed to create');
             }
-        } catch {
+        } catch (_e) {
             toast.error('Something went wrong');
         } finally {
             setSaving(false);

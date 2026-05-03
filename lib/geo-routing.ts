@@ -22,7 +22,7 @@ export async function detectCountry(): Promise<GeoInfo> {
             currency: getCurrencyForCountry(data.country_code),
             fulfillmentHub: getFulfillmentHub(data.country_code),
         };
-    } catch {
+    } catch (_e) {
         // Default to US if detection fails
         return {
             country: 'United States',

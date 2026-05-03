@@ -71,7 +71,7 @@ export function getGuestSession(gameId?: string): GameSession | null {
   if (stored) {
     try {
       return JSON.parse(stored);
-    } catch {
+    } catch (_e) {
       return null;
     }
   }
@@ -230,7 +230,7 @@ function addSessionToHistory(session: GameSession): void {
     }
 
     localStorage.setItem(GUEST_SESSIONS_KEY, JSON.stringify(sessions));
-  } catch {
+  } catch (_e) {
     // Silently fail if storage is full
   }
 }
@@ -244,7 +244,7 @@ export function getSessionHistory(): GameSession[] {
   try {
     const history = localStorage.getItem(GUEST_SESSIONS_KEY);
     return history ? JSON.parse(history) : [];
-  } catch {
+  } catch (_e) {
     return [];
   }
 }

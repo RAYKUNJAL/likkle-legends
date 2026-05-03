@@ -26,11 +26,9 @@ export interface GenerationOptions {
     temperature?: number;
     maxTokens?: number;
     systemInstruction?: string;
-    responseMimeType?: string; // New!
 }
 
 export class ContentGenerator {
-    // COMMERCIAL UPGRADE: Using Gemini 2.5 Pro as primary for highest quality content
     private defaultModel = 'gemini-1.5-flash';
 
     /**
@@ -46,7 +44,7 @@ export class ContentGenerator {
 
             const modelsToTry = [
                 options?.model || this.defaultModel,
-                'gemini-2.0-flash', // Fallback
+                'gemini-1.5-flash',
             ];
 
             let lastError = null;

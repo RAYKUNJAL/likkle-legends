@@ -80,7 +80,7 @@ function ChildOnboardingContent() {
     const [isSpeaking, setIsSpeaking] = useState(false);
 
     const [formData, setFormData] = useState({
-        first_name: '',
+        first_name: searchParams.get('childName') || '',
         age: 5,
         age_track: 'mini' as 'mini' | 'big',
         primary_island: '',
@@ -135,7 +135,7 @@ function ChildOnboardingContent() {
                 const supabase = createClient();
                 const { data: { session } } = await supabase.auth.getSession();
                 userId = session?.user?.id;
-            } catch {
+            } catch (_e) {
                 // ignore
             }
         }

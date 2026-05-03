@@ -57,7 +57,7 @@ export async function updateSession(request: NextRequest) {
                 user = data.user;
             }
         }
-    } catch {
+    } catch (_e) {
         user = null;
     }
 

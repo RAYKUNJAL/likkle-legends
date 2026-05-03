@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     let content = {} as any;
     try {
         content = await getMergedSiteContent();
-    } catch {
+    } catch (_e) {
         content = siteContent;
     }
 
@@ -35,7 +35,7 @@ export default async function CharacterDetailPage({ params }: { params: { slug: 
     let content = {} as any;
     try {
         content = await getMergedSiteContent();
-    } catch {
+    } catch (_e) {
         content = siteContent;
     }
 

@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
                 xp_amount: xpAmount,
                 metadata,
             });
-        } catch {
+        } catch (_e) {
             // Table might not exist, continue
         }
 
