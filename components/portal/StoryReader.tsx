@@ -10,7 +10,7 @@ import {
     Loader2, Pause, VolumeX, Mic2, Star
 } from 'lucide-react';
 import { StoryBook } from '@/types/story';
-import { generateCharacterAudio } from '@/app/actions/voice';
+import { generateCharacterAudioWithMetadata } from '@/app/actions/voice';
 import { generateImagesAction, saveStoryToLibraryAction } from '@/app/actions/story-actions';
 import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
@@ -28,6 +28,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
     const [isGeneratingImages, setIsGeneratingImages] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [activeSpeaker, setActiveSpeaker] = useState<'tanty' | 'roti' | null>(null);
+    const [currentWordIndex, setCurrentWordIndex] = useState<number | null>(null);
     const [autoPlay, setAutoPlay] = useState(true);
     const [hasSaved, setHasSaved] = useState(false);
 
@@ -45,7 +46,10 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
         };
     }, []);
 
-    const playVoice = useCallback(async (text: string, character: 'tanty' | 'roti') => {
+    const getAudioCacheKey = (text: string, character: 'tanty' | 'roti') =>
+        `likkle:story-audio:${character}:${story.id}:${currentPage}:${text.slice(0, 48)}`;
+
+    const playVoice = useCallback(async (text: string, character: 'tanty' | 'roti', autoTurn = false) => {
         if (isLoadingVoice) return;
 
         // Stop current audio
@@ -57,16 +61,41 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
         setIsLoadingVoice(true);
         setActiveSpeaker(character);
         setIsPlaying(true);
+        setCurrentWordIndex(null);
 
         try {
-            const result = await generateCharacterAudio(text, character);
+            const cacheKey = getAudioCacheKey(text, character);
+            const cached = typeof window !== 'undefined' ? window.sessionStorage.getItem(cacheKey) : null;
+            const result = cached
+                ? JSON.parse(cached) as Awaited<ReturnType<typeof generateCharacterAudioWithMetadata>>
+                : await generateCharacterAudioWithMetadata(text, character);
+
             if (result.success && result.audio) {
+                if (!cached) {
+                    try {
+                        window.sessionStorage.setItem(cacheKey, JSON.stringify(result));
+                    } catch (_e) {
+                        // Audio can be large; ignore cache failures and keep playback working.
+                    }
+                }
+
                 const audio = new Audio(result.audio);
                 audioRef.current = audio;
+                const wordTimings = result.words || [];
+
+                audio.ontimeupdate = () => {
+                    if (!wordTimings.length) return;
+                    const activeWord = wordTimings.findIndex((word) => audio.currentTime >= word.start && audio.currentTime <= word.end);
+                    setCurrentWordIndex(activeWord >= 0 ? activeWord : null);
+                };
 
                 audio.onended = () => {
                     setIsPlaying(false);
                     setActiveSpeaker(null);
+                    setCurrentWordIndex(null);
+                    if (autoTurn && currentPage > 0 && currentPage < pages.length) {
+                        setCurrentPage((page) => Math.min(page + 1, pages.length));
+                    }
                 };
 
                 await audio.play();
@@ -77,20 +106,21 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
             console.error("[Voice] Error:", err);
             setIsPlaying(false);
             setActiveSpeaker(null);
+            setCurrentWordIndex(null);
         } finally {
             setIsLoadingVoice(false);
         }
-    }, [isLoadingVoice]);
+    }, [currentPage, isLoadingVoice, pages.length, story.id]);
 
     // Handle Auto-Play Narration on page change
     useEffect(() => {
         if (autoPlay && currentPage > 0 && currentPage <= pages.length) {
             const pageData = pages[currentPage - 1];
             // Tanty narrates the main text
-            playVoice(pageData.narrative_text, 'tanty');
+            playVoice(pageData.narrative_text, 'tanty', true);
         } else if (currentPage === 0 && autoPlay) {
             // Narrate cover title
-            playVoice(`Welcome to ${story.book_meta.title}. Written by Tanty Spice.`, 'tanty');
+            playVoice(`Welcome to ${story.book_meta.title}. Read with Tanty Spice.`, 'tanty');
         }
     }, [currentPage, autoPlay, pages, story.book_meta.title, playVoice]);
 
@@ -113,6 +143,23 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
         }
         setIsPlaying(false);
         setActiveSpeaker(null);
+        setCurrentWordIndex(null);
+    };
+
+    const renderHighlightedText = (text: string) => {
+        let wordIndex = -1;
+        return text.split(/(\s+)/).map((token, index) => {
+            if (/^\s+$/.test(token)) return <span key={`space-${index}`}>{token}</span>;
+            wordIndex += 1;
+            return (
+                <span
+                    key={`${token}-${index}`}
+                    className={currentWordIndex === wordIndex ? 'rounded-xl bg-yellow-200 px-1 text-deep shadow-sm' : ''}
+                >
+                    {token}
+                </span>
+            );
+        });
     };
 
     // Auto-generate images if missing in background
@@ -306,7 +353,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                                     <div className="space-y-4">
                                         <p className="text-sm font-black text-zinc-300 uppercase tracking-[0.4em]">Reader Mode</p>
                                         <h2 className="text-6xl md:text-7xl font-black text-deep leading-[1.2] tracking-tight hover:text-primary transition-colors cursor-pointer" onClick={() => playVoice(pages[currentPage - 1].narrative_text, 'tanty')}>
-                                            {pages[currentPage - 1].narrative_text}
+                                            {renderHighlightedText(pages[currentPage - 1].narrative_text)}
                                         </h2>
                                     </div>
 

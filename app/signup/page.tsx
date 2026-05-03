@@ -8,28 +8,26 @@ import { useEffect, useMemo, useState, Suspense, type ReactNode } from 'react';
 import { signupAction } from '@/app/actions/auth-actions';
 import { trackEvent } from '@/lib/analytics';
 import { createClient } from '@/lib/supabase/client';
+import { CARIBBEAN_ISLANDS } from '@/lib/islands';
 
 const ISLANDS = [
-    { id: 'trinidad', name: 'Trinidad & Tobago', flag: '🇹🇹' },
-    { id: 'jamaica', name: 'Jamaica', flag: '🇯🇲' },
-    { id: 'barbados', name: 'Barbados', flag: '🇧🇧' },
-    { id: 'guyana', name: 'Guyana', flag: '🇬🇾' },
-    { id: 'haiti', name: 'Haiti', flag: '🇭🇹' },
-    { id: 'dominican_republic', name: 'Dominican Republic', flag: '🇩🇴' },
-    { id: 'cuba', name: 'Cuba', flag: '🇨🇺' },
-    { id: 'puerto_rico', name: 'Puerto Rico', flag: '🇵🇷' },
-    { id: 'st_lucia', name: 'St. Lucia', flag: '🇱🇨' },
-    { id: 'grenada', name: 'Grenada', flag: '🇬🇩' },
-    { id: 'antigua', name: 'Antigua & Barbuda', flag: '🇦🇬' },
-    { id: 'st_vincent', name: 'St. Vincent & Grenadines', flag: '🇻🇨' },
-    { id: 'dominica', name: 'Dominica', flag: '🇩🇲' },
-    { id: 'st_kitts', name: 'St. Kitts & Nevis', flag: '🇰🇳' },
-    { id: 'bahamas', name: 'Bahamas', flag: '🇧🇸' },
-    { id: 'belize', name: 'Belize', flag: '🇧🇿' },
-    { id: 'aruba', name: 'Aruba', flag: '🇦🇼' },
-    { id: 'curacao', name: 'Curacao', flag: '🇨🇼' },
+    ...CARIBBEAN_ISLANDS.map((island) => ({
+        id: island.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''),
+        name: island.name,
+        flag: island.flag,
+    })),
     { id: 'mixed', name: 'Island Explorer', flag: '🌴' },
 ];
+
+const ISLAND_ALIASES: Record<string, string> = {
+    trinidad: 'trinidad_and_tobago',
+    tobago: 'trinidad_and_tobago',
+    antigua: 'antigua_and_barbuda',
+    st_lucia: 'saint_lucia',
+    st_vincent: 'saint_vincent_and_the_grenadines',
+    st_kitts: 'saint_kitts_and_nevis',
+    curacao: 'curacao',
+};
 
 function cleanParam(searchParams: ReturnType<typeof useSearchParams>, key: string, fallback = '') {
     try {
@@ -45,7 +43,8 @@ function SignupForm() {
     const searchParams = useSearchParams();
     const plan = cleanParam(searchParams, 'plan', 'mail_club');
     const referral = cleanParam(searchParams, 'ref') || cleanParam(searchParams, 'referral', 'direct');
-    const initialIsland = cleanParam(searchParams, 'island', 'mixed');
+    const rawInitialIsland = cleanParam(searchParams, 'island', 'mixed');
+    const initialIsland = ISLAND_ALIASES[rawInitialIsland] || rawInitialIsland;
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -166,14 +165,14 @@ function SignupForm() {
                             <ShieldCheck size={16} /> Parent setup first
                         </p>
                         <h1 className="text-5xl font-black leading-tight tracking-tight lg:text-6xl">
-                            Create the island account that actually opens the portal.
+                            Start your child&apos;s Caribbean learning adventure.
                         </h1>
                         <p className="mt-6 text-lg font-semibold leading-relaxed text-deep/55">
-                            One signup creates the parent account, the first child profile, and the Caribbean learning home. No loop, no dead end.
+                            Create your parent account, add your first child, and open a warm island-powered learning home built for ages 3 to 9.
                         </p>
 
                         <div className="mt-8 grid gap-3 sm:grid-cols-3">
-                            {['No credit card for free plan', 'COPPA parent consent', 'Island picker included'].map((item) => (
+                            {['No credit card for free plan', 'Parent-approved setup', 'Choose your island heritage'].map((item) => (
                                 <div key={item} className="rounded-2xl border border-white/70 bg-white/75 p-4 text-sm font-black text-deep/60 shadow-sm">
                                     {item}
                                 </div>

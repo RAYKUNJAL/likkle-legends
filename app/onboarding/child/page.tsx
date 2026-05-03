@@ -102,9 +102,23 @@ function ChildOnboardingContent() {
         if (isSpeaking) return;
         setIsSpeaking(true);
         try {
+            const cacheKey = `likkle:onboarding:tants:${currentStepData.id}:v2`;
+            const cachedAudio = typeof window !== 'undefined' ? window.localStorage.getItem(cacheKey) : null;
+            if (cachedAudio) {
+                const audio = new Audio(cachedAudio);
+                audio.onended = () => setIsSpeaking(false);
+                await audio.play();
+                return;
+            }
+
             const res = await getTantyVoice(currentStepData.tanty);
             if (res.success && res.audio) {
                 const audio = new Audio(res.audio.startsWith('data:') ? res.audio : `data:audio/mp3;base64,${res.audio}`);
+                try {
+                    window.localStorage.setItem(cacheKey, audio.src);
+                } catch (_e) {
+                    // Local storage can be full or disabled; playback still works.
+                }
                 audio.onended = () => setIsSpeaking(false);
                 await audio.play();
             } else {

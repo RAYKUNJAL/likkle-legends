@@ -1,6 +1,7 @@
 "use server";
 
-import { GoogleVoiceCharacter, synthesizeCharacterSpeech } from "@/lib/google-cloud-tts";
+import { GoogleVoiceCharacter, synthesizeCharacterSpeechData } from "@/lib/google-cloud-tts";
+import { normalizeCharacterVoiceId, VoiceProviderCharacter } from "@/lib/character-voice-profiles";
 
 // export const maxDuration = 60; // Config not supported in Server Actions
 
@@ -17,7 +18,7 @@ export async function getTantyVoice(text: string) {
  */
 export async function generateCharacterAudio(
     text: string,
-    character: 'tanty' | 'roti' | 'dilly' = 'tanty'
+    character: VoiceProviderCharacter = 'tanty'
 ): Promise<{
     success: boolean;
     audio?: string;
@@ -30,10 +31,10 @@ export async function generateCharacterAudio(
     const cleanText = text.trim().substring(0, 2000);
 
     try {
-        const googleCharacter: GoogleVoiceCharacter = character === 'dilly' ? 'dilly' : character;
-        const audioBase64 = await synthesizeCharacterSpeech(cleanText, googleCharacter);
-        if (!audioBase64) return { success: false, error: "TTS Generation Failed" };
-        return { success: true, audio: `data:audio/mp3;base64,${audioBase64}` };
+        const googleCharacter: GoogleVoiceCharacter = normalizeCharacterVoiceId(character);
+        const audio = await synthesizeCharacterSpeechData(cleanText, googleCharacter);
+        if (!audio) return { success: false, error: "TTS Generation Failed" };
+        return { success: true, audio: `data:${audio.contentType};base64,${audio.base64Audio}` };
 
     } catch (error) {
         console.error("[Voice Action] Critical error:", error);
@@ -55,7 +56,7 @@ function estimateWordTimings(text: string) {
 
 export async function generateCharacterAudioWithMetadata(
     text: string,
-    character: 'tanty' | 'roti' | 'dilly' = 'tanty'
+    character: VoiceProviderCharacter = 'tanty'
 ): Promise<{
     success: boolean;
     audio?: string;
@@ -69,12 +70,12 @@ export async function generateCharacterAudioWithMetadata(
     const cleanText = text.trim().substring(0, 2000);
 
     try {
-        const googleCharacter: GoogleVoiceCharacter = character === 'dilly' ? 'dilly' : character;
-        const audioBase64 = await synthesizeCharacterSpeech(cleanText, googleCharacter);
-        if (!audioBase64) return { success: false, error: "TTS Generation Failed" };
+        const googleCharacter: GoogleVoiceCharacter = normalizeCharacterVoiceId(character);
+        const audio = await synthesizeCharacterSpeechData(cleanText, googleCharacter);
+        if (!audio) return { success: false, error: "TTS Generation Failed" };
         return {
             success: true,
-            audio: `data:audio/mp3;base64,${audioBase64}`,
+            audio: `data:${audio.contentType};base64,${audio.base64Audio}`,
             words: estimateWordTimings(cleanText)
         };
     } catch (error) {

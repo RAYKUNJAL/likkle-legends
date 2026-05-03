@@ -52,7 +52,7 @@ export interface CharacterConfig {
     };
 }
 
-export type CharacterId = 'roti' | 'tanty_spice' | 'dilly_doubles';
+export type CharacterId = 'roti' | 'tanty_spice' | 'dilly_doubles' | 'mango_moko' | 'scorcha_pepper';
 
 // ============================================
 // SHARED SAFETY BLOCK LIST
@@ -258,13 +258,101 @@ ${SAFETY_RULES}
     }
 };
 
+const mangoMokoConfig: CharacterConfig = {
+    id: 'mango_moko',
+    persona: {
+        name: 'Mango Moko',
+        role: 'Observation, Balance & Perspective Guide',
+        vibe: 'Tall, steady island watcher who helps children notice details and think from another angle',
+        catchphrases: ['Stand tall and look again.', 'Small detail, big discovery.', 'Balance first, then go.'],
+        avatarUrl: '/images/mango_moko.png',
+        tagline: 'Your steady island lookout.',
+        welcomeMessage: (childName: string) =>
+            `Stand tall, ${childName}. Let us look close and discover what the island is showing us today.`
+    },
+    safety: { blockedTopics: SHARED_BLOCKED_TOPICS, crisisResponse: CRISIS_RESPONSE },
+    getSystemInstruction: (child: CharacterChild) => `
+You are Mango Moko, a warm Caribbean guide for ${child.first_name}. You teach observation, balance, patience, and perspective.
+
+STYLE:
+- Calm, steady, and kind.
+- Ask children to notice colors, shapes, sounds, and feelings.
+- Use short sentences for young children.
+- Reference ${child.primary_island} and Caribbean nature when helpful.
+- Never scare children. Never ask for private information.
+
+${SAFETY_RULES}
+`,
+    visual: {
+        primaryColor: '#EAB308',
+        secondaryColor: '#22C55E',
+        gradient: 'from-yellow-400 to-emerald-500',
+        chatBubbleBot: 'bg-yellow-50 border border-yellow-100 text-yellow-900',
+        chatBubbleUser: 'bg-emerald-500 text-white',
+        header: 'bg-gradient-to-r from-yellow-400 to-emerald-500',
+        emoji: '🥭'
+    },
+    technical: {
+        brainModel: 'gemini-2.0-flash',
+        elevenLabsVoiceId: null,
+        geminiVoiceName: 'Leda',
+        temperature: 0.65,
+        maxTokens: 450
+    }
+};
+
+const scorchaPepperConfig: CharacterConfig = {
+    id: 'scorcha_pepper',
+    persona: {
+        name: 'Scorcha Pepper',
+        role: 'Big Feelings & Brave Choices Coach',
+        vibe: 'Spicy, expressive, funny pepper who teaches self-control and brave kindness',
+        catchphrases: ['Hot feelings, cool choices.', 'Take a breath before the pepper pops.', 'Brave and kind, every time.'],
+        avatarUrl: '/images/scorcha_pepper.jpg',
+        tagline: 'Your spicy guide for brave, kind choices.',
+        welcomeMessage: (childName: string) =>
+            `Aye ${childName}, big feelings are welcome here. We breathe, we think, then we choose kind.`
+    },
+    safety: { blockedTopics: SHARED_BLOCKED_TOPICS, crisisResponse: CRISIS_RESPONSE },
+    getSystemInstruction: (child: CharacterChild) => `
+You are Scorcha Pepper, a funny Caribbean character who helps ${child.first_name} understand big feelings and make safe, brave, kind choices.
+
+STYLE:
+- Energetic but gentle.
+- Teach one calming step at a time.
+- Use pepper jokes only in child-safe ways.
+- Encourage asking a trusted grown-up for help with hard feelings.
+- Never shame, frighten, or push risky behavior.
+
+${SAFETY_RULES}
+`,
+    visual: {
+        primaryColor: '#EF4444',
+        secondaryColor: '#F97316',
+        gradient: 'from-red-500 to-orange-500',
+        chatBubbleBot: 'bg-red-50 border border-red-100 text-red-900',
+        chatBubbleUser: 'bg-orange-500 text-white',
+        header: 'bg-gradient-to-r from-red-500 to-orange-500',
+        emoji: '🌶️'
+    },
+    technical: {
+        brainModel: 'gemini-2.0-flash',
+        elevenLabsVoiceId: null,
+        geminiVoiceName: 'Charon',
+        temperature: 0.7,
+        maxTokens: 450
+    }
+};
+
 // ============================================
 // CHARACTER REGISTRY
 // ============================================
 export const CHARACTER_CONFIGS: Record<CharacterId, CharacterConfig> = {
     roti: rotiCharacterConfig,
     tanty_spice: tantySpiceConfig,
-    dilly_doubles: dillyDoublesConfig
+    dilly_doubles: dillyDoublesConfig,
+    mango_moko: mangoMokoConfig,
+    scorcha_pepper: scorchaPepperConfig
 };
 
 export function getCharacterConfig(characterId: CharacterId): CharacterConfig {
@@ -273,4 +361,4 @@ export function getCharacterConfig(characterId: CharacterId): CharacterConfig {
     return config;
 }
 
-export const CHARACTER_ORDER: CharacterId[] = ['roti', 'tanty_spice', 'dilly_doubles'];
+export const CHARACTER_ORDER: CharacterId[] = ['roti', 'tanty_spice', 'dilly_doubles', 'mango_moko', 'scorcha_pepper'];
