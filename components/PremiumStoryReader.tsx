@@ -82,6 +82,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
     // Audio refs
     const audioRef = useRef<HTMLAudioElement | null>(null);
+    const fallbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const wordTimingsRef = useRef<{ text: string; start: number; end: number }[]>([]);
     const lastWordIndexRef = useRef(0);
     const prefetchingPagesRef = useRef<Set<string>>(new Set());
@@ -94,12 +95,42 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
         || currentPageData.illustrationUrl
         || story.cover_image_url;
 
+    // Audio Context pre-unlocking
+    const unlockAudio = useCallback(() => {
+        if (typeof window === 'undefined') return;
+        const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAAA');
+        silentAudio.play().then(() => {
+            console.log("[PremiumStoryReader] Audio context pre-unlocked successfully.");
+            window.removeEventListener('click', unlockAudio);
+            window.removeEventListener('touchstart', unlockAudio);
+        }).catch((e) => {
+            console.warn("[PremiumStoryReader] Pre-unlocking failed or pending interaction:", e);
+        });
+    }, []);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            window.addEventListener('click', unlockAudio);
+            window.addEventListener('touchstart', unlockAudio);
+        }
+        return () => {
+            if (typeof window !== 'undefined') {
+                window.removeEventListener('click', unlockAudio);
+                window.removeEventListener('touchstart', unlockAudio);
+            }
+        };
+    }, [unlockAudio]);
+
     useEffect(() => {
         setPages(story.content_json?.pages || []);
         prefetchingPagesRef.current.clear();
     }, [story]);
 
     const stopAudio = useCallback(() => {
+        if (fallbackTimeoutRef.current) {
+            clearTimeout(fallbackTimeoutRef.current);
+            fallbackTimeoutRef.current = null;
+        }
         if (audioRef.current) {
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
@@ -195,6 +226,15 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             return;
         }
 
+        if (fallbackTimeoutRef.current) {
+            clearTimeout(fallbackTimeoutRef.current);
+            fallbackTimeoutRef.current = null;
+        }
+
+        const text = pages[currentPage]?.text || '';
+        const wordCount = text ? text.split(/\s+/).length : 10;
+        const readingDuration = Math.max(4000, wordCount * 500); // 500ms per word, minimum 4s
+
         setIsLoadingAudio(true);
         try {
             const cachedNarration = await loadCachedNarration(currentPage);
@@ -208,11 +248,19 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             audio.onplay = () => {
                 setIsPlaying(true);
                 setIsLoadingAudio(false);
+                if (fallbackTimeoutRef.current) {
+                    clearTimeout(fallbackTimeoutRef.current);
+                    fallbackTimeoutRef.current = null;
+                }
             };
 
             audio.onended = () => {
                 setIsPlaying(false);
                 setCurrentWordIndex(null);
+                if (fallbackTimeoutRef.current) {
+                    clearTimeout(fallbackTimeoutRef.current);
+                    fallbackTimeoutRef.current = null;
+                }
                 if (isAutoPlaying && currentPage < pages.length - 1) {
                     setTimeout(nextPage, 900);
                 }
@@ -245,12 +293,36 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             };
 
             audioRef.current = audio;
-            await audio.play();
+            try {
+                await audio.play();
+            } catch (playErr) {
+                console.warn("[PremiumStoryReader] Autoplay blocked, starting fallback timer:", playErr);
+                setIsLoadingAudio(false);
+                setIsPlaying(false);
+                
+                // If blocked and autoplay is active, schedule page turn fallback
+                if (isAutoPlaying && currentPage < pages.length - 1) {
+                    if (fallbackTimeoutRef.current) clearTimeout(fallbackTimeoutRef.current);
+                    fallbackTimeoutRef.current = setTimeout(() => {
+                        console.log("[PremiumStoryReader] Page auto-turn fallback triggered.");
+                        nextPage();
+                    }, readingDuration);
+                }
+            }
         } catch (error) {
             console.error("Narration error:", error);
             setIsLoadingAudio(false);
+            
+            // If failed to load completely, also fallback gracefully
+            if (isAutoPlaying && currentPage < pages.length - 1) {
+                if (fallbackTimeoutRef.current) clearTimeout(fallbackTimeoutRef.current);
+                fallbackTimeoutRef.current = setTimeout(() => {
+                    console.log("[PremiumStoryReader] Page auto-turn fallback triggered after failed load.");
+                    nextPage();
+                }, readingDuration);
+            }
         }
-    }, [isPlaying, isAutoPlaying, currentPage, pages.length, nextPage, stopAudio, loadCachedNarration]);
+    }, [isPlaying, isAutoPlaying, currentPage, pages, nextPage, stopAudio, loadCachedNarration]);
 
     // Auto-start narration on page change
     useEffect(() => {

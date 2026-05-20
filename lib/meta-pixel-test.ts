@@ -1,7 +1,9 @@
+/* eslint-disable import/no-anonymous-default-export */
 /**
  * Meta Pixel Testing & Debugging Utilities
  * Use these functions to verify pixel is working correctly
  */
+
 
 import { getPixelID, isPixelLoaded } from './meta-pixel';
 
@@ -121,10 +123,13 @@ export function getPixelDebugInfo(): {
   return debugInfo;
 }
 
-export default {
+const metaPixelTest = {
   logPixelEvent,
   checkPixelLoaded,
   getPixelIDForTesting,
   verifyPixelIntegration,
   getPixelDebugInfo,
 };
+
+export default metaPixelTest;
+

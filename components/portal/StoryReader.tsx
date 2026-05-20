@@ -272,7 +272,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                                         {story.book_meta.title}
                                     </h1>
                                     <div className="flex items-center gap-4 p-4 bg-white/50 backdrop-blur-sm rounded-[2rem] border border-white w-fit">
-                                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
+                                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary relative">
                                             <Image src="/images/tanty_spice_avatar.jpg" alt="Tanty Spice" fill className="object-cover" />
                                         </div>
                                         <p className="text-xl text-deep/60 font-bold italic">
@@ -340,7 +340,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                                                 )}
                                             </div>
                                             <p className="text-xl text-deep font-bold italic leading-relaxed">
-                                                "{pages[currentPage - 1].guide_interventions.tanty_spice_intro}"
+                                                "{pages[currentPage - 1]?.guide_interventions?.tanty_spice_intro || ""}"
                                             </p>
                                         </div>
                                     </div>
@@ -359,14 +359,14 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
 
                                     {/* 🤖 R.O.T.I's Reading Challenge */}
                                     <AnimatePresence>
-                                        {pages[currentPage - 1].guide_interventions.roti_prompt && (
+                                        {pages[currentPage - 1]?.guide_interventions?.roti_prompt && (
                                             <motion.button
                                                 initial={{ opacity: 0, y: 20 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                onClick={() => playVoice(pages[currentPage - 1].guide_interventions.roti_prompt!, 'roti')}
+                                                onClick={() => playVoice(pages[currentPage - 1]?.guide_interventions?.roti_prompt || "", 'roti')}
                                                 className={`w-full group rounded-[3rem] p-8 transition-all text-left flex items-start gap-6 border-4 ${activeSpeaker === 'roti' ? 'bg-blue-600 border-blue-400 text-white shadow-2xl scale-[1.02]' : 'bg-blue-50 border-blue-100 text-blue-900 hover:bg-blue-100'}`}
                                             >
-                                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center overflow-hidden shadow-lg transition-transform group-hover:rotate-12 ${activeSpeaker === 'roti' ? 'bg-white' : 'bg-blue-500'}`}>
+                                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center overflow-hidden shadow-lg transition-transform group-hover:rotate-12 relative ${activeSpeaker === 'roti' ? 'bg-white' : 'bg-blue-500'}`}>
                                                     <Image src="/images/roti-new.jpg" alt="R.O.T.I" fill className="object-cover" />
                                                 </div>
                                                 <div className="flex-1 space-y-2">
@@ -374,14 +374,14 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                                                         <p className={`text-xs font-black uppercase tracking-widest ${activeSpeaker === 'roti' ? 'text-white/60' : 'text-blue-500'}`}>R.O.T.I Literacy Prompt</p>
                                                         {activeSpeaker === 'roti' && (
                                                             <div className="flex gap-1 h-3 items-end">
-                                                                {[...Array(4)].map((_, i) => (
+                                                                 {[...Array(4)].map((_, i) => (
                                                                     <motion.div key={i} animate={{ height: [4, 12, 4] }} transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }} className="w-1 bg-white rounded-full" />
                                                                 ))}
                                                             </div>
                                                         )}
                                                     </div>
                                                     <p className={`text-2xl font-black italic`}>
-                                                        {pages[currentPage - 1].guide_interventions.roti_prompt}
+                                                        {pages[currentPage - 1]?.guide_interventions?.roti_prompt}
                                                     </p>
                                                 </div>
                                             </motion.button>

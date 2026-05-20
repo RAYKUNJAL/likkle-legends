@@ -176,20 +176,6 @@ export default function GamesHubPage() {
     const [progressMap, setProgressMap] = useState<Record<string, GameProgressEntry>>({});
     const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
 
-    if (!parentalControls.allow_games) {
-        return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
-                    <h2 className="text-3xl font-black text-slate-800 mb-2">Games Are Locked</h2>
-                    <p className="text-slate-500 font-semibold">Your parent controls currently disable game access.</p>
-                    <Link href="/portal/settings" className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black">
-                        Open Parent Controls
-                    </Link>
-                </div>
-            </div>
-        );
-    }
-
     useEffect(() => {
         let cancelled = false;
         let idleHandle: number | null = null;
@@ -209,7 +195,13 @@ export default function GamesHubPage() {
                 }
 
                 const enriched = data.map((game) => {
-                    const featured = featuredById.get(game.id);
+                    let featured = featuredById.get(game.id);
+                    if (!featured && game.game_url) {
+                        const matchedLocalId = game.game_url.split('/').pop();
+                        if (matchedLocalId) {
+                            featured = featuredById.get(matchedLocalId);
+                        }
+                    }
                     return {
                         ...featured,
                         ...game,
@@ -221,7 +213,9 @@ export default function GamesHubPage() {
                     };
                 });
 
-                setGames(enriched);
+                const databaseIds = new Set(data.map(g => g.id));
+                const nonDuplicateFeatured = (FEATURED_GAMES as Game[]).filter(g => !databaseIds.has(g.id));
+                setGames([...nonDuplicateFeatured, ...enriched]);
             } catch (error) {
                 console.error('Failed to hydrate games:', error);
             }
@@ -237,7 +231,9 @@ export default function GamesHubPage() {
             timeoutHandle = setTimeout(runWhenIdle, 250);
         }
 
-        return () => {
+        
+
+    return () => {
             cancelled = true;
             if (idleHandle !== null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
                 window.cancelIdleCallback(idleHandle);
@@ -313,6 +309,20 @@ export default function GamesHubPage() {
 
     const totalXP = activeChild?.total_xp || 0;
     const unlockedGames = filteredGames.filter(g => canPlayGame((g as any).tier_required || (g as any).tier));
+
+        if (!parentalControls.allow_games) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
+                    <h2 className="text-3xl font-black text-slate-800 mb-2">Games Are Locked</h2>
+                    <p className="text-slate-500 font-semibold">Your parent controls currently disable game access.</p>
+                    <Link href="/portal/settings" className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black">
+                        Open Parent Controls
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#0a0a1a] text-white overflow-hidden">

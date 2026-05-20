@@ -1,8 +1,10 @@
+/* eslint-disable import/no-anonymous-default-export */
 /**
  * Meta Pixel (Facebook Pixel) Integration
  * Handles frontend pixel tracking for Likkle Legends
  * Critical for cold traffic campaigns and $10k+/month scaling
  */
+
 
 // Types for Meta Pixel events
 export interface MetaPixelEventData {
@@ -324,7 +326,7 @@ export function isPixelLoaded(): boolean {
   return !!window.fbq && !!(window.fbq as any).loaded;
 }
 
-export default {
+const metaPixel = {
   initializeMetaPixel,
   trackPageView,
   trackViewContent,
@@ -339,3 +341,6 @@ export default {
   getPixelID,
   isPixelLoaded,
 };
+
+export default metaPixel;
+
