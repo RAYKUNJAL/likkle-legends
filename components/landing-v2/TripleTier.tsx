@@ -118,18 +118,26 @@ export const TripleTier = () => {
                             <div className="p-5 sm:p-8 lg:p-9">
                                 {/* Icon + Name */}
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tier.highlight ? 'bg-primary' : 'bg-zinc-100'}`}>
+                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                                        tier.highlight ? 'bg-primary' : 'bg-zinc-100'
+                                    }`}>
                                         <tier.icon size={20} className={tier.highlight ? 'text-white' : 'text-deep/40'} />
                                     </div>
                                     <div>
-                                        <h3 className={`font-black text-lg tracking-tight ${tier.highlight ? 'text-white' : 'text-deep'}`}>{tier.name}</h3>
-                                        <p className={`text-[9px] font-bold uppercase tracking-widest ${tier.highlight ? 'text-white/30' : 'text-deep/20'}`}>{tier.billing}</p>
+                                        <h3 className={`font-black text-lg tracking-tight ${
+                                            tier.highlight ? 'text-white' : 'text-deep'
+                                        }`}>{tier.name}</h3>
+                                        <p className={`text-[9px] font-bold uppercase tracking-widest ${
+                                            tier.highlight ? 'text-white/30' : 'text-deep/20'
+                                        }`}>{tier.billing}</p>
                                     </div>
                                 </div>
 
                                 {/* Price */}
                                 <div className="mb-6">
-                                    <span className={`text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter ${tier.highlight ? 'text-white' : 'text-deep'}`}>
+                                    <span className={`text-4xl sm:text-5xl lg:text-6xl font-black tracking-tighter ${
+                                        tier.highlight ? 'text-white' : 'text-deep'
+                                    }`}>
                                         {tier.price}
                                     </span>
                                 </div>
@@ -151,7 +159,9 @@ export const TripleTier = () => {
                                     {tier.features.map(feat => (
                                         <div key={feat.text} className="flex items-center gap-2.5">
                                             {feat.included ? (
-                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${tier.highlight ? 'bg-primary' : 'bg-secondary/10'}`}>
+                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                                    tier.highlight ? 'bg-primary' : 'bg-secondary/10'
+                                                }`}>
                                                     <Check size={11} className={tier.highlight ? 'text-white' : 'text-secondary'} />
                                                 </div>
                                             ) : (
@@ -159,9 +169,10 @@ export const TripleTier = () => {
                                                     <X size={10} className="text-zinc-300" />
                                                 </div>
                                             )}
-                                            <span className={`text-lg font-medium ${feat.included
-                                                ? (tier.highlight ? 'text-white/80' : 'text-deep/60')
-                                                : 'text-deep/20 line-through'
+                                            <span className={`text-lg font-medium ${
+                                                feat.included
+                                                    ? (tier.highlight ? 'text-white/80' : 'text-deep/60')
+                                                    : 'text-deep/20 line-through'
                                                 }`}>
                                                 {feat.text}
                                             </span>
@@ -177,9 +188,10 @@ export const TripleTier = () => {
                                 {/* CTA */}
                                 <Link
                                     href={tier.cta.href}
-                                    className={`w-full py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all ${tier.highlight
-                                        ? 'bg-primary text-white shadow-lg shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]'
-                                        : 'bg-zinc-50 text-deep border border-zinc-100 hover:border-primary/30 hover:text-primary'
+                                    className={`w-full py-4 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all ${
+                                        tier.highlight
+                                            ? 'bg-primary text-white shadow-lg shadow-primary/30 hover:scale-[1.02] active:scale-[0.98]'
+                                            : 'bg-zinc-50 text-deep border border-zinc-100 hover:border-primary/30 hover:text-primary'
                                         }`}
                                 >
                                     {tier.cta.label}

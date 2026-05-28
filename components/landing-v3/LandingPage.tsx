@@ -99,12 +99,16 @@ export default function LandingPage() {
                 {/* Latest from the Blog - SEO Scaling */}
                 <BlogPreview />
 
-                {/* Footer */}
-                <FooterV2 />
+                <AccordionV2 items={faqItems} />
             </main>
 
-            {/* Waitlist Modal */}
-            <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
+            <FooterV2 />
+
+            {/* Global Waitlist Modal */}
+            <WaitlistModal
+                isOpen={isWaitlistOpen}
+                onClose={() => setIsWaitlistOpen(false)}
+            />
         </div>
     );
 }
