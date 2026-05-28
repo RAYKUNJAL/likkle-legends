@@ -26,8 +26,8 @@ const tiers = [
         price: "$10",
         billing: "One-time payment",
         highlight: true,
-        ribbon: "BEST FOR NEW FAMILIES",
-        cta: { label: "Get the $10 Pass", href: "/checkout?plan=plan_mail_intro" },
+        ribbon: "MOST POPULAR",
+        cta: { label: "Claim Your Child's Passport", href: "/checkout?plan=plan_mail_intro" },
         icon: Zap,
         trustNotes: ["US mail only (CA/UK coming soon)", "30-Day Triple Promise"],
         features: [
@@ -103,9 +103,10 @@ export const TripleTier = () => {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.1 }}
-                            className={`relative rounded-2xl sm:rounded-[2.5rem] overflow-hidden transition-all duration-500 ${tier.highlight
-                                ? 'bg-deep text-white shadow-premium-xl scale-[1.02] md:scale-105 z-10 border-2 border-primary/30'
-                                : 'bg-white border border-zinc-100 shadow-sm hover:shadow-premium'
+                            className={`relative rounded-2xl sm:rounded-[2.5rem] overflow-hidden transition-all duration-500 ${
+                                tier.highlight
+                                    ? 'bg-deep text-white shadow-premium-xl scale-[1.02] md:scale-105 z-10 border-2 border-primary/30'
+                                    : 'bg-white border border-zinc-100 shadow-sm hover:shadow-premium'
                                 }`}
                         >
                             {tier.ribbon && (
