@@ -71,12 +71,19 @@ export default function Pricing({ content }: PricingProps) {
           {filteredPlans.map((plan: any) => (
             <div
               key={plan.id}
-              className={`relative glass-card flex flex-col h-full border transition-all duration-500 hover:shadow-2xl group ${plan.badge ? 'border-emerald-200 shadow-xl scale-105 z-10' : 'border-slate-100 shadow-premium'
+              className={`relative glass-card flex flex-col h-full border transition-all duration-500 hover:shadow-2xl group ${
+                plan.badge === 'MOST POPULAR'
+                  ? 'border-[var(--caribbean-sun)] shadow-2xl lg:scale-105 lg:z-10 bg-gradient-to-br from-white to-[var(--caribbean-sun)]/5'
+                  : 'border-slate-100 shadow-premium'
                 }`}
               style={{ borderRadius: '3rem' }}
             >
               {plan.badge && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">
+                <div className={`absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg ${
+                  plan.badge === 'MOST POPULAR'
+                    ? 'bg-gradient-to-r from-[var(--caribbean-sun)] to-[var(--caribbean-mango)] text-white shadow-[var(--caribbean-sun)]/20'
+                    : 'bg-emerald-500 text-white shadow-emerald-500/20'
+                  }`}>
                   {plan.badge}
                 </div>
               )}
@@ -91,15 +98,15 @@ export default function Pricing({ content }: PricingProps) {
 
                 <div className="mb-8">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-black text-deep tracking-tighter">
+                    <span className={`text-5xl font-black tracking-tighter ${plan.badge === 'MOST POPULAR' ? 'text-[var(--caribbean-ocean)]' : 'text-deep'}`}>
                       {plan.price_display.split('/')[0]}
                     </span>
-                    <span className="text-slate-400 font-bold uppercase text-xs tracking-widest">
+                    <span className={`font-bold uppercase text-xs tracking-widest ${plan.badge === 'MOST POPULAR' ? 'text-[var(--caribbean-sun)]' : 'text-slate-400'}`}>
                       {plan.price_display.includes('/') ? '/' + plan.price_display.split('/')[1] : ''}
                     </span>
                   </div>
                   {plan.notice && (
-                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mt-2">
+                    <p className={`text-[10px] font-black uppercase tracking-widest mt-2 ${plan.badge === 'MOST POPULAR' ? 'text-[var(--caribbean-mango)]' : 'text-emerald-600'}`}>
                       {plan.notice}
                     </p>
                   )}
@@ -134,9 +141,12 @@ export default function Pricing({ content }: PricingProps) {
 
                 <Link
                   href={plan.cta.href}
-                  className={`w-full py-5 rounded-2xl font-black text-center text-sm uppercase tracking-widest transition-all ${plan.badge
-                    ? 'bg-deep text-white shadow-xl hover:bg-slate-800'
-                    : 'bg-white border-2 border-slate-100 text-deep hover:bg-slate-50'
+                  className={`w-full py-5 rounded-2xl font-black text-center text-sm uppercase tracking-widest transition-all ${
+                    plan.badge === 'MOST POPULAR'
+                      ? 'bg-gradient-to-r from-[var(--caribbean-ocean)] to-[var(--caribbean-mango)] text-white shadow-xl hover:shadow-2xl hover:-translate-y-1'
+                      : plan.badge
+                        ? 'bg-deep text-white shadow-xl hover:bg-slate-800'
+                        : 'bg-white border-2 border-slate-100 text-deep hover:bg-slate-50'
                     }`}
                 >
                   {plan.cta.label}
