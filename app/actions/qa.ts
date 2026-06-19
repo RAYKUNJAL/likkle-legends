@@ -127,6 +127,12 @@ export async function runLaunchChecks(token: string) {
 
         const hasConfig = (siteSettings.count || 0) > 0;
 
+        // 2. Check critical environment variables (server-side)
+        const aiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
+        const voiceKey = process.env.ELEVENLABS_API_KEY;
+        const emailKey = process.env.RESEND_API_KEY;
+        const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+
         return {
             success: true,
             database: {
@@ -138,6 +144,22 @@ export async function runLaunchChecks(token: string) {
                 message: hasConfig ? 'System configuration found in database.' : 'No site_settings found. Run seed-cms.'
             },
             rls: { status: 'success', message: 'Policies audited & verified.' },
+            ai: {
+                status: aiKey ? 'success' : 'error',
+                message: aiKey ? 'Gemini AI key configured.' : 'GEMINI_API_KEY is missing — story generation will fail.',
+            },
+            voice: {
+                status: voiceKey ? 'success' : 'error',
+                message: voiceKey ? 'ElevenLabs key configured.' : 'ELEVENLABS_API_KEY is missing — voice narration will fail.',
+            },
+            email: {
+                status: emailKey ? 'success' : 'error',
+                message: emailKey ? 'Resend email key configured.' : 'RESEND_API_KEY is missing — transactional emails will fail.',
+            },
+            payments: {
+                status: paypalClientId ? 'success' : 'error',
+                message: paypalClientId ? 'PayPal Client ID configured.' : 'NEXT_PUBLIC_PAYPAL_CLIENT_ID is missing — checkout will fail.',
+            },
         };
     } catch (e: any) {
         console.error("Launch Check Error", e);
