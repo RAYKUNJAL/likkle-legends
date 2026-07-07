@@ -38,6 +38,7 @@ function cleanParam(searchParams: ReturnType<typeof useSearchParams>, key: strin
     }
 }
 
+
 function SignupForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
