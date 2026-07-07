@@ -81,7 +81,26 @@ export async function getStorybooks() {
 }
 export const getVideos = () => getContentItems('video');
 export const getMissions = (ageTrack?: string) => getContentItems('mission', undefined, ageTrack);
-export const getGameById = (id: string) => getContentById(id);
+
+// Games live in the dedicated `games` table (admin game builder).
+// Fall back to legacy content_items for older records.
+export async function getGameById(id: string) {
+    if (!isSupabaseConfigured()) {
+        return null;
+    }
+
+    const { data: gameRow, error: gameError } = await supabase
+        .from('games')
+        .select('id, title, description, game_type, thumbnail_url, tier_required, estimated_time, age_track, reward_xp, game_url, is_active')
+        .eq('id', id)
+        .maybeSingle();
+
+    if (!gameError && gameRow) {
+        return gameRow;
+    }
+
+    return getContentById(id);
+}
 
 // Printables — dedicated table (has pdf_url, category, thumbnail_url, is_new)
 export async function getPrintables() {

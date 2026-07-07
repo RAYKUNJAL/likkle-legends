@@ -336,36 +336,36 @@ export default function GamesHubPage() {
 
             {/* Header */}
             <header className="relative z-10 bg-black/30 backdrop-blur-xl border-b border-white/10">
-                <div className="max-w-7xl mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
+                <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                             <Link
                                 href="/portal"
-                                className="p-2.5 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/10"
+                                className="p-2.5 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/10 shrink-0"
                                 title="Back to Portal"
                             >
                                 <ArrowLeft size={22} />
                             </Link>
-                            <div>
-                                <h1 className="text-2xl font-black tracking-tight flex items-center gap-2">
-                                    <span className="text-3xl">🎮</span>
+                            <div className="min-w-0">
+                                <h1 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
+                                    <span className="text-2xl sm:text-3xl">🎮</span>
                                     Island Games
                                 </h1>
-                                <p className="text-white/50 text-sm">Learn, Play, Explore!</p>
+                                <p className="text-white/50 text-xs sm:text-sm">Learn, Play, Explore!</p>
                             </div>
                         </div>
 
                         {/* XP & Stats */}
-                        <div className="flex items-center gap-3">
-                            <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 px-5 py-2.5 rounded-2xl flex items-center gap-2">
-                                <Star className="text-amber-400" size={20} />
-                                <span className="font-black text-amber-400">{totalXP.toLocaleString()}</span>
-                                <span className="text-amber-400/60 text-sm">XP</span>
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 px-3 py-2 sm:px-5 sm:py-2.5 rounded-2xl flex items-center gap-1.5 sm:gap-2">
+                                <Star className="text-amber-400" size={18} />
+                                <span className="font-black text-amber-400 text-sm sm:text-base">{totalXP.toLocaleString()}</span>
+                                <span className="text-amber-400/60 text-xs sm:text-sm">XP</span>
                             </div>
-                            <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 px-5 py-2.5 rounded-2xl flex items-center gap-2">
-                                <Trophy className="text-green-400" size={20} />
-                                <span className="font-black text-green-400">{unlockedGames.length}</span>
-                                <span className="text-green-400/60 text-sm">Unlocked</span>
+                            <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 px-3 py-2 sm:px-5 sm:py-2.5 rounded-2xl flex items-center gap-1.5 sm:gap-2">
+                                <Trophy className="text-green-400" size={18} />
+                                <span className="font-black text-green-400 text-sm sm:text-base">{unlockedGames.length}</span>
+                                <span className="text-green-400/60 text-xs sm:text-sm">Unlocked</span>
                             </div>
                         </div>
                     </div>
@@ -442,18 +442,18 @@ export default function GamesHubPage() {
 
             {/* Featured Hero Game */}
             <div className="relative z-10 max-w-7xl mx-auto px-4 mb-8">
-                <div className="relative bg-gradient-to-r from-primary via-secondary to-accent rounded-[2.5rem] p-8 overflow-hidden group cursor-pointer hover:scale-[1.01] transition-transform">
+                <div className="relative bg-gradient-to-r from-primary via-secondary to-accent rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-8 overflow-hidden group cursor-pointer hover:scale-[1.01] transition-transform">
                     {/* Decorative elements */}
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-2xl" />
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/20 rounded-full -ml-24 -mb-24 blur-2xl" />
-                    <Sparkles className="absolute top-6 right-6 text-white/30 w-16 h-16 animate-pulse" />
+                    <Sparkles className="absolute top-6 right-6 text-white/30 w-10 h-10 sm:w-16 sm:h-16 animate-pulse" />
 
-                    <div className="relative z-10 flex items-center gap-8">
-                        <div className="w-32 h-32 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center text-7xl shadow-2xl group-hover:scale-110 transition-transform">
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
+                        <div className="w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/20 backdrop-blur-sm rounded-2xl md:rounded-3xl flex items-center justify-center text-4xl sm:text-5xl md:text-7xl shadow-2xl group-hover:scale-110 transition-transform shrink-0">
                             ✨
                         </div>
-                        <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
+                        <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
                                 <span className="px-3 py-1 bg-white/20 rounded-full text-xs font-bold uppercase tracking-wider">
                                     R.O.T.I. Guided
                                 </span>
@@ -461,11 +461,11 @@ export default function GamesHubPage() {
                                     Kid Favorite
                                 </span>
                             </div>
-                            <h2 className="text-3xl font-black mb-2">Story Library Adventure</h2>
-                            <p className="text-white/80 text-lg mb-4">
+                            <h2 className="text-2xl sm:text-3xl font-black mb-2">Story Library Adventure</h2>
+                            <p className="text-white/80 text-base sm:text-lg mb-4">
                                 Jump into island stories with guided reading, fun vocabulary, and cultural lessons.
                             </p>
-                            <div className="flex items-center gap-6 text-sm">
+                            <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm">
                                 <span className="flex items-center gap-1.5">
                                     <Zap className="text-yellow-300" size={16} />
                                     <span className="font-bold">160 XP</span>
@@ -482,7 +482,7 @@ export default function GamesHubPage() {
                         </div>
                         <Link
                             href="/portal/stories"
-                            className="px-8 py-4 bg-white text-primary rounded-2xl font-black text-lg shadow-xl hover:scale-105 transition-transform flex items-center gap-2"
+                            className="w-full md:w-auto px-8 py-4 bg-white text-primary rounded-2xl font-black text-base sm:text-lg shadow-xl hover:scale-105 transition-transform flex items-center justify-center gap-2"
                         >
                             <Play size={22} /> Start Reading
                         </Link>
@@ -511,7 +511,7 @@ export default function GamesHubPage() {
                         />
                     </div>
                 ) : (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {filteredGames.map((game) => {
                             const tier = (game as any).tier_required || (game as any).tier;
                             const isLocked = !canPlayGame(tier);
