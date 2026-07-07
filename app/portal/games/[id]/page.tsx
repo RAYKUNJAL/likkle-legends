@@ -25,6 +25,15 @@ const IslandTrivia = dynamic(() => import('@/components/games/IslandTrivia'), { 
 const PatoisWizard = dynamic(() => import('@/components/games/PatoisWizard'), { loading: () => <LoadingGame /> });
 const IslandMemory = dynamic(() => import('@/components/games/IslandMemory'), { loading: () => <LoadingGame /> });
 const FlagMatch = dynamic(() => import('@/components/games/FlagMatch'), { loading: () => <LoadingGame /> });
+// New games cherry-picked from game-zone branch
+const SpeedShapes = dynamic(() => import('@/components/games/SpeedShapes'), { loading: () => <LoadingGame /> });
+const WordBuilder = dynamic(() => import('@/components/games/WordBuilder'), { loading: () => <LoadingGame /> });
+const IngredientSort = dynamic(() => import('@/components/games/IngredientSort'), { loading: () => <LoadingGame /> });
+const IslandPassportExplorer = dynamic(() => import('@/components/games/IslandPassportExplorer'), { loading: () => <LoadingGame /> });
+const CountingMarket = dynamic(() => import('@/components/games/CountingMarket'), { loading: () => <LoadingGame /> });
+const RecipeScramble = dynamic(() => import('@/components/games/RecipeScramble'), { loading: () => <LoadingGame /> });
+const RhythmMatcher = dynamic(() => import('@/components/games/RhythmMatcher'), { loading: () => <LoadingGame /> });
+const MathAdventure = dynamic(() => import('@/components/games/MathAdventure'), { loading: () => <LoadingGame /> });
 
 interface CompletionScreenProps {
     score: number;
@@ -144,7 +153,10 @@ export default function GamePlayerPage() {
                 'island-memory', 'island-match',
                 'patois-wizard', 'patois-puzzle',
                 'island-trivia', 'ai-trivia', 'trivia',
-                'color-match', 'flag-match', 'island-explorer'
+                'color-match', 'flag-match', 'island-explorer',
+                'speed-shapes', 'word-builder', 'ingredient-sort',
+                'island-passport-explorer', 'counting-market', 'recipe-scramble',
+                'rhythm-matcher', 'math-adventure'
             ];
 
             if (!featuredIds.includes(gameId)) {
@@ -178,6 +190,22 @@ export default function GamePlayerPage() {
             case 'flag-match':
             case 'island-explorer':
                 return 'Caribbean Flag Match';
+            case 'speed-shapes':
+                return 'Speed Shapes';
+            case 'word-builder':
+                return 'Island Word Builder';
+            case 'ingredient-sort':
+                return 'Ingredient Sort';
+            case 'island-passport-explorer':
+                return 'Island Passport Explorer';
+            case 'counting-market':
+                return 'Caribbean Market Counting';
+            case 'recipe-scramble':
+                return 'Recipe Scramble';
+            case 'rhythm-matcher':
+                return 'Rhythm Matcher';
+            case 'math-adventure':
+                return "R.O.T.I.'s Math Adventure";
             default:
                 return 'Island Game';
         }
@@ -258,6 +286,23 @@ export default function GamePlayerPage() {
             case 'flag-match':
             case 'island-explorer':
                 return <FlagMatch onComplete={(earnedScore) => handleComplete(earnedScore, 10, 10)} />;
+            // New games from game-zone branch
+            case 'speed-shapes':
+                return <SpeedShapes onComplete={handleComplete} />;
+            case 'word-builder':
+                return <WordBuilder onComplete={handleComplete} />;
+            case 'ingredient-sort':
+                return <IngredientSort onComplete={handleComplete} />;
+            case 'island-passport-explorer':
+                return <IslandPassportExplorer onComplete={handleComplete} />;
+            case 'counting-market':
+                return <CountingMarket onComplete={handleComplete} />;
+            case 'recipe-scramble':
+                return <RecipeScramble onComplete={handleComplete} />;
+            case 'rhythm-matcher':
+                return <RhythmMatcher onComplete={handleComplete} />;
+            case 'math-adventure':
+                return <MathAdventure onComplete={handleComplete} />;
             default:
                 return (
                     <div className="text-center py-20">
