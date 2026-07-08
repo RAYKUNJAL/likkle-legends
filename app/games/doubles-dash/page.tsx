@@ -112,11 +112,11 @@ export default function DoublesDashPage() {
           </p>
         </div>
 
-        <div className="relative mt-12 group">
+        <div className="relative mt-6 sm:mt-12 group w-full max-w-[800px]">
           <div className="absolute -inset-1 bg-gradient-to-r from-[#ffb300] to-[#f57c00] rounded-24px blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
           <div
               id="doubles-dash-game"
-              className="relative w-[800px] max-w-full aspect-[4/3] rounded-2xl border-8 border-white shadow-2xl overflow-hidden bg-[#fdf5e6]"
+              className="relative w-full aspect-[4/3] rounded-2xl border-4 sm:border-8 border-white shadow-2xl overflow-hidden bg-[#fdf5e6] touch-none"
           />
         </div>
 

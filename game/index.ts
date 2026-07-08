@@ -26,10 +26,19 @@ export function initDoublesDashGame(parentId = 'doubles-dash-game', context: Gam
 
   const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
     parent: parentId,
     backgroundColor: '#f8e2b6',
+    // FIT keeps the 800x600 world but scales the canvas to the container,
+    // so the game is fully visible and playable on phones and tablets.
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      width: 800,
+      height: 600,
+    },
+    input: {
+      activePointers: 3,
+    },
     physics: {
       default: 'arcade',
       arcade: {

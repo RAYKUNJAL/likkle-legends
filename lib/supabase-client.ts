@@ -49,25 +49,32 @@ class SupabaseClientManager {
         }
 
         if (useServiceRole) {
-            if (serviceKey) {
+            if (serviceKey && typeof window === 'undefined') {
                 return createClient(url, serviceKey, {
                     auth: { persistSession: false, autoRefreshToken: false }
                 });
-            } else {
-                console.warn('❌ Supabase Service Role Key is MISSING. Admin operations will fail, falling back to Anon key for basic connectivity check.');
-                // Fallback to anon key so we have *something* to return, preventing crash
-                return createClient(url, anonKey, {
-                    auth: { persistSession: false, autoRefreshToken: false }
-                });
             }
+            if (typeof window !== 'undefined') {
+                // Never instantiate a second GoTrueClient in the browser — it
+                // contends on the LockManager auth lock and stalls real auth.
+                // Admin operations belong in server actions anyway.
+                const { createClient: getSharedBrowserClient } = require('./supabase/client');
+                return getSharedBrowserClient() as SupabaseClient;
+            }
+            console.warn('❌ Supabase Service Role Key is MISSING. Admin operations will fail, falling back to Anon key for basic connectivity check.');
+            return createClient(url, anonKey, {
+                auth: { persistSession: false, autoRefreshToken: false }
+            });
         }
 
 
-        // Browser: use createBrowserClient (@supabase/ssr) so this client reads from
-        // the same HTTP cookies that signupAction/signInAction write to via the SSR client.
-        // This ensures all DB operations (createChild, etc.) are authenticated.
+        // Browser: reuse the shared singleton from lib/supabase/client so the
+        // whole app has exactly ONE GoTrueClient. A second instance contends on
+        // the Navigator LockManager auth-token lock, stalling auth.getUser()
+        // for 10s+ and dropping users onto the "Connecting to Island" screen.
         if (typeof window !== 'undefined') {
-            return createBrowserClient(url, anonKey) as unknown as SupabaseClient;
+            const { createClient: getSharedBrowserClient } = require('./supabase/client');
+            return getSharedBrowserClient() as SupabaseClient;
         }
 
         // Server-side: plain client, no session persistence needed
