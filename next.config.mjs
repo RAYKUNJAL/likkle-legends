@@ -1,6 +1,8 @@
 const nextConfig = {
   compress: true,
   poweredByHeader: false,
+  // Self-contained server bundle for Docker/VPS deploys (deploy/README.md)
+  output: 'standalone',
 
   async headers() {
     return [
