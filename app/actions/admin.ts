@@ -149,8 +149,7 @@ export async function verifyAdmin(token: string) {
 
         const isDevAdmin =
             user.email === 'admin@likklelegends.com' ||
-            user.email === 'raykunjal@gmail.com' ||
-            user.email?.includes('raykunjal');
+            user.email === 'raykunjal@gmail.com';
 
         const hasAdminRole =
             adminCheck.data?.role === 'admin' ||

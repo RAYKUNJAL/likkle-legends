@@ -1,11 +1,11 @@
 "use client";
 
-import ColorMatch from '@/components/games/ColorMatch';
+import RhythmMatcher from '@/components/games/RhythmMatcher';
 import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
 import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
 
-export default function ColorMatchPage() {
+export default function RhythmMatcherPage() {
     const { user, activeChild } = useUser();
 
     const handleComplete = async (score: number) => {
@@ -15,10 +15,10 @@ export default function ColorMatchPage() {
                 user.id,
                 activeChild.id,
                 'game',
-                'color-match',
+                'rhythm-matcher',
                 score,
                 0,
-                { title: 'Island Color Match' }
+                { title: 'Rhythm Matcher' }
             );
         } catch (error) {
             console.error('Failed to log game activity:', error);
@@ -27,15 +27,15 @@ export default function ColorMatchPage() {
 
     return (
         <GameLayoutWrapper
-            gameId="color-match"
-            title="Island Color Match"
-            description="Match colors and test your visual discrimination skills!"
-            learningFocus="Color recognition, visual discrimination, pattern matching"
-            characterBadge={{ emoji: '🌶️', name: 'Scorcha Pepper', color: '#FF5252' }}
+            gameId="rhythm-matcher"
+            title="Rhythm Matcher"
+            description="Listen to Caribbean rhythms and tap out the beat! Master steel drums, soca, reggae, and calypso patterns."
+            learningFocus="Auditory memory, pattern recognition, rhythm awareness, Caribbean music culture, beat coordination"
+            characterBadge={{ emoji: '🥁', name: 'Drummer Destiny', color: '#FF5296' }}
             xpReward={150}
-            gradient="from-pink-400 via-purple-500 to-indigo-600"
+            gradient="from-pink-400 via-rose-500 to-red-600"
         >
-            <ColorMatch onComplete={handleComplete} />
+            <RhythmMatcher onComplete={handleComplete} />
         </GameLayoutWrapper>
     );
 }

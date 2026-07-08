@@ -85,114 +85,49 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
                             Step into a world where Caribbean culture comes to life. Personalized missions, physical mail kits, and 4 legendary friends waiting to meet your child.
                         </p>
 
-                        {/* Passport Builder Card */}
-                        <Card className="p-8 shadow-2xl border-white bg-white/80 backdrop-blur-md relative overflow-hidden group">
-                            <div className="absolute top-0 left-0 w-2 h-full bg-[var(--caribbean-ocean)]" />
-                            <form onSubmit={handlePassportSubmit} className="space-y-6">
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="childName" className="text-slate-700 font-bold">Child's Name</Label>
-                                        <Input
-                                            id="childName"
-                                            placeholder="e.g. Malia"
-                                            required
-                                            className="bg-white border-slate-200 text-slate-900 h-12"
-                                            value={passportData.childName}
-                                            onChange={(e) => setPassportData({ ...passportData, childName: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="island" className="text-slate-700 font-bold">Heritage Island</Label>
-                                        <Select onValueChange={(val) => setPassportData({ ...passportData, island: val })} required>
-                                            <SelectTrigger className="bg-white border-slate-200 text-slate-900 h-12">
-                                                <SelectValue placeholder="Select Island" />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-white border-slate-200 max-h-[300px]">
-                                                <SelectItem value="AI">Anguilla 🇦🇮</SelectItem>
-                                                <SelectItem value="AG">Antigua & Barbuda 🇦🇬</SelectItem>
-                                                <SelectItem value="AW">Aruba 🇦🇼</SelectItem>
-                                                <SelectItem value="BS">Bahamas 🇧🇸</SelectItem>
-                                                <SelectItem value="BB">Barbados 🇧🇧</SelectItem>
-                                                <SelectItem value="BM">Bermuda 🇧🇲</SelectItem>
-                                                <SelectItem value="BQ">Bonaire 🇧🇶</SelectItem>
-                                                <SelectItem value="VG">British Virgin Islands 🇻🇬</SelectItem>
-                                                <SelectItem value="KY">Cayman Islands 🇰🇾</SelectItem>
-                                                <SelectItem value="CU">Cuba 🇨🇺</SelectItem>
-                                                <SelectItem value="CW">Curacao 🇨🇼</SelectItem>
-                                                <SelectItem value="DM">Dominica 🇩🇲</SelectItem>
-                                                <SelectItem value="DO">Dominican Republic 🇩🇴</SelectItem>
-                                                <SelectItem value="GD">Grenada 🇬🇩</SelectItem>
-                                                <SelectItem value="GP">Guadeloupe 🇬🇵</SelectItem>
-                                                <SelectItem value="GY">Guyana 🇬🇾</SelectItem>
-                                                <SelectItem value="HT">Haiti 🇭🇹</SelectItem>
-                                                <SelectItem value="JM">Jamaica 🇯🇲</SelectItem>
-                                                <SelectItem value="MQ">Martinique 🇲🇶</SelectItem>
-                                                <SelectItem value="MS">Montserrat 🇲🇸</SelectItem>
-                                                <SelectItem value="PR">Puerto Rico 🇵🇷</SelectItem>
-                                                <SelectItem value="KN">Saint Kitts & Nevis 🇰🇳</SelectItem>
-                                                <SelectItem value="LC">Saint Lucia 🇱🇨</SelectItem>
-                                                <SelectItem value="VC">Saint Vincent & the Grenadines 🇻🇨</SelectItem>
-                                                <SelectItem value="MF">Saint Martin 🇲🇫</SelectItem>
-                                                <SelectItem value="SR">Suriname 🇸🇷</SelectItem>
-                                                <SelectItem value="TT">Trinidad & Tobago 🇹🇹</SelectItem>
-                                                <SelectItem value="TC">Turks & Caicos Islands 🇹🇨</SelectItem>
-                                                <SelectItem value="VI">US Virgin Islands 🇻🇮</SelectItem>
-                                                <SelectItem value="OTHER">Other/Caribbean Roots</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
+                        {/* CRO-Optimized: Single CTA + Trust Elements */}
+                        <div className="space-y-8 max-w-xl">
+                            <div className="flex flex-col gap-4">
+                                <Button
+                                    size="lg"
+                                    className="rounded-2xl h-14 text-lg font-bold bg-gradient-to-r from-[var(--caribbean-ocean)] to-[var(--caribbean-mango)] hover:shadow-2xl text-white shadow-lg hover:-translate-y-1 transition-all"
+                                    onClick={() => router.push('/checkout?plan=plan_mail_intro')}
+                                >
+                                    ✨ Claim Your Child's Passport ($10)
+                                </Button>
 
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="age" className="text-slate-700 font-bold">Age Band</Label>
-                                        <Select onValueChange={(val) => setPassportData({ ...passportData, ageBand: val })} required>
-                                            <SelectTrigger className="bg-white border-slate-200 text-slate-900 h-12">
-                                                <SelectValue placeholder="Age Range" />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-white border-slate-200">
-                                                <SelectItem value="3-5">Explorer (3-5 yrs)</SelectItem>
-                                                <SelectItem value="5-7">Voyager (5-7 yrs)</SelectItem>
-                                                <SelectItem value="7-9">Legend (7-9 yrs)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="country" className="text-slate-700 font-bold">Mail Country</Label>
-                                        <Select onValueChange={(val) => setPassportData({ ...passportData, mailCountry: val })} required>
-                                            <SelectTrigger className="bg-white border-slate-200 text-slate-900 h-12">
-                                                <SelectValue placeholder="Where do you live?" />
-                                            </SelectTrigger>
-                                            <SelectContent className="bg-white border-slate-200">
-                                                <SelectItem value="us">United States 🇺🇸</SelectItem>
-                                                <SelectItem value="ca">Canada 🇨🇦 (Waitlist)</SelectItem>
-                                                <SelectItem value="uk">United Kingdom 🇬🇧 (Waitlist)</SelectItem>
-                                                <SelectItem value="other">Worldwide (Digital Only)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                                    <Button type="submit" size="lg" className="flex-1 rounded-2xl h-14 text-lg font-bold bg-[var(--caribbean-ocean)] hover:bg-[var(--caribbean-ocean)]/90 text-white shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all">
-                                        Start $10 Legend Intro Pass
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="lg"
-                                        className="flex-1 rounded-2xl h-14 border-2 hover:bg-slate-50 text-slate-700 border-slate-200 font-bold"
-                                        onClick={() => window.location.href = '#features'}
-                                    >
-                                        Free Digital Preview
-                                    </Button>
-                                </div>
-
-                                <p className="text-center text-sm text-slate-500 font-bold">
-                                    Intro Pass includes first Legend Envelope (US only) + Full Portal Access.
+                                <p className="text-center text-sm text-slate-600 font-semibold">
+                                    🚚 Physical mail ships to US within 48 hours  |  🌍 Digital access worldwide instantly
                                 </p>
-                            </form>
-                        </Card>
+                            </div>
+
+                            {/* Trust Badges */}
+                            <div className="grid grid-cols-3 gap-4 pt-4">
+                                <a href="/privacy" className="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
+                                    <div className="text-2xl">🛡️</div>
+                                    <span className="text-[10px] font-bold text-slate-600 text-center">COPPA<br/>COMPLIANT</span>
+                                </a>
+                                <a href="/privacy" className="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
+                                    <div className="text-2xl">🤖</div>
+                                    <span className="text-[10px] font-bold text-slate-600 text-center">KID-SAFE<br/>AI</span>
+                                </a>
+                                <a href="/heritage" className="flex flex-col items-center gap-2 p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer">
+                                    <div className="text-2xl">🌴</div>
+                                    <span className="text-[10px] font-bold text-slate-600 text-center">HERITAGE<br/>VERIFIED</span>
+                                </a>
+                            </div>
+
+                            {/* Social Proof */}
+                            <div className="bg-[var(--caribbean-sun)]/5 rounded-xl p-6 border border-[var(--caribbean-sun)]/20">
+                                <p className="text-sm font-bold text-slate-700 mb-3">✓ What's Included in the $10 Intro Pass:</p>
+                                <ul className="space-y-2 text-sm text-slate-600">
+                                    <li>✓ First personalized Legend Envelope mailed to your door</li>
+                                    <li>✓ Legend Key Code to unlock exclusive Island Pack</li>
+                                    <li>✓ Instant access to all 5 Learning Zones</li>
+                                    <li>✓ 30-Day money-back guarantee (no questions asked)</li>
+                                </ul>
+                            </div>
+                        </div>
                     </motion.div>
                 </div>
 

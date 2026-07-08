@@ -662,8 +662,8 @@ export default function AdminGameBuilderPage() {
                             label: 'Access',
                             render: (game) => (
                                 <StatusBadge
-                                    status={game.tier_required === 'free' ? 'Free' : game.tier_required.replace('_', ' ')}
-                                    variant={game.tier_required === 'free' ? 'success' : 'info'}
+                                    status={!game.tier_required || game.tier_required === 'free' ? 'Free' : game.tier_required.replace('_', ' ')}
+                                    variant={!game.tier_required || game.tier_required === 'free' ? 'success' : 'info'}
                                 />
                             ),
                         },
@@ -685,7 +685,7 @@ export default function AdminGameBuilderPage() {
                     ]}
                     actions={(game) => (
                         <div className="flex items-center gap-1">
-                            <ActionButton icon={Eye} onClick={() => window.open(`/portal/games/${game.game_url || game.id}`)} title="Preview" />
+                            <ActionButton icon={Eye} onClick={() => window.open(game.game_url && game.game_url.startsWith('/') ? game.game_url : `/portal/games/${game.id}`)} title="Preview" />
                             <ActionButton icon={Edit} onClick={() => openEditModal(game)} title="Edit" />
                             <ActionButton icon={Trash2} onClick={() => handleDelete(game.id)} variant="danger" title="Delete" />
                         </div>

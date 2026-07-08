@@ -22,12 +22,12 @@ import { BenefitStory } from "@/components/landing-v2/BenefitStory";
 
 const benefitContent = [
     {
-        header: "Physical Surprise",
-        body: "There's no dopamine hit like actual mail. We bridge the gap between digital games and physical wonder with your child's name on a real envelope."
+        header: "The Joy of Physical Connection",
+        body: "There's something magical about opening a real envelope with your child's name on it. We bridge digital learning and tangible wonder, creating moments of pure joy your child will remember."
     },
     {
         header: "Cultural Confidence",
-        body: "We don't just teach reading; we teach heritage. Your child sees themselves reflected in every character and every mission."
+        body: "We don't just teach reading; we teach heritage. Your child sees themselves reflected in every character and every mission, building pride in their roots and confidence in who they are."
     }
 ];
 

@@ -1,10 +1,7 @@
 "use client";
 
 import IslandMemory from '@/components/games/IslandMemory';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-
+import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
 import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
 import { recordGameResult } from '@/lib/game-progress';
@@ -17,7 +14,6 @@ export default function IslandMemoryPage() {
 
         if (!user || !activeChild) return;
         try {
-            // Log the game activity with the score as XP (capped at 200)
             const xp = Math.min(score, 200);
             await logActivity(
                 user.id,
@@ -34,20 +30,16 @@ export default function IslandMemoryPage() {
     };
 
     return (
-        <div className="min-h-screen bg-emerald-50/30 p-4 md:p-8 flex flex-col">
-            <header className="max-w-7xl mx-auto w-full mb-8">
-                <Link
-                    href="/portal/games"
-                    className="inline-flex items-center gap-2 text-emerald-300 hover:text-emerald-600 transition-colors font-bold"
-                >
-                    <ArrowLeft size={20} />
-                    Back to Games
-                </Link>
-            </header>
-
-            <div className="flex-1 max-w-4xl mx-auto w-full">
-                <IslandMemory onComplete={handleComplete} />
-            </div>
-        </div>
+        <GameLayoutWrapper
+            gameId="island-memory"
+            title="Island Memory Match"
+            description="Flip cards and match Caribbean fruits, animals, and landmarks to test your memory!"
+            learningFocus="Visual memory, concentration, island vocabulary"
+            characterBadge={{ emoji: '🦋', name: 'Mango Moko', color: '#69F0AE' }}
+            xpReward={200}
+            gradient="from-emerald-400 via-green-500 to-teal-600"
+        >
+            <IslandMemory onComplete={handleComplete} />
+        </GameLayoutWrapper>
     );
 }

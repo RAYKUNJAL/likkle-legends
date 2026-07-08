@@ -51,6 +51,18 @@ const GAMES = [
     image: '/games/images/scorcha_pepper.jpg',
     theme: 'scorcha',
   },
+  {
+    id: 'doubles-dash',
+    href: '/games/doubles-dash',
+    char: 'Dilly Doubles',
+    charEmoji: '🫓',
+    title: 'Doubles Dash',
+    desc: 'Dash through the streets with Dilly Doubles, dodging obstacles and collecting tasty doubles along the way.',
+    tags: ['Action', 'Reflexes', 'Ages 4-8'],
+    bannerIcon: '🫓',
+    image: '/games/images/dilly-doubles.jpg',
+    theme: 'dilly',
+  },
 ];
 
 const THEME: Record<string, { badge: string; badgeText: string; btn: string }> = {
@@ -58,6 +70,7 @@ const THEME: Record<string, { badge: string; badgeText: string; btn: string }> =
   tanty:   { badge: 'rgba(255,105,180,0.15)', badgeText: '#FF8FCC', btn: 'linear-gradient(135deg,#FF69B4,#C2185B)' },
   roti:    { badge: 'rgba(46,196,182,0.15)',  badgeText: '#2EC4B6', btn: 'linear-gradient(135deg,#2EC4B6,#00796B)' },
   scorcha: { badge: 'rgba(255,23,68,0.15)',   badgeText: '#FF5252', btn: 'linear-gradient(135deg,#FF1744,#D50000)' },
+  dilly:   { badge: 'rgba(255,210,63,0.15)',  badgeText: '#FFD23F', btn: 'linear-gradient(135deg,#FFD23F,#FF6B35)' },
 };
 
 export default function GamesPage() {

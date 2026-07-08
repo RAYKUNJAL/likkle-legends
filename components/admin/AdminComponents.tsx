@@ -86,6 +86,10 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
                 { id: 'characters', label: 'Characters', icon: Palette, href: '/admin/characters' },
                 { id: 'personality', label: 'AI Brain & Personality', icon: Zap, href: '/admin/personality' },
                 { id: 'games', label: 'Game Builder', icon: Gamepad2, href: '/admin/games' },
+                { id: 'radio', label: 'Radio Manager', icon: Music, href: '/admin/radio' },
+                { id: 'decodable', label: 'Decodable Books', icon: BookOpen, href: '/admin/decodable' },
+                { id: 'approval', label: 'Approval Queue', icon: CheckCircle2, href: '/admin/approval' },
+                { id: 'assets', label: 'Asset Library', icon: Upload, href: '/admin/assets' },
             ],
         },
         {
@@ -100,6 +104,9 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
                 { id: 'pixels', label: 'Launch Pixels', icon: Target, href: '/admin/pixels' },
                 { id: 'announcements', label: 'Announcements', icon: Megaphone, href: '/admin/announcements' },
                 { id: 'messages', label: 'Messages', icon: MessageSquare, href: '/admin/messages' },
+                { id: 'contests', label: 'Contests', icon: Trophy, href: '/admin/contests' },
+                { id: 'promoters', label: 'Promoters', icon: Star, href: '/admin/promoters' },
+                { id: 'social-posts', label: 'Social Posts', icon: Send, href: '/admin/social-posts' },
             ],
         },
         {

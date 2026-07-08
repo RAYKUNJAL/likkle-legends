@@ -1,10 +1,7 @@
 "use client";
 
 import PatoisWizard from '@/components/games/PatoisWizard';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-
+import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
 import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
 
@@ -14,7 +11,6 @@ export default function PatoisWizardPage() {
     const handleComplete = async (score: number) => {
         if (!user || !activeChild) return;
         try {
-            // Log the game activity with the score as XP (capped at 200)
             const xp = Math.min(score, 200);
             await logActivity(
                 user.id,
@@ -31,20 +27,16 @@ export default function PatoisWizardPage() {
     };
 
     return (
-        <div className="min-h-screen bg-purple-50/30 p-4 md:p-8 flex flex-col">
-            <header className="max-w-7xl mx-auto w-full mb-8">
-                <Link
-                    href="/portal/games"
-                    className="inline-flex items-center gap-2 text-purple-300 hover:text-purple-600 transition-colors font-bold"
-                >
-                    <ArrowLeft size={20} />
-                    Back to Games
-                </Link>
-            </header>
-
-            <div className="flex-1 max-w-4xl mx-auto w-full">
-                <PatoisWizard onComplete={handleComplete} />
-            </div>
-        </div>
+        <GameLayoutWrapper
+            gameId="patois-wizard"
+            title="Patois Word Wizard"
+            description="Master Jamaican Patois by learning words and their meanings!"
+            learningFocus="Jamaican Patois vocabulary, reading comprehension, cultural identity"
+            characterBadge={{ emoji: '👵🏾', name: 'Tanty Spice', color: '#FF8FCC' }}
+            xpReward={200}
+            gradient="from-blue-400 via-indigo-500 to-purple-600"
+        >
+            <PatoisWizard onComplete={handleComplete} />
+        </GameLayoutWrapper>
     );
 }

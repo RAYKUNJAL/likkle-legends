@@ -74,8 +74,8 @@ export const siteContent = {
         steps: [
             {
                 step: 1,
-                title: "Choose your child’s age path",
-                description: "Pick Mini Legends (4–5) or Big Legends (6–8) so stories and missions match your child’s stage.",
+                title: "Choose your child's age path",
+                description: "Pick Mini Legends (4–5) or Big Legends (6–8) so stories and missions match your child's stage.",
                 icon: "age-path"
             },
             {
@@ -100,7 +100,7 @@ export const siteContent = {
             {
                 label: "PERSONALIZED LETTER",
                 title: "Stories that speak to your child",
-                description: "A story-driven letter from a Likkle Legend character, tailored to your child’s age track, turning mail time into a moment of connection.",
+                description: "A story-driven letter from a Likkle Legend character, tailored to your child's age track, turning mail time into a moment of connection.",
                 media: "/images/letter-preview.png"
             },
             {
@@ -123,7 +123,7 @@ export const siteContent = {
             },
             {
                 label: "AI READING BUDDY",
-                title: "Reading help when you’re busy",
+                title: "Reading help when you're busy",
                 description: "A gentle, smart reading buddy that listens as your child reads and offers simple feedback to build confidence and fluency.",
                 media: "/images/ai-reading-buddy.png"
             }
@@ -163,8 +163,8 @@ export const siteContent = {
             {
                 id: "roti",
                 name: "R.O.T.I.",
-                role: "Your Child’s Island Learning Buddy",
-                tagline: "“Beep boop! Ready to learn?”",
+                role: "Your Child's Island Learning Buddy",
+                tagline: "\"Beep boop! Ready to learn?\"",
                 description: "A friendly guide who helps children learn step by step through stories, games, and gentle encouragement.",
                 brand_role: "Primary guide and onboarding companion",
                 parent_value: [
@@ -179,7 +179,7 @@ export const siteContent = {
                 id: "tanty_spice",
                 name: "Tanty Spice",
                 role: "Village Heart & Wisdom",
-                tagline: "“Everything Cook & Curry, me darlin'.”",
+                tagline: "\"Everything Cook & Curry, me darlin'.\"",
                 description: "A warm, caring presence who helps lessons land with kindness, patience, and reassurance.",
                 brand_role: "Emotional anchor and trust builder for parents",
                 parent_value: [
@@ -194,246 +194,38 @@ export const siteContent = {
                 id: "dilly_doubles",
                 name: "Dilly Doubles",
                 role: "Joy & Sharing Guide",
-                tagline: "“Sharing is the island way!”",
+                tagline: "\"Sharing is the island way!\"",
                 description: "A playful island friend who teaches curiosity, sharing, and community through fun and laughter.",
                 brand_role: "Cultural joy engine and standout IP character",
                 parent_value: [
-                    "Introduces culture naturally without lectures",
-                    "Encourages kids to try new things",
-                    "Builds social skills through playful stories"
+                    "Makes learning feel like play",
+                    "Builds curiosity about Caribbean culture",
+                    "Encourages kind, social behavior"
                 ],
-                image: "/images/dilly-doubles.jpg"
+                image: "/images/dilly_doubles_avatar.jpg",
+                model_3d_url: "https://modelviewer.dev/shared-assets/models/Duck.glb"
             },
             {
-                id: "mango_moko",
-                name: "Mango Moko",
-                role: "Nature & Balance Guardian",
-                tagline: "“Up high, watching over the rhythm.”",
-                description: "A calm, observant guide who helps children slow down, listen, and learn from the world around them.",
-                brand_role: "Perspective guide that balances energy with calm",
+                id: "scholar_supreme",
+                name: "Scholar Supreme",
+                role: "Knowledge & Adventure",
+                tagline: "\"Books are portals!\"",
+                description: "A wise, bookish guide who opens doors to stories, history, and discovery on every island.",
+                brand_role: "Secondary guide for deeper learning and literacy",
                 parent_value: [
-                    "Encourages patience and self-regulation",
-                    "Builds respect for nature and balance",
-                    "Adds depth without overstimulation"
+                    "Promotes early love of reading",
+                    "Makes cultural history accessible",
+                    "Develops critical thinking skills"
                 ],
-                image: "/images/mango_moko.png"
-            },
-            {
-                id: "benny_of_shadows",
-                name: "Benny of Shadows",
-                role: "Guardian of Secrets & Nature",
-                tagline: "“Listen... the earth is speaking.”",
-                description: "A mysterious and quiet guide who helps children connect with the hidden wonders of nature and the balance of the island.",
-                brand_role: "Quiet guide that balances technology with nature",
-                parent_value: [
-                    "Encourages curiosity about the natural world",
-                    "Builds respect for the environment",
-                    "Adds a touch of mystery and wonder to learning"
-                ],
-                image: "/images/benny-of-shadows.jpg"
-            },
-            {
-                id: "steelpan_sam",
-                name: "Steelpan Sam",
-                role: "Rhythm & Music Master",
-                tagline: "“Feel the beat, learn the rhythm!”",
-                description: "A musical genius who turns every lesson into a song, helping children memorize and enjoy their learning.",
-                brand_role: "Musical engagement and memory coach",
-                parent_value: [
-                    "Makes memorization easy through rhythm",
-                    "Builds appreciation for Caribbean music",
-                    "keeps the energy high and fun"
-                ],
-                image: "/images/steelpan_sam.png"
+                image: "/images/scholar_supreme_avatar.jpg",
+                model_3d_url: "https://modelviewer.dev/shared-assets/models/Parrot.glb"
             }
         ]
-    },
-    island_radio: {
-        title: "Island Radio",
-        subtitle: "A safe listening space for kids—nursery rhymes, island sounds, and learning songs.",
-        tagline: "Now Available",
-        cta: {
-            label: "Listen to Free Radio",
-            href: "/radio"
-        },
-        benefits: [
-            { label: 'Ad-free', description: 'No interruptions or ads', icon: 'shield' },
-            { label: 'Kid-safe', description: 'Curated content only', icon: 'volume' },
-            { label: 'Perfect for', description: 'Car rides & mornings', icon: 'car' }
-        ]
-    },
-    monthly_drop: {
-        title: "A new island friend every month",
-        subtitle: "Each month, children meet a new visiting character with a special story or lesson — giving them something exciting to look forward to.",
-        tagline: "Fresh Content",
-        image: "/images/mystery-character.png",
-        cta: {
-            label: "Meet this month’s island friend",
-            href: "/characters"
-        },
-        items: [
-            { label: 'New character', icon: 'users' },
-            { label: 'New story', icon: 'book' },
-            { label: 'New song', icon: 'music' },
-            { label: 'New activity', icon: 'palette' }
-        ]
-    },
-    ai_story_studio: {
-        title: "Build your custom legend story",
-        subtitle: "Personalize an adventure where your child is the hero. Join the club for full books and saved stories.",
-        form: {
-            fields: [
-                {
-                    id: "child_name",
-                    label: "Child's name",
-                    type: "text",
-                    placeholder: "Enter name..."
-                },
-                {
-                    id: "island",
-                    label: "Island",
-                    type: "select",
-                    options: [
-                        "Anguilla", "Antigua and Barbuda", "Aruba", "Bahamas", "Barbados",
-                        "Belize", "Bermuda", "Bonaire", "British Virgin Islands", "Cayman Islands",
-                        "Cuba", "Curaçao", "Dominica", "Dominican Republic", "Grenada",
-                        "Guadeloupe", "Guyana", "Haiti", "Jamaica", "Martinique",
-                        "Montserrat", "Puerto Rico", "Saba", "Saint Barthélemy",
-                        "Saint Kitts and Nevis", "Saint Lucia", "Saint Martin",
-                        "Saint Vincent and the Grenadines", "Sint Eustatius", "Sint Maarten",
-                        "Suriname", "Trinidad and Tobago", "Turks and Caicos Islands", "US Virgin Islands"
-                    ]
-                },
-                {
-                    id: "guide",
-                    label: "Choose your Island Guide",
-                    type: "select",
-                    options: ["Tanty Spice", "Dilly Doubles", "Roti"]
-                },
-                {
-                    id: "location",
-                    label: "Where are we exploring?",
-                    type: "select",
-                    options: ["Rainforest", "Beach", "Local Market", "Grandma's Kitchen"]
-                },
-                {
-                    id: "mission",
-                    label: "What is our mission?",
-                    type: "select",
-                    options: ["Folklore Quest", "Number Hunt", "Color Splash", "Random Adventure"]
-                }
-            ],
-            primary_button: {
-                label: "Generate Legend Story"
-            },
-            states: {
-                idle_message: "Fill in your child's name and hit 'Generate'.",
-                loading_message: "Summoning island magic...",
-                error_message: "Oye! The magic is sleeping right now. Please try again in a bit.",
-                require_api_key: false
-            }
-        },
-        v2: {
-            vibes: [
-                {
-                    id: "silly_funny",
-                    label: "Silly & Funny",
-                    kid_prompt: "Make it goofy and fun with jokes kids understand.",
-                    icon: "laugh",
-                    color_hint: "bright",
-                    audio_tone: "playful",
-                    emoji: "😂"
-                },
-                {
-                    id: "brave_adventure",
-                    label: "Brave Adventure",
-                    kid_prompt: "A heroic journey focused on courage and discovery.",
-                    icon: "shield",
-                    color_hint: "strong",
-                    audio_tone: "epic",
-                    emoji: "🛡️"
-                },
-                {
-                    id: "mystery_solving",
-                    label: "Mystery Solving",
-                    kid_prompt: "Solve a fun island mystery with clues and thinking.",
-                    icon: "magnifier",
-                    color_hint: "cool",
-                    audio_tone: "curious",
-                    emoji: "🔍"
-                },
-                {
-                    id: "carnival_party",
-                    label: "Carnival Party",
-                    kid_prompt: "Music, dancing, colorful costumes, big joy.",
-                    icon: "music",
-                    color_hint: "vibrant",
-                    audio_tone: "energetic",
-                    emoji: "🎭"
-                },
-                {
-                    id: "animal_helpers",
-                    label: "Animal Helpers",
-                    kid_prompt: "Friendly animals help solve a simple problem.",
-                    icon: "paw",
-                    color_hint: "natural",
-                    audio_tone: "friendly",
-                    emoji: "🐾"
-                },
-                {
-                    id: "super_helpers",
-                    label: "Super Helpers",
-                    kid_prompt: "A kid helps like a hero—simple powers, big heart.",
-                    icon: "star",
-                    color_hint: "heroic",
-                    audio_tone: "confident",
-                    emoji: "⭐"
-                }
-            ],
-            loading_steps: [
-                { id: "step_story", label: "Writing your story…" },
-                { id: "step_art", label: "Drawing pictures…" },
-                { id: "step_voice", label: "Recording R.O.T.I.’s voice…" },
-                { id: "step_build", label: "Putting your book together…" }
-            ],
-            fun_facts: [
-                "Did you know? Mangos can be sweet or tangy!",
-                "Anansi the spider is the most famous trickster in the Caribbean.",
-                "Steel pans were originally made from empty oil drums!",
-                "Hummingbirds are the smallest birds in the world!",
-                "The Caribbean Sea is home to over 700 islands!",
-                "Cocoa beans from the Caribbean are used to make some of the world's best chocolate!"
-            ]
-        },
-        upsell_note: "Members can save stories, turn them into printable mini-books, and unlock audio read-aloud with island accents."
-    },
-    roti_voice: {
-        v2: {
-            default_voice: "roti_friendly_male",
-            speech_rate: 0.88,
-            pause_rules: {
-                period_ms: 180,
-                comma_ms: 120
-            },
-            sync: {
-                word_highlighting_enabled: true,
-                fallback: "sentence_highlighting"
-            }
-        }
-    },
-    founders_section: {
-        title: "Created by Caribbean parents and educators",
-        bullets: [
-            "Founded by Caribbean diaspora parents who were tired of not seeing their children represented in kids’ media.",
-            "Guided by social-emotional learning principles used in classrooms around the world.",
-            "Stories and songs inspired by real Caribbean foods, festivals, and everyday family life."
-        ],
-        image: "/images/parent-child-smiling.png"
     },
     pricing: {
         id: "pricing",
         title: "Start Your Culture Journey",
-        subtitle: "Try the Intro Experience for just $10. Most families start here, then upgrade as their legends grow.",
+        subtitle: "Most families start with the $10 Intro Pass. Upgrade anytime as your legends grow.",
         tabs: [
             { id: "mail", label: "Mail Club", description: "Identity in their hands", icon: "📬" },
             { id: "digital", label: "Digital Only", description: "Learning everywhere", icon: "📱" }
@@ -443,8 +235,8 @@ export const siteContent = {
                 id: "starter_mailer",
                 tab: "mail",
                 name: "Island Starter",
-                best_for: "New families wanting the physical connection of monthly letters.",
-                price_display: "$9.99/mo",
+                best_for: "Your first legend adventure with physical mail and digital access.",
+                price_display: "$10/mo",
                 features: [
                     "1 Personalized Physical Letter",
                     "1 Cultural Flashcard & Sticker Pack",
@@ -452,30 +244,30 @@ export const siteContent = {
                     "Interactive Island Radio",
                     "Earn Badges & Streaks"
                 ],
-                badge: "Intro Experience",
-                cta: { label: "Get Started", href: "/checkout?plan=starter_mailer" }
+                badge: "MOST POPULAR",
+                notice: "First month, then continue at $9.99/mo",
+                cta: { label: "Claim Your Child's Passport", href: "/checkout?plan=starter_mailer" }
             },
             {
                 id: "legends_plus",
                 tab: "mail",
                 name: "Legends Plus",
-                best_for: "Families looking for integrated cultural learning and SEL support.",
+                best_for: "For families who want unlimited creative building and premium features.",
                 price_display: "$19.99/mo",
                 features: [
-                    "Everything in Starter Mailer",
-                    "3 Unlimited AI Story Studio Builds",
+                    "Everything in Island Starter",
+                    "Unlimited AI Story Studio Builds",
                     "Premium Voice & Island Accents",
                     "Monthly Educator Content Drop",
                     "Parent Co-Pilot Dashboard"
                 ],
-                badge: "Best Value",
-                cta: { label: "Choose Plus", href: "/checkout?plan=legends_plus" }
+                cta: { label: "Unlock Premium", href: "/checkout?plan=legends_plus" }
             },
             {
                 id: "family_legacy",
                 tab: "mail",
                 name: "Family Legacy",
-                best_for: "The ultimate cultural experience for up to 3 children.",
+                best_for: "The ultimate package for growing families with multiple children.",
                 price_display: "$34.99/mo",
                 features: [
                     "Everything in Legends Plus",
@@ -484,13 +276,13 @@ export const siteContent = {
                     "Direct Support for Custom Topics",
                     "Exclusive Seasonal Gift Box"
                 ],
-                cta: { label: "Choose Legacy", href: "/checkout?plan=family_legacy" }
+                cta: { label: "Build Your Legacy", href: "/checkout?plan=family_legacy" }
             },
             {
                 id: "digital_explorer",
                 tab: "digital",
                 name: "Digital Explorer",
-                best_for: "Standard digital access for learning everywhere.",
+                best_for: "Full digital access without physical mail.",
                 price_display: "$4.99/mo",
                 features: [
                     "Full Digital Portal Access",
@@ -504,7 +296,7 @@ export const siteContent = {
                 id: "free_forever",
                 tab: "digital",
                 name: "Free Explorer",
-                best_for: "Curious families starting their Caribbean journey.",
+                best_for: "Explore Caribbean culture and songs at your own pace.",
                 price_display: "$0/mo",
                 features: [
                     "Core Stories & Songs",
@@ -512,7 +304,7 @@ export const siteContent = {
                     "Community Patois Lessons",
                     "Teacher & School Access"
                 ],
-                cta: { label: "Start Free", href: "/signup?plan=free" }
+                cta: { label: "Explore Free", href: "/signup?plan=free" }
             }
         ],
         comparison_table: [
@@ -538,13 +330,13 @@ export const siteContent = {
         featured_rating: "4.9/5 from parents worldwide",
         items: [
             {
-                quote: "My daughter literally waits by the mailbox for her Likkle Legends letter. She’s finally learning about her Trinidadian roots in a way that’s fun and meaningful.",
+                quote: "My daughter literally waits by the mailbox for her Likkle Legends letter. She's finally learning about her Trinidadian roots in a way that's fun and meaningful.",
                 headline: "She waits by the mailbox every month.",
                 name: "Sarah J.",
                 meta: "Mom of a 6-year-old · New York, USA"
             },
             {
-                quote: "The emotional literacy component is what sold me. My son is learning how to talk about his feelings while celebrating his culture. It’s beautiful.",
+                quote: "The emotional literacy component is what sold me. My son is learning how to talk about his feelings while celebrating his culture. It's beautiful.",
                 headline: "Culture and feelings in one place.",
                 name: "David R.",
                 meta: "Dad of a 7-year-old · London, UK"
@@ -552,14 +344,14 @@ export const siteContent = {
         ]
     },
     cta_banner: {
-        headline: "Ready to start your child’s Caribbean adventure?",
+        headline: "Ready to start your child's Caribbean adventure?",
         subheadline: "Join 500+ families building identity, emotional literacy, and joyful memories each month.",
         primary_cta: {
             label: "Start Mail Club for $10/month",
             href: "/get-started"
         },
         secondary_cta: {
-            label: "See what’s inside a letter",
+            label: "See what's inside a letter",
             href: "#sample-letter"
         }
     },
@@ -569,11 +361,11 @@ export const siteContent = {
         items: [
             {
                 question: "How does the physical mail work?",
-                answer: "Every month, your child receives a personalized envelope addressed directly to them. Inside, they’ll find a letter from a Likkle Legend, a cultural flashcard, and a physical coloring sheet. Subscriptions ship by the 15th of every month."
+                answer: "Every month, your child receives a personalized envelope addressed directly to them. Inside, they'll find a letter from a Likkle Legend, a cultural flashcard, and a physical coloring sheet. Subscriptions ship by the 15th of every month."
             },
             {
                 question: "Is it suitable for children outside the Caribbean?",
-                answer: "Absolutely. Likkle Legends is designed for children everywhere. For those with Caribbean roots, it’s a way to stay connected. For others, it’s a beautiful way to learn about a vibrant culture, emotional literacy, and island pride."
+                answer: "Absolutely. Likkle Legends is designed for children everywhere. For those with Caribbean roots, it's a way to stay connected. For others, it's a beautiful way to learn about a vibrant culture, emotional literacy, and island pride."
             },
             {
                 question: "What age groups are supported?",
@@ -589,7 +381,7 @@ export const siteContent = {
             },
             {
                 question: "What if my child is not Caribbean?",
-                answer: "Cultural celebration is for everyone! Likkle Legends teaches universal values like kindness, courage, and family through the specific, vibrant lens of the Caribbean. It’s a great way to build global perspective."
+                answer: "Cultural celebration is for everyone! Likkle Legends teaches universal values like kindness, courage, and family through the specific, vibrant lens of the Caribbean. It's a great way to build global perspective."
             }
         ]
     },

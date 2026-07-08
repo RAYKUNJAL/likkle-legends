@@ -41,9 +41,27 @@ const GAME_CATEGORIES = [
     { id: 'trivia', label: 'Trivia', icon: Brain, color: 'from-purple-500 to-indigo-600', emoji: '🧠' },
     { id: 'memory', label: 'Memory', icon: Puzzle, color: 'from-green-500 to-emerald-600', emoji: '🧩' },
     { id: 'word', label: 'Words', icon: BookOpen, color: 'from-blue-500 to-cyan-600', emoji: '📖' },
+    { id: 'math', label: 'Math', icon: Target, color: 'from-red-500 to-orange-600', emoji: '🔢' },
     { id: 'adventure', label: 'Adventure', icon: MapIcon, color: 'from-orange-500 to-amber-600', emoji: '🗺️' },
     { id: 'creative', label: 'Creative', icon: Palette, color: 'from-pink-500 to-rose-600', emoji: '🎨' },
+    { id: 'music', label: 'Music', icon: Music, color: 'from-violet-500 to-purple-600', emoji: '🎵' },
 ];
+
+// Maps admin game-builder game_type values to hub category tabs
+const GAME_TYPE_TO_CATEGORY: Record<string, string> = {
+    trivia: 'trivia',
+    quiz: 'trivia',
+    memory: 'memory',
+    matching: 'memory',
+    spelling: 'word',
+    word_search: 'word',
+    word_builder: 'word',
+    'word-match': 'word',
+    math: 'math',
+    number_game: 'math',
+    drag_drop: 'creative',
+    music: 'music',
+};
 
 // Featured games with premium styling
 const FEATURED_GAMES = [
@@ -162,6 +180,34 @@ const FEATURED_GAMES = [
         isPopular: false,
     },
     {
+        id: 'counting-market',
+        title: 'Caribbean Market Counting',
+        description: 'Shop the island market on a budget, then make the correct change at checkout!',
+        emoji: '🏪',
+        gradient: 'from-teal-400 via-emerald-500 to-green-600',
+        tier: 'free',
+        category: 'math',
+        xp: 120,
+        time: '6 min',
+        learningFocus: 'Budgeting, addition, subtraction, and money skills',
+        isNew: true,
+        isPopular: false,
+    },
+    {
+        id: 'math-adventure',
+        title: "R.O.T.I.'s Math Adventure",
+        description: 'Join R.O.T.I. on a Caribbean math quest — add, subtract, multiply and divide to deliver goods!',
+        emoji: '➕',
+        gradient: 'from-cyan-400 via-teal-500 to-emerald-600',
+        tier: 'free',
+        category: 'math',
+        xp: 150,
+        time: '8 min',
+        learningFocus: 'Arithmetic (add, subtract, multiply, divide) through story problems',
+        isNew: true,
+        isPopular: true,
+    },
+    {
         id: 'speed-shapes',
         title: 'Speed Shapes',
         description: 'Watch the shape flash, then pick it fast! Test your memory and reflexes.',
@@ -173,6 +219,7 @@ const FEATURED_GAMES = [
         time: '5 min',
         learningFocus: 'Visual memory, shape recognition, and reaction speed',
         isNew: true,
+        isPopular: false,
     },
     {
         id: 'word-builder',
@@ -186,6 +233,21 @@ const FEATURED_GAMES = [
         time: '6 min',
         learningFocus: 'Spelling, vocabulary, and tropical food knowledge',
         isNew: true,
+        isPopular: false,
+    },
+    {
+        id: 'recipe-scramble',
+        title: 'Recipe Scramble',
+        description: 'Unscramble the steps of classic Caribbean recipes and cook them in the right order!',
+        emoji: '🥘',
+        gradient: 'from-orange-400 via-amber-500 to-yellow-600',
+        tier: 'free',
+        category: 'creative',
+        xp: 120,
+        time: '6 min',
+        learningFocus: 'Sequencing, reading comprehension, and Caribbean cuisine',
+        isNew: true,
+        isPopular: false,
     },
     {
         id: 'ingredient-sort',
@@ -199,6 +261,21 @@ const FEATURED_GAMES = [
         time: '5 min',
         learningFocus: 'Categorization and Caribbean food knowledge',
         isNew: true,
+        isPopular: false,
+    },
+    {
+        id: 'rhythm-matcher',
+        title: 'Rhythm Matcher',
+        description: 'Listen to Caribbean beats — soca, reggae & steel drums — then tap the rhythm back!',
+        emoji: '🥁',
+        gradient: 'from-violet-400 via-purple-500 to-fuchsia-600',
+        tier: 'free',
+        category: 'music',
+        xp: 120,
+        time: '6 min',
+        learningFocus: 'Auditory memory, sequencing, and Caribbean music culture',
+        isNew: true,
+        isPopular: true,
     },
     {
         id: 'island-passport-explorer',
@@ -212,58 +289,83 @@ const FEATURED_GAMES = [
         time: '8-10 min',
         learningFocus: 'Caribbean geography, capitals, currencies, and culture',
         isNew: true,
+        isPopular: true,
     },
+    // Game Zone arcade games (full-screen games outside the portal)
     {
-        id: 'counting-market',
-        title: 'Caribbean Market Counting',
-        description: 'Shop the island market on a budget, then make the correct change at checkout!',
-        emoji: '🏪',
-        gradient: 'from-teal-400 via-emerald-500 to-green-600',
+        id: 'island-hop',
+        title: "Mango's Island Hop",
+        description: 'Hop across the islands answering trivia with Mango Moko!',
+        emoji: '🏝️',
+        gradient: 'from-emerald-400 via-teal-500 to-cyan-600',
         tier: 'free',
-        category: 'adventure',
-        xp: 120,
-        time: '6 min',
-        learningFocus: 'Budgeting, addition, subtraction, and money skills',
+        category: 'trivia',
+        xp: 150,
+        time: '8 min',
+        learningFocus: 'Geography, flags, and capitals',
         isNew: true,
+        isPopular: true,
+        game_url: '/games/island-hop',
     },
     {
-        id: 'recipe-scramble',
-        title: 'Recipe Scramble',
-        description: 'Unscramble the steps of classic Caribbean recipes and cook them in the right order!',
+        id: 'tantys-kitchen',
+        title: "Tanty's Kitchen",
+        description: 'Cook 5 real Caribbean dishes with Tanty Spice!',
         emoji: '🍲',
         gradient: 'from-orange-400 via-red-500 to-rose-600',
         tier: 'free',
-        category: 'word',
-        xp: 120,
-        time: '6 min',
-        learningFocus: 'Sequencing, reading comprehension, and Caribbean cuisine',
-        isNew: true,
-    },
-    {
-        id: 'rhythm-matcher',
-        title: 'Rhythm Matcher',
-        description: 'Listen to Caribbean beats — soca, reggae & steel drums — then tap the rhythm back!',
-        emoji: '🥁',
-        gradient: 'from-pink-400 via-rose-500 to-red-600',
-        tier: 'free',
         category: 'creative',
-        xp: 120,
-        time: '6 min',
-        learningFocus: 'Auditory memory, sequencing, and Caribbean music culture',
+        xp: 150,
+        time: '8 min',
+        learningFocus: 'Cooking, sorting, and following steps',
         isNew: true,
+        isPopular: true,
+        game_url: '/games/tantys-kitchen',
     },
     {
-        id: 'math-adventure',
-        title: "R.O.T.I.'s Math Adventure",
-        description: 'Join R.O.T.I. on a Caribbean math quest — add, subtract, multiply and divide to deliver goods!',
-        emoji: '➕',
-        gradient: 'from-cyan-400 via-teal-500 to-emerald-600',
+        id: 'math-market',
+        title: "R.O.T.I.'s Math Market",
+        description: 'Count fruit and make change at the market with R.O.T.I.!',
+        emoji: '🧮',
+        gradient: 'from-blue-400 via-indigo-500 to-violet-600',
+        tier: 'free',
+        category: 'math',
+        xp: 180,
+        time: '8 min',
+        learningFocus: 'Counting, money, and mental math',
+        isNew: true,
+        isPopular: false,
+        game_url: '/games/math-market',
+    },
+    {
+        id: 'spelling-blaze',
+        title: "Scorcha's Spelling Blaze",
+        description: 'Spell Caribbean words before the fire timer burns out!',
+        emoji: '🔥',
+        gradient: 'from-red-400 via-orange-500 to-amber-600',
+        tier: 'free',
+        category: 'word',
+        xp: 160,
+        time: '6 min',
+        learningFocus: 'Spelling under pressure',
+        isNew: true,
+        isPopular: false,
+        game_url: '/games/spelling-blaze',
+    },
+    {
+        id: 'doubles-dash',
+        title: 'Doubles Dash',
+        description: 'Dash through the streets collecting tasty doubles!',
+        emoji: '🫓',
+        gradient: 'from-yellow-400 via-amber-500 to-orange-600',
         tier: 'free',
         category: 'adventure',
         xp: 150,
-        time: '8 min',
-        learningFocus: 'Arithmetic (add, subtract, multiply, divide) through story problems',
+        time: '5 min',
+        learningFocus: 'Reflexes and Trini street food culture',
         isNew: true,
+        isPopular: true,
+        game_url: '/games/doubles-dash',
     },
 ];
 
@@ -298,28 +400,27 @@ export default function GamesHubPage() {
                     return;
                 }
 
-                const enriched = data.map((game) => {
-                    let featured = featuredById.get(game.id);
-                    if (!featured && game.game_url) {
-                        const matchedLocalId = game.game_url.split('/').pop();
-                        if (matchedLocalId) {
-                            featured = featuredById.get(matchedLocalId);
-                        }
-                    }
-                    return {
-                        ...featured,
-                        ...game,
-                        emoji: game.emoji ?? featured?.emoji ?? '🎮',
-                        gradient: game.gradient ?? featured?.gradient ?? 'from-primary to-accent',
-                        xp: game.xp ?? featured?.xp ?? game.reward_xp ?? 100,
-                        time: game.time ?? featured?.time ?? game.estimated_time ?? '5 min',
-                        learningFocus: game.learningFocus ?? featured?.learningFocus,
-                    };
-                });
+                // The featured list always shows. DB games from the admin game
+                // builder are appended, unless they just point at a game we
+                // already show (matched by id or by the route in game_url).
+                const routeKeyOf = (game: Game) => {
+                    const url = typeof game.game_url === 'string' ? game.game_url : '';
+                    const tail = url.split('?')[0].split('/').filter(Boolean).pop();
+                    return tail || String(game.id);
+                };
 
-                const databaseIds = new Set(data.map(g => g.id));
-                const nonDuplicateFeatured = (FEATURED_GAMES as Game[]).filter(g => !databaseIds.has(g.id));
-                setGames([...nonDuplicateFeatured, ...enriched]);
+                const extras = data
+                    .filter((game) => !featuredById.has(String(game.id)) && !featuredById.has(routeKeyOf(game)))
+                    .map((game) => ({
+                        ...game,
+                        category: GAME_TYPE_TO_CATEGORY[(game as any).category || (game as any).game_type || ''] || 'adventure',
+                        emoji: game.emoji ?? '🎮',
+                        gradient: game.gradient ?? 'from-primary to-accent',
+                        xp: game.xp ?? game.reward_xp ?? 100,
+                        time: game.time ?? game.estimated_time ?? '5 min',
+                    }));
+
+                setGames([...(FEATURED_GAMES as Game[]), ...extras]);
             } catch (error) {
                 console.error('Failed to hydrate games:', error);
             }
@@ -335,9 +436,7 @@ export default function GamesHubPage() {
             timeoutHandle = setTimeout(runWhenIdle, 250);
         }
 
-        
-
-    return () => {
+        return () => {
             cancelled = true;
             if (idleHandle !== null && typeof window !== 'undefined' && 'cancelIdleCallback' in window) {
                 window.cancelIdleCallback(idleHandle);
@@ -414,7 +513,7 @@ export default function GamesHubPage() {
     const totalXP = activeChild?.total_xp || 0;
     const unlockedGames = filteredGames.filter(g => canPlayGame((g as any).tier_required || (g as any).tier));
 
-        if (!parentalControls.allow_games) {
+    if (!parentalControls.allow_games) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
                 <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
@@ -696,13 +795,15 @@ export default function GamesHubPage() {
                                             <Link
                                                 prefetch={false}
                                                 href={
-                                                    game.id === 'story-library'
-                                                        ? '/portal/stories'
-                                                        : game.id === 'island-explorer'
-                                                            ? '/portal/games/flag-match'
-                                                            : game.id === 'cultural-quiz'
-                                                                ? '/portal/games/island-trivia'
-                                                                : `/portal/games/${game.id}`
+                                                    game.game_url && game.game_url.startsWith('/')
+                                                        ? game.game_url
+                                                        : game.id === 'story-library'
+                                                            ? '/portal/stories'
+                                                            : game.id === 'island-explorer'
+                                                                ? '/portal/games/flag-match'
+                                                                : game.id === 'cultural-quiz'
+                                                                    ? '/portal/games/island-trivia'
+                                                                    : `/portal/games/${game.id}`
                                                 }
                                                 className="w-full py-3.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-2xl font-bold text-center transition-all flex items-center justify-center gap-2 border border-white/20"
                                             >

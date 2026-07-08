@@ -1,10 +1,7 @@
 "use client";
 
 import FlagMatch from '@/components/games/FlagMatch';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-
+import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
 import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
 
@@ -14,7 +11,6 @@ export default function FlagMatchPage() {
     const handleComplete = async (score: number) => {
         if (!user || !activeChild) return;
         try {
-            // Log the game activity with capped XP
             const xp = Math.min(score, 200);
             await logActivity(
                 user.id,
@@ -31,20 +27,16 @@ export default function FlagMatchPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-blue-50 to-cyan-100 p-4 md:p-8 flex flex-col">
-            <header className="max-w-7xl mx-auto w-full mb-8">
-                <Link
-                    href="/portal/games"
-                    className="inline-flex items-center gap-2 text-blue-300 hover:text-blue-600 transition-colors font-bold"
-                >
-                    <ArrowLeft size={20} />
-                    Back to Games
-                </Link>
-            </header>
-
-            <div className="flex-1 max-w-4xl mx-auto w-full">
-                <FlagMatch onComplete={handleComplete} />
-            </div>
-        </div>
+        <GameLayoutWrapper
+            gameId="flag-match"
+            title="Caribbean Flag Match"
+            description="Match flags with Caribbean countries and territories! Learn geography while having fun!"
+            learningFocus="Caribbean geography, flag recognition, cultural identification, spatial memory"
+            characterBadge={{ emoji: '🚩', name: 'Flag Runner', color: '#FF4757' }}
+            xpReward={200}
+            gradient="from-red-400 via-pink-500 to-rose-600"
+        >
+            <FlagMatch onComplete={handleComplete} />
+        </GameLayoutWrapper>
     );
 }
