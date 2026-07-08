@@ -528,178 +528,159 @@ export default function GamesHubPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#0a0a1a] text-white overflow-hidden">
-            {/* Animated Background */}
-            <div className="fixed inset-0 z-0">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-transparent to-cyan-900/20" />
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-radial from-primary/5 to-transparent rounded-full" />
+        <div className="min-h-screen bg-gradient-to-b from-sky-300 via-sky-100 to-amber-50 text-slate-800 overflow-x-hidden">
+            {/* Sunny island backdrop */}
+            <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+                <div className="absolute -top-16 -right-16 w-56 h-56 sm:w-72 sm:h-72 bg-gradient-to-br from-yellow-300 to-amber-400 rounded-full blur-2xl opacity-70" />
+                <div className="absolute top-24 left-[8%] text-5xl sm:text-7xl opacity-30 select-none">☁️</div>
+                <div className="absolute top-10 right-[30%] text-4xl sm:text-6xl opacity-25 select-none">☁️</div>
+                <div className="absolute bottom-10 left-[3%] text-6xl sm:text-8xl opacity-20 select-none">🌴</div>
+                <div className="absolute bottom-16 right-[4%] text-6xl sm:text-8xl opacity-20 select-none">🌴</div>
             </div>
 
             {/* Header */}
-            <header className="relative z-10 bg-black/30 backdrop-blur-xl border-b border-white/10">
-                <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
+            <header className="relative z-10 px-3 pt-3 sm:px-6 sm:pt-6">
+                <div className="max-w-7xl mx-auto bg-white/90 backdrop-blur-md rounded-[1.75rem] sm:rounded-[2.25rem] shadow-xl shadow-sky-200/60 border-4 border-white px-4 py-3 sm:px-6 sm:py-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                        <div className="flex items-center gap-3 min-w-0">
                             <Link
                                 href="/portal"
-                                className="p-2.5 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/10 shrink-0"
+                                aria-label="Back to Portal"
+                                className="w-12 h-12 shrink-0 bg-sky-100 hover:bg-sky-200 active:scale-90 rounded-2xl transition-all flex items-center justify-center text-sky-600"
                                 title="Back to Portal"
                             >
-                                <ArrowLeft size={22} />
+                                <ArrowLeft size={24} strokeWidth={3} />
                             </Link>
                             <div className="min-w-0">
-                                <h1 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
-                                    <span className="text-2xl sm:text-3xl">🎮</span>
-                                    Island Games
+                                <h1 className="text-xl sm:text-3xl font-black tracking-tight text-slate-800 flex items-center gap-2 leading-none">
+                                    <span className="text-2xl sm:text-4xl">🏝️</span>
+                                    <span className="truncate">Island Games</span>
                                 </h1>
-                                <p className="text-white/50 text-xs sm:text-sm">Learn, Play, Explore!</p>
+                                <p className="text-slate-400 text-xs sm:text-sm font-bold mt-0.5">Learn, play & explore the Caribbean!</p>
                             </div>
                         </div>
 
                         {/* XP & Stats */}
-                        <div className="flex items-center gap-2 sm:gap-3">
-                            <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 px-3 py-2 sm:px-5 sm:py-2.5 rounded-2xl flex items-center gap-1.5 sm:gap-2">
-                                <Star className="text-amber-400" size={18} />
-                                <span className="font-black text-amber-400 text-sm sm:text-base">{totalXP.toLocaleString()}</span>
-                                <span className="text-amber-400/60 text-xs sm:text-sm">XP</span>
+                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                            <div className="bg-gradient-to-r from-amber-300 to-yellow-400 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-amber-200">
+                                <Star className="text-white fill-white" size={18} />
+                                <span className="font-black text-white text-sm sm:text-base drop-shadow-sm">{totalXP.toLocaleString()} XP</span>
                             </div>
-                            <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 px-3 py-2 sm:px-5 sm:py-2.5 rounded-2xl flex items-center gap-1.5 sm:gap-2">
-                                <Trophy className="text-green-400" size={18} />
-                                <span className="font-black text-green-400 text-sm sm:text-base">{unlockedGames.length}</span>
-                                <span className="text-green-400/60 text-xs sm:text-sm">Unlocked</span>
+                            <div className="bg-gradient-to-r from-emerald-400 to-green-500 px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-full flex items-center gap-1.5 shadow-md shadow-emerald-200">
+                                <Trophy className="text-white" size={18} />
+                                <span className="font-black text-white text-sm sm:text-base drop-shadow-sm">{unlockedGames.length}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </header>
 
-            {/* Category Filter */}
-            <div className="relative z-10 max-w-7xl mx-auto px-4 py-6">
-                <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <label className="relative">
-                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+            {/* Category pills */}
+            <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6">
+                <div className="flex gap-2 sm:gap-3 overflow-x-auto md:overflow-x-visible md:flex-wrap pb-3 scrollbar-hide items-stretch -mx-1 px-1">
+                    {GAME_CATEGORIES.map((cat) => (
+                        <button
+                            key={cat.id}
+                            onClick={() => setActiveCategory(cat.id)}
+                            className={`flex items-center gap-2 px-4 sm:px-6 min-h-[52px] rounded-full font-black text-sm sm:text-base whitespace-nowrap transition-all active:scale-95 ${activeCategory === cat.id
+                                ? `bg-gradient-to-r ${cat.color} text-white shadow-lg scale-105 border-4 border-white`
+                                : 'bg-white/80 text-slate-500 hover:bg-white border-4 border-transparent shadow-sm'
+                                }`}
+                        >
+                            <span className="text-xl sm:text-2xl">{cat.emoji}</span>
+                            {cat.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Parent search & filters */}
+                <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3">
+                    <label className="relative md:col-span-1">
+                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search games or learning focus..."
+                            placeholder="Search games..."
                             aria-label="Search games"
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-white/30"
+                            className="w-full bg-white/80 border-2 border-white rounded-full py-3 pl-11 pr-4 text-sm font-bold text-slate-700 placeholder:text-slate-300 focus:outline-none focus:border-sky-300 shadow-sm"
                         />
                     </label>
                     <select
                         value={durationFilter}
                         onChange={(e) => setDurationFilter(e.target.value as 'all' | 'short' | 'medium' | 'long')}
                         aria-label="Filter by duration"
-                        className="bg-white/5 border border-white/10 rounded-2xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-white/30"
+                        className="bg-white/80 border-2 border-white rounded-full py-3 px-5 text-sm font-bold text-slate-500 focus:outline-none focus:border-sky-300 shadow-sm appearance-none"
                     >
-                        <option value="all" className="text-black">All Durations</option>
-                        <option value="short" className="text-black">Short (≤5 min)</option>
-                        <option value="medium" className="text-black">Medium (6-10 min)</option>
-                        <option value="long" className="text-black">Long (10+ min)</option>
+                        <option value="all">⏱️ Any length</option>
+                        <option value="short">Short (5 min or less)</option>
+                        <option value="medium">Medium (6-10 min)</option>
+                        <option value="long">Long (10+ min)</option>
                     </select>
                     <select
                         value={difficultyFilter}
                         onChange={(e) => setDifficultyFilter(e.target.value as 'all' | 'easy' | 'medium' | 'hard')}
                         aria-label="Filter by difficulty"
-                        className="bg-white/5 border border-white/10 rounded-2xl py-2.5 px-3 text-sm text-white focus:outline-none focus:border-white/30"
+                        className="bg-white/80 border-2 border-white rounded-full py-3 px-5 text-sm font-bold text-slate-500 focus:outline-none focus:border-sky-300 shadow-sm appearance-none"
                     >
-                        <option value="all" className="text-black">All Difficulty</option>
-                        <option value="easy" className="text-black">Easy</option>
-                        <option value="medium" className="text-black">Medium</option>
-                        <option value="hard" className="text-black">Hard</option>
+                        <option value="all">🌟 Any difficulty</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
                     </select>
-                </div>
-
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide items-center">
-                    {/* Accessibility Filter */}
-                    <button
-                        onClick={() => setShowOnlyAccessible(!showOnlyAccessible)}
-                        className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold whitespace-nowrap transition-all border ${showOnlyAccessible
-                            ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20 scale-105'
-                            : 'bg-white/5 text-white/70 hover:bg-white/10 border-white/10'}`}
-                    >
-                        {showOnlyAccessible ? <CheckCircle size={20} /> : <Lock size={20} />}
-                        My Plan
-                    </button>
-
-                    <div className="w-px h-8 bg-white/10 mx-2 hidden sm:block" />
-
-                    {GAME_CATEGORIES.map((cat) => (
-                        <button
-                            key={cat.id}
-                            onClick={() => setActiveCategory(cat.id)}
-                            className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold whitespace-nowrap transition-all ${activeCategory === cat.id
-                                ? `bg-gradient-to-r ${cat.color} text-white shadow-lg shadow-primary/20 scale-105`
-                                : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
-                                }`}
-                        >
-                            <span className="text-lg">{cat.emoji}</span>
-                            {cat.label}
-                        </button>
-                    ))}
                 </div>
             </div>
 
             {/* Featured Hero Game */}
-            <div className="relative z-10 max-w-7xl mx-auto px-4 mb-8">
-                <div className="relative bg-gradient-to-r from-primary via-secondary to-accent rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-8 overflow-hidden group cursor-pointer hover:scale-[1.01] transition-transform">
-                    {/* Decorative elements */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-2xl" />
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/20 rounded-full -ml-24 -mb-24 blur-2xl" />
-                    <Sparkles className="absolute top-6 right-6 text-white/30 w-10 h-10 sm:w-16 sm:h-16 animate-pulse" />
+            <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 mt-5 sm:mt-8 mb-6 sm:mb-10">
+                <div className="relative bg-gradient-to-r from-violet-500 via-fuchsia-500 to-orange-400 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 overflow-hidden group border-4 border-white shadow-2xl shadow-fuchsia-200/60">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/15 rounded-full -mr-32 -mt-32 blur-2xl" />
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full -ml-24 -mb-24 blur-2xl" />
+                    <Sparkles className="absolute top-5 right-5 text-white/40 w-8 h-8 sm:w-14 sm:h-14 animate-pulse" />
 
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
-                        <div className="w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 bg-white/20 backdrop-blur-sm rounded-2xl md:rounded-3xl flex items-center justify-center text-4xl sm:text-5xl md:text-7xl shadow-2xl group-hover:scale-110 transition-transform shrink-0">
-                            ✨
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-8 text-white">
+                        <div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-white/25 backdrop-blur-sm rounded-3xl flex items-center justify-center text-4xl sm:text-6xl shadow-xl group-hover:scale-110 group-hover:-rotate-6 transition-transform shrink-0">
+                            📚
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-                                <span className="px-3 py-1 bg-white/20 rounded-full text-xs font-bold uppercase tracking-wider">
-                                    R.O.T.I. Guided
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <span className="px-3 py-1 bg-white/25 rounded-full text-[11px] font-black uppercase tracking-wider">
+                                    ⭐ Today's Pick
                                 </span>
-                                <span className="px-3 py-1 bg-green-500/30 text-green-300 rounded-full text-xs font-bold uppercase tracking-wider">
+                                <span className="px-3 py-1 bg-emerald-400/90 text-white rounded-full text-[11px] font-black uppercase tracking-wider">
                                     Kid Favorite
                                 </span>
                             </div>
-                            <h2 className="text-2xl sm:text-3xl font-black mb-2">Story Library Adventure</h2>
-                            <p className="text-white/80 text-base sm:text-lg mb-4">
+                            <h2 className="text-2xl sm:text-3xl font-black mb-1.5 drop-shadow-sm">Story Library Adventure</h2>
+                            <p className="text-white/90 text-sm sm:text-lg mb-3 font-semibold">
                                 Jump into island stories with guided reading, fun vocabulary, and cultural lessons.
                             </p>
-                            <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm">
-                                <span className="flex items-center gap-1.5">
-                                    <Zap className="text-yellow-300" size={16} />
-                                    <span className="font-bold">160 XP</span>
+                            <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm font-bold">
+                                <span className="flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1">
+                                    <Zap className="text-yellow-300" size={15} /> 160 XP
                                 </span>
-                                <span className="flex items-center gap-1.5">
-                                    <Clock size={16} className="text-white/60" />
-                                    <span>8-12 min</span>
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <Wand2 size={16} className="text-white/60" />
-                                    <span>Read & Learn</span>
+                                <span className="flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1">
+                                    <Clock size={15} /> 8-12 min
                                 </span>
                             </div>
                         </div>
                         <Link
                             href="/portal/stories"
-                            className="w-full md:w-auto px-8 py-4 bg-white text-primary rounded-2xl font-black text-base sm:text-lg shadow-xl hover:scale-105 transition-transform flex items-center justify-center gap-2"
+                            className="w-full md:w-auto px-8 py-4 bg-white text-fuchsia-600 rounded-full font-black text-base sm:text-lg shadow-xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2"
                         >
-                            <Play size={22} /> Start Reading
+                            <Play size={22} className="fill-fuchsia-600" /> Read Now
                         </Link>
                     </div>
                 </div>
             </div>
 
             {/* Games Grid */}
-            <main className="relative z-10 max-w-7xl mx-auto px-4 pb-12">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-black flex items-center gap-2">
-                        <Gamepad2 size={24} className="text-primary" />
+            <main className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 pb-12">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <h2 className="text-lg sm:text-2xl font-black flex items-center gap-2 text-slate-700">
+                        <Gamepad2 size={26} className="text-fuchsia-500" />
                         {activeCategory === 'all' ? 'All Games' : GAME_CATEGORIES.find(c => c.id === activeCategory)?.label}
-                        <span className="text-white/40 font-normal ml-2">({filteredGames.length})</span>
+                        <span className="text-slate-400 font-bold text-base ml-1">({filteredGames.length})</span>
                     </h2>
                 </div>
 
@@ -719,95 +700,88 @@ export default function GamesHubPage() {
                             const tier = (game as any).tier_required || (game as any).tier;
                             const isLocked = !canPlayGame(tier);
                             const progress = progressMap[game.id];
+                            const playHref = game.game_url && game.game_url.startsWith('/')
+                                ? game.game_url
+                                : game.id === 'story-library'
+                                    ? '/portal/stories'
+                                    : game.id === 'island-explorer'
+                                        ? '/portal/games/flag-match'
+                                        : game.id === 'cultural-quiz'
+                                            ? '/portal/games/island-trivia'
+                                            : `/portal/games/${game.id}`;
 
                             return (
                                 <div
                                     key={game.id}
-                                    className={`group relative bg-gradient-to-br ${(game as any).gradient || 'from-primary to-accent'} rounded-3xl overflow-hidden transition-all duration-300 shadow-lg hover:scale-105 hover:shadow-2xl hover:z-10 ${isLocked ? 'opacity-70' : ''}`}
+                                    className={`group relative bg-white rounded-[2rem] overflow-hidden transition-all duration-300 shadow-lg shadow-sky-100 hover:shadow-2xl hover:shadow-sky-200 hover:-translate-y-2 border-4 border-white ${isLocked ? 'opacity-80' : ''}`}
                                 >
-                                    {/* Glass overlay */}
-                                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors" />
-
-                                    {/* Badges */}
-                                    <div className="absolute top-4 left-4 flex gap-2 z-20">
-                                        {game.isNew && (
-                                            <span className="px-2.5 py-1 bg-green-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
-                                                <Sparkles size={12} /> NEW
-                                            </span>
-                                        )}
-                                        {game.isPopular && (
-                                            <span className="px-2.5 py-1 bg-amber-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
-                                                <Heart size={12} /> HOT
-                                            </span>
-                                        )}
+                                    {/* Colorful cover */}
+                                    <div className={`relative h-32 sm:h-36 bg-gradient-to-br ${(game as any).gradient || 'from-sky-400 to-cyan-500'} flex items-center justify-center`}>
+                                        <span className="text-6xl sm:text-7xl drop-shadow-lg group-hover:scale-125 group-hover:-rotate-6 transition-transform duration-300 select-none">
+                                            {game.emoji}
+                                        </span>
+                                        {/* Badges */}
+                                        <div className="absolute top-3 left-3 flex gap-1.5">
+                                            {game.isNew && (
+                                                <span className="px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-full flex items-center gap-1 shadow">
+                                                    <Sparkles size={10} /> NEW
+                                                </span>
+                                            )}
+                                            {game.isPopular && (
+                                                <span className="px-2.5 py-1 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center gap-1 shadow">
+                                                    <Heart size={10} className="fill-white" /> HOT
+                                                </span>
+                                            )}
+                                        </div>
+                                        {/* XP chip */}
+                                        <span className="absolute bottom-3 right-3 flex items-center gap-1 bg-black/25 backdrop-blur-sm text-white text-[11px] font-black rounded-full px-2.5 py-1">
+                                            <Zap size={11} className="text-yellow-300" /> {game.xp} XP
+                                        </span>
                                     </div>
 
                                     {/* Lock Overlay */}
                                     {isLocked && (
-                                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-30">
-                                            <Lock size={40} className="text-white mb-3" />
-                                            <p className="text-white font-bold mb-2">Upgrade to Play</p>
+                                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex flex-col items-center justify-center z-30 text-white">
+                                            <Lock size={36} className="mb-2" />
+                                            <p className="font-black mb-2">Upgrade to Play</p>
                                             <Link
                                                 href="/#pricing"
-                                                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-sm font-bold transition-colors"
+                                                className="px-4 py-2 bg-white text-slate-800 rounded-full text-sm font-black hover:scale-105 transition-transform"
                                             >
                                                 See Plans
                                             </Link>
                                         </div>
                                     )}
 
-                                    {/* Content */}
-                                    <div className="relative z-10 p-6 h-full flex flex-col">
-                                        {/* Icon */}
-                                        <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-5xl mb-4 group-hover:scale-110 transition-transform shadow-lg">
-                                            {game.emoji}
-                                        </div>
+                                    {/* Body */}
+                                    <div className="p-4 sm:p-5 flex flex-col">
+                                        <h3 className="text-lg sm:text-xl font-black text-slate-800 mb-1 leading-tight">{game.title}</h3>
+                                        <p className="text-slate-400 text-sm font-semibold mb-3 line-clamp-2 min-h-[2.5rem]">{game.description}</p>
 
-                                        {/* Text */}
-                                        <h3 className="text-xl font-black mb-2">{game.title}</h3>
-                                        <p className="text-white/70 text-sm mb-4 flex-1">{game.description}</p>
-                                        {game.learningFocus && (
-                                            <p className="text-white/85 text-xs font-bold mb-3">
-                                                Learning Focus: {game.learningFocus}
-                                            </p>
-                                        )}
-
-                                        {/* Meta */}
-                                        <div className="flex items-center gap-4 text-xs text-white/60 mb-4">
-                                            <span className="flex items-center gap-1">
-                                                <Zap size={12} className="text-yellow-400" />
-                                                <span className="font-bold text-yellow-400">{game.xp} XP</span>
+                                        <div className="flex flex-wrap items-center gap-2 text-[11px] font-black text-slate-400 mb-3">
+                                            <span className="flex items-center gap-1 bg-slate-100 rounded-full px-2.5 py-1">
+                                                <Clock size={11} /> {game.time}
                                             </span>
-                                            <span className="flex items-center gap-1">
-                                                <Clock size={12} />
-                                                {game.time}
-                                            </span>
+                                            {game.learningFocus && (
+                                                <span className="flex items-center gap-1 bg-sky-50 text-sky-500 rounded-full px-2.5 py-1 truncate max-w-full">
+                                                    🎓 {game.learningFocus}
+                                                </span>
+                                            )}
                                         </div>
 
                                         {progress && (
-                                            <div className="mb-4 rounded-xl bg-white/10 border border-white/20 px-3 py-2 text-xs font-bold text-white/85">
-                                                Played {progress.plays}x · Best Score {progress.bestScore}
+                                            <div className="mb-3 rounded-xl bg-amber-50 border border-amber-200 px-3 py-1.5 text-[11px] font-black text-amber-600">
+                                                🏅 Played {progress.plays}x · Best {progress.bestScore}
                                             </div>
                                         )}
 
-                                        {/* Play Button */}
                                         {!isLocked && (
                                             <Link
                                                 prefetch={false}
-                                                href={
-                                                    game.game_url && game.game_url.startsWith('/')
-                                                        ? game.game_url
-                                                        : game.id === 'story-library'
-                                                            ? '/portal/stories'
-                                                            : game.id === 'island-explorer'
-                                                                ? '/portal/games/flag-match'
-                                                                : game.id === 'cultural-quiz'
-                                                                    ? '/portal/games/island-trivia'
-                                                                    : `/portal/games/${game.id}`
-                                                }
-                                                className="w-full py-3.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-2xl font-bold text-center transition-all flex items-center justify-center gap-2 border border-white/20"
+                                                href={playHref}
+                                                className={`w-full min-h-[52px] bg-gradient-to-r ${(game as any).gradient || 'from-sky-400 to-cyan-500'} text-white rounded-full font-black text-base text-center transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.03] active:scale-95`}
                                             >
-                                                <Play size={18} /> Play Now
+                                                <Play size={20} className="fill-white" /> PLAY!
                                             </Link>
                                         )}
                                     </div>
@@ -819,13 +793,13 @@ export default function GamesHubPage() {
             </main>
 
             {/* Coming Soon Banner */}
-            <div className="relative z-10 max-w-7xl mx-auto px-4 pb-12">
-                <div className="bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-3xl p-8 text-center backdrop-blur-sm">
-                    <Wand2 className="mx-auto mb-4 text-purple-400" size={40} />
-                    <h3 className="text-2xl font-black mb-2">More R.O.T.I. Adventures Coming Soon!</h3>
-                    <p className="text-white/60 max-w-md mx-auto">
-                        New educational island games from the Likkle Legends universe are on the way,
-                        guided by R.O.T.I. and the crew. Stay tuned for weekly game drops.
+            <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 pb-14">
+                <div className="bg-white/80 backdrop-blur-sm border-4 border-white rounded-[2rem] p-6 sm:p-8 text-center shadow-lg shadow-sky-100">
+                    <Wand2 className="mx-auto mb-3 text-fuchsia-400" size={36} />
+                    <h3 className="text-xl sm:text-2xl font-black mb-2 text-slate-700">More Island Adventures Coming Soon!</h3>
+                    <p className="text-slate-400 font-semibold max-w-md mx-auto text-sm sm:text-base">
+                        New educational games from the Likkle Legends universe are on the way,
+                        guided by R.O.T.I. and the crew. New game drops every week!
                     </p>
                 </div>
             </div>
