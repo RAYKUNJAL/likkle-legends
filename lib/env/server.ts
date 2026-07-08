@@ -48,10 +48,10 @@ const supabaseAnonKey =
   '';
 
 if (!supabaseUrl) {
-  throw new Error('[server-env] Missing required environment variable: SUPABASE_URL');
+  console.error('[server-env] Missing required environment variable: SUPABASE_URL');
 }
 if (!supabaseAnonKey) {
-  throw new Error('[server-env] Missing required environment variable: SUPABASE_ANON_KEY');
+  console.error('[server-env] Missing required environment variable: SUPABASE_ANON_KEY');
 }
 
 export const serverEnv: ServerEnv = {

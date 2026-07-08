@@ -1,385 +1,287 @@
 'use client';
-
+import { useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
 
-export default function GamesZone() {
-  const [stars, setStars] = useState<Array<{ id: number; left: string; top: string; size: string; delay: string; duration: string }>>([]);
+const GAMES = [
+  {
+    id: 'island-hop',
+    href: '/games/island-hop.html',
+    char: 'Mango Moko',
+    charEmoji: '🦋',
+    title: "Mango's Island Hop",
+    desc: 'Hop across the Caribbean islands answering trivia about flags, capitals, and fun facts with Mango Moko as your guide.',
+    tags: ['Geography', 'Trivia', 'Ages 4-8'],
+    bannerIcon: '🏝️',
+    image: '/games/images/mango_moko.png',
+    theme: 'mango',
+  },
+  {
+    id: 'tantys-kitchen',
+    href: '/games/tantys-kitchen.html',
+    char: 'Tanty Spice',
+    charEmoji: '👵🏾',
+    title: "Tanty's Kitchen",
+    desc: 'Drag the right ingredients into the pot and cook 5 real Caribbean dishes with Tanty Spice guiding every step.',
+    tags: ['Cooking', 'Sorting', 'Ages 3-8'],
+    bannerIcon: '🍲',
+    image: '/games/images/tanty_spice_avatar.jpg',
+    theme: 'tanty',
+  },
+  {
+    id: 'math-market',
+    href: '/games/math-market.html',
+    char: 'R.O.T.I.',
+    charEmoji: '🤖',
+    title: "R.O.T.I.'s Math Market",
+    desc: 'Count fruit, add prices, and make change at a Caribbean market stall. Math gets tastier with R.O.T.I.',
+    tags: ['Math', 'Counting', 'Ages 4-8'],
+    bannerIcon: '🧮',
+    image: '/games/images/roti-new.jpg',
+    theme: 'roti',
+  },
+  {
+    id: 'spelling-blaze',
+    href: '/games/spelling-blaze.html',
+    char: 'Scorcha Pepper',
+    charEmoji: '🌶️',
+    title: "Scorcha's Spelling Blaze",
+    desc: 'Spell Caribbean words before the fire timer burns out. Race Scorcha Pepper to earn blazing badges.',
+    tags: ['Spelling', 'Speed', 'Ages 5-8'],
+    bannerIcon: '🔥',
+    image: '/games/images/scorcha_pepper.jpg',
+    theme: 'scorcha',
+  },
+  {
+    id: 'doubles-dash',
+    href: '/games/doubles-dash',
+    char: 'Dilly Doubles',
+    charEmoji: '🫓',
+    title: 'Doubles Dash',
+    desc: 'Dash through the streets with Dilly Doubles, dodging obstacles and collecting tasty doubles along the way.',
+    tags: ['Action', 'Reflexes', 'Ages 4-8'],
+    bannerIcon: '🫓',
+    image: '/games/images/dilly-doubles.jpg',
+    theme: 'dilly',
+  },
+];
 
+const THEME: Record<string, { badge: string; badgeText: string; btn: string }> = {
+  mango:   { badge: 'rgba(0,200,83,0.15)',   badgeText: '#69F0AE', btn: 'linear-gradient(135deg,#00C853,#2E7D32)' },
+  tanty:   { badge: 'rgba(255,105,180,0.15)', badgeText: '#FF8FCC', btn: 'linear-gradient(135deg,#FF69B4,#C2185B)' },
+  roti:    { badge: 'rgba(46,196,182,0.15)',  badgeText: '#2EC4B6', btn: 'linear-gradient(135deg,#2EC4B6,#00796B)' },
+  scorcha: { badge: 'rgba(255,23,68,0.15)',   badgeText: '#FF5252', btn: 'linear-gradient(135deg,#FF1744,#D50000)' },
+  dilly:   { badge: 'rgba(255,210,63,0.15)',  badgeText: '#FFD23F', btn: 'linear-gradient(135deg,#FFD23F,#FF6B35)' },
+};
+
+export default function GamesPage() {
+  // Generate stars on mount
   useEffect(() => {
-    const generatedStars = Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100 + '%',
-      top: Math.random() * 55 + '%',
-      size: (Math.random() * 2 + 1) + 'px',
-      delay: Math.random() * 3 + 's',
-      duration: (Math.random() * 3 + 2) + 's',
-    }));
-    setStars(generatedStars);
+    const container = document.getElementById('ll-stars');
+    if (!container) return;
+    for (let i = 0; i < 55; i++) {
+      const s = document.createElement('div');
+      const size = (Math.random() * 2 + 1) + 'px';
+      Object.assign(s.style, {
+        position: 'absolute',
+        width: size, height: size,
+        background: '#fff',
+        borderRadius: '50%',
+        left: Math.random() * 100 + '%',
+        top: Math.random() * 55 + '%',
+        opacity: '0.15',
+        animation: `llTwinkle ${Math.random() * 3 + 2}s ease-in-out ${Math.random() * 3}s infinite alternate`,
+      });
+      container.appendChild(s);
+    }
   }, []);
-
-  const games = [
-    {
-      id: 'island-hop',
-      character: '🦋 Mango Moko',
-      title: "Mango's Island Hop",
-      description: 'Hop across the Caribbean islands answering trivia about flags, capitals, and fun facts with Mango Moko as your guide.',
-      tags: ['Geography', 'Trivia', 'Ages 4-8'],
-      icon: '🏝️',
-      themeClass: 'char-mango',
-      link: '/games/island-hop',
-      image: '/images/mango_moko.png',
-    },
-    {
-      id: 'tantys-kitchen',
-      character: '👵🏾 Tanty Spice',
-      title: "Tanty's Kitchen",
-      description: 'Drag the right ingredients into the pot and cook 5 real Caribbean dishes with Tanty Spice guiding every step.',
-      tags: ['Cooking', 'Sorting', 'Ages 3-8'],
-      icon: '🍲',
-      themeClass: 'char-tanty',
-      link: '/games/tantys-kitchen',
-      image: '/images/tanty_spice_avatar.jpg',
-    },
-    {
-      id: 'math-market',
-      character: '🤖 R.O.T.I.',
-      title: "R.O.T.I.'s Math Market",
-      description: 'Count fruit, add prices, and make change at a Caribbean market stall. Math gets tastier with R.O.T.I.',
-      tags: ['Math', 'Counting', 'Ages 4-8'],
-      icon: '🧮',
-      themeClass: 'char-roti',
-      link: '/games/math-market',
-      image: '/images/roti-new.jpg',
-    },
-    {
-      id: 'spelling-blaze',
-      character: '🌶️ Scorcha Pepper',
-      title: "Scorcha's Spelling Blaze",
-      description: 'Spell Caribbean words before the fire timer burns out. Race Scorcha Pepper to earn blazing badges.',
-      tags: ['Spelling', 'Speed', 'Ages 5-8'],
-      icon: '🔥',
-      themeClass: 'char-scorcha',
-      link: '/games/spelling-blaze',
-      image: '/images/scorcha_pepper.jpg',
-    },
-    {
-      id: 'doubles-dash',
-      character: '🫓 Dilly Doubles',
-      title: 'Doubles Dash',
-      description: 'Dash through the streets with Dilly Doubles, dodging obstacles and collecting tasty doubles along the way.',
-      tags: ['Action', 'Reflexes', 'Ages 4-8'],
-      icon: '🫓',
-      themeClass: 'char-tanty',
-      link: '/games/doubles-dash',
-      image: '/images/dilly-doubles.jpg',
-    },
-  ];
 
   return (
     <>
-      <style jsx global>{`
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-          --font-display: 'Chillax', sans-serif;
-          --font-body: 'General Sans', sans-serif;
-          --yellow: #FFD23F;
-          --orange: #FF6B35;
-          --teal: #01B4A0;
-          --blue: #2EC4B6;
-          --pink: #FF69B4;
-          --purple: #9B5DE5;
-          --green: #00C853;
-          --red: #FF1744;
-          --bg: #0A1628;
-          --surface: #132240;
-          --text: #F0F4FF;
-          --text-muted: #8EA4C8;
+      <style>{`
+        @import url('https://api.fontshare.com/v2/css?f[]=chillax@400,500,600,700&f[]=general-sans@400,500,600&display=swap');
+        @keyframes llTwinkle { 0%{opacity:0.1} 100%{opacity:0.85} }
+        @keyframes llFloat {
+          0%,100%{transform:translateY(0) rotate(0deg)}
+          25%{transform:translateY(-28px) rotate(5deg)}
+          50%{transform:translateY(-10px) rotate(-3deg)}
+          75%{transform:translateY(-22px) rotate(4deg)}
         }
-        html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
-        body {
-          min-height: 100dvh;
-          font-family: var(--font-body);
-          color: var(--text);
-          background: var(--bg);
-          overflow-x: hidden;
+        @keyframes llHoverIn {
+          from{transform:translateY(-8px) scale(1.015)}
         }
-      `}</style>
-
-      <style jsx>{`
-        .bg-ocean {
-          position: fixed; inset: 0; z-index: 0;
-          background: linear-gradient(180deg, #0A1628 0%, #0D2137 40%, #0F2B4A 70%, #134A6E 100%);
+        .ll-card {
+          background:#132240;
+          border-radius:20px;
+          overflow:hidden;
+          cursor:pointer;
+          transition:transform 0.35s cubic-bezier(0.16,1,0.3,1),box-shadow 0.35s ease;
+          border:2px solid rgba(255,255,255,0.05);
+          text-decoration:none;
+          color:inherit;
+          display:flex;
+          flex-direction:column;
         }
-        .bg-ocean::before {
-          content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
-          background: radial-gradient(ellipse at 50% 100%, rgba(1,180,160,0.12) 0%, transparent 70%);
+        .ll-card:hover {
+          transform:translateY(-8px) scale(1.015);
+          box-shadow:0 24px 60px rgba(0,0,0,0.45);
         }
-        .stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        .star {
-          position: absolute;
-          width: 3px; height: 3px;
-          background: #fff;
-          border-radius: 50%;
-          animation: twinkle 3s ease-in-out infinite alternate;
+        .ll-card:hover .ll-banner-img {
+          transform:scale(1.08);
         }
-        @keyframes twinkle { 0%{opacity:0.15} 100%{opacity:0.9} }
-        .floater {
-          position: fixed;
-          font-size: 2rem;
-          opacity: 0.07;
-          pointer-events: none;
-          z-index: 1;
-          animation: floatAnim 20s ease-in-out infinite;
+        .ll-banner-img {
+          width:100%;height:100%;
+          object-fit:cover;
+          transition:transform 0.5s cubic-bezier(0.16,1,0.3,1);
         }
-        @keyframes floatAnim {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          25% { transform: translateY(-30px) rotate(5deg); }
-          50% { transform: translateY(-10px) rotate(-3deg); }
-          75% { transform: translateY(-25px) rotate(4deg); }
+        .ll-play-btn:hover { transform:scale(1.03); filter:brightness(1.1); }
+        @media(max-width:800px){
+          .ll-grid { grid-template-columns:1fr !important; max-width:480px; margin:0 auto; }
+          .ll-banner { height:200px !important; }
         }
-        .header {
-          position: relative; z-index: 10;
-          padding: 2.5rem 1.5rem 1rem;
-          text-align: center;
-        }
-        .logo-row {
-          display: flex; align-items: center; justify-content: center; gap: 0.75rem;
-          margin-bottom: 0.5rem;
-        }
-        .logo-text {
-          font-family: var(--font-display);
-          font-size: clamp(1.8rem, 4vw, 2.8rem);
-          font-weight: 700;
-          background: linear-gradient(135deg, var(--yellow), var(--orange));
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .subtitle {
-          font-family: var(--font-display);
-          font-size: clamp(0.95rem, 2.2vw, 1.25rem);
-          color: var(--text-muted);
-          font-weight: 500;
-          margin-bottom: 0.25rem;
-        }
-        .home-link {
-          display: inline-block;
-          margin-top: 0.5rem;
-          color: var(--text-muted);
-          font-size: 0.85rem;
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-        .home-link:hover { color: var(--yellow); }
-        .games-section {
-          position: relative; z-index: 10;
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 2rem 1.5rem 4rem;
-        }
-        .games-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 1.5rem;
-        }
-        .game-card {
-          background: var(--surface);
-          border-radius: 20px;
-          overflow: hidden;
-          cursor: pointer;
-          transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease;
-          border: 2px solid rgba(255,255,255,0.05);
-          text-decoration: none;
-          color: inherit;
-          display: flex;
-          flex-direction: column;
-          height: 100%;
-        }
-        .game-card:hover {
-          transform: translateY(-8px) scale(1.015);
-          box-shadow: 0 24px 60px rgba(0,0,0,0.45);
-        }
-        .card-banner {
-          height: 220px;
-          position: relative;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .card-banner .banner-overlay {
-          position: absolute; inset: 0;
-          background: linear-gradient(0deg, var(--surface) 0%, transparent 60%);
-        }
-        .card-banner .banner-icon {
-          position: absolute;
-          top: 12px; right: 12px;
-          font-size: 2rem;
-          filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));
-          z-index: 2;
-        }
-        .card-body {
-          padding: 1.25rem 1.5rem 1.5rem;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-        .card-character {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.35rem;
-          font-size: 0.78rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          margin-bottom: 0.5rem;
-          padding: 0.2rem 0.7rem;
-          border-radius: 100px;
-          width: fit-content;
-        }
-        .card-title {
-          font-family: var(--font-display);
-          font-size: clamp(1.15rem, 2vw, 1.4rem);
-          font-weight: 700;
-          margin-bottom: 0.35rem;
-          line-height: 1.2;
-        }
-        .card-desc {
-          font-size: 0.88rem;
-          color: var(--text-muted);
-          line-height: 1.5;
-          margin-bottom: 0.75rem;
-          flex: 1;
-        }
-        .card-tags {
-          display: flex; flex-wrap: wrap; gap: 0.35rem;
-          margin-bottom: 1rem;
-        }
-        .tag {
-          font-size: 0.7rem;
-          font-weight: 600;
-          padding: 0.18rem 0.55rem;
-          border-radius: 100px;
-          background: rgba(255,255,255,0.06);
-          color: var(--text-muted);
-        }
-        .play-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.4rem;
-          padding: 0.65rem 1.4rem;
-          border-radius: 12px;
-          font-family: var(--font-display);
-          font-weight: 600;
-          font-size: 0.95rem;
-          color: #fff;
-          border: none;
-          cursor: pointer;
-          transition: transform 0.2s, filter 0.2s;
-          width: 100%;
-          text-align: center;
-        }
-        .play-btn:hover { transform: scale(1.03); filter: brightness(1.1); }
-        .char-mango .card-character { background: rgba(0,200,83,0.15); color: #69F0AE; }
-        .char-mango .play-btn { background: linear-gradient(135deg, #00C853, #2E7D32); }
-        .char-tanty .card-character { background: rgba(255,105,180,0.15); color: #FF8FCC; }
-        .char-tanty .play-btn { background: linear-gradient(135deg, #FF69B4, #C2185B); }
-        .char-roti .card-character { background: rgba(46,196,182,0.15); color: #2EC4B6; }
-        .char-roti .play-btn { background: linear-gradient(135deg, #2EC4B6, #00796B); }
-        .char-scorcha .card-character { background: rgba(255,23,68,0.15); color: #FF5252; }
-        .char-scorcha .play-btn { background: linear-gradient(135deg, #FF1744, #D50000); }
-        .footer {
-          position: relative; z-index: 10;
-          text-align: center;
-          padding: 1.5rem 2rem 2.5rem;
-          color: var(--text-muted);
-          font-size: 0.82rem;
-        }
-        .footer a { color: var(--yellow); text-decoration: none; }
-        .footer a:hover { text-decoration: underline; }
-        @media (max-width: 800px) {
-          .games-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
-          .card-banner { height: 200px; }
-        }
-        @media (max-width: 480px) {
-          .header { padding: 1.5rem 1rem 0.75rem; }
-          .games-section { padding: 1.25rem 1rem 3rem; }
-          .card-banner { height: 170px; }
-          .card-body { padding: 1rem 1.15rem 1.25rem; }
+        @media(max-width:480px){
+          .ll-banner { height:170px !important; }
         }
       `}</style>
 
-      <div className="bg-ocean"></div>
-      <div className="stars">
-        {stars.map(star => (
-          <div
-            key={star.id}
-            className="star"
-            style={{
-              left: star.left,
-              top: star.top,
-              width: star.size,
-              height: star.size,
-              animationDelay: star.delay,
-              animationDuration: star.duration,
-            }}
-          />
-        ))}
+      {/* Fixed ocean background */}
+      <div style={{
+        position:'fixed', inset:0, zIndex:0,
+        background:'linear-gradient(180deg,#0A1628 0%,#0D2137 40%,#0F2B4A 70%,#134A6E 100%)',
+      }}>
+        <div style={{
+          position:'absolute', bottom:0, left:0, right:0, height:'40%',
+          background:'radial-gradient(ellipse at 50% 100%,rgba(1,180,160,0.12) 0%,transparent 70%)',
+        }}/>
       </div>
 
-      <div className="floater" style={{ top: '8%', left: '4%', animationDelay: '0s' }}>🌴</div>
-      <div className="floater" style={{ top: '25%', right: '6%', animationDelay: '3s' }}>🐠</div>
-      <div className="floater" style={{ top: '55%', left: '2%', animationDelay: '6s' }}>🌊</div>
-      <div className="floater" style={{ top: '75%', right: '4%', animationDelay: '9s' }}>🦜</div>
+      {/* Stars */}
+      <div id="ll-stars" style={{position:'fixed',inset:0,zIndex:0,pointerEvents:'none'}}/>
 
-      <header className="header">
-        <div className="logo-row">
-          <div className="logo-text">Likkle Legends</div>
+      {/* Floating decorations */}
+      {[
+        {top:'8%',left:'4%',delay:'0s',icon:'🌴'},
+        {top:'25%',right:'6%',delay:'3s',icon:'🐠'},
+        {top:'55%',left:'2%',delay:'6s',icon:'🌊'},
+        {top:'75%',right:'4%',delay:'9s',icon:'🦜'},
+      ].map((f,i)=>(
+        <div key={i} style={{
+          position:'fixed',
+          top:f.top, left:f.left||undefined, right:(f as any).right||undefined,
+          fontSize:'2rem', opacity:0.07, pointerEvents:'none', zIndex:1,
+          animation:`llFloat 20s ease-in-out ${f.delay} infinite`,
+        }}>{f.icon}</div>
+      ))}
+
+      {/* Header */}
+      <header style={{position:'relative',zIndex:10,padding:'2.5rem 1.5rem 1rem',textAlign:'center'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'0.75rem',marginBottom:'0.5rem'}}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/games/images/logo.png"
+            alt="Likkle Legends"
+            style={{width:52,height:52,borderRadius:14,objectFit:'cover',boxShadow:'0 4px 20px rgba(255,210,63,0.25)'}}
+          />
+          <h1 style={{
+            fontFamily:'Chillax,sans-serif',
+            fontSize:'clamp(1.8rem,4vw,2.8rem)',
+            fontWeight:700,
+            background:'linear-gradient(135deg,#FFD23F,#FF6B35)',
+            WebkitBackgroundClip:'text',
+            WebkitTextFillColor:'transparent',
+            backgroundClip:'text',
+          }}>Likkle Legends</h1>
         </div>
-        <p className="subtitle">Game Zone — Learn, Play, Explore the Caribbean</p>
-        <Link href="/" className="home-link">← Back to likklelegends.com</Link>
+        <p style={{fontFamily:'Chillax,sans-serif',fontSize:'clamp(0.95rem,2.2vw,1.25rem)',color:'#8EA4C8',fontWeight:500,marginBottom:'0.25rem'}}>
+          Game Zone — Learn, Play, Explore the Caribbean
+        </p>
+        <Link href="/" style={{display:'inline-block',marginTop:'0.5rem',color:'#8EA4C8',fontSize:'0.85rem',textDecoration:'none'}}>
+          ← Back to likklelegends.com
+        </Link>
       </header>
 
-      <main className="games-section">
-        <div className="games-grid">
-          {games.map(game => (
-            <Link key={game.id} href={game.link} className={`game-card ${game.themeClass}`}>
-              <div className="card-banner">
-                <div style={{
-                  width: '100%',
-                  height: '100%',
-                  background: `linear-gradient(135deg, #132240, #0A1628)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '3rem'
-                }}>
-                  {game.icon}
+      {/* Games Grid */}
+      <main style={{position:'relative',zIndex:10,maxWidth:1200,margin:'0 auto',padding:'2rem 1.5rem 4rem'}}>
+        <div className="ll-grid" style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:'1.5rem'}}>
+          {GAMES.map(game => {
+            const t = THEME[game.theme];
+            return (
+              <a key={game.id} href={game.href} className="ll-card">
+                {/* Banner */}
+                <div className="ll-banner" style={{height:220,position:'relative',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    className="ll-banner-img"
+                    src={game.image}
+                    alt={game.char}
+                  />
+                  <div style={{
+                    position:'absolute',inset:0,
+                    background:'linear-gradient(0deg,#132240 0%,transparent 60%)',
+                  }}/>
+                  <span style={{
+                    position:'absolute',top:12,right:12,
+                    fontSize:'2rem',
+                    filter:'drop-shadow(0 2px 8px rgba(0,0,0,0.4))',
+                    zIndex:2,
+                  }}>{game.bannerIcon}</span>
                 </div>
-                <div className="banner-overlay"></div>
-                <span className="banner-icon">{game.icon}</span>
-              </div>
-              <div className="card-body">
-                <div className="card-character">{game.character}</div>
-                <h2 className="card-title">{game.title}</h2>
-                <p className="card-desc">{game.description}</p>
-                <div className="card-tags">
-                  {game.tags.map(tag => (
-                    <span key={tag} className="tag">{tag}</span>
-                  ))}
+
+                {/* Card body */}
+                <div style={{padding:'1.25rem 1.5rem 1.5rem',flex:1,display:'flex',flexDirection:'column'}}>
+                  {/* Character badge */}
+                  <div style={{
+                    display:'inline-flex',alignItems:'center',gap:'0.35rem',
+                    fontSize:'0.78rem',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.06em',
+                    marginBottom:'0.5rem',padding:'0.2rem 0.7rem',borderRadius:100,
+                    width:'fit-content',
+                    background:t.badge,color:t.badgeText,
+                  }}>
+                    {game.charEmoji} {game.char}
+                  </div>
+
+                  <h2 style={{
+                    fontFamily:'Chillax,sans-serif',
+                    fontSize:'clamp(1.15rem,2vw,1.4rem)',
+                    fontWeight:700,marginBottom:'0.35rem',lineHeight:1.2,
+                    color:'#F0F4FF',
+                  }}>{game.title}</h2>
+
+                  <p style={{fontSize:'0.88rem',color:'#8EA4C8',lineHeight:1.5,marginBottom:'0.75rem',flex:1}}>
+                    {game.desc}
+                  </p>
+
+                  {/* Tags */}
+                  <div style={{display:'flex',flexWrap:'wrap',gap:'0.35rem',marginBottom:'1rem'}}>
+                    {game.tags.map(tag=>(
+                      <span key={tag} style={{
+                        fontSize:'0.7rem',fontWeight:600,
+                        padding:'0.18rem 0.55rem',borderRadius:100,
+                        background:'rgba(255,255,255,0.06)',color:'#8EA4C8',
+                      }}>{tag}</span>
+                    ))}
+                  </div>
+
+                  {/* Play button */}
+                  <div className="ll-play-btn" style={{
+                    display:'inline-flex',alignItems:'center',justifyContent:'center',
+                    gap:'0.4rem',padding:'0.65rem 1.4rem',borderRadius:12,
+                    fontFamily:'Chillax,sans-serif',fontWeight:600,fontSize:'0.95rem',
+                    color:'#fff',background:t.btn,
+                    transition:'transform 0.2s,filter 0.2s',
+                    width:'100%',textAlign:'center',cursor:'pointer',
+                  }}>
+                    ▶ Play Now
+                  </div>
                 </div>
-                <button className="play-btn">▶ Play Now</button>
-              </div>
-            </Link>
-          ))}
+              </a>
+            );
+          })}
         </div>
       </main>
 
-      <footer className="footer">
-        <p>🏝️ <Link href="/">Likkle Legends</Link> — Caribbean learning that feels like home.</p>
+      {/* Footer */}
+      <footer style={{position:'relative',zIndex:10,textAlign:'center',padding:'1.5rem 2rem 2.5rem',color:'#8EA4C8',fontSize:'0.82rem'}}>
+        <p>🏝️ <Link href="/" style={{color:'#FFD23F',textDecoration:'none'}}>Likkle Legends</Link> — Caribbean learning that feels like home.</p>
       </footer>
     </>
   );

@@ -54,10 +54,10 @@ export async function POST(request: NextRequest) {
                     videoTitle: generatedModule.content.videoScript.title,
                 },
             });
-        } catch {
+        } catch (_e) {
             return NextResponse.json({ module: buildFallbackModule(suite) });
         }
-    } catch {
+    } catch (_e) {
         return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 }

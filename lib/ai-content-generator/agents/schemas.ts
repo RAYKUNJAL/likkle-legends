@@ -4,7 +4,7 @@
  * Strictly typed interfaces matching the detailed JSON specification.
  */
 
-export type ModelProvider = 'google' | 'openai' | 'anthropic';
+export type ModelProvider = 'google' | 'openai';
 
 // --- Enhanced Profiles (V3) ---
 

@@ -93,7 +93,7 @@ export async function POST(req: Request) {
                 .maybeSingle();
             const controls = costControls?.content as Partial<AICostControls> | undefined;
             selectedModel = controls?.taskRouting?.creative || controls?.taskRouting?.long_form;
-        } catch {
+        } catch (_e) {
             // non-blocking
         }
 

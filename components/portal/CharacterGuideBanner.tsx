@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 
-export type CharacterId = 'roti' | 'tanty_spice' | 'dilly_doubles' | 'benny';
+export type CharacterId = 'roti' | 'tanty_spice' | 'dilly_doubles' | 'benny' | 'mango_moko' | 'scorcha_pepper';
 
 interface CharacterGuideBannerProps {
     character: CharacterId;
@@ -45,6 +45,24 @@ const CHARACTER_CONFIG: Record<CharacterId, {
         nameColor: 'text-sky-700',
         ring: 'ring-sky-400',
         defaultMessage: 'Lesss gooo, Legend! Let\'s make some noise and have fun!',
+    },
+    mango_moko: {
+        name: 'Mango Moko',
+        avatarUrl: '/images/mango_moko.png',
+        bg: 'bg-yellow-50',
+        border: 'border-yellow-200',
+        nameColor: 'text-yellow-700',
+        ring: 'ring-yellow-400',
+        defaultMessage: 'Stand tall, look close, and you will spot something new.',
+    },
+    scorcha_pepper: {
+        name: 'Scorcha Pepper',
+        avatarUrl: '/images/scorcha_pepper.jpg',
+        bg: 'bg-red-50',
+        border: 'border-red-200',
+        nameColor: 'text-red-700',
+        ring: 'ring-red-400',
+        defaultMessage: 'Big feelings can still make brave, kind choices.',
     },
     benny: {
         name: 'Benny',

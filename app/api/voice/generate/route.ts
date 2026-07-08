@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import * as Sentry from '@sentry/nextjs';
-import { GoogleVoiceCharacter, synthesizeCharacterSpeech } from '@/lib/google-cloud-tts';
+import { GoogleVoiceCharacter, synthesizeCharacterSpeechData } from '@/lib/google-cloud-tts';
+import { normalizeCharacterVoiceId } from '@/lib/character-voice-profiles';
 import { generateSpeech, VoiceCharacter } from '@/lib/elevenlabs';
 import { serverEnv } from '@/lib/env/server';
 import { requireSupabaseToken } from '@/lib/api/require-supabase-token';
@@ -27,9 +28,7 @@ function resolveVoiceCharacter(voice: string): VoiceCharacter {
 }
 
 function resolveGoogleVoiceCharacter(voice: string): GoogleVoiceCharacter {
-    if (voice === 'roti' || voice === 'steelpan_sam') return 'roti';
-    if (voice === 'dilly_doubles') return 'dilly';
-    return 'tanty';
+    return normalizeCharacterVoiceId(voice);
 }
 
 export async function POST(request: NextRequest) {
@@ -70,6 +69,7 @@ export async function POST(request: NextRequest) {
         const googleVoice = resolveGoogleVoiceCharacter(requestedVoice);
 
         let audioBuffer: ArrayBuffer | null = null;
+        let contentType = 'audio/mpeg';
 
         if (serverEnv.ELEVENLABS_API_KEY) {
             console.log(`Voice API: Trying ElevenLabs (${elevenVoice})`);
@@ -78,9 +78,10 @@ export async function POST(request: NextRequest) {
 
         if (!audioBuffer) {
             console.log(`Voice API: Falling back to Google Cloud TTS (${googleVoice})`);
-            const googleBase64 = await synthesizeCharacterSpeech(safeText, googleVoice, voiceName);
-            if (googleBase64) {
-                const googleBuffer = Buffer.from(googleBase64, 'base64');
+            const googleAudio = await synthesizeCharacterSpeechData(safeText, googleVoice, voiceName);
+            if (googleAudio) {
+                contentType = googleAudio.contentType;
+                const googleBuffer = Buffer.from(googleAudio.base64Audio, 'base64');
                 audioBuffer = googleBuffer.buffer.slice(
                     googleBuffer.byteOffset,
                     googleBuffer.byteOffset + googleBuffer.byteLength
@@ -93,8 +94,6 @@ export async function POST(request: NextRequest) {
                 error: 'Failed to generate audio from both ElevenLabs and Google TTS.'
             }, { status: 503 });
         }
-        const contentType = 'audio/mpeg';
-
         // Return audio as response
         return new NextResponse(audioBuffer, {
             headers: {

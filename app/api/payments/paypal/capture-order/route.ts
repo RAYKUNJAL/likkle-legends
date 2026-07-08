@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         let customId: Record<string, unknown> = {};
         try {
             customId = JSON.parse(purchaseUnit.custom_id || '{}');
-        } catch {
+        } catch (_e) {
             console.error('Invalid custom_id JSON from PayPal:', purchaseUnit.custom_id);
             return NextResponse.json({ error: 'Invalid order metadata' }, { status: 400 });
         }

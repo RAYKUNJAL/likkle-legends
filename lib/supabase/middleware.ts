@@ -12,6 +12,11 @@ export async function updateSession(request: NextRequest) {
     const supabaseUrl = serverEnv.SUPABASE_URL;
     const supabaseKey = serverEnv.SUPABASE_ANON_KEY;
 
+    if ((!supabaseUrl || !supabaseKey) && serverEnv.NODE_ENV !== 'production') {
+        console.warn('[AUTH] Supabase middleware skipped in local dev because credentials are missing.');
+        return response;
+    }
+
     const supabase = createServerClient(
         supabaseUrl,
         supabaseKey,
@@ -57,7 +62,7 @@ export async function updateSession(request: NextRequest) {
                 user = data.user;
             }
         }
-    } catch {
+    } catch (_e) {
         user = null;
     }
 

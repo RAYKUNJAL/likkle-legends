@@ -20,7 +20,7 @@ export function getGameProgressMap(): Record<string, GameProgressEntry> {
         if (!raw) return {};
         const parsed = JSON.parse(raw) as Record<string, GameProgressEntry>;
         return parsed && typeof parsed === "object" ? parsed : {};
-    } catch {
+    } catch (_e) {
         return {};
     }
 }

@@ -22,7 +22,7 @@ export default function RadioPortalPage() {
                 const first = Array.isArray(json.data) ? json.data[0] : json.data;
                 const title = first?.now_playing?.song?.title || first?.now_playing?.song?.text || 'Live';
                 setNowPlaying(title);
-            } catch {
+            } catch (_e) {
                 if (active) setNowPlaying('Unable to load live station');
             }
         };

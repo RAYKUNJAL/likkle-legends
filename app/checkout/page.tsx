@@ -37,6 +37,7 @@ function CheckoutContent() {
     const [step, setStep] = useState(1);
     const [emailError, setEmailError] = useState<string | null>(null);
     const [emailTouched, setEmailTouched] = useState(false);
+    const [hasSession, setHasSession] = useState<boolean | null>(null);
 
     // Helper to map URL param to Plan Object
     const getInitialPlan = () => {
@@ -83,7 +84,7 @@ function CheckoutContent() {
             } else {
                 toast.error(data.error || "Invalid code");
             }
-        } catch {
+        } catch (_e) {
             toast.error("Failed to validate code");
         } finally {
             setIsValidatingDiscount(false);
@@ -95,6 +96,12 @@ function CheckoutContent() {
         const plan = searchParams.get('plan') || 'unknown';
         fireConversionEvent('begin_checkout', { tier: plan, source: 'checkout_page' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        supabase.auth.getSession()
+            .then(({ data }) => setHasSession(!!data.session))
+            .catch(() => setHasSession(false));
     }, []);
 
     const heritages = [
@@ -169,6 +176,25 @@ function CheckoutContent() {
         return (calculateOneTimeTotal() + calculateRecurringTotal()).toFixed(2);
     };
 
+    const getSignupPlanParam = () => {
+        const planMap: Record<string, string> = {
+            plan_free_forever: 'free',
+            plan_digital_legends: 'digital_explorer',
+            plan_mail_intro: 'starter_mailer',
+            plan_legends_plus: 'legends_plus',
+            plan_family_legacy: 'family_legacy',
+        };
+        return planMap[formData.planKey] || 'starter_mailer';
+    };
+
+    const buildSignupHref = () => {
+        const params = new URLSearchParams();
+        params.set('plan', getSignupPlanParam());
+        if (formData.childName) params.set('childName', formData.childName);
+        if (formData.email) params.set('email', formData.email);
+        return `/signup?${params.toString()}`;
+    };
+
     if (isComplete) {
         return (
             <div className="min-h-screen bg-white flex items-center justify-center p-4">
@@ -200,7 +226,15 @@ function CheckoutContent() {
     }
 
     return (
-        <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD", intent: "subscription", vault: true }}>
+        <PayPalScriptProvider
+            key={formData.planKey === 'plan_free_forever' ? 'paypal-capture' : 'paypal-subscription'}
+            options={{
+                clientId: PAYPAL_CLIENT_ID,
+                currency: "USD",
+                intent: formData.planKey === 'plan_free_forever' ? "capture" : "subscription",
+                ...(formData.planKey !== 'plan_free_forever' ? { vault: true } : {}),
+            }}
+        >
             <main className="min-h-screen bg-[#FFFDF7] flex flex-col lg:flex-row">
                 {/* Left: Branding & Summary (Visible on Desktop) */}
                 <section className="lg:w-[40%] bg-white p-8 sm:p-12 lg:p-20 flex flex-col justify-between border-r border-zinc-100">
@@ -721,11 +755,23 @@ function CheckoutContent() {
                                                         onClick={() => {
                                                             const uid = searchParams.get('uid') || '';
                                                             const childName = formData.childName || searchParams.get('childName') || '';
+                                                            if (!uid && !hasSession) {
+                                                                router.push(buildSignupHref());
+                                                                return;
+                                                            }
                                                             router.push(`/onboarding/welcome?childName=${encodeURIComponent(childName)}${uid ? `&uid=${uid}` : ''}`);
                                                         }}
                                                         className="w-full py-5 bg-[var(--caribbean-ocean)] text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                                                     >
                                                         Activate Free Account
+                                                    </button>
+                                                ) : !searchParams.get('uid') && hasSession === false ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => router.push(buildSignupHref())}
+                                                        className="w-full py-5 bg-primary text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                                    >
+                                                        Create Account to Continue
                                                     </button>
                                                 ) : (
                                                     <PayPalButtons
@@ -747,11 +793,10 @@ function CheckoutContent() {
                                                             const targetPlanId = selectedPlan?.paypalPlanId;
 
                                                             if (!targetPlanId) {
-                                                                toast.error("Invalid configuration. Please contact support.");
+                                                                toast.error("Payment plan is not configured. Please contact support.");
                                                                 throw new Error("Missing PayPal Plan ID");
                                                             }
 
-                                                            // 7-day free trial: delay first billing by 7 days
                                                             const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
                                                             const setupFee = calculateOneTimeTotal();
 
@@ -765,11 +810,19 @@ function CheckoutContent() {
                                                                             currency_code: 'USD'
                                                                         }
                                                                     }
-                                                                } as any : undefined
+                                                                } as any : undefined,
                                                             });
                                                         } : undefined}
-                                                        onApprove={async (data, _actions) => {
+                                                        onApprove={async (data, actions) => {
                                                             try {
+                                                                if (formData.planKey === 'plan_free_forever') {
+                                                                    const capture = await (actions.order?.capture?.() as Promise<{ status?: string }> | undefined);
+                                                                    if (capture?.status && capture.status !== 'COMPLETED') {
+                                                                        toast.error('Payment could not be completed. Please try again.');
+                                                                        return;
+                                                                    }
+                                                                }
+
                                                                 const { data: sessionData } = await supabase.auth.getSession();
                                                                 const token = sessionData?.session?.access_token;
 
@@ -785,7 +838,7 @@ function CheckoutContent() {
                                                                         tier: formData.planKey,
                                                                         email: formData.email,
                                                                         addGrandparent: formData.addGrandparent,
-                                                                        billingCycle: 'month',
+                                                                        billingCycle: searchParams.get('cycle') || 'month',
                                                                         currency: 'USD',
                                                                         hasUpsell: formData.hasUpsell,
                                                                         hasHeritageStory: formData.hasHeritageStory,

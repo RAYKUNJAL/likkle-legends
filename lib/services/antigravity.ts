@@ -64,13 +64,13 @@ function extractJsonArray(raw: string): any[] {
     try {
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? parsed : [];
-    } catch {
+    } catch (_e) {
         const match = raw.match(/\[[\s\S]*\]/);
         if (!match) return [];
         try {
             const parsed = JSON.parse(match[0]);
             return Array.isArray(parsed) ? parsed : [];
-        } catch {
+        } catch (_e) {
             return [];
         }
     }

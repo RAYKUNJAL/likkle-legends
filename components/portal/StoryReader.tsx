@@ -10,7 +10,7 @@ import {
     Loader2, Pause, VolumeX, Mic2, Star
 } from 'lucide-react';
 import { StoryBook } from '@/types/story';
-import { generateCharacterAudio } from '@/app/actions/voice';
+import { generateCharacterAudioWithMetadata } from '@/app/actions/voice';
 import { generateImagesAction, saveStoryToLibraryAction } from '@/app/actions/story-actions';
 import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
@@ -28,6 +28,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
     const [isGeneratingImages, setIsGeneratingImages] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [activeSpeaker, setActiveSpeaker] = useState<'tanty' | 'roti' | null>(null);
+    const [currentWordIndex, setCurrentWordIndex] = useState<number | null>(null);
     const [autoPlay, setAutoPlay] = useState(true);
     const [hasSaved, setHasSaved] = useState(false);
 
@@ -45,7 +46,10 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
         };
     }, []);
 
-    const playVoice = useCallback(async (text: string, character: 'tanty' | 'roti') => {
+    const getAudioCacheKey = (text: string, character: 'tanty' | 'roti') =>
+        `likkle:story-audio:${character}:${story.id}:${currentPage}:${text.slice(0, 48)}`;
+
+    const playVoice = useCallback(async (text: string, character: 'tanty' | 'roti', autoTurn = false) => {
         if (isLoadingVoice) return;
 
         // Stop current audio
@@ -57,16 +61,41 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
         setIsLoadingVoice(true);
         setActiveSpeaker(character);
         setIsPlaying(true);
+        setCurrentWordIndex(null);
 
         try {
-            const result = await generateCharacterAudio(text, character);
+            const cacheKey = getAudioCacheKey(text, character);
+            const cached = typeof window !== 'undefined' ? window.sessionStorage.getItem(cacheKey) : null;
+            const result = cached
+                ? JSON.parse(cached) as Awaited<ReturnType<typeof generateCharacterAudioWithMetadata>>
+                : await generateCharacterAudioWithMetadata(text, character);
+
             if (result.success && result.audio) {
+                if (!cached) {
+                    try {
+                        window.sessionStorage.setItem(cacheKey, JSON.stringify(result));
+                    } catch (_e) {
+                        // Audio can be large; ignore cache failures and keep playback working.
+                    }
+                }
+
                 const audio = new Audio(result.audio);
                 audioRef.current = audio;
+                const wordTimings = result.words || [];
+
+                audio.ontimeupdate = () => {
+                    if (!wordTimings.length) return;
+                    const activeWord = wordTimings.findIndex((word) => audio.currentTime >= word.start && audio.currentTime <= word.end);
+                    setCurrentWordIndex(activeWord >= 0 ? activeWord : null);
+                };
 
                 audio.onended = () => {
                     setIsPlaying(false);
                     setActiveSpeaker(null);
+                    setCurrentWordIndex(null);
+                    if (autoTurn && currentPage > 0 && currentPage < pages.length) {
+                        setCurrentPage((page) => Math.min(page + 1, pages.length));
+                    }
                 };
 
                 await audio.play();
@@ -77,20 +106,21 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
             console.error("[Voice] Error:", err);
             setIsPlaying(false);
             setActiveSpeaker(null);
+            setCurrentWordIndex(null);
         } finally {
             setIsLoadingVoice(false);
         }
-    }, [isLoadingVoice]);
+    }, [currentPage, isLoadingVoice, pages.length, story.id]);
 
     // Handle Auto-Play Narration on page change
     useEffect(() => {
         if (autoPlay && currentPage > 0 && currentPage <= pages.length) {
             const pageData = pages[currentPage - 1];
             // Tanty narrates the main text
-            playVoice(pageData.narrative_text, 'tanty');
+            playVoice(pageData.narrative_text, 'tanty', true);
         } else if (currentPage === 0 && autoPlay) {
             // Narrate cover title
-            playVoice(`Welcome to ${story.book_meta.title}. Written by Tanty Spice.`, 'tanty');
+            playVoice(`Welcome to ${story.book_meta.title}. Read with Tanty Spice.`, 'tanty');
         }
     }, [currentPage, autoPlay, pages, story.book_meta.title, playVoice]);
 
@@ -113,6 +143,23 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
         }
         setIsPlaying(false);
         setActiveSpeaker(null);
+        setCurrentWordIndex(null);
+    };
+
+    const renderHighlightedText = (text: string) => {
+        let wordIndex = -1;
+        return text.split(/(\s+)/).map((token, index) => {
+            if (/^\s+$/.test(token)) return <span key={`space-${index}`}>{token}</span>;
+            wordIndex += 1;
+            return (
+                <span
+                    key={`${token}-${index}`}
+                    className={currentWordIndex === wordIndex ? 'rounded-xl bg-yellow-200 px-1 text-deep shadow-sm' : ''}
+                >
+                    {token}
+                </span>
+            );
+        });
     };
 
     // Auto-generate images if missing in background
@@ -225,7 +272,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                                         {story.book_meta.title}
                                     </h1>
                                     <div className="flex items-center gap-4 p-4 bg-white/50 backdrop-blur-sm rounded-[2rem] border border-white w-fit">
-                                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary">
+                                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary relative">
                                             <Image src="/images/tanty_spice_avatar.jpg" alt="Tanty Spice" fill className="object-cover" />
                                         </div>
                                         <p className="text-xl text-deep/60 font-bold italic">
@@ -293,7 +340,7 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                                                 )}
                                             </div>
                                             <p className="text-xl text-deep font-bold italic leading-relaxed">
-                                                "{pages[currentPage - 1].guide_interventions.tanty_spice_intro}"
+                                                "{pages[currentPage - 1]?.guide_interventions?.tanty_spice_intro || ""}"
                                             </p>
                                         </div>
                                     </div>
@@ -306,20 +353,20 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                                     <div className="space-y-4">
                                         <p className="text-sm font-black text-zinc-300 uppercase tracking-[0.4em]">Reader Mode</p>
                                         <h2 className="text-6xl md:text-7xl font-black text-deep leading-[1.2] tracking-tight hover:text-primary transition-colors cursor-pointer" onClick={() => playVoice(pages[currentPage - 1].narrative_text, 'tanty')}>
-                                            {pages[currentPage - 1].narrative_text}
+                                            {renderHighlightedText(pages[currentPage - 1].narrative_text)}
                                         </h2>
                                     </div>
 
                                     {/* 🤖 R.O.T.I's Reading Challenge */}
                                     <AnimatePresence>
-                                        {pages[currentPage - 1].guide_interventions.roti_prompt && (
+                                        {pages[currentPage - 1]?.guide_interventions?.roti_prompt && (
                                             <motion.button
                                                 initial={{ opacity: 0, y: 20 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                onClick={() => playVoice(pages[currentPage - 1].guide_interventions.roti_prompt!, 'roti')}
+                                                onClick={() => playVoice(pages[currentPage - 1]?.guide_interventions?.roti_prompt || "", 'roti')}
                                                 className={`w-full group rounded-[3rem] p-8 transition-all text-left flex items-start gap-6 border-4 ${activeSpeaker === 'roti' ? 'bg-blue-600 border-blue-400 text-white shadow-2xl scale-[1.02]' : 'bg-blue-50 border-blue-100 text-blue-900 hover:bg-blue-100'}`}
                                             >
-                                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center overflow-hidden shadow-lg transition-transform group-hover:rotate-12 ${activeSpeaker === 'roti' ? 'bg-white' : 'bg-blue-500'}`}>
+                                                <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center overflow-hidden shadow-lg transition-transform group-hover:rotate-12 relative ${activeSpeaker === 'roti' ? 'bg-white' : 'bg-blue-500'}`}>
                                                     <Image src="/images/roti-new.jpg" alt="R.O.T.I" fill className="object-cover" />
                                                 </div>
                                                 <div className="flex-1 space-y-2">
@@ -327,14 +374,14 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                                                         <p className={`text-xs font-black uppercase tracking-widest ${activeSpeaker === 'roti' ? 'text-white/60' : 'text-blue-500'}`}>R.O.T.I Literacy Prompt</p>
                                                         {activeSpeaker === 'roti' && (
                                                             <div className="flex gap-1 h-3 items-end">
-                                                                {[...Array(4)].map((_, i) => (
+                                                                 {[...Array(4)].map((_, i) => (
                                                                     <motion.div key={i} animate={{ height: [4, 12, 4] }} transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }} className="w-1 bg-white rounded-full" />
                                                                 ))}
                                                             </div>
                                                         )}
                                                     </div>
                                                     <p className={`text-2xl font-black italic`}>
-                                                        {pages[currentPage - 1].guide_interventions.roti_prompt}
+                                                        {pages[currentPage - 1]?.guide_interventions?.roti_prompt}
                                                     </p>
                                                 </div>
                                             </motion.button>

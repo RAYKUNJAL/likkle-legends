@@ -113,7 +113,7 @@ export default function TantySpiceWidget() {
             };
 
             window.speechSynthesis.speak(utterance);
-        } catch {
+        } catch (_e) {
             setIsSpeaking(false);
             setVoiceError(true);
         }

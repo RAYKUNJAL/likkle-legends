@@ -10,7 +10,11 @@ export async function GET() {
       environment: process.env.NODE_ENV,
       checks: {
         supabase: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-        api_keys: !!process.env.ANTHROPIC_API_KEY,
+        api_keys: !!(
+          process.env.GEMINI_API_KEY ||
+          process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+          process.env.NEXT_PUBLIC_GEMINI_API_KEY
+        ),
       },
     };
 

@@ -1,6 +1,6 @@
 "use server";
 
-import { getStoryBySlug, getStoriesByTradition, getStoriesForChild, getRandomStory } from '@/lib/stories-database';
+import { getStoryBySlug, getStoriesByTradition, getStoriesForChild, getRandomStory, getStoriesWithFilters } from '@/lib/stories-database';
 import { StoryBook } from '@/types/story';
 
 /**
@@ -19,20 +19,45 @@ export async function selectStoryAction(selection: {
 
         // Get all stories matching the criteria
         console.log("[StoryDatabaseAction] 🔍 Querying stories_library for matching stories...");
-        const stories = await getStoriesByTradition(selection.tradition, {
+        let stories = await getStoriesByTradition(selection.tradition, {
             reading_level: selection.level,
             island_code: selection.island,
             limit: 10
         });
 
-        console.log(`[StoryDatabaseAction] 📚 Query result: Found ${stories?.length || 0} matching stories`);
+        let originalQueryIsland = selection.island;
+
+        // Fallback 1: Query tradition & level across all islands
+        if (!stories || stories.length === 0) {
+            console.log("[StoryDatabaseAction] ⚠️ No exact match. Fallback 1: Querying tradition & level across all islands.");
+            stories = await getStoriesByTradition(selection.tradition, {
+                reading_level: selection.level,
+                limit: 10
+            });
+        }
+
+        // Fallback 2: Query tradition across all levels and islands
+        if (!stories || stories.length === 0) {
+            console.log("[StoryDatabaseAction] ⚠️ Fallback 2: Querying tradition across all levels and islands.");
+            stories = await getStoriesByTradition(selection.tradition, {
+                limit: 10
+            });
+        }
+
+        // Fallback 3: Query any active story in stories_library using filters
+        if (!stories || stories.length === 0) {
+            console.log("[StoryDatabaseAction] ⚠️ Fallback 3: Querying any active story in stories_library.");
+            stories = await getStoriesWithFilters({ limit: 10 });
+        }
+
+        console.log(`[StoryDatabaseAction] 📚 Query result after fallbacks: Found ${stories?.length || 0} matching stories`);
 
         if (stories && stories.length > 0) {
             console.log("[StoryDatabaseAction] Story slugs found:", stories.map((s: any) => s.slug).join(", "));
         }
 
         if (!stories || stories.length === 0) {
-            const errorMsg = `No ${selection.tradition} stories found for ${selection.island} at ${selection.level} level.`;
+            const errorMsg = `No stories found even after applying all fallback options.`;
             console.error("[StoryDatabaseAction] ❌ " + errorMsg);
             return {
                 success: false,
@@ -61,11 +86,33 @@ export async function selectStoryAction(selection: {
             hasGuides: !!fullStory.guides
         });
 
+        // Customize island setting for a personalized connection
+        if (fullStory.book_meta) {
+            const islandNames: Record<string, string> = {
+                'JM': 'Jamaica',
+                'TT': 'Trinidad and Tobago',
+                'BB': 'Barbados',
+                'LC': 'Saint Lucia',
+                'AG': 'Antigua and Barbuda',
+                'KN': 'Saint Kitts and Nevis',
+                'DM': 'Dominica',
+                'GD': 'Grenada',
+                'VC': 'Saint Vincent and the Grenadines',
+                'GY': 'Guyana',
+                'BS': 'Bahamas'
+            };
+            const targetIslandName = islandNames[originalQueryIsland] || originalQueryIsland;
+            console.log(`[StoryDatabaseAction] 🌴 Setting story location to ${targetIslandName}`);
+            fullStory.book_meta.setting_island = targetIslandName;
+        }
+
         // Personalize the story with child's name
         if (selection.childName && fullStory.structure?.pages?.[0]) {
             console.log("[StoryDatabaseAction] 👧 Personalizing story for child:", selection.childName);
-            fullStory.structure.pages[0].narrative_text =
-                `${selection.childName}, let me tell you a story...\n\n${fullStory.structure.pages[0].narrative_text}`;
+            if (!fullStory.structure.pages[0].narrative_text.includes(selection.childName)) {
+                fullStory.structure.pages[0].narrative_text =
+                    `${selection.childName}, let me tell you a story...\n\n${fullStory.structure.pages[0].narrative_text}`;
+            }
         }
 
         console.log("[StoryDatabaseAction] ✅ Story selection complete - ready to store in session");

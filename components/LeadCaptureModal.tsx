@@ -124,7 +124,7 @@ export default function LeadCaptureModal({
             setStep('success');
             onSuccess?.(email);
             setTimeout(() => onClose(), 3000);
-        } catch {
+        } catch (_e) {
             setError('Something went wrong');
         } finally {
             setIsSubmitting(false);

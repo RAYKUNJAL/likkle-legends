@@ -1,4 +1,5 @@
 import { generateGeminiSpeech } from '@/lib/gemini-tts';
+import { CHARACTER_VOICE_PROFILES, getCharacterVoiceProfile, VoiceProviderCharacter } from '@/lib/character-voice-profiles';
 /**
  * 🎙️ Google Cloud Text-to-Speech Service
  * Production-grade TTS using Google Cloud REST API
@@ -20,37 +21,16 @@ interface TTSResponse {
     audioContent: string; // base64 encoded audio
 }
 
-export type GoogleVoiceCharacter = 'tanty' | 'roti' | 'dilly';
+export type GoogleVoiceCharacter = VoiceProviderCharacter;
 
 const GOOGLE_CLOUD_TTS_API_KEY =
     process.env.GOOGLE_CLOUD_TTS_API_KEY ||
     process.env.GOOGLE_API_KEY ||
     '';
 
-export const GOOGLE_VOICE_PRESETS: Record<GoogleVoiceCharacter, Required<Pick<TTSConfig, 'languageCode' | 'voiceName' | 'pitch' | 'speakingRate' | 'volumeGainDb'>>> = {
-    // Original Tanty v3 "Memory Village" profile from early production build.
-    tanty: {
-        languageCode: 'en-GB',
-        voiceName: 'en-GB-Neural2-C',
-        pitch: -2.0,
-        speakingRate: 0.9,
-        volumeGainDb: 1.0
-    },
-    roti: {
-        languageCode: 'en-US',
-        voiceName: 'en-US-Neural2-J',
-        pitch: 1.5,
-        speakingRate: 1.05,
-        volumeGainDb: 1.0
-    },
-    dilly: {
-        languageCode: 'en-US',
-        voiceName: 'en-US-Neural2-I',
-        pitch: 2.0,
-        speakingRate: 1.1,
-        volumeGainDb: 1.0
-    }
-};
+export const GOOGLE_VOICE_PRESETS = Object.fromEntries(
+    Object.entries(CHARACTER_VOICE_PROFILES).map(([key, profile]) => [key, profile.googleCloud])
+) as Record<GoogleVoiceCharacter, Required<Pick<TTSConfig, 'languageCode' | 'voiceName' | 'pitch' | 'speakingRate' | 'volumeGainDb'>>>;
 
 const DEFAULT_CONFIG: TTSConfig = {
     languageCode: "en-GB",
@@ -67,7 +47,7 @@ function isGoogleVoiceName(voiceName?: string): boolean {
 }
 
 function resolveCharacterVoicePreset(character: GoogleVoiceCharacter, voiceNameOverride?: string): TTSConfig {
-    const preset = GOOGLE_VOICE_PRESETS[character];
+    const preset = getCharacterVoiceProfile(character).googleCloud;
     return {
         ...preset,
         voiceName: isGoogleVoiceName(voiceNameOverride) ? voiceNameOverride : preset.voiceName
@@ -166,8 +146,17 @@ export async function synthesizeCharacterSpeech(
     character: GoogleVoiceCharacter,
     voiceNameOverride?: string
 ): Promise<string | null> {
+    const result = await synthesizeCharacterSpeechData(text, character, voiceNameOverride);
+    return result?.base64Audio || null;
+}
+
+export async function synthesizeCharacterSpeechData(
+    text: string,
+    character: GoogleVoiceCharacter,
+    voiceNameOverride?: string
+): Promise<{ base64Audio: string; contentType: 'audio/mpeg' | 'audio/wav' } | null> {
     const cloudAudio = await synthesizeSpeech(text, resolveCharacterVoicePreset(character, voiceNameOverride));
-    if (cloudAudio) return cloudAudio;
+    if (cloudAudio) return { base64Audio: cloudAudio, contentType: 'audio/mpeg' };
 
     console.warn(`[TTS] Falling back to Gemini TTS for ${character}`);
 
@@ -180,7 +169,7 @@ export async function synthesizeCharacterSpeech(
         return null;
     }
 
-    return Buffer.from(geminiAudio).toString('base64');
+    return { base64Audio: Buffer.from(geminiAudio).toString('base64'), contentType: 'audio/wav' };
 }
 
 /**

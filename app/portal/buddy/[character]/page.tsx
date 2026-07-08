@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -141,28 +141,10 @@ export default function CharacterChatPage() {
     const { activeChild, canAccess, isLoading, user } = useUser();
     const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
 
-    if (!isLoading && !parentalControls.allow_buddy) {
-        return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
-                    <h2 className="text-3xl font-black text-slate-800 mb-2">Buddy Chat Is Locked</h2>
-                    <p className="text-slate-500 font-semibold">Your parent controls currently disable buddy chat.</p>
-                    <button
-                        type="button"
-                        onClick={() => router.push('/portal/settings')}
-                        className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black"
-                    >
-                        Open Parent Controls
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
     const config = useMemo(() => {
         try {
             return getCharacterConfig(characterId);
-        } catch {
+        } catch (_e) {
             return null;
         }
     }, [characterId]);
@@ -301,7 +283,7 @@ export default function CharacterChatPage() {
                     URL.revokeObjectURL(url);
                 };
             }
-        } catch {
+        } catch (_e) {
             setIsSpeaking(false);
         }
     }, [config, characterId]);
@@ -358,7 +340,7 @@ export default function CharacterChatPage() {
             }
 
             if (voiceEnabled) speakText(data.response);
-        } catch {
+        } catch (_e) {
             setErrorMessage('Connection issue. Try again in a moment.');
             setMessages((prev) => [...prev, {
                 role: 'assistant',
@@ -417,6 +399,24 @@ export default function CharacterChatPage() {
         recognitionRef.current = recognition;
         recognition.start();
     }, [isListening, isSending, sendMessage]);
+
+    if (!isLoading && !parentalControls.allow_buddy) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
+                    <h2 className="text-3xl font-black text-slate-800 mb-2">Buddy Chat Is Locked</h2>
+                    <p className="text-slate-500 font-semibold">Your parent controls currently disable buddy chat.</p>
+                    <button
+                        type="button"
+                        onClick={() => router.push('/portal/settings')}
+                        className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black"
+                    >
+                        Open Parent Controls
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     if (!config) return null;
 

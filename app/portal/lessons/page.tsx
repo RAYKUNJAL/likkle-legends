@@ -32,19 +32,7 @@ export default function LessonsPage() {
     const [loadError, setLoadError] = useState<string | null>(null);
     const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
 
-    if (!parentalControls.allow_lessons) {
-        return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
-                    <h2 className="text-3xl font-black text-slate-800 mb-2">Lessons Are Locked</h2>
-                    <p className="text-slate-500 font-semibold">Your parent controls currently disable lesson videos.</p>
-                    <Link href="/portal/settings" className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black">
-                        Open Parent Controls
-                    </Link>
-                </div>
-            </div>
-        );
-    }
+    
 
     const loadVideos = async () => {
         setIsLoading(true);
@@ -93,6 +81,20 @@ export default function LessonsPage() {
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
+
+        if (!parentalControls.allow_lessons) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
+                    <h2 className="text-3xl font-black text-slate-800 mb-2">Lessons Are Locked</h2>
+                    <p className="text-slate-500 font-semibold">Your parent controls currently disable lesson videos.</p>
+                    <Link href="/portal/settings" className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black">
+                        Open Parent Controls
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">

@@ -3,57 +3,88 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Mail, Lock, User, Sparkles, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
-import { useState, useEffect, Suspense } from 'react';
+import { ArrowLeft, Mail, Lock, User, Sparkles, Loader2, AlertCircle, Eye, EyeOff, MapPin, Baby, ShieldCheck } from 'lucide-react';
+import { useEffect, useMemo, useState, Suspense, type ReactNode } from 'react';
 import { signupAction } from '@/app/actions/auth-actions';
 import { trackEvent } from '@/lib/analytics';
 import { createClient } from '@/lib/supabase/client';
+import { CARIBBEAN_ISLANDS } from '@/lib/islands';
 
-// Signup Form Component
+const ISLANDS = [
+    ...CARIBBEAN_ISLANDS.map((island) => ({
+        id: island.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''),
+        name: island.name,
+        flag: island.flag,
+    })),
+    { id: 'mixed', name: 'Island Explorer', flag: '🌴' },
+];
+
+const ISLAND_ALIASES: Record<string, string> = {
+    trinidad: 'trinidad_and_tobago',
+    tobago: 'trinidad_and_tobago',
+    antigua: 'antigua_and_barbuda',
+    st_lucia: 'saint_lucia',
+    st_vincent: 'saint_vincent_and_the_grenadines',
+    st_kitts: 'saint_kitts_and_nevis',
+    curacao: 'curacao',
+};
+
+function cleanParam(searchParams: ReturnType<typeof useSearchParams>, key: string, fallback = '') {
+    try {
+        const value = searchParams?.get(key);
+        return value ? value.replace(/[\u200B-\u200D\uFEFF]/g, '').trim() : fallback;
+    } catch (_e) {
+        return fallback;
+    }
+}
+
+
 function SignupForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
-
-    // Helpers
-    const getParam = (key: string, fallback: string) => {
-        try {
-            let value = searchParams?.get(key);
-            if (!value) return fallback;
-            // Remove zero-width spaces and other invisible Unicode characters
-            value = value.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
-            return value || fallback;
-        } catch {
-            return fallback;
-        }
-    };
-
-    const plan = getParam('plan', 'mail_club');
-    // Support both ?ref= (from invite links) and ?referral= (legacy)
-    const referral = getParam('ref', '') || getParam('referral', 'direct');
+    const plan = cleanParam(searchParams, 'plan', 'mail_club');
+    const referral = cleanParam(searchParams, 'ref') || cleanParam(searchParams, 'referral', 'direct');
+    const rawInitialIsland = cleanParam(searchParams, 'island', 'mixed');
+    const initialIsland = ISLAND_ALIASES[rawInitialIsland] || rawInitialIsland;
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
-        childName: getParam('childName', ''),
-        email: '',
+        parentName: cleanParam(searchParams, 'parentName'),
+        childName: cleanParam(searchParams, 'childName'),
+        childAge: Number(cleanParam(searchParams, 'age', '5')) || 5,
+        island: ISLANDS.some((island) => island.id === initialIsland) ? initialIsland : 'mixed',
+        email: cleanParam(searchParams, 'email'),
         password: '',
-        agreed: false
+        agreed: false,
     });
 
-    useEffect(() => {
-        trackEvent('signup_viewed', { plan });
-    }, []);
+    const selectedIsland = useMemo(
+        () => ISLANDS.find((island) => island.id === formData.island) || ISLANDS[ISLANDS.length - 1],
+        [formData.island]
+    );
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+    useEffect(() => {
+        trackEvent('signup_viewed', { plan, island: formData.island });
+    }, [plan, formData.island]);
+
+    const updateField = (field: keyof typeof formData, value: string | number | boolean) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
-    const [isEmailSent, setIsEmailSent] = useState(false);
+    const redirectAfterSignup = async (email: string, password: string, userId?: string) => {
+        const supabase = createClient();
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (signInErr) {
+            const nextPath = userId ? `/portal?uid=${encodeURIComponent(userId)}` : '/portal';
+            router.push(`/login?email=${encodeURIComponent(email)}&redirect=${encodeURIComponent(nextPath)}`);
+            return;
+        }
+
+        router.push('/portal');
+    };
 
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -61,265 +92,188 @@ function SignupForm() {
         setIsLoading(true);
 
         try {
-            // 1. Validation
-            if (!formData.agreed) throw new Error("Please agree to the Terms and Privacy Policy.");
-            if (!formData.email || !formData.password || !formData.childName) throw new Error("Please fill in all fields.");
-            if (formData.password.length < 6) throw new Error("Password must be at least 6 characters.");
+            if (!formData.agreed) throw new Error('Please confirm you are the parent or legal guardian.');
+            if (!formData.parentName.trim()) throw new Error('Please enter your name.');
+            if (!formData.childName.trim()) throw new Error("Please enter your child's name.");
+            if (!formData.email.includes('@')) throw new Error('Please enter a valid email address.');
+            if (formData.password.length < 6) throw new Error('Password must be at least 6 characters.');
+            if (!formData.island) throw new Error('Please choose an island heritage.');
 
-            // 2. Create account via server action
             const result = await signupAction({
                 email: formData.email,
                 password: formData.password,
+                parentName: formData.parentName,
                 childName: formData.childName,
-                plan: plan,
-                referral: referral
+                childAge: formData.childAge,
+                island: formData.island,
+                plan,
+                referral,
             });
 
             if (!result.success) {
-                if (result.error?.includes('already registered')) {
-                    throw new Error("This email is already registered. Please log in instead.");
+                if (result.error?.toLowerCase().includes('registered')) {
+                    throw new Error('This email is already registered. Log in and continue to the portal.');
                 }
-                throw new Error(result.error || "Could not create account. Please try again.");
+                throw new Error(result.error || 'Could not create account. Please try again.');
             }
 
-            const userId = result.userId;
-            trackEvent('signup_initiated', { userId, plan });
-
-            // 3. Confirm email sent state
-            if (result.emailSent) {
-                setIsEmailSent(true);
-                return;
-            }
-
-            // 4. If server couldn't establish a session, ensure client has one
-            if (result.requiresLogin) {
-                const nextPath = `/onboarding/welcome?uid=${userId}&childName=${encodeURIComponent(formData.childName)}`;
-                router.push(`/login?redirect=${encodeURIComponent(nextPath)}`);
-                return;
-            }
-
-            // 5. Try client-side sign-in to sync browser cookies from server-action session
-            const supabase = createClient();
-            const { error: signInErr } = await supabase.auth.signInWithPassword({
-                email: formData.email,
-                password: formData.password
+            trackEvent('signup_completed', {
+                userId: result.userId,
+                childId: result.childId,
+                plan,
+                island: formData.island,
             });
-            if (signInErr) {
-                // Account was created but client session failed — redirect to login
-                const nextPath = `/onboarding/welcome?uid=${userId}&childName=${encodeURIComponent(formData.childName)}`;
-                router.push(`/login?redirect=${encodeURIComponent(nextPath)}`);
+
+            const freePlans = ['free', 'mail_club', 'free_trial'];
+            if (freePlans.includes(plan)) {
+                await redirectAfterSignup(formData.email, formData.password, result.userId);
                 return;
             }
 
-            // 6. Redirect based on plan
-            const FREE_PLANS = ['free', 'mail_club', 'free_trial'];
-            if (FREE_PLANS.includes(plan)) {
-                router.push(`/onboarding/welcome?uid=${userId}&childName=${encodeURIComponent(formData.childName)}`);
-            } else {
-                const planToTier: Record<string, string> = {
-                    'starter_mailer': 'starter_mailer',
-                    'legends_plus': 'legends_plus',
-                    'annual_plus': 'legends_plus',
-                    'family_legacy': 'family_legacy',
-                    'legends_plus_annual': 'legends_plus',
-                };
-                const normalizedPlan = planToTier[plan] || 'legends_plus';
-                const cycle = (plan === 'annual_plus' || plan === 'legends_plus_annual') ? 'year' : 'month';
-                router.push(`/checkout?plan=${normalizedPlan}&cycle=${cycle}&uid=${userId}&childName=${encodeURIComponent(formData.childName)}`);
-            }
-
+            const planToTier: Record<string, string> = {
+                starter_mailer: 'starter_mailer',
+                digital_explorer: 'digital_explorer',
+                legends_plus: 'legends_plus',
+                annual_plus: 'legends_plus',
+                family_legacy: 'family_legacy',
+                legends_plus_annual: 'legends_plus',
+            };
+            const normalizedPlan = planToTier[plan] || 'legends_plus';
+            const cycle = (plan === 'annual_plus' || plan === 'legends_plus_annual') ? 'year' : 'month';
+            router.push(`/checkout?plan=${normalizedPlan}&cycle=${cycle}&uid=${result.userId || ''}&childName=${encodeURIComponent(formData.childName)}`);
         } catch (err: any) {
-            console.error("Signup Error:", err);
-            setError(err.message || "An unexpected error occurred. Please try again.");
-        } finally {
+            console.error('Signup Error:', err);
+            setError(err.message || 'An unexpected error occurred. Please try again.');
             setIsLoading(false);
         }
     };
 
-    if (isEmailSent) {
-        return (
-            <div className="min-h-screen bg-[#FFFDF7] flex flex-col justify-center py-12 px-4 font-sans text-center">
-                <div className="max-w-md mx-auto bg-white p-12 rounded-[3.5rem] shadow-2xl border border-zinc-100">
-                    <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-8 animate-bounce">
-                        <Mail size={40} />
-                    </div>
-                    <h2 className="text-3xl font-black text-deep mb-4">Check your email!</h2>
-                    <p className="text-deep/50 font-bold mb-8">
-                        We've sent a magic link to <span className="text-primary">{formData.email}</span>.
-                        Click it to confirm your account and start the adventure!
-                    </p>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="w-full py-4 bg-zinc-100 text-deep font-black rounded-2xl hover:bg-zinc-200 transition-all"
-                    >
-                        Try again
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
     return (
-        <div className="min-h-screen bg-[#FFFDF7] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans">
-            {/* Background elements */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-primary opacity-5 blur-[100px] -mr-48 -mt-48 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary opacity-5 blur-[100px] -ml-48 -mb-48 pointer-events-none"></div>
+        <div className="min-h-screen bg-[#FFFDF7] font-sans text-deep">
+            <div className="mx-auto flex min-h-screen max-w-7xl flex-col lg:flex-row">
+                <section className="relative flex flex-1 flex-col justify-center overflow-hidden px-6 py-10 lg:px-12">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,210,63,0.18),transparent_35%),radial-gradient(circle_at_80%_70%,rgba(58,190,249,0.16),transparent_34%)]" />
+                    <div className="relative z-10 max-w-xl">
+                        <Link href="/" className="mb-10 inline-flex items-center gap-2 rounded-2xl border border-zinc-100 bg-white px-5 py-3 font-bold text-deep/60 shadow-sm hover:border-primary hover:text-deep">
+                            <ArrowLeft size={18} /> Back to home
+                        </Link>
 
-            <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-                <Link href="/" className="flex justify-center mb-10 group">
-                    <div className="flex items-center gap-2 bg-white px-6 py-3 rounded-2xl shadow-sm border border-zinc-100 group-hover:border-primary transition-all">
-                        <ArrowLeft size={18} className="text-zinc-400 group-hover:text-primary group-hover:-translate-x-1 transition-all" />
-                        <span className="font-bold text-deep/60 group-hover:text-deep">Back to home</span>
-                    </div>
-                </Link>
-                <div className="text-center">
-                    <div className="relative h-16 w-48 mx-auto mb-8">
-                        <Image
-                            src="/images/logo.png"
-                            alt="Likkle Legends"
-                            fill
-                            className="object-contain"
-                            priority
-                        />
-                    </div>
-                    <h2 className="text-4xl font-black text-deep tracking-tight">Create your account</h2>
-                    <p className="mt-4 text-lg text-deep/40 font-bold">
-                        Start your child's Caribbean adventure today.
-                    </p>
-                </div>
-            </div>
+                        <div className="relative mb-8 h-16 w-52">
+                            <Image src="/images/logo.png" alt="Likkle Legends" fill className="object-contain" priority />
+                        </div>
 
-            <div className="mt-12 sm:mx-auto sm:w-full sm:max-w-[480px] relative z-10 px-4">
-                <div className="bg-white py-12 px-10 shadow-2xl shadow-zinc-200/50 rounded-[3.5rem] border border-zinc-100 relative overflow-hidden">
+                        <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-primary">
+                            <ShieldCheck size={16} /> Parent setup first
+                        </p>
+                        <h1 className="text-5xl font-black leading-tight tracking-tight lg:text-6xl">
+                            Start your child&apos;s Caribbean learning adventure.
+                        </h1>
+                        <p className="mt-6 text-lg font-semibold leading-relaxed text-deep/55">
+                            Create your parent account, add your first child, and open a warm island-powered learning home built for ages 3 to 9.
+                        </p>
 
-                    <form className="space-y-8" onSubmit={handleSignup}>
-                            <div>
-                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Child's Name</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
-                                        <User size={20} />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        name="childName"
-                                        value={formData.childName}
-                                        onChange={handleChange}
-                                        placeholder="Kai..."
-                                        className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
-                                        required
-                                    />
+                        <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                            {['No credit card for free plan', 'Parent-approved setup', 'Choose your island heritage'].map((item) => (
+                                <div key={item} className="rounded-2xl border border-white/70 bg-white/75 p-4 text-sm font-black text-deep/60 shadow-sm">
+                                    {item}
                                 </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                <section className="flex flex-1 items-center justify-center px-4 py-10 lg:px-10">
+                    <div className="w-full max-w-xl rounded-[2.5rem] border border-zinc-100 bg-white p-6 shadow-2xl shadow-zinc-200/70 sm:p-10">
+                        <div className="mb-8 flex items-center justify-between gap-4">
+                            <div>
+                                <h2 className="text-3xl font-black tracking-tight">Start the Adventure</h2>
+                                <p className="mt-2 font-bold text-deep/40">Set up your family in under a minute.</p>
+                            </div>
+                            <div className="rounded-2xl bg-primary/10 px-4 py-3 text-center">
+                                <div className="text-3xl">{selectedIsland.flag}</div>
+                                <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-primary">{selectedIsland.name}</p>
+                            </div>
+                        </div>
+
+                        <form className="space-y-5" onSubmit={handleSignup}>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Field icon={<User size={18} />} label="Parent Name">
+                                    <input value={formData.parentName} onChange={(e) => updateField('parentName', e.target.value)} placeholder="Ray" className="field-input" required />
+                                </Field>
+                                <Field icon={<Baby size={18} />} label="Child Name">
+                                    <input value={formData.childName} onChange={(e) => updateField('childName', e.target.value)} placeholder="Kai" className="field-input" required />
+                                </Field>
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Email Address</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
-                                        <Mail size={20} />
-                                    </div>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        placeholder="you@heritage.com"
-                                        className="block w-full pl-14 pr-5 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
-                                        required
-                                    />
-                                </div>
+                            <div className="grid gap-4 sm:grid-cols-[140px_1fr]">
+                                <Field icon={<Sparkles size={18} />} label="Age">
+                                    <select value={formData.childAge} onChange={(e) => updateField('childAge', Number(e.target.value))} className="field-input" aria-label="Child age">
+                                        {[3, 4, 5, 6, 7, 8, 9].map((age) => <option key={age} value={age}>{age}</option>)}
+                                    </select>
+                                </Field>
+                                <Field icon={<MapPin size={18} />} label="Island Heritage">
+                                    <select value={formData.island} onChange={(e) => updateField('island', e.target.value)} className="field-input" aria-label="Island heritage">
+                                        {ISLANDS.map((island) => (
+                                            <option key={island.id} value={island.id}>{island.flag} {island.name}</option>
+                                        ))}
+                                    </select>
+                                </Field>
                             </div>
 
-                            <div>
-                                <label className="block text-xs font-black text-deep/30 uppercase tracking-widest mb-3 px-1">Create Password</label>
+                            <Field icon={<Mail size={18} />} label="Email Address">
+                                <input type="email" value={formData.email} onChange={(e) => updateField('email', e.target.value)} placeholder="you@heritage.com" className="field-input" required />
+                            </Field>
+
+                            <Field icon={<Lock size={18} />} label="Password">
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-zinc-400">
-                                        <Lock size={20} />
-                                    </div>
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        placeholder="••••••••"
-                                        className="block w-full pl-14 pr-12 py-5 bg-zinc-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 transition-all text-deep font-bold placeholder:text-deep/20 text-lg"
-                                        required
-                                        minLength={6}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-5 flex items-center text-zinc-400 hover:text-primary transition-colors focus:outline-none"
-                                    >
-                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    <input type={showPassword ? 'text' : 'password'} value={formData.password} onChange={(e) => updateField('password', e.target.value)} placeholder="6+ characters" className="field-input pr-12" minLength={6} required />
+                                    <button type="button" onClick={() => setShowPassword((value) => !value)} className="absolute inset-y-0 right-0 flex items-center px-4 text-deep/30 hover:text-primary" aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
-                            </div>
+                            </Field>
 
-                            <div className="flex items-start gap-3 px-1">
-                                <input
-                                    type="checkbox"
-                                    name="agreed"
-                                    id="coppa-consent"
-                                    checked={formData.agreed}
-                                    onChange={handleChange}
-                                    className="mt-1 w-5 h-5 rounded border-zinc-200 text-primary focus:ring-primary/20"
-                                    required
-                                />
-                                <label htmlFor="coppa-consent" className="text-sm text-deep/50 leading-tight">
-                                    I confirm I am a parent or legal guardian and agree to the{' '}
-                                    <Link href="/terms" className="text-primary hover:underline">Terms</Link> and{' '}
-                                    <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
-                                </label>
-                            </div>
+                            <label className="flex items-start gap-3 rounded-2xl bg-zinc-50 p-4 text-sm font-semibold leading-snug text-deep/55">
+                                <input type="checkbox" checked={formData.agreed} onChange={(e) => updateField('agreed', e.target.checked)} className="mt-0.5 h-5 w-5 rounded border-zinc-200 text-primary focus:ring-primary/20" required />
+                                <span>I am the parent or legal guardian and agree to the <Link href="/terms" className="font-black text-primary hover:underline">Terms</Link> and <Link href="/privacy" className="font-black text-primary hover:underline">Privacy Policy</Link>.</span>
+                            </label>
 
                             {error && (
-                                <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700">
+                                <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
                                     <AlertCircle size={18} className="mt-0.5 shrink-0" />
                                     <p className="text-sm font-bold">{error}</p>
                                 </div>
                             )}
 
-                            <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full flex justify-center py-6 px-10 border border-transparent rounded-[2rem] shadow-xl shadow-primary/20 text-xl font-black text-white bg-primary hover:scale-[1.02] active:scale-95 transition-all focus:outline-none ring-offset-4 focus:ring-4 focus:ring-primary/40 group disabled:opacity-70 disabled:cursor-not-allowed"
-                            >
-                                {isLoading ? (
-                                    <Loader2 className="animate-spin" size={24} />
-                                ) : (
-                                    <>
-                                        Start Adventure <Sparkles size={24} className="ml-3 group-hover:rotate-12 transition-transform" />
-                                    </>
-                                )}
+                            <button type="submit" disabled={isLoading} className="flex w-full items-center justify-center gap-3 rounded-[1.5rem] bg-primary px-8 py-5 text-xl font-black text-white shadow-xl shadow-primary/20 transition-all hover:scale-[1.01] active:scale-95 disabled:cursor-not-allowed disabled:opacity-70">
+                                {isLoading ? <Loader2 className="animate-spin" size={24} /> : <>Create Account & Enter Portal <Sparkles size={24} /></>}
                             </button>
                         </form>
 
-                    <div className="mt-10 pt-10 border-t border-zinc-50">
-                        <p className="text-center text-deep/40 font-bold">
-                            Already part of the club?{' '}
-                            <Link href="/login" className="text-primary hover:underline font-black">
-                                Log in here
-                            </Link>
+                        <p className="mt-8 text-center font-bold text-deep/40">
+                            Already have an account? <Link href="/login" className="font-black text-primary hover:underline">Log in</Link>
                         </p>
                     </div>
-                </div>
-
-                <p className="mt-10 text-center text-xs text-deep/20 font-bold uppercase tracking-widest">
-                    Safe for kids. Trusted by parents. 🛡️
-                </p>
+                </section>
             </div>
         </div>
     );
 }
 
-// Main Page with Suspense Boundary
+function Field({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
+    return (
+        <label className="block">
+            <span className="mb-2 flex items-center gap-2 px-1 text-xs font-black uppercase tracking-widest text-deep/35">
+                {icon} {label}
+            </span>
+            {children}
+        </label>
+    );
+}
+
 export default function SignupPage() {
     return (
-        <Suspense fallback={
-            <div className="min-h-screen bg-[#FFFDF7] flex items-center justify-center">
-                <Loader2 className="animate-spin text-primary" size={48} />
-            </div>
-        }>
+        <Suspense fallback={<div className="min-h-screen bg-[#FFFDF7] flex items-center justify-center"><Loader2 className="animate-spin text-primary" size={48} /></div>}>
             <SignupForm />
         </Suspense>
     );

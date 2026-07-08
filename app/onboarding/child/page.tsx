@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronRight, ChevronLeft, Sparkles, Volume2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import { createChild } from '@/lib/database';
 import { useUser } from '@/components/UserContext';
 import { getTantyVoice } from '@/app/actions/voice';
 
@@ -80,7 +79,7 @@ function ChildOnboardingContent() {
     const [isSpeaking, setIsSpeaking] = useState(false);
 
     const [formData, setFormData] = useState({
-        first_name: '',
+        first_name: searchParams.get('childName') || '',
         age: 5,
         age_track: 'mini' as 'mini' | 'big',
         primary_island: '',
@@ -103,9 +102,23 @@ function ChildOnboardingContent() {
         if (isSpeaking) return;
         setIsSpeaking(true);
         try {
+            const cacheKey = `likkle:onboarding:tants:${currentStepData.id}:v2`;
+            const cachedAudio = typeof window !== 'undefined' ? window.localStorage.getItem(cacheKey) : null;
+            if (cachedAudio) {
+                const audio = new Audio(cachedAudio);
+                audio.onended = () => setIsSpeaking(false);
+                await audio.play();
+                return;
+            }
+
             const res = await getTantyVoice(currentStepData.tanty);
             if (res.success && res.audio) {
                 const audio = new Audio(res.audio.startsWith('data:') ? res.audio : `data:audio/mp3;base64,${res.audio}`);
+                try {
+                    window.localStorage.setItem(cacheKey, audio.src);
+                } catch (_e) {
+                    // Local storage can be full or disabled; playback still works.
+                }
                 audio.onended = () => setIsSpeaking(false);
                 await audio.play();
             } else {
@@ -135,7 +148,7 @@ function ChildOnboardingContent() {
                 const supabase = createClient();
                 const { data: { session } } = await supabase.auth.getSession();
                 userId = session?.user?.id;
-            } catch {
+            } catch (_e) {
                 // ignore
             }
         }
@@ -147,14 +160,25 @@ function ChildOnboardingContent() {
 
         setIsSubmitting(true);
         try {
-            const child = await createChild(userId, {
-                first_name: formData.first_name,
-                age: formData.age,
-                age_track: formData.age < 6 ? 'mini' : 'big',
-                primary_island: formData.primary_island,
-                avatar_id: formData.avatar_id,
+            const res = await fetch('/api/onboarding/children', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    first_name: formData.first_name,
+                    age: formData.age,
+                    age_track: formData.age < 6 ? 'mini' : 'big',
+                    primary_island: formData.primary_island,
+                    avatar_id: formData.avatar_id,
+                }),
             });
-            await refreshChildren();
+
+            const result = await res.json();
+            if (!res.ok || !result.success) {
+                throw new Error(result.error || 'Could not save your profile. Please try again.');
+            }
+
+            const child = result.child;
+            await refreshChildren(userId);
             router.push(`/onboarding/learning-goals?childId=${child.id}`);
         } catch (error: any) {
             console.error('Onboarding error:', error);

@@ -6,6 +6,7 @@ import { Hero } from "@/components/landing-v3/Hero";
 import { TantyRadioSection } from "@/components/landing-v3/TantyRadioSection";
 import { MeetTheLegends } from "@/components/landing-v3/MeetTheLegends";
 import { BlogPreview } from "@/components/landing-v3/BlogPreview";
+import { GameShowcase } from "@/components/landing-v3/GameShowcase";
 import { WaitlistModal } from "@/components/landing-v3/WaitlistModal";
 
 // Preserved V2 Components
@@ -83,6 +84,9 @@ export default function LandingPage() {
 
                 {/* V3 Character Section with Real Assets */}
                 <MeetTheLegends onOpenWaitlist={() => setIsWaitlistOpen(true)} />
+
+                {/* Game Showcase Section */}
+                <GameShowcase />
 
                 {/* Preserved V2 Sections */}
                 <PhysicalDigitalBridge />

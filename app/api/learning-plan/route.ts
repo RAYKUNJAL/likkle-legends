@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     let body: { childId?: string };
     try {
         body = await request.json();
-    } catch {
+    } catch (_e) {
         return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
     }
 

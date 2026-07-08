@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanty's Kitchen</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ec4899 0%, #f97316 100%);
+        }
+        
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        .game-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .level-badge {
+            display: inline-block;
+            background: #fce7f3;
+            color: #9d174d;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .game-content {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .kitchen-scene {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 3px dashed #f97316;
+            min-height: 150px;
+        }
+        
+        .recipe-card {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 15px 0;
+        }
+        
+        .ingredients {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .ingredient {
+            background: #fef3c7;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .ingredient:hover {
+            transform: scale(1.05);
+        }
+        
+        .ingredient.selected {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+        
+        .score-display {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 20px 0;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #ec4899;
+            color: white;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .btn-primary:hover {
+            background: #db2777;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(236, 72, 153, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #1f2937;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+        
+        .instructions {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+        
+        .big-text {
+            font-size: 18px;
+            color: #4b5563;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-icon">👩‍🍳</div>
+        <h1>Tanty's Kitchen</h1>
+        <div class="level-badge">Ages 3-5 (Free Preview) - Premium Game</div>
+        
+        <div class="game-content">
+            <p style="margin-bottom: 20px; color: #4b5563; font-size: 16px;">
+                Help Tanty prepare a Caribbean meal! Click the ingredients to add them to the pot.
+            </p>
+            
+            <div class="kitchen-scene">
+                <div class="recipe-card" id="recipeText">🍲 Making Ackee and Saltfish</div>
+                <div class="big-text">Select the ingredients:</div>
+                <div class="ingredients" id="ingredientsGrid"></div>
+            </div>
+            
+            <div class="score-display" id="scoreDisplay">Ingredients Added: 0/4</div>
+            
+            <div class="instructions">
+                <strong>For Ages 3-5:</strong> Click each ingredient to add it to the pot. 
+                Help Tanty cook a delicious Caribbean meal! This is a premium game.
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" id="completeBtn" disabled>
+                Meal Complete! 🎉
+            </button>
+            <button class="btn-secondary" id="quitBtn">
+                Quit Game
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        const ingredients = [
+            { name: 'Ackee', emoji: '🟡' },
+            { name: 'Saltfish', emoji: '🐟' },
+            { name: 'Onion', emoji: '🧅' },
+            { name: 'Tomato', emoji: '🍅' }
+        ];
+        
+        let selectedIngredients = new Set();
+        let score = 0;
+        
+        function initGame() {
+            const grid = document.getElementById('ingredientsGrid');
+            grid.innerHTML = '';
+            
+            ingredients.forEach((ing, index) => {
+                const ingEl = document.createElement('div');
+                ingEl.className = 'ingredient';
+                ingEl.innerHTML = `<div style="font-size: 36px;">${ing.emoji}</div><div style="font-size: 14px;">${ing.name}</div>`;
+                ingEl.onclick = () => selectIngredient(index, ingEl, ing.name);
+                grid.appendChild(ingEl);
+            });
+        }
+        
+        function selectIngredient(index, element, name) {
+            if (!selectedIngredients.has(index)) {
+                selectedIngredients.add(index);
+                element.classList.add('selected');
+                score = selectedIngredients.size;
+                updateScore();
+                
+                console.log(`Added ${name} to the pot!`);
+                
+                if (selectedIngredients.size === ingredients.length) {
+                    document.getElementById('completeBtn').disabled = false;
+                }
+            }
+        }
+        
+        function updateScore() {
+            document.getElementById('scoreDisplay').textContent = `Ingredients Added: ${score}/4`;
+        }
+        
+        document.getElementById('completeBtn').addEventListener('click', () => {
+            completeLevel();
+        });
+        
+        document.getElementById('quitBtn').addEventListener('click', () => {
+            quitGame();
+        });
+        
+        function completeLevel() {
+            window.parent.postMessage({
+                type: 'level_complete',
+                level: 1,
+                score: score * 25,
+                gameState: {
+                    ingredientsAdded: Array.from(selectedIngredients),
+                    recipeComplete: true
+                }
+            }, '*');
+        }
+        
+        function quitGame() {
+            window.parent.postMessage({
+                type: 'game_quit'
+            }, '*');
+        }
+        
+        window.addEventListener('load', () => {
+            initGame();
+            console.log('Tanty\\'s Kitchen game loaded');
+        });
+    </script>
+</body>
+</html>

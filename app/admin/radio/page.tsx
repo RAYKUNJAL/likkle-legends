@@ -43,7 +43,12 @@ export default function AdminRadioPage() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return;
             const data = await getAdminContent(session.access_token, 'songs');
-            setSongs(data as Song[]);
+            // Derive the UI's metadata.is_premium from the real tier_required column.
+            const withMeta = (data as any[]).map(s => ({
+                ...s,
+                metadata: { ...(s.metadata || {}), is_premium: s.tier_required && s.tier_required !== 'free', price: 0.99 },
+            }));
+            setSongs(withMeta as Song[]);
         } catch (error) {
             console.error(error);
             toast.error("Failed to load radio tracks");
@@ -58,13 +63,11 @@ export default function AdminRadioPage() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return;
 
+            // The songs table has no `metadata` column — premium status maps to tier_required.
+            const { metadata, ...songFields } = (editingSong || {}) as any;
             const payload = {
-                ...editingSong,
-                metadata: {
-                    ...editingSong?.metadata,
-                    is_premium: editingSong?.metadata?.is_premium || false,
-                    price: 0.99
-                }
+                ...songFields,
+                tier_required: metadata?.is_premium ? 'legends_plus' : (songFields.tier_required || 'free'),
             };
 
             await saveAdminContent(session.access_token, 'songs', payload);

@@ -1,21 +1,14 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Gamepad2, Sparkles, Star, Trophy, RefreshCw, Home } from 'lucide-react';
+import { ArrowLeft, Gamepad2, Star, Trophy, RefreshCw, Home } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useUser } from '@/components/UserContext';
 import confetti from 'canvas-confetti';
-import { getGameById } from '@/lib/database';
-import { logActivity } from '@/lib/database';
+import { getGameById, logActivity } from '@/lib/database';
 import { recordGameResult } from '@/lib/game-progress';
-
-// Dynamic Imports with Loaders
-const ColorMatch = dynamic(() => import('@/components/games/ColorMatch'), { loading: () => <LoadingGame /> });
-const IslandTrivia = dynamic(() => import('@/components/games/IslandTrivia'), { loading: () => <LoadingGame /> });
-const PatoisWizard = dynamic(() => import('@/components/games/PatoisWizard'), { loading: () => <LoadingGame /> });
-const IslandMemory = dynamic(() => import('@/components/games/IslandMemory'), { loading: () => <LoadingGame /> });
 
 const LoadingGame = () => (
     <div className="h-[600px] flex items-center justify-center">
@@ -26,9 +19,31 @@ const LoadingGame = () => (
     </div>
 );
 
-// ==========================================
-// COMPLETION SCREEN
-// ==========================================
+// Dynamic Imports with Loaders
+const ColorMatch = dynamic(() => import('@/components/games/ColorMatch'), { loading: () => <LoadingGame /> });
+const IslandTrivia = dynamic(() => import('@/components/games/IslandTrivia'), { loading: () => <LoadingGame /> });
+const PatoisWizard = dynamic(() => import('@/components/games/PatoisWizard'), { loading: () => <LoadingGame /> });
+const IslandMemory = dynamic(() => import('@/components/games/IslandMemory'), { loading: () => <LoadingGame /> });
+const FlagMatch = dynamic(() => import('@/components/games/FlagMatch'), { loading: () => <LoadingGame /> });
+// New games cherry-picked from game-zone branch
+const SpeedShapes = dynamic(() => import('@/components/games/SpeedShapes'), { loading: () => <LoadingGame /> });
+const WordBuilder = dynamic(() => import('@/components/games/WordBuilder'), { loading: () => <LoadingGame /> });
+const IngredientSort = dynamic(() => import('@/components/games/IngredientSort'), { loading: () => <LoadingGame /> });
+const IslandPassportExplorer = dynamic(() => import('@/components/games/IslandPassportExplorer'), { loading: () => <LoadingGame /> });
+const CountingMarket = dynamic(() => import('@/components/games/CountingMarket'), { loading: () => <LoadingGame /> });
+const RecipeScramble = dynamic(() => import('@/components/games/RecipeScramble'), { loading: () => <LoadingGame /> });
+const RhythmMatcher = dynamic(() => import('@/components/games/RhythmMatcher'), { loading: () => <LoadingGame /> });
+const MathAdventure = dynamic(() => import('@/components/games/MathAdventure'), { loading: () => <LoadingGame /> });
+
+interface CompletionScreenProps {
+    score: number;
+    correctAnswers: number;
+    totalQuestions: number;
+    gameTitle: string;
+    onPlayAgain: () => void;
+    onGoHome: () => void;
+}
+
 const CompletionScreen = ({
     score,
     correctAnswers,
@@ -36,16 +51,8 @@ const CompletionScreen = ({
     gameTitle,
     onPlayAgain,
     onGoHome
-}: {
-    score: number;
-    correctAnswers: number;
-    totalQuestions: number;
-    gameTitle: string;
-    onPlayAgain: () => void;
-    onGoHome: () => void;
-}) => {
-    // Simple verification hook for confetti
-    React.useEffect(() => {
+}: CompletionScreenProps) => {
+    useEffect(() => {
         confetti({
             particleCount: 150,
             spread: 80,
@@ -57,7 +64,7 @@ const CompletionScreen = ({
     const stars = accuracy >= 90 ? 3 : accuracy >= 70 ? 2 : 1;
 
     return (
-        <div className="max-w-md mx-auto text-center">
+        <div className="max-w-md mx-auto text-center relative z-10">
             <div className="bg-gradient-to-br from-amber-500/20 via-primary/20 to-purple-500/20 backdrop-blur-lg rounded-[3rem] p-10 border border-white/20 shadow-2xl">
                 {/* Trophy */}
                 <div className="relative w-32 h-32 mx-auto mb-8">
@@ -91,15 +98,15 @@ const CompletionScreen = ({
                     <div className="grid grid-cols-3 gap-4">
                         <div>
                             <p className="text-3xl font-black text-primary">{score}</p>
-                            <p className="text-white/50 text-xs uppercase tracking-wider">Score</p>
+                            <p className="text-white/50 text-[10px] uppercase tracking-wider font-bold">Score</p>
                         </div>
                         <div>
                             <p className="text-3xl font-black text-green-400">{accuracy}%</p>
-                            <p className="text-white/50 text-xs uppercase tracking-wider">Accuracy</p>
+                            <p className="text-white/50 text-[10px] uppercase tracking-wider font-bold">Accuracy</p>
                         </div>
                         <div>
                             <p className="text-3xl font-black text-amber-400">+{Math.floor(score / 10)}</p>
-                            <p className="text-white/50 text-xs uppercase tracking-wider">XP Earned</p>
+                            <p className="text-white/50 text-[10px] uppercase tracking-wider font-bold">XP Earned</p>
                         </div>
                     </div>
                 </div>
@@ -124,9 +131,6 @@ const CompletionScreen = ({
     );
 };
 
-// ==========================================
-// MAIN GAME PAGE
-// ==========================================
 export default function GamePlayerPage() {
     const params = useParams();
     const router = useRouter();
@@ -141,11 +145,19 @@ export default function GamePlayerPage() {
     const [dbGame, setDbGame] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const fetchGame = async () => {
             if (!gameId) return;
             // List of featured IDs that don't need DB fetch (matching renderGame logic)
-            const featuredIds = ['island-match', 'patois-puzzle', 'ai-trivia', 'trivia', 'color-match'];
+            const featuredIds = [
+                'island-memory', 'island-match',
+                'patois-wizard', 'patois-puzzle',
+                'island-trivia', 'ai-trivia', 'trivia',
+                'color-match', 'flag-match', 'island-explorer',
+                'speed-shapes', 'word-builder', 'ingredient-sort',
+                'island-passport-explorer', 'counting-market', 'recipe-scramble',
+                'rhythm-matcher', 'math-adventure'
+            ];
 
             if (!featuredIds.includes(gameId)) {
                 try {
@@ -163,47 +175,67 @@ export default function GamePlayerPage() {
     const getGameTitle = () => {
         if (dbGame) return dbGame.title;
         switch (gameId) {
-            case 'island-match': return 'Island Memory Match';
-            case 'patois-puzzle': return 'Patois Word Wizard';
-            case 'ai-trivia': return 'AI Island Trivia';
-            case 'trivia': return 'Caribbean Trivia';
-            case 'color-match': return 'Island Color Match';
-            default: return 'Island Game';
+            case 'island-memory':
+            case 'island-match':
+                return 'Island Memory Match';
+            case 'patois-wizard':
+            case 'patois-puzzle':
+                return 'Patois Word Wizard';
+            case 'island-trivia':
+            case 'ai-trivia':
+            case 'trivia':
+                return 'Island Trivia Quest';
+            case 'color-match':
+                return 'Island Color Match';
+            case 'flag-match':
+            case 'island-explorer':
+                return 'Caribbean Flag Match';
+            case 'speed-shapes':
+                return 'Speed Shapes';
+            case 'word-builder':
+                return 'Island Word Builder';
+            case 'ingredient-sort':
+                return 'Ingredient Sort';
+            case 'island-passport-explorer':
+                return 'Island Passport Explorer';
+            case 'counting-market':
+                return 'Caribbean Market Counting';
+            case 'recipe-scramble':
+                return 'Recipe Scramble';
+            case 'rhythm-matcher':
+                return 'Rhythm Matcher';
+            case 'math-adventure':
+                return "R.O.T.I.'s Math Adventure";
+            default:
+                return 'Island Game';
         }
     };
 
-    const handleComplete = (earnedScore: number, correct: number, total: number) => {
-        recordGameResult(gameId, earnedScore);
-
-        if (user && activeChild) {
-            const calculatedFromScore = Math.max(Math.floor(earnedScore / 10), 0);
-            const xp = Math.min(dbGame?.reward_xp ?? calculatedFromScore, 400);
-            const contentId = dbGame?.id || gameId;
-            const accuracy = total > 0 ? Math.round((correct / total) * 100) : null;
-
-            void logActivity(
-                user.id,
-                activeChild.id,
-                'game',
-                contentId,
-                xp,
-                0,
-                {
-                    title: dbGame?.title || getGameTitle(),
-                    score: earnedScore,
-                    correct_answers: correct,
-                    total_questions: total,
-                    accuracy,
-                }
-            ).then(() => refreshChildren()).catch((error) => {
-                console.error('Failed to log game activity:', error);
-            });
-        }
-
+    const handleComplete = async (earnedScore: number, correct: number = 0, total: number = 0) => {
         setScore(earnedScore);
         setCorrectAnswers(correct);
         setTotalQuestions(total);
         setIsComplete(true);
+
+        recordGameResult(gameId, earnedScore);
+
+        if (user && activeChild) {
+            const xpEarned = Math.max(Math.floor(earnedScore / 10), 0);
+            try {
+                await logActivity(
+                    user.id,
+                    activeChild.id,
+                    'game',
+                    gameId,
+                    xpEarned,
+                    0,
+                    { score: earnedScore, correctAnswers: correct, totalQuestions: total }
+                );
+                await refreshChildren();
+            } catch (err) {
+                console.error("Error logging game activity:", err);
+            }
+        }
     };
 
     const handlePlayAgain = () => {
@@ -215,40 +247,67 @@ export default function GamePlayerPage() {
     };
 
     const renderGame = () => {
-        if (isLoading) return <LoadingGame />;
-
-        // Handle Dynamic Games from DB
+        let activeEngineId = gameId;
         if (dbGame) {
-            const config = dbGame.game_config || {};
-            switch (dbGame.game_type) {
-                case 'trivia':
-                    return <IslandTrivia key={gameKey} onComplete={handleComplete} />;
-                case 'memory':
-                    return <IslandMemory key={gameKey} onComplete={handleComplete} />; // Add config support to Memory later if needed
-                case 'word-match':
-                    return <PatoisWizard key={gameKey} onComplete={handleComplete} />; // Add config support to Wizard later if needed
-                default:
-                    break;
+            const url = dbGame.game_url || '';
+            const type = dbGame.game_type || '';
+            if (url.includes('island-trivia') || type === 'quiz' || type === 'trivia' || type === 'math' || type === 'word_search' || type === 'number_game') {
+                activeEngineId = 'island-trivia';
+            } else if (url.includes('island-memory') || type === 'matching') {
+                activeEngineId = 'island-memory';
+            } else if (url.includes('patois-wizard') || type === 'word_builder' || type === 'spelling') {
+                activeEngineId = 'patois-wizard';
+            } else if (url.includes('color-match') || type === 'color') {
+                activeEngineId = 'color-match';
+            } else if (url.includes('flag-match') || url.includes('island-explorer') || type === 'flag') {
+                activeEngineId = 'flag-match';
+            } else if (url.includes('tantys-kitchen')) {
+                if (type === 'quiz') {
+                    activeEngineId = 'island-trivia';
+                } else {
+                    activeEngineId = 'color-match';
+                }
             }
         }
 
-        // Handle Featured/Static Games
-        switch (gameId) {
-            case 'island-match':
-                return <IslandMemory key={gameKey} onComplete={handleComplete} />;
-            case 'patois-puzzle':
-                return <PatoisWizard key={gameKey} onComplete={handleComplete} />;
+        switch (activeEngineId) {
+            case 'color-match':
+                return <ColorMatch onComplete={handleComplete} />;
+            case 'island-trivia':
             case 'ai-trivia':
             case 'trivia':
-                return <IslandTrivia key={gameKey} onComplete={handleComplete} />;
-            case 'color-match':
-                return <ColorMatch key={gameKey} onComplete={handleComplete} />;
+                return <IslandTrivia onComplete={handleComplete} />;
+            case 'patois-wizard':
+            case 'patois-puzzle':
+                return <PatoisWizard onComplete={handleComplete} />;
+            case 'island-memory':
+            case 'island-match':
+                return <IslandMemory onComplete={handleComplete} />;
+            case 'flag-match':
+            case 'island-explorer':
+                return <FlagMatch onComplete={(earnedScore) => handleComplete(earnedScore, 10, 10)} />;
+            // New games from game-zone branch
+            case 'speed-shapes':
+                return <SpeedShapes onComplete={handleComplete} />;
+            case 'word-builder':
+                return <WordBuilder onComplete={handleComplete} />;
+            case 'ingredient-sort':
+                return <IngredientSort onComplete={handleComplete} />;
+            case 'island-passport-explorer':
+                return <IslandPassportExplorer onComplete={handleComplete} />;
+            case 'counting-market':
+                return <CountingMarket onComplete={handleComplete} />;
+            case 'recipe-scramble':
+                return <RecipeScramble onComplete={handleComplete} />;
+            case 'rhythm-matcher':
+                return <RhythmMatcher onComplete={handleComplete} />;
+            case 'math-adventure':
+                return <MathAdventure onComplete={handleComplete} />;
             default:
                 return (
-                    <div className="text-center py-20 bg-white/10 backdrop-blur-lg rounded-[3rem] border border-white/20">
-                        <div className="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">🚧</div>
-                        <h2 className="text-2xl font-black text-white mb-2">Game Coming Soon!</h2>
-                        <p className="text-white/60 mb-8 max-w-xs mx-auto">
+                    <div className="text-center py-20">
+                        <h2 className="text-3xl font-black mb-4">Game Not Found</h2>
+                        <p className="text-white/60 mb-8">
                             Tanty Spice and the team are building this island adventure. Check back soon!
                         </p>
                         <Link
@@ -290,7 +349,9 @@ export default function GamePlayerPage() {
 
             {/* Game Content */}
             <main className="relative z-10 max-w-7xl mx-auto py-8 px-4 h-[calc(100vh-80px)]">
-                {isComplete ? (
+                {isLoading ? (
+                    <LoadingGame />
+                ) : isComplete ? (
                     <CompletionScreen
                         score={score}
                         correctAnswers={correctAnswers}
@@ -300,7 +361,9 @@ export default function GamePlayerPage() {
                         onGoHome={() => router.push('/portal/games')}
                     />
                 ) : (
-                    renderGame()
+                    <div key={gameKey} className="h-full">
+                        {renderGame()}
+                    </div>
                 )}
             </main>
         </div>

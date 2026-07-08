@@ -125,7 +125,6 @@ function EditModal({
                     pdf_url: form.pdf_url || '',
                     preview_url: form.preview_url || null,
                     is_active: form.is_active ?? true,
-                    is_new: true,
                 });
                 if (error) throw error;
             } else {

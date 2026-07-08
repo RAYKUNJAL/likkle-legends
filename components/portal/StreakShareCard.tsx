@@ -40,7 +40,7 @@ export default function StreakShareCard({ childId, streakDay, onClose }: StreakS
             try {
                 const result = await getShareCardData(childId);
                 setData(result);
-            } catch {
+            } catch (_e) {
                 toast.error('Could not load share data');
             } finally {
                 setLoading(false);
@@ -62,7 +62,7 @@ export default function StreakShareCard({ childId, streakDay, onClose }: StreakS
             a.download = `likkle-legends-streak-${streakDay}.png`;
             a.click();
             toast.success('Card saved! 📸');
-        } catch {
+        } catch (_e) {
             toast.error('Could not save image');
         }
     }, [streakDay]);

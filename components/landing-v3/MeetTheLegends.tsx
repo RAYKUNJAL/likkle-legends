@@ -9,7 +9,7 @@ const CHARACTERS = [
     {
         name: 'Dilly Doubles',
         role: 'Joy Specialist',
-        color: '#7B3FBE',           // deep purple — readable on white
+        color: '#7B3FBE',
         personality: 'The rhythm master of the islands, bringing music and movement to every lesson.',
         teaches: 'Joy, Movement, and Island Celebrations',
         icon: Music,
@@ -19,7 +19,7 @@ const CHARACTERS = [
     {
         name: 'R.O.T.I.',
         role: 'Learning Buddy',
-        color: '#B45309',           // amber-700 — readable on white (replaces invisible yellow)
+        color: '#B45309',
         personality: 'A friendly guide who makes learning island history fun and interactive.',
         teaches: 'Island History, Phonics, and Math',
         icon: Zap,
@@ -29,7 +29,7 @@ const CHARACTERS = [
     {
         name: 'Tanty Spice',
         role: 'Wisdom Guardian',
-        color: '#BE185D',           // pink-700 — readable on white
+        color: '#BE185D',
         personality: 'Warm and caring, she shares the hidden wisdom of Caribbean traditions.',
         teaches: 'Cultural Stories, Folklore, and Traditions',
         icon: Heart,
@@ -39,7 +39,7 @@ const CHARACTERS = [
     {
         name: 'Mango Moko',
         role: 'Balance Protector',
-        color: '#15803D',           // green-700 — readable on white
+        color: '#15803D',
         personality: 'Watching over the islands, ensuring every child grows with confidence and pride.',
         teaches: 'Geography, Traditions, and Life Balance',
         icon: Shield,
@@ -82,33 +82,30 @@ export function MeetTheLegends({ onOpenWaitlist }: MeetTheLegendsProps) {
                             className="relative group"
                         >
                             <Card className="h-full overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all rounded-[32px]">
-                                <div className={`h-48 bg-gradient-to-br ${char.gradient} flex items-center justify-center relative overflow-hidden`}>
-                                    <div className="absolute inset-0 bg-white/10 backdrop-blur-[2px]" />
+                                <div className="h-64 bg-white flex items-center justify-center relative overflow-hidden">
                                     <motion.img
                                         src={char.image}
                                         alt={char.name}
-                                        className="w-32 h-32 object-cover rounded-full border-4 border-white shadow-lg relative z-10"
-                                        whileHover={{ scale: 1.1, rotate: 5 }}
+                                        className="w-full h-full object-cover"
+                                        whileHover={{ scale: 1.05 }}
                                     />
-                                    <div className="absolute bottom-4 left-4 z-20">
-                                        <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold text-white uppercase tracking-widest border border-white/30">
-                                            {char.role}
-                                        </span>
+                                    <div className="absolute top-4 right-4 z-20">
+                                        <char.icon className="w-6 h-6 text-slate-700" />
                                     </div>
-                                    <char.icon className="absolute top-4 right-4 w-6 h-6 text-white" />
                                 </div>
-                                <CardContent className="p-6">
-                                    <h3 className="text-3xl font-black mb-1" style={{ color: char.color }}>{char.name}</h3>
-                                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">Mastery: {char.teaches.split(',')[0]}</p>
-                                    <p className="text-base font-bold text-slate-600 mb-6 line-clamp-2 leading-relaxed">
+                                <CardContent className="p-6 bg-white">
+                                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">{char.role}</p>
+                                    <h3 className="text-2xl font-black mb-3 text-slate-900">{char.name}</h3>
+                                    <p className="text-sm font-bold text-slate-600 mb-6 line-clamp-3 leading-relaxed">
                                         {char.personality}
                                     </p>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-4">Teaches: {char.teaches.split(',')[0]}</p>
                                     <Button
                                         onClick={() => window.location.href = '/checkout'}
                                         variant="outline"
-                                        className="w-full h-12 rounded-2xl border-2 font-black group-hover:bg-slate-50 transition-colors text-slate-700 border-slate-200"
+                                        className="w-full h-11 rounded-xl border-2 font-bold group-hover:bg-slate-50 transition-colors text-slate-700 border-slate-300"
                                     >
-                                        Get $10 Intro Pass
+                                        Learn More
                                     </Button>
                                 </CardContent>
                             </Card>

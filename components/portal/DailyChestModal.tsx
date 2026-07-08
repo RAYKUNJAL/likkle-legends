@@ -51,7 +51,7 @@ export default function DailyChestModal({ childId, chestReady, onClose, onReward
                 toast.error(result.error || 'Could not open chest.');
                 setPhase('alreadyOpen');
             }
-        } catch {
+        } catch (_e) {
             toast.error('Something went wrong!');
             setPhase('idle');
         }

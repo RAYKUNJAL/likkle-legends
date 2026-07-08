@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "likkle-legends",
+    "staging": "likkle-legends"
+  }
+}

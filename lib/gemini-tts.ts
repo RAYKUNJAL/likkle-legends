@@ -1,9 +1,10 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { TANTY_ISLAND_ENGINE } from '@/services/tantyConfig';
+import { getCharacterVoiceProfile, VoiceProviderCharacter } from '@/lib/character-voice-profiles';
 
 export interface GeminiTTSOptions {
     voiceName?: string;
-    character?: 'tanty' | 'roti' | 'dilly';
+    character?: VoiceProviderCharacter;
     model?: string;
 }
 
@@ -19,7 +20,9 @@ const VOICE_PROFILES = {
     dilly: {
         voiceName: "Fenrir",
         direction: "Tone: Youthful, energetic island buddy. Emotion: Upbeat and encouraging."
-    }
+    },
+    mango: getCharacterVoiceProfile('mango').gemini,
+    scorcha: getCharacterVoiceProfile('scorcha').gemini
 };
 
 /**

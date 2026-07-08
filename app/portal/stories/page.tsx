@@ -119,8 +119,22 @@ export default function StoriesLibraryPage() {
                 completed: false
             }));
 
-            if (mappedStories.length > 0) {
-                setStories(mappedStories);
+            // Dedupe: DB has repeated imports of the same title — keep the first
+            // occurrence (with a cover image preferred) of each normalized title.
+            const seen = new Map<string, Story>();
+            for (const s of mappedStories) {
+                const key = s.title.trim().toLowerCase();
+                const existing = seen.get(key);
+                if (!existing) {
+                    seen.set(key, s);
+                } else if (!existing.cover_image?.startsWith('http') && s.cover_image?.startsWith('http')) {
+                    seen.set(key, s);
+                }
+            }
+            const dedupedStories = Array.from(seen.values());
+
+            if (dedupedStories.length > 0) {
+                setStories(dedupedStories);
             } else {
                 // Fallback to offline starter pack if DB is empty
                 setStories(STARTER_STORIES.map(sb => ({

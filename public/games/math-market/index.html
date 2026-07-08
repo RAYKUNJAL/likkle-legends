@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Market Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        }
+        
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        .game-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        
+        .level-badge {
+            display: inline-block;
+            background: #ede9fe;
+            color: #6b21a8;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .game-content {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .market-scenario {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .problem {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 15px 0;
+        }
+        
+        .math-expression {
+            font-size: 32px;
+            font-family: monospace;
+            color: #6366f1;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #6366f1;
+        }
+        
+        input[type="number"].correct {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+        
+        input[type="number"].incorrect {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .score-display {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+            margin: 20px 0;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .btn-primary:hover {
+            background: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #1f2937;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+        
+        .feedback {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 30px;
+        }
+        
+        .feedback.correct {
+            color: #10b981;
+        }
+        
+        .feedback.incorrect {
+            color: #ef4444;
+        }
+        
+        .instructions {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-icon">🛒</div>
+        <h1>Math Market Challenge</h1>
+        <div class="level-badge">Level 1 (Free Preview) - Premium Game</div>
+        
+        <div class="game-content">
+            <p style="margin-bottom: 20px; color: #4b5563;">
+                Run your own Caribbean market stall! Solve math problems to buy and sell goods.
+            </p>
+            
+            <div class="market-scenario">
+                <div class="problem" id="problemText">You have $50 pesos</div>
+                <div class="math-expression" id="mathExpression">10 + 15 = ?</div>
+                <input 
+                    type="number" 
+                    id="answerInput" 
+                    placeholder="Your answer" 
+                    autocomplete="off"
+                >
+                <div class="feedback" id="feedback"></div>
+            </div>
+            
+            <div class="score-display" id="scoreDisplay">Score: 0/3</div>
+            
+            <div class="instructions">
+                <strong>Game Rules:</strong> Solve 3 math problems correctly to complete the level! 
+                This is a premium game - unlock with a subscription.
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="btn-primary" id="completeBtn" disabled>
+                Complete Level
+            </button>
+            <button class="btn-secondary" id="quitBtn">
+                Quit Game
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        const problems = [
+            { text: 'Coconuts: 10 + 15', expression: '10 + 15 = ?', answer: 25 },
+            { text: 'Mangoes: 25 - 8', expression: '25 - 8 = ?', answer: 17 },
+            { text: 'Plantains: 6 × 4', expression: '6 × 4 = ?', answer: 24 }
+        ];
+        
+        let currentProblemIndex = 0;
+        let correctAnswers = 0;
+        let gameActive = true;
+        
+        function displayProblem() {
+            const problem = problems[currentProblemIndex];
+            document.getElementById('problemText').textContent = problem.text;
+            document.getElementById('mathExpression').textContent = problem.expression;
+            document.getElementById('answerInput').value = '';
+            document.getElementById('answerInput').focus();
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('answerInput').classList.remove('correct', 'incorrect');
+        }
+        
+        function checkAnswer() {
+            const input = parseInt(document.getElementById('answerInput').value);
+            const correctAnswer = problems[currentProblemIndex].answer;
+            const inputField = document.getElementById('answerInput');
+            const feedback = document.getElementById('feedback');
+            
+            if (isNaN(input)) {
+                feedback.textContent = 'Please enter a number';
+                return;
+            }
+            
+            if (input === correctAnswer) {
+                inputField.classList.add('correct');
+                feedback.classList.add('correct');
+                feedback.textContent = 'Correct! ✅';
+                correctAnswers++;
+                updateScore();
+                
+                setTimeout(() => {
+                    currentProblemIndex++;
+                    if (currentProblemIndex >= problems.length) {
+                        completeLevel();
+                    } else {
+                        displayProblem();
+                    }
+                }, 1500);
+            } else {
+                inputField.classList.add('incorrect');
+                feedback.classList.add('incorrect');
+                feedback.textContent = `Incorrect! The answer is ${correctAnswer}. ❌`;
+            }
+        }
+        
+        function updateScore() {
+            document.getElementById('scoreDisplay').textContent = `Score: ${correctAnswers}/3`;
+            if (correctAnswers === 3) {
+                document.getElementById('completeBtn').disabled = false;
+                document.getElementById('completeBtn').textContent = 'Level Complete! 🎉';
+            }
+        }
+        
+        document.getElementById('answerInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+        
+        document.getElementById('completeBtn').addEventListener('click', () => {
+            completeLevel();
+        });
+        
+        document.getElementById('quitBtn').addEventListener('click', () => {
+            quitGame();
+        });
+        
+        function completeLevel() {
+            window.parent.postMessage({
+                type: 'level_complete',
+                level: 1,
+                score: correctAnswers * 33,
+                gameState: {
+                    answersCorrect: correctAnswers,
+                    totalProblems: problems.length
+                }
+            }, '*');
+        }
+        
+        function quitGame() {
+            window.parent.postMessage({
+                type: 'game_quit'
+            }, '*');
+        }
+        
+        window.addEventListener('load', () => {
+            displayProblem();
+            console.log('Math Market Challenge loaded');
+        });
+    </script>
+</body>
+</html>

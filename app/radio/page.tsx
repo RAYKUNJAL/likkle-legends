@@ -73,7 +73,7 @@ export default function FreeRadioPage() {
                     padded.push(t);
                 }
                 setTracks(padded.slice(0, 10));
-            } catch {
+            } catch (_e) {
                 setTracks(fallbackTracks);
             }
         };
@@ -99,7 +99,7 @@ export default function FreeRadioPage() {
                 const paidTier = profile?.subscription_tier && profile.subscription_tier !== "free";
                 const activeStatus = ["active", "trialing"].includes(profile?.subscription_status || "");
                 setIsPremiumUser(Boolean(paidTier && activeStatus));
-            } catch {
+            } catch (_e) {
                 setIsPremiumUser(false);
             }
         };
@@ -113,7 +113,7 @@ export default function FreeRadioPage() {
                     map[segment.id] = Boolean(segment.configured);
                 }
                 setSegmentStatus(map);
-            } catch {
+            } catch (_e) {
                 setSegmentStatus({});
             }
         };
@@ -144,7 +144,7 @@ export default function FreeRadioPage() {
         try {
             await audio.play();
             setIsPlaying(true);
-        } catch {
+        } catch (_e) {
             setIsPlaying(false);
         }
     };
