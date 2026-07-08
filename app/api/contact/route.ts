@@ -1,10 +1,27 @@
 import { Resend } from 'resend';
 import { NextRequest, NextResponse } from 'next/server';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-init so a missing RESEND_API_KEY doesn't crash the build or module load
+let _resend: Resend | null = null;
+function getResend(): Resend | null {
+  if (_resend) return _resend;
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) return null;
+  _resend = new Resend(apiKey);
+  return _resend;
+}
 
 export async function POST(request: NextRequest) {
   try {
+    const resend = getResend();
+    if (!resend) {
+      console.error('Contact form: RESEND_API_KEY is not configured');
+      return NextResponse.json(
+        { error: 'Email service is not configured' },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const { name, email, type, subject, message } = body;
 

@@ -64,6 +64,17 @@ export default function GamesZone() {
       link: '/games/spelling-blaze',
       image: '/images/scorcha_pepper.jpg',
     },
+    {
+      id: 'doubles-dash',
+      character: '🫓 Dilly Doubles',
+      title: 'Doubles Dash',
+      description: 'Dash through the streets with Dilly Doubles, dodging obstacles and collecting tasty doubles along the way.',
+      tags: ['Action', 'Reflexes', 'Ages 4-8'],
+      icon: '🫓',
+      themeClass: 'char-tanty',
+      link: '/games/doubles-dash',
+      image: '/images/dilly-doubles.jpg',
+    },
   ];
 
   return (

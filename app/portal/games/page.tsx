@@ -41,9 +41,27 @@ const GAME_CATEGORIES = [
     { id: 'trivia', label: 'Trivia', icon: Brain, color: 'from-purple-500 to-indigo-600', emoji: '🧠' },
     { id: 'memory', label: 'Memory', icon: Puzzle, color: 'from-green-500 to-emerald-600', emoji: '🧩' },
     { id: 'word', label: 'Words', icon: BookOpen, color: 'from-blue-500 to-cyan-600', emoji: '📖' },
+    { id: 'math', label: 'Math', icon: Target, color: 'from-red-500 to-orange-600', emoji: '🔢' },
     { id: 'adventure', label: 'Adventure', icon: MapIcon, color: 'from-orange-500 to-amber-600', emoji: '🗺️' },
     { id: 'creative', label: 'Creative', icon: Palette, color: 'from-pink-500 to-rose-600', emoji: '🎨' },
+    { id: 'music', label: 'Music', icon: Music, color: 'from-violet-500 to-purple-600', emoji: '🎵' },
 ];
+
+// Maps admin game-builder game_type values to hub category tabs
+const GAME_TYPE_TO_CATEGORY: Record<string, string> = {
+    trivia: 'trivia',
+    quiz: 'trivia',
+    memory: 'memory',
+    matching: 'memory',
+    spelling: 'word',
+    word_search: 'word',
+    word_builder: 'word',
+    'word-match': 'word',
+    math: 'math',
+    number_game: 'math',
+    drag_drop: 'creative',
+    music: 'music',
+};
 
 // Featured games with premium styling
 const FEATURED_GAMES = [
@@ -161,6 +179,194 @@ const FEATURED_GAMES = [
         isNew: true,
         isPopular: false,
     },
+    {
+        id: 'counting-market',
+        title: 'Counting Market',
+        description: 'Count fruits and veggies at the Caribbean market stall!',
+        emoji: '🍉',
+        gradient: 'from-lime-400 via-green-500 to-emerald-600',
+        tier: 'free',
+        category: 'math',
+        xp: 120,
+        time: '5 min',
+        learningFocus: 'Counting and early number sense',
+        isNew: true,
+        isPopular: false,
+    },
+    {
+        id: 'math-adventure',
+        title: 'Math Adventure',
+        description: 'Solve island math puzzles and level up your skills!',
+        emoji: '➕',
+        gradient: 'from-red-400 via-rose-500 to-pink-600',
+        tier: 'free',
+        category: 'math',
+        xp: 180,
+        time: '8 min',
+        learningFocus: 'Addition, subtraction, and problem solving',
+        isNew: true,
+        isPopular: true,
+    },
+    {
+        id: 'word-builder',
+        title: 'Island Word Builder',
+        description: 'Build Caribbean words letter by letter!',
+        emoji: '🔠',
+        gradient: 'from-sky-400 via-blue-500 to-indigo-600',
+        tier: 'free',
+        category: 'word',
+        xp: 150,
+        time: '6 min',
+        learningFocus: 'Spelling and phonics',
+        isNew: true,
+        isPopular: false,
+    },
+    {
+        id: 'recipe-scramble',
+        title: 'Recipe Scramble',
+        description: 'Unscramble the steps to cook real Caribbean dishes!',
+        emoji: '🥘',
+        gradient: 'from-orange-400 via-amber-500 to-yellow-600',
+        tier: 'free',
+        category: 'creative',
+        xp: 140,
+        time: '7 min',
+        learningFocus: 'Sequencing and Caribbean cuisine',
+        isNew: true,
+        isPopular: false,
+    },
+    {
+        id: 'ingredient-sort',
+        title: 'Ingredient Sort',
+        description: 'Sort the right ingredients for island favourites!',
+        emoji: '🧺',
+        gradient: 'from-teal-400 via-emerald-500 to-green-600',
+        tier: 'free',
+        category: 'creative',
+        xp: 100,
+        time: '5 min',
+        learningFocus: 'Categorising and food knowledge',
+        isNew: true,
+        isPopular: false,
+    },
+    {
+        id: 'rhythm-matcher',
+        title: 'Rhythm Matcher',
+        description: 'Listen and repeat soca and calypso rhythms!',
+        emoji: '🥁',
+        gradient: 'from-violet-400 via-purple-500 to-fuchsia-600',
+        tier: 'free',
+        category: 'music',
+        xp: 150,
+        time: '6 min',
+        learningFocus: 'Listening skills and Caribbean music',
+        isNew: true,
+        isPopular: true,
+    },
+    {
+        id: 'speed-shapes',
+        title: 'Speed Shapes',
+        description: 'Match the shapes before the timer runs out!',
+        emoji: '🔷',
+        gradient: 'from-cyan-400 via-sky-500 to-blue-600',
+        tier: 'free',
+        category: 'memory',
+        xp: 100,
+        time: '4 min',
+        learningFocus: 'Shape recognition and quick thinking',
+        isNew: true,
+        isPopular: false,
+    },
+    {
+        id: 'island-passport-explorer',
+        title: 'Island Passport Explorer',
+        description: 'Travel the islands and stamp your explorer passport!',
+        emoji: '🛂',
+        gradient: 'from-amber-400 via-orange-500 to-red-500',
+        tier: 'free',
+        category: 'adventure',
+        xp: 200,
+        time: '10 min',
+        learningFocus: 'Geography and island culture',
+        isNew: true,
+        isPopular: true,
+    },
+    // Game Zone arcade games (full-screen games outside the portal)
+    {
+        id: 'island-hop',
+        title: "Mango's Island Hop",
+        description: 'Hop across the islands answering trivia with Mango Moko!',
+        emoji: '🏝️',
+        gradient: 'from-emerald-400 via-teal-500 to-cyan-600',
+        tier: 'free',
+        category: 'trivia',
+        xp: 150,
+        time: '8 min',
+        learningFocus: 'Geography, flags, and capitals',
+        isNew: true,
+        isPopular: true,
+        game_url: '/games/island-hop',
+    },
+    {
+        id: 'tantys-kitchen',
+        title: "Tanty's Kitchen",
+        description: 'Cook 5 real Caribbean dishes with Tanty Spice!',
+        emoji: '🍲',
+        gradient: 'from-orange-400 via-red-500 to-rose-600',
+        tier: 'free',
+        category: 'creative',
+        xp: 150,
+        time: '8 min',
+        learningFocus: 'Cooking, sorting, and following steps',
+        isNew: true,
+        isPopular: true,
+        game_url: '/games/tantys-kitchen',
+    },
+    {
+        id: 'math-market',
+        title: "R.O.T.I.'s Math Market",
+        description: 'Count fruit and make change at the market with R.O.T.I.!',
+        emoji: '🧮',
+        gradient: 'from-blue-400 via-indigo-500 to-violet-600',
+        tier: 'free',
+        category: 'math',
+        xp: 180,
+        time: '8 min',
+        learningFocus: 'Counting, money, and mental math',
+        isNew: true,
+        isPopular: false,
+        game_url: '/games/math-market',
+    },
+    {
+        id: 'spelling-blaze',
+        title: "Scorcha's Spelling Blaze",
+        description: 'Spell Caribbean words before the fire timer burns out!',
+        emoji: '🔥',
+        gradient: 'from-red-400 via-orange-500 to-amber-600',
+        tier: 'free',
+        category: 'word',
+        xp: 160,
+        time: '6 min',
+        learningFocus: 'Spelling under pressure',
+        isNew: true,
+        isPopular: false,
+        game_url: '/games/spelling-blaze',
+    },
+    {
+        id: 'doubles-dash',
+        title: 'Doubles Dash',
+        description: 'Dash through the streets collecting tasty doubles!',
+        emoji: '🫓',
+        gradient: 'from-yellow-400 via-amber-500 to-orange-600',
+        tier: 'free',
+        category: 'adventure',
+        xp: 150,
+        time: '5 min',
+        learningFocus: 'Reflexes and Trini street food culture',
+        isNew: true,
+        isPopular: true,
+        game_url: '/games/doubles-dash',
+    },
 ];
 
 import { EmptyState } from '@/components/EmptyState';
@@ -175,20 +381,6 @@ export default function GamesHubPage() {
     const [difficultyFilter, setDifficultyFilter] = useState<'all' | 'easy' | 'medium' | 'hard'>('all');
     const [progressMap, setProgressMap] = useState<Record<string, GameProgressEntry>>({});
     const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
-
-    if (!parentalControls.allow_games) {
-        return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
-                    <h2 className="text-3xl font-black text-slate-800 mb-2">Games Are Locked</h2>
-                    <p className="text-slate-500 font-semibold">Your parent controls currently disable game access.</p>
-                    <Link href="/portal/settings" className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black">
-                        Open Parent Controls
-                    </Link>
-                </div>
-            </div>
-        );
-    }
 
     useEffect(() => {
         let cancelled = false;
@@ -208,20 +400,27 @@ export default function GamesHubPage() {
                     return;
                 }
 
-                const enriched = data.map((game) => {
-                    const featured = featuredById.get(game.id);
-                    return {
-                        ...featured,
-                        ...game,
-                        emoji: game.emoji ?? featured?.emoji ?? '🎮',
-                        gradient: game.gradient ?? featured?.gradient ?? 'from-primary to-accent',
-                        xp: game.xp ?? featured?.xp ?? game.reward_xp ?? 100,
-                        time: game.time ?? featured?.time ?? game.estimated_time ?? '5 min',
-                        learningFocus: game.learningFocus ?? featured?.learningFocus,
-                    };
-                });
+                // The featured list always shows. DB games from the admin game
+                // builder are appended, unless they just point at a game we
+                // already show (matched by id or by the route in game_url).
+                const routeKeyOf = (game: Game) => {
+                    const url = typeof game.game_url === 'string' ? game.game_url : '';
+                    const tail = url.split('?')[0].split('/').filter(Boolean).pop();
+                    return tail || String(game.id);
+                };
 
-                setGames(enriched);
+                const extras = data
+                    .filter((game) => !featuredById.has(String(game.id)) && !featuredById.has(routeKeyOf(game)))
+                    .map((game) => ({
+                        ...game,
+                        category: GAME_TYPE_TO_CATEGORY[(game as any).category || (game as any).game_type || ''] || 'adventure',
+                        emoji: game.emoji ?? '🎮',
+                        gradient: game.gradient ?? 'from-primary to-accent',
+                        xp: game.xp ?? game.reward_xp ?? 100,
+                        time: game.time ?? game.estimated_time ?? '5 min',
+                    }));
+
+                setGames([...(FEATURED_GAMES as Game[]), ...extras]);
             } catch (error) {
                 console.error('Failed to hydrate games:', error);
             }
@@ -313,6 +512,20 @@ export default function GamesHubPage() {
 
     const totalXP = activeChild?.total_xp || 0;
     const unlockedGames = filteredGames.filter(g => canPlayGame((g as any).tier_required || (g as any).tier));
+
+    if (!parentalControls.allow_games) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+                <div className="max-w-lg w-full bg-white rounded-3xl p-8 shadow-xl border border-slate-100 text-center">
+                    <h2 className="text-3xl font-black text-slate-800 mb-2">Games Are Locked</h2>
+                    <p className="text-slate-500 font-semibold">Your parent controls currently disable game access.</p>
+                    <Link href="/portal/settings" className="inline-block mt-6 px-5 py-3 rounded-2xl bg-slate-900 text-white font-black">
+                        Open Parent Controls
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#0a0a1a] text-white overflow-hidden">
@@ -582,13 +795,15 @@ export default function GamesHubPage() {
                                             <Link
                                                 prefetch={false}
                                                 href={
-                                                    game.id === 'story-library'
-                                                        ? '/portal/stories'
-                                                        : game.id === 'island-explorer'
-                                                            ? '/portal/games/flag-match'
-                                                            : game.id === 'cultural-quiz'
-                                                                ? '/portal/games/island-trivia'
-                                                                : `/portal/games/${game.id}`
+                                                    game.game_url && game.game_url.startsWith('/')
+                                                        ? game.game_url
+                                                        : game.id === 'story-library'
+                                                            ? '/portal/stories'
+                                                            : game.id === 'island-explorer'
+                                                                ? '/portal/games/flag-match'
+                                                                : game.id === 'cultural-quiz'
+                                                                    ? '/portal/games/island-trivia'
+                                                                    : `/portal/games/${game.id}`
                                                 }
                                                 className="w-full py-3.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-2xl font-bold text-center transition-all flex items-center justify-center gap-2 border border-white/20"
                                             >

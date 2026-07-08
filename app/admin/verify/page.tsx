@@ -51,10 +51,14 @@ export default function LaunchVerificationPage() {
                 setChecks(prev => ({ ...prev, database: { status: 'error', message: checkResults.error || 'Check failed' } }));
             }
 
-            // 3. Env Check (Client Side is fine mostly for PUBLIC vars, but server vars should be checked on server if needed. 
-            // For now keeping simple client check for PUBLIC vars)
-            const requiredVars = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_PAYPAL_CLIENT_ID'];
-            const missing = requiredVars.filter(v => !process.env[v]);
+            // 3. Env Check — NEXT_PUBLIC_* vars must be referenced statically so
+            // Next.js inlines them into the client bundle; dynamic process.env[v]
+            // lookups are always undefined in the browser.
+            const publicEnv: Record<string, string | undefined> = {
+                NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+                NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID,
+            };
+            const missing = Object.keys(publicEnv).filter(v => !publicEnv[v]);
             setChecks(prev => ({
                 ...prev,
                 env: {
