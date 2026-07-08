@@ -26,7 +26,7 @@ import { addScreenMinute, getTodayScreenMinutes, normalizeParentalControls } fro
 // ─── Lazy-loaded heavy components ────────────────────────────────────────────
 // Only loaded when the user navigates to that section — keeps initial bundle small.
 const TantyRadio = dynamic(() => import('@/components/TantyRadio'), { ssr: false });
-const IslandVillageMap = dynamic(() => import('@/components/IslandVillageMap'), {
+const IslandTileGrid = dynamic(() => import('@/components/IslandTileGrid'), {
     ssr: false,
     loading: () => <IslandVillageMapSkeleton />,
 });
@@ -198,6 +198,13 @@ export default function ChildPortalPage() {
     const [noChildElapsedMs, setNoChildElapsedMs] = useState(0);
     const [showHelpModal, setShowHelpModal] = useState(false);
     const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
+
+    // Lock banners dismiss themselves — kids shouldn't have to manage alerts
+    useEffect(() => {
+        if (!blockedMessage) return;
+        const timer = window.setTimeout(() => setBlockedMessage(null), 6000);
+        return () => window.clearTimeout(timer);
+    }, [blockedMessage]);
     const [todayScreenMinutes, setTodayScreenMinutes] = useState(0);
 
     // CRO: track how many locked items a free user has hit this session
@@ -732,7 +739,9 @@ export default function ChildPortalPage() {
                                     key={item.id}
                                     onClick={() => {
                                         if (!sectionAllowed(item.id as PortalSection) || screenTimeExceeded) {
-                                            setBlockedMessage('This channel is currently locked by parent controls.');
+                                            setBlockedMessage(screenTimeExceeded
+                                                ? "Today's screen time is used up! A parent can add more minutes in Parent Controls."
+                                                : 'This channel is currently locked by parent controls.');
                                             return;
                                         }
                                         if (item.id === 'games') {
@@ -830,7 +839,7 @@ export default function ChildPortalPage() {
                     </div>
 
                     {activeSection === 'home' ? (
-                        <div className="h-full flex flex-col justify-center max-w-5xl mx-auto space-y-8">
+                        <div className="max-w-6xl mx-auto space-y-6 py-4">
                             {/* Streak Widget — visible on mobile and desktop */}
                             {activeChild && streakDay > 0 && (
                                 <div className="lg:max-w-md">
@@ -949,15 +958,23 @@ export default function ChildPortalPage() {
                             )}
 
                             <div className="space-y-4">
-                                <h2 className="text-5xl md:text-6xl font-black text-[#083344] tracking-tight">
+                                <h2 className="text-4xl md:text-5xl font-black text-[#083344] tracking-tight">
                                     Choose Your <span className="text-[#3ABEF9]">Next Step</span>
                                 </h2>
-                                <p className="text-xl text-gray-500 font-medium italic underline decoration-[#3ABEF9]/30 underline-offset-8">
+                                <p className="text-lg text-gray-500 font-medium">
                                     Where shall we go today, Little Legend?
                                 </p>
                                 {blockedMessage && (
-                                    <div className="max-w-2xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
-                                        {blockedMessage}
+                                    <div className="max-w-2xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700 flex items-start justify-between gap-3">
+                                        <span>{blockedMessage}</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setBlockedMessage(null)}
+                                            aria-label="Dismiss"
+                                            className="shrink-0 w-7 h-7 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-700 font-black flex items-center justify-center"
+                                        >
+                                            ✕
+                                        </button>
                                     </div>
                                 )}
                                 <div className="max-w-md rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-600">
@@ -965,9 +982,9 @@ export default function ChildPortalPage() {
                                 </div>
                             </div>
 
-                            <div className="w-full h-full min-h-[500px] flex items-center justify-center">
+                            <div className="w-full">
                                 {isPortalIdleReady ? (
-                                    <IslandVillageMap
+                                    <IslandTileGrid
                                         onNavigate={(section) => {
                                             if (section === 'story-studio') {
                                                 // Restricted feature - check COPPA
@@ -977,9 +994,19 @@ export default function ChildPortalPage() {
                                                     setPendingRoute('/portal/story-studio');
                                                     setIsCoppaModalOpen(true);
                                                 }
+                                            } else if (section === 'games') {
+                                                if (!sectionAllowed('games') || screenTimeExceeded) {
+                                                    setBlockedMessage(screenTimeExceeded
+                                                        ? "Today's screen time is used up! A parent can add more minutes in Parent Controls."
+                                                        : 'This channel is currently locked by parent controls.');
+                                                    return;
+                                                }
+                                                router.push('/portal/games');
                                             } else {
                                                 if (!sectionAllowed(section as PortalSection) || screenTimeExceeded) {
-                                                    setBlockedMessage('This channel is currently locked by parent controls.');
+                                                    setBlockedMessage(screenTimeExceeded
+                                                        ? "Today's screen time is used up! A parent can add more minutes in Parent Controls."
+                                                        : 'This channel is currently locked by parent controls.');
                                                     return;
                                                 }
                                                 setActiveSection(section as PortalSection);
@@ -994,8 +1021,16 @@ export default function ChildPortalPage() {
                     ) : (
                         <div className="animate-in fade-in slide-in-from-bottom-5">
                             {blockedMessage && (
-                                <div className="mb-6 max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
-                                    {blockedMessage}
+                                <div className="mb-6 max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700 flex items-start justify-between gap-3">
+                                    <span>{blockedMessage}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setBlockedMessage(null)}
+                                        aria-label="Dismiss"
+                                        className="shrink-0 w-7 h-7 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-700 font-black flex items-center justify-center"
+                                    >
+                                        ✕
+                                    </button>
                                 </div>
                             )}
                             {screenTimeExceeded && (
