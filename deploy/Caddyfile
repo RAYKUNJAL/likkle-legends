@@ -1,0 +1,12 @@
+# Caddy reverse proxy with automatic Let's Encrypt HTTPS.
+# Domains come from SITE_DOMAIN / SITE_DOMAIN_ALT in .env.production.
+
+{$SITE_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+}
+
+# Apex (or www, whichever is the alternate) redirects to the primary domain
+{$SITE_DOMAIN_ALT} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}

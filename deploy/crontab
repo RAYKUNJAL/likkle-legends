@@ -1,0 +1,25 @@
+# Likkle Legends scheduled jobs (replaces vercel.json "crons" on the VPS).
+# Runs inside the `cron` container; hits the web container over the
+# compose network with the CRON_SECRET bearer token the routes expect.
+# Times are UTC.
+
+# Daily content queue processing — 08:00
+0 8 * * * wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/content-queue
+
+# Weekly content generation — Mondays 09:00
+0 9 * * 1 wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/content-generation
+
+# Weekly email digest — Sundays 09:00
+0 9 * * 0 wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/process-emails
+
+# Daily nudge emails — 18:00
+0 18 * * * wget -qO- --header="Authorization: Bearer $CRON_SECRET" "http://web:3000/api/cron/process-emails?type=nudge"
+
+# Daily nurture sequence — 09:00
+0 9 * * * wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/nurture
+
+# Daily streak freeze — 00:05
+5 0 * * * wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/streak-freeze
+
+# Daily blog generation — 08:00
+0 8 * * * wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/generate-blog

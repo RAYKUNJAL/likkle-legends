@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+tmp
+legacy_scripts
+generated-content
+docs
+*.log
+build_log*.txt
+.env*
+!.env.production.example
+!.env.example
+.vercel
+.claude
