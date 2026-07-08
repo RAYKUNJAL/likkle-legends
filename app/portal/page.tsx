@@ -605,10 +605,13 @@ export default function ChildPortalPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F0F9FF] font-heading overflow-hidden relative">
-            {/* Background elements */}
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-200/20 rounded-full blur-[120px] -mr-48 -mt-48 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-amber-200/20 rounded-full blur-[120px] -ml-48 -mb-48 pointer-events-none" />
+        <div className="min-h-screen bg-gradient-to-b from-sky-200 via-sky-50 to-amber-50 font-heading overflow-hidden relative">
+            {/* Sunny island backdrop — matches the games hub design */}
+            <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-br from-yellow-300 to-amber-400 rounded-full blur-2xl opacity-60 pointer-events-none" />
+            <div className="absolute top-24 left-[12%] text-6xl opacity-20 pointer-events-none select-none">☁️</div>
+            <div className="absolute top-10 right-[28%] text-5xl opacity-15 pointer-events-none select-none">☁️</div>
+            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-200/25 rounded-full blur-[120px] -ml-48 -mb-48 pointer-events-none" />
+            <div className="absolute bottom-8 right-[3%] text-7xl opacity-15 pointer-events-none select-none">🌴</div>
 
             {/* Mobile Header */}
             <header className="lg:hidden absolute top-0 left-0 right-0 h-20 px-6 flex items-center justify-between z-30 bg-white/80 backdrop-blur-md border-b border-primary/10">
@@ -677,7 +680,7 @@ export default function ChildPortalPage() {
             <div className="flex h-screen overflow-hidden">
                 {/* Character Sidebar (Desktop & Mobile Drawer) */}
                 <aside className={`
-                    fixed inset-y-0 left-0 z-50 w-[280px] bg-[#3ABEF9] translate-x-[-100%] transition-transform duration-500 ease-spring lg:relative lg:translate-x-0
+                    fixed inset-y-0 left-0 z-50 w-[280px] bg-gradient-to-b from-sky-400 via-[#3ABEF9] to-cyan-500 translate-x-[-100%] transition-transform duration-500 ease-spring lg:relative lg:translate-x-0
                     ${isSidebarOpen ? 'translate-x-0 shadow-[20px_0_60px_rgba(0,0,0,0.1)]' : ''}
                     flex flex-col items-center justify-start py-12 overflow-y-auto overflow-x-hidden
                 `}>
@@ -697,18 +700,26 @@ export default function ChildPortalPage() {
                         <p className="text-[#075985] font-black uppercase tracking-[0.2em] text-[10px] mt-1">Kid Portal</p>
                     </div>
 
-                    {/* Tanty Spice Character */}
-                    <div className="relative w-32 h-32 mb-6 group shrink-0">
+                    {/* Dilly Doubles — the main Legend hosts the portal */}
+                    <button
+                        onClick={() => router.push('/portal/buddy/dilly_doubles')}
+                        title="Chat with Dilly Doubles"
+                        aria-label="Chat with Dilly Doubles"
+                        className="relative w-32 h-32 mb-6 group shrink-0"
+                    >
                         <Image
-                            src="/images/tanty_spice_avatar.jpg"
-                            alt="Tanty Spice"
+                            src="/images/dilly-doubles.jpg"
+                            alt="Dilly Doubles"
                             fill
-                            className="object-cover object-top scale-110 group-hover:scale-125 transition-transform duration-700 rounded-full border-4 border-white/20 shadow-2xl"
+                            className="object-cover object-top scale-110 group-hover:scale-125 transition-transform duration-700 rounded-full border-4 border-white/30 shadow-2xl"
                         />
-                    </div>
+                        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2.5 py-0.5 bg-amber-400 text-white text-[9px] font-black rounded-full shadow whitespace-nowrap">
+                            ⭐ MAIN LEGEND
+                        </span>
+                    </button>
 
                     <div className="bg-white/20 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/30 text-white font-black text-xs shadow-lg mb-8">
-                        Bless up, Legend! 👋
+                        Lesss goooo, Legend! ⚡
                     </div>
 
                     {/* Navigation Items */}
