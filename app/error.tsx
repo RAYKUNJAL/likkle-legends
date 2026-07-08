@@ -1,8 +1,17 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+
+// Chunk-load failures happen when a deploy replaces the JS bundles while a
+// browser still holds the old page shell. A full reload always fixes them —
+// recover automatically instead of showing an error screen.
+function isChunkError(error: Error): boolean {
+    return /Loading chunk [\w-]+ failed|ChunkLoadError|Failed to fetch dynamically imported module/i.test(
+        `${error.name} ${error.message}`
+    );
+}
 
 export default function Error({
     error,
@@ -11,10 +20,30 @@ export default function Error({
     error: Error & { digest?: string };
     reset: () => void;
 }) {
+    const [autoRecovering, setAutoRecovering] = useState(false);
+
     useEffect(() => {
         // Log the error to an error reporting service
         console.error('Likkle Legends System Error:', error);
+
+        if (isChunkError(error) && typeof window !== 'undefined') {
+            const last = Number(sessionStorage.getItem('ll_chunk_reload') || 0);
+            if (Date.now() - last > 60_000) {
+                sessionStorage.setItem('ll_chunk_reload', String(Date.now()));
+                setAutoRecovering(true);
+                window.location.reload();
+            }
+        }
     }, [error]);
+
+    if (autoRecovering) {
+        return (
+            <div className="min-h-screen bg-sky-50 flex flex-col items-center justify-center p-6 text-center">
+                <div className="text-6xl animate-bounce mb-4">🏝️</div>
+                <p className="text-2xl font-black text-sky-700">Freshening up the island...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
@@ -29,7 +58,7 @@ export default function Error({
 
             <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
                 <button
-                    onClick={() => reset()}
+                    onClick={() => (isChunkError(error) ? window.location.reload() : reset())}
                     className="flex-1 flex items-center justify-center gap-2 py-4 bg-primary text-white rounded-2xl font-black text-lg shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
                 >
                     <RefreshCw size={24} /> Try Again
