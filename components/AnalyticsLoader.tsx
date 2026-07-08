@@ -36,8 +36,8 @@ export default function AnalyticsLoader() {
         if (!consentGiven) return;
         const fetchSettings = async () => {
             try {
-                const { data } = await supabase.from('site_settings').select('value').eq('key', 'analytics').single();
-                if (data?.value) setConfig(data.value);
+                const { data } = await supabase.from('site_settings').select('content').eq('key', 'analytics').single();
+                if (data?.content) setConfig(data.content);
             } catch (err) {
                 console.error('Failed to load analytics settings', err);
             }

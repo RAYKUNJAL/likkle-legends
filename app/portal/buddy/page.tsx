@@ -190,7 +190,7 @@ export default function ChooseYourBuddyPage() {
 
                 {isPaid && (
                     <p className="text-center text-xs text-slate-400 font-medium mt-8">
-                        You can chat with all three - switch anytime.
+                        You can chat with all five Legends - switch anytime.
                     </p>
                 )}
                     </>

@@ -105,36 +105,25 @@ export async function POST(request: NextRequest) {
             ? new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000)
             : trialEndsAt;
 
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .upsert({
-                id: userIdToUpdate,
-                email: reqEmail?.toLowerCase() || undefined,
-                subscription_tier: tier,
-                subscription_status: isFree ? 'active' : 'trialing',
-                paypal_subscription_id: subscriptionId || null,
-                currency: currency || 'USD',
-                has_grandparent_dashboard: addGrandparent || false,
-                subscription_started_at: new Date().toISOString(),
-                next_billing_date: nextBillingDate.toISOString().split('T')[0],
-                trial_ends_at: isFree ? null : trialEndsAt.toISOString(),
-            }, { onConflict: 'id' });
+        // `profiles` is a read-only VIEW that derives subscription_tier/status
+        // from the `subscriptions` table — activation must be recorded there.
+        // (Writing to the view failed and blocked activation after payment.)
+        const { error: subscriptionError } = await supabase.from('subscriptions').upsert({
+            user_id: userIdToUpdate,
+            plan_id: tier,
+            status: isFree ? 'active' : 'trialing',
+            provider: 'paypal',
+            // One-time purchases (e.g. the $10 Intro Pass) have no PayPal
+            // subscription id — key them by the order id so they activate too.
+            provider_subscription_id: subscriptionId || orderId || null,
+            paypal_order_id: orderId || null,
+            payer_email: reqEmail?.toLowerCase() || null,
+            current_period_end: nextBillingDate.toISOString(),
+        }, { onConflict: 'provider_subscription_id' });
 
-        if (profileError) {
-            console.error('Profile update error:', profileError);
-            return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
-        }
-
-        // Also upsert into 'subscriptions' table for new architecture consistency
-        if (subscriptionId) {
-            await supabase.from('subscriptions').upsert({
-                user_id: userIdToUpdate,
-                plan_id: tier,
-                status: isFree ? 'active' : 'trialing',
-                provider: 'paypal',
-                provider_subscription_id: subscriptionId,
-                current_period_end: nextBillingDate.toISOString(),
-            }, { onConflict: 'provider_subscription_id' });
+        if (subscriptionError) {
+            console.error('Subscription activation error:', subscriptionError);
+            return NextResponse.json({ error: 'Failed to activate subscription' }, { status: 500 });
         }
 
         if (hasUpsell) {

@@ -153,6 +153,27 @@ export async function POST(request: NextRequest) {
     const resource = event.resource;
     const supabase = supabaseAdmin;
 
+    // `profiles` is a read-only VIEW (no paypal_subscription_id column).
+    // Subscription ids must be resolved through the `subscriptions` table.
+    const findProfile = async (customId: string | undefined, subscriptionId: string | undefined, email: string | undefined, columns: string) => {
+        if (customId) {
+            const { data } = await supabase.from('profiles').select(columns).eq('id', customId).maybeSingle();
+            if (data) return data as any;
+        }
+        if (subscriptionId) {
+            const { data: sub } = await supabase.from('subscriptions').select('user_id').eq('provider_subscription_id', subscriptionId).maybeSingle();
+            if (sub?.user_id) {
+                const { data } = await supabase.from('profiles').select(columns).eq('id', sub.user_id).maybeSingle();
+                if (data) return data as any;
+            }
+        }
+        if (email) {
+            const { data } = await supabase.from('profiles').select(columns).eq('email', email).maybeSingle();
+            if (data) return data as any;
+        }
+        return null;
+    };
+
     console.log('PayPal webhook event:', eventType);
 
     try {
@@ -162,17 +183,7 @@ export async function POST(request: NextRequest) {
                 const subscriberEmail = resource.subscriber?.email_address;
                 const customId = resource.custom_id || resource.custom;
 
-                let query = supabase.from('profiles').select('id, parent_name, email, subscription_status');
-
-                if (customId) {
-                    query = query.eq('id', customId);
-                } else if (subscriptionId) {
-                    query = query.or(`paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`);
-                } else {
-                    query = query.eq('email', subscriberEmail);
-                }
-
-                const { data: profile } = await query.maybeSingle();
+                const profile = await findProfile(customId, subscriptionId, subscriberEmail, 'id, parent_name, email, subscription_status');
 
                 if (profile) {
                     const planId = resource.plan_id;
@@ -183,18 +194,6 @@ export async function POST(request: NextRequest) {
                     const alreadyTrialing = profile.subscription_status === 'trialing';
                     const newStatus = (isTrialing || alreadyTrialing) ? 'trialing' : 'active';
 
-                    await supabase
-                        .from('profiles')
-                        .update({
-                            subscription_status: newStatus,
-                            subscription_tier: tier,
-                            paypal_subscription_id: subscriptionId,
-                            next_billing_date: nextBillingTime?.split('T')[0] ?? null,
-                            ...(isTrialing && { trial_ends_at: nextBillingTime }),
-                        })
-                        .eq('id', profile.id);
-
-                    // Also update the 'subscriptions' table
                     await supabase
                         .from('subscriptions')
                         .upsert({
@@ -236,32 +235,24 @@ export async function POST(request: NextRequest) {
                 const subscriberEmail = resource.subscriber?.email_address;
                 const customId = resource.custom_id || resource.custom;
 
-                let query = supabase.from('profiles').select('id, parent_name, email, subscription_status, subscription_tier');
-
-                if (customId) {
-                    query = query.eq('id', customId);
-                } else if (subscriptionId) {
-                    query = query.or(`paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`);
-                } else {
-                    query = query.eq('email', subscriberEmail);
-                }
-
-                const { data: profile } = await query.maybeSingle();
+                const profile = await findProfile(customId, subscriptionId, subscriberEmail, 'id, parent_name, email, subscription_status, subscription_tier');
 
                 if (profile) {
                     const wasTrialing = profile.subscription_status === 'trialing';
                     const planId = resource.plan_id;
                     const tier = planId ? (PLAN_TO_TIER[planId] || profile.subscription_tier) : profile.subscription_tier;
 
+                    // Record renewal in the subscriptions table (drives the profiles view)
                     await supabase
-                        .from('profiles')
-                        .update({
-                            subscription_status: 'active',
-                            subscription_tier: tier,
-                            trial_ends_at: null,
-                            next_billing_date: resource.billing_info?.next_billing_time?.split('T')[0] ?? null,
-                        })
-                        .eq('id', profile.id);
+                        .from('subscriptions')
+                        .upsert({
+                            user_id: profile.id,
+                            plan_id: tier,
+                            status: 'active',
+                            provider: 'paypal',
+                            provider_subscription_id: subscriptionId,
+                            current_period_end: resource.billing_info?.next_billing_time ?? null,
+                        }, { onConflict: 'provider_subscription_id' });
 
                     console.log(`Payment completed for ${profile.id}, tier: ${tier}, was trialing: ${wasTrialing}`);
 
@@ -292,17 +283,7 @@ export async function POST(request: NextRequest) {
                 const subscriberEmail = resource.subscriber?.email_address;
                 const customId = resource.custom_id || resource.custom;
 
-                let query = supabase.from('profiles').select('id, email, parent_name, subscription_tier');
-
-                if (customId) {
-                    query = query.eq('id', customId);
-                } else if (subscriptionId) {
-                    query = query.or(`paypal_subscription_id.eq.${subscriptionId},email.eq.${subscriberEmail}`);
-                } else {
-                    query = query.eq('email', subscriberEmail);
-                }
-
-                const { data: profile } = await query.maybeSingle();
+                const profile = await findProfile(customId, subscriptionId, subscriberEmail, 'id, email, parent_name, subscription_tier');
 
                 if (profile) {
                     const { data: child } = await supabase
@@ -331,28 +312,27 @@ export async function POST(request: NextRequest) {
                 const subscriptionId = resource.id;
 
                 await supabase
-                    .from('profiles')
-                    .update({
-                        subscription_status: 'canceled',
-                    })
-                    .eq('paypal_subscription_id', subscriptionId);
+                    .from('subscriptions')
+                    .update({ status: 'canceled' })
+                    .eq('provider_subscription_id', subscriptionId);
                 break;
             }
 
             case 'BILLING.SUBSCRIPTION.PAYMENT.FAILED': {
                 const subscriptionId = resource.id;
 
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('id')
-                    .eq('paypal_subscription_id', subscriptionId)
-                    .single();
+                const { data: sub } = await supabase
+                    .from('subscriptions')
+                    .select('user_id')
+                    .eq('provider_subscription_id', subscriptionId)
+                    .maybeSingle();
 
-                if (profile) {
+                if (sub?.user_id) {
+                    const profile = { id: sub.user_id };
                     await supabase
-                        .from('profiles')
-                        .update({ subscription_status: 'past_due' })
-                        .eq('id', profile.id);
+                        .from('subscriptions')
+                        .update({ status: 'past_due' })
+                        .eq('provider_subscription_id', subscriptionId);
 
                     await supabase.from('notifications').insert({
                         user_id: profile.id,
