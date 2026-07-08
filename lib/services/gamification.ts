@@ -218,11 +218,11 @@ export async function getXPMultiplier(): Promise<number> {
     try {
         const { data } = await supabase
             .from('site_settings')
-            .select('value')
+            .select('content')
             .eq('key', 'xp_multiplier')
             .maybeSingle();
 
-        return Number(data?.value) || 1;
+        return Number(data?.content) || 1;
     } catch (_e) {
         return 1;
     }

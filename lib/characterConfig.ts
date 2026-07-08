@@ -361,4 +361,5 @@ export function getCharacterConfig(characterId: CharacterId): CharacterConfig {
     return config;
 }
 
-export const CHARACTER_ORDER: CharacterId[] = ['roti', 'tanty_spice', 'dilly_doubles', 'mango_moko', 'scorcha_pepper'];
+// Dilly Doubles leads — he's the main character of the Likkle Legends universe
+export const CHARACTER_ORDER: CharacterId[] = ['dilly_doubles', 'tanty_spice', 'scorcha_pepper', 'mango_moko', 'roti'];

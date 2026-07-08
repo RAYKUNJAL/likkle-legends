@@ -8,6 +8,7 @@ import {
     Puzzle, Music, BookOpen, Map as MapIcon, Heart, Target, CheckCircle, Search
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
+import { CHARACTER_CONFIGS, CHARACTER_ORDER } from '@/lib/characterConfig';
 import { getGames, getRecentActivities } from '@/lib/database';
 import { getGameProgressMap, type GameProgressEntry } from '@/lib/game-progress';
 import { normalizeParentalControls } from '@/lib/parental-controls';
@@ -671,6 +672,47 @@ export default function GamesHubPage() {
                             <Play size={22} className="fill-fuchsia-600" /> Read Now
                         </Link>
                     </div>
+                </div>
+            </div>
+
+            {/* Meet Your Legends — chat & learn with the characters */}
+            <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 mb-6 sm:mb-10">
+                <h2 className="text-lg sm:text-2xl font-black flex items-center gap-2 text-slate-700 mb-3 sm:mb-4">
+                    <span className="text-2xl">🌟</span> Meet Your Legends
+                    <span className="text-slate-400 font-bold text-sm hidden sm:inline">— tap a friend to chat & learn!</span>
+                </h2>
+                <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1">
+                    {CHARACTER_ORDER.map((characterId) => {
+                        const c = CHARACTER_CONFIGS[characterId];
+                        return (
+                            <Link
+                                key={characterId}
+                                href={`/portal/buddy/${characterId}`}
+                                prefetch={false}
+                                className="group shrink-0 w-36 sm:w-44 bg-white rounded-[1.75rem] border-4 border-white shadow-lg shadow-sky-100 hover:shadow-2xl hover:-translate-y-2 active:scale-95 transition-all overflow-hidden"
+                            >
+                                <div className={`relative h-28 sm:h-32 bg-gradient-to-br ${c.visual.gradient} overflow-hidden`}>
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={c.persona.avatarUrl}
+                                        alt={c.persona.name}
+                                        className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-300"
+                                    />
+                                    {characterId === 'dilly_doubles' && (
+                                        <span className="absolute top-2 left-2 px-2 py-0.5 bg-amber-400 text-white text-[9px] font-black rounded-full shadow">
+                                            ⭐ MAIN LEGEND
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="p-3 text-center">
+                                    <p className="font-black text-slate-800 text-sm leading-tight">{c.persona.emoji} {c.persona.name}</p>
+                                    <span className="mt-1.5 inline-flex items-center justify-center gap-1 text-[11px] font-black text-white bg-gradient-to-r from-sky-400 to-cyan-500 rounded-full px-3 py-1">
+                                        💬 Chat & Learn
+                                    </span>
+                                </div>
+                            </Link>
+                        );
+                    })}
                 </div>
             </div>
 

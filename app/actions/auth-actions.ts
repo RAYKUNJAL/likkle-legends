@@ -112,29 +112,15 @@ export async function signupAction(formData: {
             }
         }
 
-        const normalizedTier = ['free', 'mail_club', 'free_trial'].includes(formData.plan)
-            ? 'free'
-            : formData.plan;
-
-        const profilePayload = {
-                id: userId,
-                email,
-                full_name: parentName,
-                parent_name: parentName,
-                role: 'parent',
-                subscription_tier: normalizedTier,
-                subscription_status: 'active',
-                onboarding_completed: false,
-                is_coppa_designated_parent: true,
-                coppa_consent_date: new Date().toISOString(),
-                island_heritage: island,
-                signup_source: formData.referral || 'direct',
-                updated_at: new Date().toISOString(),
-        };
-
+        // `profiles` is a read-only view over `users` (+ subscriptions), so
+        // persist signup details to the `users` table the view derives from.
         const { error: profileError } = await supabaseAdmin
-            .from("profiles")
-            .upsert(profilePayload, { onConflict: "id" });
+            .from("users")
+            .update({
+                first_name: parentName,
+                origin_island: island,
+            })
+            .eq("id", userId);
 
         if (profileError) {
             console.error("[AUTH] Profile persist failed:", profileError.message);
