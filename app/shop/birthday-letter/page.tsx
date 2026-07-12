@@ -34,8 +34,6 @@ const TIERS = [
     },
 ];
 
-declare global { interface Window { paypal?: any; } }
-
 export default function BirthdayLetterPage() {
     const [selectedTier, setSelectedTier] = useState('birthday_letter_premium');
     const [childName, setChildName] = useState('');
@@ -66,11 +64,13 @@ export default function BirthdayLetterPage() {
     }, []);
 
     useEffect(() => {
-        if (!paypalLoaded || !window.paypal || !formValid) return;
+        if (!paypalLoaded || !formValid) return;
+        const pp = (window as any).paypal;
+        if (!pp) return;
         const container = document.getElementById('paypal-button-bl');
         if (!container) return;
         container.innerHTML = '';
-        window.paypal.Buttons({
+        pp.Buttons({
             style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'pay', height: 50 },
             createOrder: (_data: any, actions: any) => {
                 return actions.order.create({

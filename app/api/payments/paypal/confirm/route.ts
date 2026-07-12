@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
         // (Writing to the view failed and blocked activation after payment.)
         const { error: subscriptionError } = await supabase.from('subscriptions').upsert({
             user_id: userIdToUpdate,
-            plan_id: tier,
+            plan_id: verifiedTier,
             status: isFree ? 'active' : 'trialing',
             provider: 'paypal',
             // One-time purchases (e.g. the $10 Intro Pass) have no PayPal
@@ -222,14 +222,14 @@ export async function POST(request: NextRequest) {
             }, { onConflict: 'user_id, product_id' });
         }
 
-        if (shipping && tier !== 'plan_free_forever' && tier !== 'plan_digital_legends') {
-            const plan = SUBSCRIPTION_PLANS[tier as SubscriptionTier];
+        if (shipping && verifiedTier !== 'plan_free_forever' && verifiedTier !== 'plan_digital_legends') {
+            const plan = SUBSCRIPTION_PLANS[verifiedTier as SubscriptionTier];
             const price = billingCycle === 'year' ? (plan?.priceYearly || 0) : (plan?.price || 0);
             const hub = getFulfillmentHub(shipping.country);
 
             await supabase.from('orders').insert({
                 profile_id: userIdToUpdate,
-                tier: tier,
+                tier: verifiedTier,
                 amount_cents: Math.round(price * 100),
                 currency: currency || 'USD',
                 shipping_name: shipping.name,
@@ -271,10 +271,10 @@ export async function POST(request: NextRequest) {
             if (profile) {
                 await sendEmail({
                     to: 'legends@likklelegends.com',
-                    subject: `SALE ALERT: ${tier.toUpperCase()}`,
+                    subject: `SALE ALERT: ${verifiedTier.toUpperCase()}`,
                     html: ADMIN_NEW_ORDER_TEMPLATE(
                         profile.parent_name || 'New Parent',
-                        tier.replace('_', ' ').toUpperCase(),
+                        verifiedTier.replace('_', ' ').toUpperCase(),
                         profile.email || 'No Email'
                     )
                 });
@@ -282,7 +282,7 @@ export async function POST(request: NextRequest) {
                 await queueSubscriptionConfirmation(
                     profile.email || '',
                     profile.parent_name || 'Legend',
-                    tier,
+                    verifiedTier,
                     reqChildName || 'your child',
                     hasUpsell,
                     hasHeritageStory
