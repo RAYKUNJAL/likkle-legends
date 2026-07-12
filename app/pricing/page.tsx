@@ -76,9 +76,12 @@ export default function PricingPage() {
                                                     </span>
                                                 ))}
                                             </div>
-                                            <button className="w-full py-4 bg-deep text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-zinc-800 transition-colors">
+                                            <Link
+                                                href={addon.id === 'birthday_letter' ? '/shop/birthday-letter' : '/checkout'}
+                                                className="w-full py-4 bg-deep text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-zinc-800 transition-colors text-center block"
+                                            >
                                                 Shop {addon.name}
-                                            </button>
+                                            </Link>
                                         </div>
                                     </div>
                                 </div>

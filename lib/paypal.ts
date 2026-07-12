@@ -184,6 +184,20 @@ export const GAMIFICATION_PRODUCTS = {
         type: 'one-time',
         description: 'Protect your streak for one day',
     },
+    birthday_letter_basic: {
+        id: 'birthday_letter_basic',
+        name: 'Birthday Letter — Standard',
+        price: 19.00,
+        type: 'one-time',
+        description: 'Personalized birthday letter + printable activity pack + digital mission unlock',
+    },
+    birthday_letter_premium: {
+        id: 'birthday_letter_premium',
+        name: 'Birthday Letter — Premium',
+        price: 29.00,
+        type: 'one-time',
+        description: 'Everything in Standard + handwritten calligraphy envelope + bonus sticker sheet',
+    },
 };
 
 export type SubscriptionTier = keyof typeof SUBSCRIPTION_PLANS;

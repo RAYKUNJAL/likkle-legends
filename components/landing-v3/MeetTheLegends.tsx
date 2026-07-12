@@ -101,7 +101,7 @@ export function MeetTheLegends({ onOpenWaitlist }: MeetTheLegendsProps) {
                                     </p>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-4">Teaches: {char.teaches.split(',')[0]}</p>
                                     <Button
-                                        onClick={() => window.location.href = '/checkout'}
+                                        onClick={() => window.location.href = `/characters/${char.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')}`}
                                         variant="outline"
                                         className="w-full h-11 rounded-xl border-2 font-bold group-hover:bg-slate-50 transition-colors text-slate-700 border-slate-300"
                                     >
