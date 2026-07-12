@@ -78,12 +78,12 @@ function SignupForm() {
         const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
 
         if (signInErr) {
-            const nextPath = userId ? `/portal?uid=${encodeURIComponent(userId)}` : '/portal';
+            const nextPath = userId ? `/onboarding/child?uid=${encodeURIComponent(userId)}` : '/onboarding/child';
             router.push(`/login?email=${encodeURIComponent(email)}&redirect=${encodeURIComponent(nextPath)}`);
             return;
         }
 
-        router.push('/portal');
+        router.push('/onboarding/child');
     };
 
     const handleSignup = async (e: React.FormEvent) => {

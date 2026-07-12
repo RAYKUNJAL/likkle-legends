@@ -1,6 +1,7 @@
 
 export interface IslandPack {
     id: string;
+    region: string;
     display_name: string;
     adjective: string;
     overview: string;
@@ -26,6 +27,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     // === Greater Antilles ===
     "CU": {
         id: "CU",
+        region: "Greater Antilles",
         display_name: "Cuba",
         adjective: "Cuban",
         overview: "The largest Caribbean island, famous for its music, classic cars, and colonial architecture.",
@@ -53,6 +55,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "JM": {
         id: "JM",
+        region: "Greater Antilles",
         display_name: "Jamaica",
         adjective: "Jamaican",
         overview: "The cultural powerhouse known for Reggae, Blue Mountains, and warm vibes.",
@@ -84,6 +87,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "HT": {
         id: "HT",
+        region: "Greater Antilles",
         display_name: "Haiti",
         adjective: "Haitian",
         overview: "The first independent black republic, rich in history, art, and mountain landscapes.",
@@ -111,6 +115,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "DO": {
         id: "DO",
+        region: "Greater Antilles",
         display_name: "Dominican Republic",
         adjective: "Dominican",
         overview: "Famous for its diverse landscapes, from pico Duarte to white sandy beaches, and Merengue.",
@@ -138,6 +143,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "PR": {
         id: "PR",
+        region: "Greater Antilles",
         display_name: "Puerto Rico",
         adjective: "Puerto Rican",
         overview: "The Island of Enchantment, a US territory with a strong Spanish-Caribbean culture.",
@@ -165,6 +171,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "KY": {
         id: "KY",
+        region: "Greater Antilles",
         display_name: "Cayman Islands",
         adjective: "Caymanian",
         overview: "Famous for banking, turtles, and Stingray City.",
@@ -189,6 +196,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     // === Lesser Antilles Leeward ===
     "AG": {
         id: "AG",
+        region: "Leeward",
         display_name: "Antigua and Barbuda",
         adjective: "Antiguan / Barbudan",
         overview: "Land of 365 beaches, one for every day of the year.",
@@ -216,6 +224,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "KN": {
         id: "KN",
+        region: "Leeward",
         display_name: "Saint Kitts and Nevis",
         adjective: "Kittitian / Nevisian",
         overview: "Two islands, one paradise. Known for Brimstone Hill and lush mountains.",
@@ -235,6 +244,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "MS": {
         id: "MS",
+        region: "Leeward",
         display_name: "Montserrat",
         adjective: "Montserratian",
         overview: "The Emerald Isle of the Caribbean, known for its volcano and Irish heritage.",
@@ -254,6 +264,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "GP": {
         id: "GP",
+        region: "Windward",
         display_name: "Guadeloupe",
         adjective: "Guadeloupean",
         overview: "A French overseas region shaped like a butterfly.",
@@ -271,6 +282,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "BL": {
         id: "BL",
+        region: "Leeward",
         display_name: "Saint Barthélemy",
         adjective: "Saint Barth",
         overview: "A chic French island known for white-sand beaches and designer shops.",
@@ -288,6 +300,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "MF": { // French Side
         id: "MF",
+        region: "Leeward",
         display_name: "Saint Martin",
         adjective: "Saint-Martinois",
         overview: "The French side of the dual-nation island, known for nudist beaches (safe: beaches in general) and cuisine.",
@@ -305,6 +318,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "SX": { // Dutch Side
         id: "SX",
+        region: "Leeward",
         display_name: "Sint Maarten",
         adjective: "Sint Maartener",
         overview: "The Dutch side, known for festive nightlife and Maho Beach planes.",
@@ -322,6 +336,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "AI": {
         id: "AI",
+        region: "Leeward",
         display_name: "Anguilla",
         adjective: "Anguillian",
         overview: "Tranquil island known for spectacular coral reefs and beaches.",
@@ -342,6 +357,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     // === Lesser Antilles Windward ===
     "DM": {
         id: "DM",
+        region: "Windward",
         display_name: "Dominica",
         adjective: "Dominican",
         overview: "The Nature Island, filled with rivers, waterfalls, and lush rainforests.",
@@ -368,6 +384,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "LC": {
         id: "LC",
+        region: "Windward",
         display_name: "Saint Lucia",
         adjective: "Saint Lucian",
         overview: "The Helen of the West Indies, famous for the Pitons and drive-in volcano.",
@@ -395,6 +412,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "VC": {
         id: "VC",
+        region: "Windward",
         display_name: "Saint Vincent and the Grenadines",
         adjective: "Vincentian",
         overview: "A chain of beautiful islands known for sailing and the La Soufrière volcano.",
@@ -421,6 +439,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "GD": {
         id: "GD",
+        region: "Windward",
         display_name: "Grenada",
         adjective: "Grenadian",
         overview: "The Spice Isle, famous for nutmeg, spices, and beautiful waterfalls.",
@@ -448,6 +467,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "MQ": {
         id: "MQ",
+        region: "Windward",
         display_name: "Martinique",
         adjective: "Martinican",
         overview: "The Island of Flowers, a French region with flair.",
@@ -467,6 +487,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     // === Southern Caribbean ===
     "TT": {
         id: "TT",
+        region: "Southern",
         display_name: "Trinidad and Tobago",
         adjective: "Trinbagonian",
         overview: "The land of the hummingbird, known for Carnival, steelpan, and beautiful biodiversity.",
@@ -499,6 +520,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "AW": {
         id: "AW",
+        region: "Southern",
         display_name: "Aruba",
         adjective: "Aruban",
         overview: "One Happy Island, dry, sunny and known for white sands.",
@@ -517,6 +539,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "CW": {
         id: "CW",
+        region: "Southern",
         display_name: "Curaçao",
         adjective: "Curaçaoan",
         overview: "Famous for its colorful Dutch colonial architecture in Willemstad.",
@@ -534,6 +557,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "BQ": {
         id: "BQ",
+        region: "Southern",
         display_name: "Bonaire",
         adjective: "Bonairean",
         overview: "A diver's paradise with a focus on marine conservation.",
@@ -554,6 +578,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     // === Lucayan Archipelago ===
     "BS": {
         id: "BS",
+        region: "Lucayan",
         display_name: "The Bahamas",
         adjective: "Bahamian",
         overview: "An archipelago of 700 islands with crystal clear waters and swimming pigs.",
@@ -581,6 +606,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "TC": {
         id: "TC",
+        region: "Lucayan",
         display_name: "Turks and Caicos Islands",
         adjective: "Turks and Caicos Islander",
         overview: "Beautiful by nature, famous for Grace Bay.",
@@ -601,6 +627,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     // === Virgin Islands ===
     "VG": {
         id: "VG",
+        region: "Leeward",
         display_name: "British Virgin Islands",
         adjective: "Virgin Islander",
         overview: "Nature's Little Secrets, a sailing capital.",
@@ -619,6 +646,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     },
     "VI": {
         id: "VI",
+        region: "Leeward",
         display_name: "U.S. Virgin Islands",
         adjective: "Virgin Islander",
         overview: "America's Caribbean Paradise (St. Thomas, St. John, St. Croix).",
@@ -639,6 +667,7 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
     // === Associated ===
     "PM": {
         id: "PM",
+        region: "Atlantic",
         display_name: "Saint Pierre and Miquelon",
         adjective: "Saint-Pierrais",
         overview: "A slice of France in North America (near Newfoundland, included for completeness).",
@@ -653,6 +682,147 @@ export const ISLAND_REGISTRY: Record<string, IslandPack> = {
         },
         dialect: { vocabulary: [], phrases: [] },
         safe_topics: ["Fishing", "French culture"]
+    },
+
+    // === Mainland ===
+    "BB": {
+        id: "BB",
+        region: "Southern",
+        display_name: "Barbados",
+        adjective: "Bajan",
+        overview: "The Land of the Flying Fish, known for Rihanna, rum, and cricket.",
+        cultural_traits: {
+            values: ["Pride", "Hospitality", "Resilience"],
+            festivals: ["Crop Over", "Oistins Fish Festival"],
+            music_styles: ["Soca", "Calypso", "Spouge"],
+            foods: ["Flying Fish and Cou Cou", "Pudding and Souse", "Macaroni Pie", "Fish Cakes"]
+        },
+        symbols: {
+            national_bird: "Brown Pelican",
+            national_flower: "Red Pride of Barbados",
+            landmarks: ["Harrison's Cave", "Bridgetown", "Crane Beach", "Animal Flower Cave"]
+        },
+        dialect: {
+            vocabulary: [
+                { word: "Baje", meaning: "A Barbadian", usage: "I is a real Baje." },
+                { word: "Wunna", meaning: "You (plural)", usage: "Wunna coming too?" }
+            ],
+            phrases: [
+                { phrase: "Yuh got muh?", meaning: "Do you understand me?" }
+            ]
+        },
+        safe_topics: ["Cricket", "Beaches", "Rum", "Crop Over festival"]
+    },
+    "GY": {
+        id: "GY",
+        region: "Mainland",
+        display_name: "Guyana",
+        adjective: "Guyanese",
+        overview: "The Land of Many Waters, the only English-speaking country in South America.",
+        cultural_traits: {
+            values: ["Diversity", "Nature", "Resilience"],
+            festivals: ["Mashramani", "Diwali", "Phagwah"],
+            music_styles: ["Soca", "Chutney", "Calypso", "Shanto"],
+            foods: ["Pepperpot", "Cook-up Rice", "Roti", "Metemgee", "Black Cake"]
+        },
+        symbols: {
+            national_bird: "Hoatzin (Canje Pheasant)",
+            national_flower: "Victoria Regia (Giant Water Lily)",
+            landmarks: ["Kaieteur Falls", "St. George's Cathedral", "Shell Beach", "Iwokrama Rainforest"]
+        },
+        dialect: {
+            vocabulary: [
+                { word: "Bai", meaning: "Boy/Brother", usage: "Wha happen bai?" },
+                { word: "Channa", meaning: "Chickpeas", usage: "Pass de channa." }
+            ],
+            phrases: [
+                { phrase: "Wha happen?", meaning: "What happened? / What's up?" }
+            ]
+        },
+        safe_topics: ["Rainforest", "Kaieteur Falls", "Cricket", "Wildlife (Jaguars)"]
+    },
+    "SR": {
+        id: "SR",
+        region: "Mainland",
+        display_name: "Suriname",
+        adjective: "Surinamese",
+        overview: "The Rainforest Republic, a Dutch-speaking nation of incredible cultural diversity.",
+        cultural_traits: {
+            values: ["Diversity", "Nature", "Harmony"],
+            festivals: ["Holi Phagwa", "Divali", "Avondvierdaagse"],
+            music_styles: ["Kaseko", "Bhari", "Surinamese Pop"],
+            foods: ["Roti", "Pom", "Moksi Meti", "Saoto Soup"]
+        },
+        symbols: {
+            national_bird: "Great Scarlet Macaw",
+            national_flower: "Fajalobi",
+            landmarks: ["Paramaribo (Historic Inner City)", "Brownsberg Nature Park", "Galibi Nature Reserve", "Central Suriname Nature Reserve"]
+        },
+        dialect: {
+            vocabulary: [
+                { word: "Misi", meaning: "Miss/Ma'am", usage: "Misi, how yu de?" }
+            ],
+            phrases: [
+                { phrase: "Fa waka?", meaning: "How are you?" }
+            ]
+        },
+        safe_topics: ["Rainforest", "Maroon culture", "Historic Paramaribo", "Wildlife"]
+    },
+    "BZ": {
+        id: "BZ",
+        region: "Mainland",
+        display_name: "Belize",
+        adjective: "Belizean",
+        overview: "The Jewel of the Caribbean coast, a Central American nation with Caribbean soul and Mayan heritage.",
+        cultural_traits: {
+            values: ["Diversity", "Nature", "Community"],
+            festivals: ["September Celebrations", "Carnival", "Garifuna Settlement Day"],
+            music_styles: ["Punta", "Brukdown", "Paranda"],
+            foods: ["Rice and Beans with Stew Chicken", "Fry Jacks", "Hudut", "Salbutes", "Ceviche"]
+        },
+        symbols: {
+            national_bird: "Keel-billed Toucan",
+            national_flower: "Black Orchid",
+            landmarks: ["Great Blue Hole", "Belize Barrier Reef", "Xunantunich Mayan Ruins", "Caye Caulker"]
+        },
+        dialect: {
+            vocabulary: [
+                { word: "Tíkkree", meaning: "Hurry up", usage: "Tíkkree, we late!" },
+                { word: "Bway", meaning: "Boy", usage: "Bway, dat wah adventure." }
+            ],
+            phrases: [
+                { phrase: "Da fu we", meaning: "It is ours" }
+            ]
+        },
+        safe_topics: ["Barrier Reef", "Mayan ruins", "Jungle wildlife", "Garifuna culture"]
+    },
+    "BM": {
+        id: "BM",
+        region: "Atlantic",
+        display_name: "Bermuda",
+        adjective: "Bermudian",
+        overview: "The Pink Sand Island, a British Overseas Territory in the North Atlantic.",
+        cultural_traits: {
+            values: ["Elegance", "Community", "Maritime heritage"],
+            festivals: ["Bermuda Day", "Cup Match", "Gombey Festival"],
+            music_styles: ["Gombey", "Calypso", "Soca"],
+            foods: ["Fish Chowder", "Bermuda Fish Cake", "Cassava Pie", "Dark 'n' Stormy"]
+        },
+        symbols: {
+            national_bird: "Bermuda Petrel (Cahow)",
+            national_flower: "Bermudiana",
+            landmarks: ["Horseshoe Bay Beach", "Town of St. George", "Royal Naval Dockyard", "Crystal Caves"]
+        },
+        dialect: {
+            vocabulary: [
+                { word: "Ace boy", meaning: "Great job / well done", usage: "Ace boy, you did it!" },
+                { word: "Bermewjan", meaning: "Bermudian", usage: "I am Bermewjan." }
+            ],
+            phrases: [
+                { phrase: "Splash a boilin'", meaning: "It's very hot / lots of activity" }
+            ]
+        },
+        safe_topics: ["Pink sand beaches", "Cahow bird conservation", "Gombey dancing", "Crystal caves"]
     }
 };
 

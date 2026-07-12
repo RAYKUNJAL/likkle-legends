@@ -7,48 +7,49 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useUser } from '@/components/UserContext';
 import { getTantyVoice } from '@/app/actions/voice';
+import IslandPicker from '@/components/onboarding/IslandPicker';
 
 const ISLANDS = [
     // Popular / Big 4
-    { id: 'jamaica',            name: 'Jamaica',                    flag: '🇯🇲', color: 'from-green-500 to-yellow-400',  fact: 'Island of Reggae & Wood!' },
-    { id: 'trinidad',           name: 'Trinidad & Tobago',          flag: '🇹🇹', color: 'from-red-600 to-yellow-400',   fact: 'Home of Steelpan & Soca!' },
-    { id: 'barbados',           name: 'Barbados',                   flag: '🇧🇧', color: 'from-blue-600 to-yellow-400',  fact: 'Land of Flying Fish!' },
-    { id: 'guyana',             name: 'Guyana',                     flag: '🇬🇾', color: 'from-green-600 to-red-600',    fact: 'Land of Many Waters!' },
+    { id: 'jamaica',            region: 'Greater Antilles', name: 'Jamaica',                    flag: '🇯🇲', color: 'from-green-500 to-yellow-400',  fact: 'Island of Reggae & Wood!' },
+    { id: 'trinidad',           region: 'Southern', name: 'Trinidad & Tobago',          flag: '🇹🇹', color: 'from-red-600 to-yellow-400',   fact: 'Home of Steelpan & Soca!' },
+    { id: 'barbados',           region: 'Southern', name: 'Barbados',                   flag: '🇧🇧', color: 'from-blue-600 to-yellow-400',  fact: 'Land of Flying Fish!' },
+    { id: 'guyana',             region: 'Mainland', name: 'Guyana',                     flag: '🇬🇾', color: 'from-green-600 to-red-600',    fact: 'Land of Many Waters!' },
     // Greater Antilles
-    { id: 'haiti',              name: 'Haiti',                      flag: '🇭🇹', color: 'from-blue-700 to-red-600',     fact: 'First Black Republic in the World!' },
-    { id: 'dominican_republic', name: 'Dominican Republic',         flag: '🇩🇴', color: 'from-blue-600 to-red-600',     fact: 'Land of Merengue & Mountains!' },
-    { id: 'cuba',               name: 'Cuba',                       flag: '🇨🇺', color: 'from-blue-600 to-red-600',     fact: 'Pearl of the Antilles!' },
-    { id: 'puerto_rico',        name: 'Puerto Rico',                flag: '🇵🇷', color: 'from-red-600 to-blue-600',     fact: 'Island of Enchantment!' },
+    { id: 'haiti',              region: 'Greater Antilles', name: 'Haiti',                      flag: '🇭🇹', color: 'from-blue-700 to-red-600',     fact: 'First Black Republic in the World!' },
+    { id: 'dominican_republic', region: 'Greater Antilles', name: 'Dominican Republic',         flag: '🇩🇴', color: 'from-blue-600 to-red-600',     fact: 'Land of Merengue & Mountains!' },
+    { id: 'cuba',               region: 'Greater Antilles', name: 'Cuba',                       flag: '🇨🇺', color: 'from-blue-600 to-red-600',     fact: 'Pearl of the Antilles!' },
+    { id: 'puerto_rico',        region: 'Greater Antilles', name: 'Puerto Rico',                flag: '🇵🇷', color: 'from-red-600 to-blue-600',     fact: 'Island of Enchantment!' },
     // Eastern Caribbean
-    { id: 'st_lucia',           name: 'St. Lucia',                  flag: '🇱🇨', color: 'from-sky-400 to-yellow-400',  fact: 'Home of the Piton Mountains!' },
-    { id: 'grenada',            name: 'Grenada',                    flag: '🇬🇩', color: 'from-red-500 to-green-600',   fact: 'The Island of Spice!' },
-    { id: 'antigua',            name: 'Antigua & Barbuda',          flag: '🇦🇬', color: 'from-red-500 to-blue-600',    fact: '365 Beautiful Beaches!' },
-    { id: 'st_vincent',         name: 'St. Vincent & Grenadines',   flag: '🇻🇨', color: 'from-green-600 to-yellow-400', fact: 'Gems of the Caribbean!' },
-    { id: 'dominica',           name: 'Dominica',                   flag: '🇩🇲', color: 'from-green-700 to-red-500',   fact: 'Nature Isle of the Caribbean!' },
-    { id: 'st_kitts',           name: 'St. Kitts & Nevis',          flag: '🇰🇳', color: 'from-green-600 to-red-600',   fact: 'Cradle of the Caribbean!' },
-    { id: 'montserrat',         name: 'Montserrat',                 flag: '🇲🇸', color: 'from-blue-600 to-green-500',  fact: 'Emerald Isle of the Caribbean!' },
-    { id: 'anguilla',           name: 'Anguilla',                   flag: '🇦🇮', color: 'from-blue-500 to-sky-300',    fact: 'Longest Beaches in the Caribbean!' },
+    { id: 'st_lucia',           region: 'Windward', name: 'St. Lucia',                  flag: '🇱🇨', color: 'from-sky-400 to-yellow-400',  fact: 'Home of the Piton Mountains!' },
+    { id: 'grenada',            region: 'Windward', name: 'Grenada',                    flag: '🇬🇩', color: 'from-red-500 to-green-600',   fact: 'The Island of Spice!' },
+    { id: 'antigua',            region: 'Leeward', name: 'Antigua & Barbuda',          flag: '🇦🇬', color: 'from-red-500 to-blue-600',    fact: '365 Beautiful Beaches!' },
+    { id: 'st_vincent',         region: 'Windward', name: 'St. Vincent & Grenadines',   flag: '🇻🇨', color: 'from-green-600 to-yellow-400', fact: 'Gems of the Caribbean!' },
+    { id: 'dominica',           region: 'Windward', name: 'Dominica',                   flag: '🇩🇲', color: 'from-green-700 to-red-500',   fact: 'Nature Isle of the Caribbean!' },
+    { id: 'st_kitts',           region: 'Leeward', name: 'St. Kitts & Nevis',          flag: '🇰🇳', color: 'from-green-600 to-red-600',   fact: 'Cradle of the Caribbean!' },
+    { id: 'montserrat',         region: 'Leeward', name: 'Montserrat',                 flag: '🇲🇸', color: 'from-blue-600 to-green-500',  fact: 'Emerald Isle of the Caribbean!' },
+    { id: 'anguilla',           region: 'Leeward', name: 'Anguilla',                   flag: '🇦🇮', color: 'from-blue-500 to-sky-300',    fact: 'Longest Beaches in the Caribbean!' },
     // Bahamas & Northern
-    { id: 'bahamas',            name: 'Bahamas',                    flag: '🇧🇸', color: 'from-cyan-400 to-yellow-300', fact: 'Crystal Clear Waters!' },
-    { id: 'cayman',             name: 'Cayman Islands',             flag: '🇰🇾', color: 'from-blue-500 to-green-400',  fact: 'World\'s Best Diving!' },
-    { id: 'turks_caicos',       name: 'Turks & Caicos',             flag: '🇹🇨', color: 'from-sky-300 to-yellow-300',  fact: 'Whitest Sands in the Caribbean!' },
-    { id: 'bermuda',            name: 'Bermuda',                    flag: '🇧🇲', color: 'from-pink-400 to-blue-400',   fact: 'The Pink Sand Island!' },
+    { id: 'bahamas',            region: 'Lucayan', name: 'Bahamas',                    flag: '🇧🇸', color: 'from-cyan-400 to-yellow-300', fact: 'Crystal Clear Waters!' },
+    { id: 'cayman',             region: 'Greater Antilles', name: 'Cayman Islands',             flag: '🇰🇾', color: 'from-blue-500 to-green-400',  fact: 'World\'s Best Diving!' },
+    { id: 'turks_caicos',       region: 'Lucayan', name: 'Turks & Caicos',             flag: '🇹🇨', color: 'from-sky-300 to-yellow-300',  fact: 'Whitest Sands in the Caribbean!' },
+    { id: 'bermuda',            region: 'Atlantic', name: 'Bermuda',                    flag: '🇧🇲', color: 'from-pink-400 to-blue-400',   fact: 'The Pink Sand Island!' },
     // Dutch Caribbean
-    { id: 'aruba',              name: 'Aruba',                      flag: '🇦🇼', color: 'from-sky-400 to-yellow-300',  fact: 'One Happy Island!' },
-    { id: 'curacao',            name: 'Curaçao',                    flag: '🇨🇼', color: 'from-blue-500 to-yellow-400', fact: 'Island of Colours!' },
-    { id: 'bonaire',            name: 'Bonaire',                    flag: '🇧🇶', color: 'from-blue-400 to-yellow-400', fact: 'Diver\'s Paradise!' },
+    { id: 'aruba',              region: 'Southern', name: 'Aruba',                      flag: '🇦🇼', color: 'from-sky-400 to-yellow-300',  fact: 'One Happy Island!' },
+    { id: 'curacao',            region: 'Southern', name: 'Curaçao',                    flag: '🇨🇼', color: 'from-blue-500 to-yellow-400', fact: 'Island of Colours!' },
+    { id: 'bonaire',            region: 'Southern', name: 'Bonaire',                    flag: '🇧🇶', color: 'from-blue-400 to-yellow-400', fact: 'Diver\'s Paradise!' },
     // French Caribbean
-    { id: 'martinique',         name: 'Martinique',                 flag: '🇲🇶', color: 'from-blue-700 to-red-500',   fact: 'Flower of the Caribbean!' },
-    { id: 'guadeloupe',         name: 'Guadeloupe',                 flag: '🇬🇵', color: 'from-blue-700 to-red-500',   fact: 'The Butterfly Island!' },
-    { id: 'st_martin',          name: 'St. Martin / Sint Maarten',  flag: '🇸🇽', color: 'from-red-500 to-blue-600',   fact: 'Two Nations, One Island!' },
+    { id: 'martinique',         region: 'Windward', name: 'Martinique',                 flag: '🇲🇶', color: 'from-blue-700 to-red-500',   fact: 'Flower of the Caribbean!' },
+    { id: 'guadeloupe',         region: 'Windward', name: 'Guadeloupe',                 flag: '🇬🇵', color: 'from-blue-700 to-red-500',   fact: 'The Butterfly Island!' },
+    { id: 'st_martin',          region: 'Leeward', name: 'St. Martin / Sint Maarten',  flag: '🇸🇽', color: 'from-red-500 to-blue-600',   fact: 'Two Nations, One Island!' },
     // Virgin Islands
-    { id: 'bvi',                name: 'British Virgin Islands',     flag: '🇻🇬', color: 'from-blue-700 to-green-500', fact: 'Sailing Capital of the World!' },
-    { id: 'usvi',               name: 'US Virgin Islands',          flag: '🇻🇮', color: 'from-blue-600 to-yellow-400', fact: 'America\'s Paradise!' },
+    { id: 'bvi',                region: 'Leeward', name: 'British Virgin Islands',     flag: '🇻🇬', color: 'from-blue-700 to-green-500', fact: 'Sailing Capital of the World!' },
+    { id: 'usvi',               region: 'Leeward', name: 'US Virgin Islands',          flag: '🇻🇮', color: 'from-blue-600 to-yellow-400', fact: 'America\'s Paradise!' },
     // Central/South America
-    { id: 'belize',             name: 'Belize',                     flag: '🇧🇿', color: 'from-blue-700 to-red-500',   fact: 'Jewel of the Caribbean Coast!' },
-    { id: 'suriname',           name: 'Suriname',                   flag: '🇸🇷', color: 'from-green-600 to-red-500',  fact: 'The Rainforest Republic!' },
+    { id: 'belize',             region: 'Mainland', name: 'Belize',                     flag: '🇧🇿', color: 'from-blue-700 to-red-500',   fact: 'Jewel of the Caribbean Coast!' },
+    { id: 'suriname',           region: 'Mainland', name: 'Suriname',                   flag: '🇸🇷', color: 'from-green-600 to-red-500',  fact: 'The Rainforest Republic!' },
     // Diaspora catch-all
-    { id: 'mixed',              name: 'Island Explorer',            flag: '🌴', color: 'from-primary to-accent',      fact: 'Exploring all the islands!' },
+    { id: 'mixed',              region: 'Other', name: 'Island Explorer',            flag: '🌴', color: 'from-primary to-accent',      fact: 'Exploring all the islands!' },
 ];
 
 const AVATARS = [
@@ -179,7 +180,7 @@ function ChildOnboardingContent() {
 
             const child = result.child;
             await refreshChildren(userId);
-            router.push(`/onboarding/learning-goals?childId=${child.id}`);
+            router.push(`/portal?childId=${child.id}`);
         } catch (error: any) {
             console.error('Onboarding error:', error);
             setSubmitError(error?.message || 'Could not save your profile. Please try again.');
@@ -314,26 +315,11 @@ function ChildOnboardingContent() {
 
                         {/* Step 3: Island */}
                         {step === 3 && (
-                            <div>
-                                {formData.primary_island && (
-                                    <p className="text-center text-sm font-black text-primary mb-3 animate-pulse">
-                                        {ISLANDS.find(i => i.id === formData.primary_island)?.flag} {ISLANDS.find(i => i.id === formData.primary_island)?.fact}
-                                    </p>
-                                )}
-                                <div className="max-h-72 overflow-y-auto pr-1 grid grid-cols-3 gap-3 scrollbar-thin">
-                                    {ISLANDS.map(island => (
-                                        <button
-                                            key={island.id}
-                                            onClick={() => setFormData({ ...formData, primary_island: island.id })}
-                                            className={`p-3 rounded-2xl border-4 transition-all text-center ${formData.primary_island === island.id ? 'border-primary bg-primary/5 scale-105 shadow-md' : 'border-transparent bg-gray-50 hover:bg-gray-100'}`}
-                                        >
-                                            <div className="text-3xl mb-1">{island.flag}</div>
-                                            <p className="text-[9px] font-black text-blue-900 uppercase leading-tight">{island.name}</p>
-                                        </button>
-                                    ))}
-                                </div>
-                                <p className="text-center text-xs text-blue-300 mt-2 font-medium">Scroll to see all 31 islands ↕</p>
-                            </div>
+                            <IslandPicker
+                                islands={ISLANDS.map(i => ({ id: i.id, name: i.name, flag: i.flag, region: i.region || 'Other', culturalFact: i.fact }))}
+                                value={formData.primary_island || null}
+                                onChange={(id) => setFormData({ ...formData, primary_island: id })}
+                            />
                         )}
 
                         {/* Step 4: Avatar */}
