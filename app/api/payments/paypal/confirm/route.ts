@@ -9,6 +9,76 @@ import { cookies } from 'next/headers';
 
 const supabase = supabaseAdmin;
 
+// ── PayPal base URL ───────────────────────────────────────────────────────────
+const PAYPAL_BASE =
+    process.env.PAYPAL_ENV === 'sandbox' || process.env.NODE_ENV !== 'production'
+        ? 'https://api-m.sandbox.paypal.com'
+        : 'https://api-m.paypal.com';
+
+// ── Get PayPal access token ───────────────────────────────────────────────────
+async function getPayPalAccessToken(): Promise<string> {
+    const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+    if (!clientId || !clientSecret) {
+        throw new Error('PayPal credentials are not configured');
+    }
+    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    const res = await fetch(`${PAYPAL_BASE}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${credentials}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'grant_type=client_credentials',
+    });
+    const data = await res.json() as { access_token?: string; error_description?: string };
+    if (!res.ok || !data.access_token) {
+        throw new Error(data.error_description || 'Could not authenticate with PayPal');
+    }
+    return data.access_token;
+}
+
+// ── Verify PayPal subscription and derive tier from plan_id ───────────────────
+async function verifySubscriptionAndDeriveTier(
+    subscriptionId: string,
+    clientTier: string
+): Promise<{ tier: string; valid: boolean }> {
+    try {
+        const token = await getPayPalAccessToken();
+        const res = await fetch(`${PAYPAL_BASE}/v1/billing/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) {
+            // If PayPal lookup fails, fall back to client tier but log it
+            console.warn(`[SECURITY] PayPal subscription lookup failed for ${subscriptionId}, using client tier`);
+            return { tier: clientTier, valid: false };
+        }
+
+        const data = await res.json() as { plan_id?: string; status?: string };
+
+        // Map plan_id to tier
+        const planEnvMap: Record<string, string> = {
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL || '__none__']: 'digital_legends',
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER || '__none__']: 'starter_mailer',
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS || '__none__']: 'legends_plus',
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY || '__none__']: 'family_legacy',
+        };
+
+        const derivedTier = data.plan_id ? (planEnvMap[data.plan_id] || clientTier) : clientTier;
+
+        // If derived tier differs from client tier, use the verified one
+        if (derivedTier !== clientTier) {
+            console.warn(`[SECURITY] Tier mismatch: client sent "${clientTier}" but PayPal plan_id maps to "${derivedTier}" — using verified tier`);
+        }
+
+        return { tier: derivedTier, valid: true };
+    } catch (err) {
+        console.error('PayPal subscription verification error:', err);
+        return { tier: clientTier, valid: false };
+    }
+}
+
 async function recordReferralConversion(userId: string, refCode: string, amount: number, orderId: string) {
     const { data: promoter } = await supabase
         .from('promoters')
@@ -96,9 +166,18 @@ export async function POST(request: NextRequest) {
 
         const userIdToUpdate = user.id;
 
+        // ── Verify tier against PayPal subscription ──
+        // The client sends a `tier` value, but we must not trust it.
+        // For subscription-based payments, verify the plan_id with PayPal.
+        let verifiedTier = tier;
+        if (subscriptionId && tier !== 'plan_free_forever') {
+            const verification = await verifySubscriptionAndDeriveTier(subscriptionId, tier);
+            verifiedTier = verification.tier;
+        }
+
         const TRIAL_DAYS = 7;
         const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
-        const isFree = tier === 'plan_free_forever';
+        const isFree = verifiedTier === 'plan_free_forever';
 
         const daysToAdd = billingCycle === 'year' ? 365 : 30;
         const nextBillingDate = isFree

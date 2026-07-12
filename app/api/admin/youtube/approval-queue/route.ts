@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/api/require-admin';
 import { enqueueVideoPlan, listApprovalQueue } from '@/lib/youtube/approval-store';
 import { createVideoPlan } from '@/lib/youtube/video-planner';
 
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (!auth.ok) return auth.response;
+
   const queue = await listApprovalQueue();
   return NextResponse.json({ ok: true, queue });
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const body = await req.json().catch(() => ({}));
     const count = Math.min(Math.max(Number(body.count || 1), 1), 10);

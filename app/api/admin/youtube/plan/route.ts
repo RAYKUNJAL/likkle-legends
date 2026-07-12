@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/api/require-admin';
 import { createVideoPlan } from '@/lib/youtube/video-planner';
 import { YOUTUBE_ASSETS } from '@/lib/youtube/video-types';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = await requireAdmin(req);
+  if (!auth.ok) return auth.response;
+
   return NextResponse.json({
     ok: true,
     assets: YOUTUBE_ASSETS,

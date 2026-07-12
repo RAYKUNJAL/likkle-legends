@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/api/require-admin';
 import { updateApprovalItem } from '@/lib/youtube/approval-store';
 
 export const runtime = 'nodejs';
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await requireAdmin(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const body = await req.json();
     const item = await updateApprovalItem(params.id, body);

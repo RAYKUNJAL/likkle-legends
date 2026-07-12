@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/api/require-admin';
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -14,14 +15,9 @@ function getSupabaseAdmin() {
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin access via Authorization header
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+    // Verify admin access
+    const auth = await requireAdmin(request);
+    if (!auth.ok) return auth.response;
 
     const supabaseAdmin = getSupabaseAdmin();
 

@@ -15,6 +15,40 @@ Differentiator: ONLY Caribbean cultural learning platform for kids. Personalized
 `;
 
 export async function POST(req: NextRequest) {
+  // ── Admin auth required ──
+  const authHeader = req.headers.get('authorization') || req.headers.get('Authorization');
+  let userId: string | null = null;
+
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const { supabaseAdmin } = await import('@/lib/supabase-client');
+    const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+    userId = user?.id || null;
+  }
+
+  if (!userId) {
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    userId = user?.id || null;
+  }
+
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { createAdminClient } = await import('@/lib/admin');
+  const admin = createAdminClient();
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('role, is_admin')
+    .eq('id', userId)
+    .single();
+
+  if (!(profile?.is_admin || profile?.role === 'admin')) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   const body = await req.json().catch(() => ({}));
   const { stage = 'tofu', character = 'tanty_spice', count = 4 } = body;
 

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/api/require-admin';
 import { getTasksByStatus, createTask } from '@/lib/agent-os/db';
 
 export async function GET(_req: NextRequest) {
+  const auth = await requireAdmin(_req);
+  if (!auth.ok) return auth.response;
+
   try {
     const all = await getTasksByStatus(['queued','running','blocked','awaiting_approval','done','failed']);
     const board = {

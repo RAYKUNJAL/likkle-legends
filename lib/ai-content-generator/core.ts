@@ -1,22 +1,36 @@
 // Core AI Content Generator
-// Orchestrates content generation using Claude API
+// Orchestrates content generation using Claude API with Gemini fallback
 
 import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CONTENT_CONFIG, CHARACTER_PROFILES, IMAGE_STYLE } from './config';
 
 // Ensure environment variables are loaded
-const API_KEY = process.env.ANTHROPIC_API_KEY || '';
+const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || '';
+const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
 
-if (!API_KEY) {
-    console.warn('⚠️  WARNING: No Claude API key found in environment variables');
-    console.warn('   Please set ANTHROPIC_API_KEY in Vercel environment variables');
+if (!ANTHROPIC_KEY && !GEMINI_KEY) {
+    console.warn('⚠️  WARNING: No AI API keys found (ANTHROPIC_API_KEY or GEMINI_API_KEY)');
 }
 
-const getClient = () => {
-    if (!API_KEY) {
-        throw new Error('Claude API Key is missing. Set ANTHROPIC_API_KEY in Vercel settings.');
-    }
-    return new Anthropic({ apiKey: API_KEY });
+const getProvider = (): 'anthropic' | 'gemini' | null => {
+    if (ANTHROPIC_KEY) return 'anthropic';
+    if (GEMINI_KEY) return 'gemini';
+    return null;
+};
+
+const getAnthropicClient = () => {
+    if (!ANTHROPIC_KEY) throw new Error('Claude API Key is missing.');
+    return new Anthropic({ apiKey: ANTHROPIC_KEY });
+};
+
+const getGeminiModel = () => {
+    if (!GEMINI_KEY) throw new Error('Gemini API Key is missing.');
+    const genAI = new GoogleGenerativeAI(GEMINI_KEY);
+    return genAI.getGenerativeModel({
+        model: 'gemini-2.0-flash-exp',
+        generationConfig: { temperature: 0.9, maxOutputTokens: 4096 },
+    });
 };
 
 export interface GenerationOptions {
@@ -32,11 +46,14 @@ export class ContentGenerator {
     private defaultModel = 'claude-3-5-sonnet-20241022';
 
     /**
-     * Generate text content using Claude with Timeout Protection
+     * Generate text content using available AI provider with timeout
      */
     async generateText(prompt: string, options?: GenerationOptions): Promise<string> {
         try {
-            const client = getClient();
+            const provider = getProvider();
+            if (!provider) {
+                throw new Error('No AI provider configured. Set ANTHROPIC_API_KEY or GEMINI_API_KEY.');
+            }
 
             let systemPrompt = '';
             let userPrompt = prompt;
@@ -45,45 +62,47 @@ export class ContentGenerator {
                 systemPrompt = options.systemInstruction;
             }
 
-            console.log(`🤖 Generating with Claude...`);
+            console.log(`🤖 Generating with ${provider}...`);
 
-            // WRAP IN TIMEOUT for Vercel Function Limit Protection
             const timeoutPromise = new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('Claude API took too long (>60s)')), 60000)
+                setTimeout(() => reject(new Error('AI generation took too long (>60s)')), 60000)
             );
 
-            const generationPromise = async () => {
+            const generationPromise = async (): Promise<string> => {
                 try {
-                    const message = await client.messages.create({
-                        model: options?.model || this.defaultModel,
-                        max_tokens: options?.maxTokens || 4096,
-                        temperature: options?.temperature || 0.9,
-                        ...(systemPrompt && { system: systemPrompt }),
-                        messages: [
-                            {
-                                role: 'user',
-                                content: userPrompt
-                            }
-                        ]
-                    });
-
-                    const textContent = message.content.find(block => block.type === 'text');
-                    if (!textContent || textContent.type !== 'text') {
-                        throw new Error('No text content in response');
+                    if (provider === 'anthropic') {
+                        const client = getAnthropicClient();
+                        const message = await client.messages.create({
+                            model: options?.model || this.defaultModel,
+                            max_tokens: options?.maxTokens || 4096,
+                            temperature: options?.temperature || 0.9,
+                            ...(systemPrompt && { system: systemPrompt }),
+                            messages: [{ role: 'user', content: userPrompt }]
+                        });
+                        const textContent = message.content.find((block: any) => block.type === 'text');
+                        if (!textContent || textContent.type !== 'text') {
+                            throw new Error('No text content in response');
+                        }
+                        return textContent.text;
+                    } else {
+                        // Gemini fallback
+                        const model = getGeminiModel();
+                        const fullPrompt = systemPrompt ? `${systemPrompt}\n\n${userPrompt}` : userPrompt;
+                        const result = await model.generateContent(fullPrompt);
+                        const text = result.response.text();
+                        if (!text) throw new Error('No text in Gemini response');
+                        return text;
                     }
-
-                    return textContent.text;
                 } catch (genErr: any) {
                     throw new Error(`Generation failed: ${genErr.message}`);
                 }
             };
 
-            // Race against the clock
             const text = await Promise.race([generationPromise(), timeoutPromise]);
 
             if (text) return text;
 
-            throw new Error('No response from Claude');
+            throw new Error('No response from AI provider');
         } catch (error: any) {
             console.error('❌ Error in generateText:', error.message);
             throw new Error(`Critical AI Failure: ${error.message}`);

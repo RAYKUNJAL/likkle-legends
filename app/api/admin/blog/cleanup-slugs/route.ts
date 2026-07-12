@@ -3,9 +3,13 @@
  * One-time route to clean up timestamp-suffixed slugs from batch generation.
  */
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/api/require-admin';
 import { createAdminClient } from '@/lib/admin';
 
 export async function POST(_request: NextRequest) {
+  const auth = await requireAdmin(_request);
+  if (!auth.ok) return auth.response;
+
   const admin = createAdminClient();
 
   const { data: posts } = await admin
