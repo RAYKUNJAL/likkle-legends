@@ -2,7 +2,7 @@
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import { StoryParams, StoryPage } from "../types";
 
-const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+const apiKey = process.env.GEMINI_API_KEY || "";
 const TEXT_MODELS = ["gemini-2.0-flash", "gemini-2.5-flash", "gemini-3-pro-preview"];
 const IMAGE_MODELS = ["gemini-2.5-flash-image"];
 const IMAGE_TIMEOUT_MS = 8000;

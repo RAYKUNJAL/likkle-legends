@@ -11,7 +11,7 @@ import {
 import { PhonicsControl, DecodableBookMetadata, PrintSpecs, CurriculumLevel, DecodableTextRules, IslandContentPack } from "./types";
 
 function getGenAI(): GoogleGenerativeAI {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
+    const apiKey = process.env.GEMINI_API_KEY || "";
     if (!apiKey) throw new Error("Missing Gemini API Key for Decodable Factory");
     return new GoogleGenerativeAI(apiKey);
 }

@@ -28,9 +28,7 @@ export async function generateROTISpeech(
     const voiceConfig = ROTI_VOICE_MODES[voiceMode];
     const voiceName = customVoiceName || voiceConfig.voiceName;
 
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
-        process.env.GEMINI_API_KEY ||
-        process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
         console.warn('[ROTI Voice] No Gemini API key configured');

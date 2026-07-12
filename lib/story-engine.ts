@@ -17,7 +17,7 @@ export interface StoryInputs {
 
 // Lazy init
 const getGenAI = () => {
-    const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
+    const key = process.env.GEMINI_API_KEY || "";
     if (!key) return null;
     return new GoogleGenerativeAI(key);
 };

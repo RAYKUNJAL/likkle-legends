@@ -7,7 +7,7 @@ import { CONTENT_CONFIG, CHARACTER_PROFILES, IMAGE_STYLE } from './config';
 
 // Ensure environment variables are loaded
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || '';
-const GEMINI_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
 
 if (!ANTHROPIC_KEY && !GEMINI_KEY) {
     console.warn('⚠️  WARNING: No AI API keys found (ANTHROPIC_API_KEY or GEMINI_API_KEY)');

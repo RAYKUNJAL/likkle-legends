@@ -225,7 +225,7 @@ async function buildGeminiPlan(
     weeksCount: number,
     contentList: string,
 ): Promise<PlanWeek[] | null> {
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return null;
 
     const age = child.age_years || child.age || 5;

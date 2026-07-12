@@ -137,7 +137,7 @@ export async function narrateText(text: string): Promise<AudioBuffer | null> {
     }
 
     // 3. Fallback to Gemini 3.0 Pro
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null);
+    const apiKey = process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null);
 
     if (!apiKey) {
         console.warn("API Key missing for narration.");
@@ -183,7 +183,7 @@ export async function generateBirthdaySong(childName: string, guide: string = "T
     if (typeof window === 'undefined') return null;
     const ctx = getGlobalAudioContext();
 
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null);
+    const apiKey = process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null);
     if (!apiKey) return null;
 
     const ai = new GoogleGenAI({ apiKey });
@@ -241,7 +241,7 @@ async function decodeAudioDataFromRaw(buffer: ArrayBufferLike, ctx: AudioContext
  * STREAMING CHAT
  */
 export async function* getTantySpiceResponseStream(userPrompt: string, ageGroup: string = "6-8"): AsyncGenerator<string> {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null);
+    const apiKey = process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? localStorage.getItem('GEMINI_API_KEY') : null);
     if (!apiKey) throw new Error("API Key missing.");
 
     const ai = new GoogleGenAI({ apiKey });

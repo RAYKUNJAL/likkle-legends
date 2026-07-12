@@ -22,7 +22,7 @@ export const extractHeartString = (userInput: string): string | null => {
 export const summarizeSession = async (messages: { role: string, text: string }[]): Promise<string> => {
     if (messages.length < 4) return "";
 
-    const key = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    const key = process.env.GEMINI_API_KEY;
     if (!key) return "Session completed.";
 
     const ai = new GoogleGenAI({ apiKey: key });

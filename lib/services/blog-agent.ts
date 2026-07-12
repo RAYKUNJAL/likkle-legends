@@ -71,11 +71,9 @@ SEO Guidelines:
 - Suggest 5-7 relevant tags`;
 
 export async function generateBlogPost(request: BlogGenerationRequest): Promise<GeneratedBlogContent> {
-    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-        process.env.GEMINI_API_KEY ||
-        process.env.NEXT_PUBLIC_GEMINI_API_KEY || '';
+    const apiKey = process.env.GEMINI_API_KEY || '';
     if (!apiKey) {
-        throw new Error('Missing Gemini/Google AI API Key (check GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY)');
+        throw new Error('Missing Gemini API Key (check GEMINI_API_KEY)');
     }
 
     const categoryContext = CATEGORY_CONTEXT[request.category] || CATEGORY_CONTEXT.culture;

@@ -9,11 +9,7 @@ import {
     SafetySetting
 } from '@google/generative-ai';
 
-const geminiApiKey =
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-    process.env.GOOGLE_API_KEY ||
-    '';
+const geminiApiKey = process.env.GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(geminiApiKey);
 const MAX_MESSAGE_CHARS = 320;
 const MAX_MEMORY_FACTS = 6;

@@ -1,10 +1,7 @@
 import { YOUTUBE_ASSETS } from './video-types';
 import type { LikkleVideoPlan } from './video-types';
 
-const GEMINI_API_KEY =
-  process.env.GEMINI_API_KEY ||
-  process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-  process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_VIDEO_MODEL = process.env.GEMINI_VIDEO_MODEL || 'gemini-2.0-flash';
 
 type PlanInput = {

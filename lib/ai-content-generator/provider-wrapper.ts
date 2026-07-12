@@ -1,7 +1,7 @@
 
 import { GoogleGenerativeAI, GenerationConfig } from "@google/generative-ai";
 
-const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || "";
+const API_KEY = process.env.GEMINI_API_KEY || "";
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 export type ModelTier = 'tier_0_low_cost' | 'tier_1_mid' | 'tier_2_strong';

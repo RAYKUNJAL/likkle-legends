@@ -6,7 +6,7 @@ config();
 async function testStoryEngine() {
     console.log("🧪 Testing Story Engine (generateCulturalStory)...");
 
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY && !process.env.GEMINI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY) {
         console.error("❌ No API Key found in env!");
         return;
     }

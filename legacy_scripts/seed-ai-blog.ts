@@ -21,11 +21,11 @@ function getRandomItems<T>(array: T[], count: number): T[] {
 
     try {
         // Validation
-        if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-            throw new Error('Missing GOOGLE_GENERATIVE_AI_API_KEY in .env.local');
+        if (!process.env.GEMINI_API_KEY) {
+            throw new Error('Missing GEMINI_API_KEY in .env.local');
         }
 
-        console.log('Using API Key:', process.env.GOOGLE_GENERATIVE_AI_API_KEY.substring(0, 10) + '...');
+        console.log('Using API Key:', process.env.GEMINI_API_KEY.substring(0, 10) + '...');
 
         // Pick 3 random ideas
         const topics = getRandomItems(CONTENT_IDEAS, 3);

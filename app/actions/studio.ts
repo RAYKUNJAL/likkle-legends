@@ -7,7 +7,7 @@ import type { ContentPackage, AIStudioAgentOutput } from "@/lib/types/studio";
 import { storyAgent } from "@/lib/ai-content-generator/agents/StoryAgent";
 
 const getGenAI = () => {
-    const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
+    const key = process.env.GEMINI_API_KEY || "";
     if (!key) throw new Error("Missing Gemini API Key");
     return new GoogleGenerativeAI(key);
 };

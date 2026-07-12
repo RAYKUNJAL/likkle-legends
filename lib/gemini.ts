@@ -2,7 +2,7 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold, SafetySetting } f
 import { TANTY_ISLAND_ENGINE } from "@/services/tantyConfig";
 
 const getGenAI = () => {
-  const key = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "";
+  const key = process.env.GEMINI_API_KEY || "";
   if (!key) return null;
   return new GoogleGenerativeAI(key);
 };
@@ -30,7 +30,7 @@ const safetySettings: SafetySetting[] = [
 export async function generateAIResponse(userMessage: string) {
   const genAI = getGenAI();
   if (!genAI) {
-    console.error("Missing Gemini API Key. Please set GOOGLE_GENERATIVE_AI_API_KEY or GEMINI_API_KEY in your environment.");
+    console.error("Missing Gemini API Key. Please set GEMINI_API_KEY in your environment.");
     return "Oye! My magic connection is a bit weak right now, darlin'. (Missing API Key)";
   }
 

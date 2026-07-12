@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { IslandBrainOrchestrator } from '@/lib/agent-orchestrator';
 import { ContentRequest, MonthlyDropRequest } from '@/lib/types';
 
-const orchestrator = new IslandBrainOrchestrator(process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY || "");
+const orchestrator = new IslandBrainOrchestrator(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: NextRequest) {
     try {

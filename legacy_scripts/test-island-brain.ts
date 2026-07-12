@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 // Load environment variables
 dotenv.config({ path: ".env.local" });
 
-const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GEMINI_API_KEY;
+const apiKey = process.env.GEMINI_API_KEY;
 
 if (!apiKey) {
     console.error("❌ No API Key found in .env.local");
