@@ -15,14 +15,15 @@ import { supabaseAdmin } from '@/lib/supabase-client';
  */
 export async function GET(request: NextRequest) {
     try {
-        // Security: Verify this is a legitimate Vercel cron request
-        // In production, Vercel includes an Authorization header with a secret
+        // Security: Fail-closed in production — require valid CRON_SECRET
         const authHeader = request.headers.get('authorization');
         const vercelCronSecret = process.env.CRON_SECRET;
 
-        if (vercelCronSecret && authHeader !== `Bearer ${vercelCronSecret}`) {
-            console.warn('Unauthorized cron request');
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (process.env.NODE_ENV === 'production') {
+            if (!vercelCronSecret || authHeader !== `Bearer ${vercelCronSecret}`) {
+                console.warn('Unauthorized cron request');
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
         }
 
         const today = new Date().toISOString().split('T')[0];

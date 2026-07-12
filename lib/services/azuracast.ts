@@ -44,6 +44,10 @@ export async function fetchAzuraCast(path: string) {
 
 export async function getNowPlaying(stationShortcode?: string) {
     if (stationShortcode) {
+        // Validate station shortcode — only allow alphanumeric + hyphens to prevent path traversal
+        if (!/^[a-zA-Z0-9_-]+$/.test(stationShortcode)) {
+            throw new Error('Invalid station identifier');
+        }
         return fetchAzuraCast(`/api/nowplaying/${stationShortcode}`);
     }
     return fetchAzuraCast('/api/nowplaying');

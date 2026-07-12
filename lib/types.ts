@@ -141,6 +141,7 @@ export interface ParentProfile {
 export type ContentType =
     | "song_video_script"
     | "song_lyrics"
+    | "story"
     | "story_short"
     | "story_bedtime"
     | "lesson_micro"

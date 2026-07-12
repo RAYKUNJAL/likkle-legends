@@ -295,7 +295,7 @@ export async function POST(request: NextRequest) {
             const refCode = cookieStore.get('likkle_ref')?.value;
 
             if (refCode) {
-                const plan = SUBSCRIPTION_PLANS[tier as SubscriptionTier];
+                const plan = SUBSCRIPTION_PLANS[verifiedTier as SubscriptionTier];
                 const price = billingCycle === 'year' ? (plan?.priceYearly || 0) : (plan?.price || 0);
 
                 if (price > 0) {
@@ -310,7 +310,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             message: 'Subscription confirmed',
-            tier,
+            tier: verifiedTier,
             subscriptionId: subscriptionId || orderId,
         });
     } catch (error) {

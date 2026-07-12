@@ -9,12 +9,13 @@ import { generateAndSavePost, CONTENT_IDEAS } from '@/lib/services/blog-agent';
 
 export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
-    const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+    const cronSecret = process.env.CRON_SECRET;
 
-    // In development or if CRON_SECRET is not set, we allow it for testing
-    // In production, you should ALWAYS enforce this
-    if (process.env.NODE_ENV === 'production' && process.env.CRON_SECRET && !isCron) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Fail-closed: in production, require valid CRON_SECRET
+    if (process.env.NODE_ENV === 'production') {
+        if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
     }
 
     try {

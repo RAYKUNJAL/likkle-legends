@@ -50,6 +50,42 @@ export const PROMPT_TEMPLATES = {
         ]
     },
 
+    story_v1: {
+        id: "story_v1",
+        output_schema: {
+            title: "string",
+            summary: "string",
+            pages: [
+                {
+                    pageNumber: 1,
+                    text: "string",
+                    imagePrompt: "string"
+                }
+            ],
+            moral: "string",
+            parent_note: {
+                why_it_helps: "string",
+                offline_followup: "string",
+                what_to_say_after: "string"
+            },
+            metadata: {
+                age_range: "string",
+                island: "string",
+                host_character: "string",
+                topics: ["string"],
+                reading_time_minutes: "number",
+                difficulty_level: "number"
+            }
+        },
+        generation_rules: [
+            "Gentle pacing, no fear elements.",
+            "1 clear moral lesson, not multiple morals.",
+            "End with calm closure and safety.",
+            "Each page should be short enough for a young child to follow.",
+            "Include vivid, culturally rich imagery prompts for illustration."
+        ]
+    },
+
     story_bedtime_v1: {
         id: "story_bedtime_v1",
         output_schema: {

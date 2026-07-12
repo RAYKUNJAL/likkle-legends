@@ -53,7 +53,7 @@ export async function POST(
 
     const ROUTE_MAP: Record<string, string> = {
       'island-brain': '/api/cron/content-generation',
-      'story-agent':  '/api/cron/content-generation',
+      'story-agent':  '/api/story/generate',
       'blog-agent':   '/api/admin/blog/generate',
       'social-agent': '/api/admin/social/generate',
       'ad-copy-agent':'/api/admin/ads/generate',

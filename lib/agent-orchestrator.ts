@@ -72,6 +72,7 @@ export class IslandBrainOrchestrator {
         const templateMap: Record<ContentType, keyof typeof PROMPT_TEMPLATES | undefined> = {
             "song_video_script": "song_video_script_v1",
             "story_bedtime": "story_bedtime_v1",
+            "story": "story_v1",
             "lesson_micro": "lesson_micro_v1",
             "monthly_drop_bundle": "monthly_drop_bundle_v1",
             // Fallbacks or TODOs
