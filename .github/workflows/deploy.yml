@@ -1,0 +1,61 @@
+name: Deploy to VPS
+
+# Deploys the live site whenever main changes (or manually via the
+# "Run workflow" button). Requires four repository secrets
+# (Settings → Secrets and variables → Actions):
+#   VPS_HOST     e.g. 203.0.113.10 or vps.likklelegends.com
+#   VPS_USER     the SSH user, e.g. root or deploy
+#   VPS_SSH_KEY  the PRIVATE key whose public half is in the VPS's
+#                ~/.ssh/authorized_keys
+#   VPS_APP_DIR  absolute path of the repo on the VPS, e.g. /root/likkle-legends
+#
+# Until those secrets are set, the workflow skips itself gracefully.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check secrets are configured
+        id: check
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          if [ -z "$VPS_HOST" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::VPS_HOST secret not set — skipping deploy. Add VPS_HOST, VPS_USER, VPS_SSH_KEY, VPS_APP_DIR in repo Settings → Secrets to enable auto-deploy."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy over SSH
+        if: steps.check.outputs.configured == 'true'
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_APP_DIR: ${{ secrets.VPS_APP_DIR }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key -o ConnectTimeout=15 "$VPS_USER@$VPS_HOST" \
+            "cd '$VPS_APP_DIR' && bash deploy/update.sh"
+
+      - name: Verify live site
+        if: steps.check.outputs.configured == 'true'
+        run: |
+          sleep 5
+          code=$(curl -s -o /dev/null -w '%{http_code}' https://www.likklelegends.com/api/health || echo 000)
+          echo "Health check returned: $code"
+          [ "$code" = "200" ] || exit 1
