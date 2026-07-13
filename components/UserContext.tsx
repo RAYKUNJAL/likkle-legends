@@ -158,14 +158,23 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       let userObj = sessionUser;
 
       if (!userObj) {
-        // High security auth fetch (always verifies JWT)
-        const { data: { user: supabaseUser }, error: userError } = await supabase.auth.getUser();
-
-        if (userError) {
+        // High security auth fetch (always verifies JWT). Guard with a timeout
+        // + cached-session fallback so a hung Web Lock can't freeze the app.
+        try {
+          const res = await Promise.race([
+            supabase.auth.getUser(),
+            new Promise<{ data: { user: any }, error: any }>((resolve) =>
+              setTimeout(() => resolve({ data: { user: null }, error: null }), 7000)
+            ),
+          ]);
+          userObj = res?.data?.user as any;
+        } catch (userError) {
           console.error('[UserContext] Auth User Error:', userError);
         }
-
-        userObj = supabaseUser as any;
+        if (!userObj) {
+          const { data } = await supabase.auth.getSession();
+          userObj = data?.session?.user as any;
+        }
       }
 
       if (!userObj) {
@@ -419,7 +428,36 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       }
 
       try {
-        const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+        // getUser() makes a network call AND holds a Web Lock. On slow
+        // connections, across multiple tabs, or under lock contention it can
+        // hang — which would freeze the app on "Connecting to Island" forever.
+        // Race it against a timeout and fall back to the cached session so the
+        // portal always loads. getUser still runs in the background via the
+        // onAuthStateChange listener to verify the JWT.
+        const authTimeout = new Promise<{ data: { user: any } }>((resolve) =>
+          setTimeout(() => resolve({ data: { user: null } }), 7000)
+        );
+        let supabaseUser: any = null;
+        try {
+          const res = await Promise.race([supabase.auth.getUser(), authTimeout]);
+          supabaseUser = res?.data?.user ?? null;
+        } catch {
+          supabaseUser = null;
+        }
+        // Fallback: read the locally-cached session (fast, no verification round-trip)
+        if (!supabaseUser) {
+          try {
+            const { data } = await Promise.race([
+              supabase.auth.getSession(),
+              new Promise<{ data: { session: any } }>((resolve) =>
+                setTimeout(() => resolve({ data: { session: null } }), 4000)
+              ),
+            ]);
+            supabaseUser = data?.session?.user ?? null;
+          } catch {
+            supabaseUser = null;
+          }
+        }
 
         if (supabaseUser && mounted) {
           try {

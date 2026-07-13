@@ -11,7 +11,8 @@ services:
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://www.likklelegends.com}
         NEXT_PUBLIC_PAYPAL_CLIENT_ID: ${NEXT_PUBLIC_PAYPAL_CLIENT_ID}
-    restart: unless-stopped
+    # always: recover the app even after a full VPS reboot or a crash
+    restart: always
     env_file: .env.production
     expose:
       - "3000"
@@ -20,11 +21,11 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 20s
+      start_period: 40s
 
   caddy:
     image: caddy:2-alpine
-    restart: unless-stopped
+    restart: always
     ports:
       - "80:80"
       - "443:443"
@@ -36,19 +37,23 @@ services:
     environment:
       SITE_DOMAIN: ${SITE_DOMAIN:-www.likklelegends.com}
       SITE_DOMAIN_ALT: ${SITE_DOMAIN_ALT:-likklelegends.com}
+    # Wait for the app to be healthy before Caddy starts proxying — prevents
+    # the "Caddy up, app down → 404 page not found" state on fresh boots.
     depends_on:
-      - web
+      web:
+        condition: service_healthy
 
   # Replaces Vercel Cron: fires the app's /api/cron/* routes on schedule.
   cron:
     image: alpine:3.20
-    restart: unless-stopped
+    restart: always
     env_file: .env.production
     volumes:
       - ./deploy/crontab:/etc/crontabs/root:ro
     command: ["crond", "-f", "-l", "6"]
     depends_on:
-      - web
+      web:
+        condition: service_healthy
 
 volumes:
   caddy_data:
