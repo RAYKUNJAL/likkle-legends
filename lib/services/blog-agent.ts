@@ -199,26 +199,27 @@ export async function generateAndSavePost(
     }
 
     const post = await createPost({
-        title: content.title,
-        slug: content.slug,
-        excerpt: content.excerpt,
-        content: content.content,
-        featured_image_url: featuredImageUrl,
-        meta_description: content.meta_description,
-        keywords: content.keywords,
-        tags: content.tags,
-        category: CATEGORY_MAP[request.category] || request.category,
-        read_time_minutes: content.read_time_minutes,
-        author_name: options.authorName || 'Likkle Legends Team',
-        ai_generated: true,
-        ai_prompt: request.topic,
-        ai_model: 'gemini-2.0-flash',
-        status: options.autoPublish ? 'published' : 'draft',
-        published_at: options.autoPublish ? new Date().toISOString() : null
-    });
+            title: content.title,
+            slug: content.slug,
+            excerpt: content.excerpt,
+            content: content.content,
+            featured_image_url: featuredImageUrl,
+            meta_description: content.meta_description,
+            keywords: content.keywords,
+            tags: content.tags,
+            // Store human category slug — live DB has no blog_categories FK
+            category: request.category,
+            read_time_minutes: content.read_time_minutes,
+            author_name: options.authorName || 'Tanty Spice (AI Agent)',
+            ai_generated: true,
+            ai_prompt: request.topic,
+            ai_model: 'gemini-2.5-flash',
+            status: options.autoPublish ? 'published' : 'draft',
+            published_at: options.autoPublish ? new Date().toISOString() : null
+        });
 
-    return post;
-}
+        return post;
+    }
 
 // Batch generate multiple posts
 export async function batchGeneratePosts(
