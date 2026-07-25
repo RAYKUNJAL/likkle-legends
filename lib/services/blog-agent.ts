@@ -105,14 +105,12 @@ IMPORTANT:
 - Add a brief call-to-action mentioning Likkle Legends at the end
 - Make it genuinely helpful and shareable`;
 
-    // Current Google AI models (verified 2026-07 against ListModels).
-        // gemini-2.0-flash / 1.5 / gemini-pro were retired and 404'd the whole blog cron.
-        const models = [
-            'gemini-2.5-flash',
-            'gemini-2.5-pro',
-            'gemini-2.0-flash-001',
-            'gemini-2.0-flash-lite-001',
-        ];
+    // Current Google AI models (verified live ListModels 2026-07-25).
+            // Do not include retired flash-001 / lite / 2.0 aliases — they 404 mid-batch.
+            const models = [
+                'gemini-2.5-flash',
+                'gemini-2.5-pro',
+            ];
 
         let lastError: any = null;
 
