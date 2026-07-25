@@ -27,61 +27,76 @@ class SupabaseClientManager {
      * Initialize Supabase client with configuration
      */
     private initializeClient(useServiceRole = false): SupabaseClient {
-        const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-        const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
-        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+            // Browser: public HTTPS Supabase URL (proxied under the site host).
+            // Server/admin: internal Docker URL so auth works even if public path is broken.
+            const publicUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+            const internalUrl = process.env.SUPABASE_URL?.trim();
+            const url =
+                typeof window === 'undefined'
+                    ? (internalUrl || publicUrl || '')
+                    : (publicUrl || '');
+            const anonKey =
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
+                process.env.SUPABASE_ANON_KEY?.trim();
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
-        // Fail fast — never silently fall back to placeholder credentials
-        const isValidUrl = url && url.startsWith('https://') && url.length > 15;
-        const isValidKey = anonKey && anonKey.length > 20 && anonKey !== 'false';
+            const isValidUrl =
+                !!url &&
+                url.length > 10 &&
+                (url.startsWith('https://') ||
+                    (typeof window === 'undefined' && url.startsWith('http://')));
+            const isValidKey = !!(anonKey && anonKey.length > 20 && anonKey !== 'false');
 
-        if (!isValidUrl || !isValidKey) {
-            console.error(
-                `❌ [supabase-client] Missing or invalid credentials. ` +
-                `URL: ${!!isValidUrl}, Key: ${!!isValidKey}. ` +
-                `Check your .env.local or Vercel environment variables.`
-            );
-            // Return a minimal proxy-compatible object to prevent build crash
-            return {
-                auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }), admin: { createUser: () => Promise.resolve({ data: {}, error: null }) } },
-                from: () => ({ select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: null }), order: () => ({ limit: () => Promise.resolve({ data: null, error: null }) }) }) }) })
-            } as any;
-        }
+            if (!isValidUrl || !isValidKey) {
+                console.error(
+                    `❌ [supabase-client] Missing or invalid credentials. ` +
+                    `URL: ${!!isValidUrl}, Key: ${!!isValidKey}. ` +
+                    `Check your .env.local or production environment variables.`
+                );
+                return {
+                    auth: {
+                        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+                        admin: { createUser: () => Promise.resolve({ data: {}, error: null }) },
+                    },
+                    from: () => ({
+                        select: () => ({
+                            eq: () => ({
+                                single: () => Promise.resolve({ data: null, error: null }),
+                                order: () => ({ limit: () => Promise.resolve({ data: null, error: null }) }),
+                            }),
+                        }),
+                    }),
+                } as any;
+            }
 
-        if (useServiceRole) {
-            if (serviceKey && typeof window === 'undefined') {
-                return createClient(url, serviceKey, {
-                    auth: { persistSession: false, autoRefreshToken: false }
+            if (useServiceRole) {
+                if (serviceKey && typeof window === 'undefined') {
+                    return createClient(url, serviceKey, {
+                        auth: { persistSession: false, autoRefreshToken: false },
+                    });
+                }
+                if (typeof window !== 'undefined') {
+                    // Never instantiate a second GoTrueClient in the browser.
+                    const { createClient: getSharedBrowserClient } = require('./supabase/client');
+                    return getSharedBrowserClient() as SupabaseClient;
+                }
+                console.warn('❌ Supabase Service Role Key is MISSING. Falling back to anon key.');
+                return createClient(url, anonKey!, {
+                    auth: { persistSession: false, autoRefreshToken: false },
                 });
             }
+
+            // Browser: reuse shared singleton from lib/supabase/client
             if (typeof window !== 'undefined') {
-                // Never instantiate a second GoTrueClient in the browser — it
-                // contends on the LockManager auth lock and stalls real auth.
-                // Admin operations belong in server actions anyway.
                 const { createClient: getSharedBrowserClient } = require('./supabase/client');
                 return getSharedBrowserClient() as SupabaseClient;
             }
-            console.warn('❌ Supabase Service Role Key is MISSING. Admin operations will fail, falling back to Anon key for basic connectivity check.');
-            return createClient(url, anonKey, {
-                auth: { persistSession: false, autoRefreshToken: false }
+
+            // Server-side anon client
+            return createClient(url, anonKey!, {
+                auth: { persistSession: false, autoRefreshToken: false },
             });
         }
-
-
-        // Browser: reuse the shared singleton from lib/supabase/client so the
-        // whole app has exactly ONE GoTrueClient. A second instance contends on
-        // the Navigator LockManager auth-token lock, stalling auth.getUser()
-        // for 10s+ and dropping users onto the "Connecting to Island" screen.
-        if (typeof window !== 'undefined') {
-            const { createClient: getSharedBrowserClient } = require('./supabase/client');
-            return getSharedBrowserClient() as SupabaseClient;
-        }
-
-        // Server-side: plain client, no session persistence needed
-        return createClient(url, anonKey, {
-            auth: { persistSession: false, autoRefreshToken: false }
-        });
-    }
 
     /**
      * Get standard client (anon key)

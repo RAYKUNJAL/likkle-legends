@@ -12,10 +12,13 @@ export const createClient = (): SupabaseClient => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
-    if (!url || !url.startsWith('https://')) {
-        console.error('❌ [supabase/client] NEXT_PUBLIC_SUPABASE_URL is missing or invalid.');
-        return {} as any;
-    }
+    // Public browser URL must be HTTPS. Path-style self-host is fine
+        // (e.g. https://www.likklelegends.com/supabase) as long as Traefik
+        // proxies /supabase/* to Kong with the /supabase prefix stripped.
+        if (!url || !url.startsWith('https://') || url.length < 16) {
+            console.error('❌ [supabase/client] NEXT_PUBLIC_SUPABASE_URL is missing or invalid.');
+            return {} as any;
+        }
     if (!key || key.length < 20) {
         console.error('❌ [supabase/client] NEXT_PUBLIC_SUPABASE_ANON_KEY is missing or invalid.');
         return {} as any;
