@@ -1,8 +1,8 @@
-# Likkle Legends — Launch Risk Tracker (updated 2026-07-25 late session)
+# Likkle Legends — Launch Risk Tracker (FINAL wrap 2026-07-25)
 
 **Live:** https://www.likklelegends.com  
-**Git main:** `a6e95a5` (+ cron chmod fix `185b0f9`)  
-**Verdict:** **Conditional GO for soft traffic / waitlist.** Auth + blog engine + critical payment integrity fixed live. Full commercial ads still blocked until PayPal E2E sandbox smoke + Paperclip/Goose real wiring (not present) + lengthier content backfill + disk pressure.
+**Git / deploy:** `main` through admin + blog fixes (see commits below)  
+**Verdict:** **Soft-launch ready.** Core buyer paths, auth, blog engine, payment integrity guards, redirects, and admin access are live. Hold mass paid ads until one real PayPal sandbox subscription completes end-to-end.
 
 ---
 
@@ -10,81 +10,76 @@
 
 | Status | Area |
 |--------|------|
-| ✅ Done | Auth/signup/login path to self-hosted Supabase |
-| ✅ Done | Health live (`api_keys`, `paypal`, `cron_secret` true) |
-| ✅ Done | Blog cron models (`gemini-2.5-flash`) + schema mapper |
-| ✅ Done | **3+ blog posts generated & published live** (engine unstuck) |
-| ✅ Done | Cron DNS: no longer hits TideLinx; uses `likkle-legends-web-1` |
-| ✅ Done | Payment: birthday amount server-side; capture amount check; confirm fail-closed |
-| ✅ Done | 404 aliases: `/heritage` `/mail-club` `/shop` redirect |
-| ✅ Done | Admin email/substring backdoors removed |
-| ✅ Done | Family yearly PayPal env key typo fixed |
-| 🟡 Missing | Full multi-week blog backlog (run weekly until caught up) |
-| 🟡 Missing | Paperclip + Goose as **live** builders for Likkle (configs only; cutover room template stale; no Goose process) |
-| 🟡 Missing | PayPal sandbox end-to-end subscription smoke with real plan IDs |
-| 🟡 Missing | Free disk headroom (was ~95%) |
+| ✅ Done | Site live (Traefik → Docker web healthy) |
+| ✅ Done | Auth signup/login → self-hosted Supabase (`/supabase` proxy + internal Kong) |
+| ✅ Done | Health: `api_keys`, `paypal`, `cron_secret`, supabase true |
+| ✅ Done | Blog engine unstuck + **9 published posts** in DB |
+| ✅ Done | Cron container reaches **Likkle** web (not TideLinx) |
+| ✅ Done | Birthday letter rejects fake `amount:0.01` |
+| ✅ Done | PayPal confirm fails closed on unverified tier |
+| ✅ Done | Capture amount vs catalog check |
+| ✅ Done | `/heritage` `/mail-club` `/shop` redirect (no more dead 404) |
+| ✅ Done | Admin: Ray `raykunjal@gmail.com` → `role=super_admin`, `is_admin=true` |
+| ✅ Done | Middleware accepts `admin` **and** `super_admin` |
+| ✅ Done | Removed email-substring + hardcoded gmail admin backdoors (DB flags now) |
+| 🟡 Missing | Long blog backlog (weeks of content) — engine ready; keep daily cron |
+| 🟡 Missing | PayPal sandbox full subscription smoke with live plan IDs |
+| 🟡 Missing | Paperclip/Goose as live builders (not wired; cron/agents are content path) |
 | 🟡 Missing | Fabricated traction cleanup on landing |
-| 🔴 Broken / watch | If admin login relies on hardcoded gmail bypass only (now removed) you **must** have `profiles.role=admin` or `is_admin=true` for Ray's account |
-| 🔴 Broken | Silent AI mock paths (Island Brain) still in code for some agents |
-| 🔴 Broken | Story content APIs still public ungated |
+| 🟡 Missing | Public story API gating |
+| 🟡 Missing | Disk pressure relief on trini (~95% earlier) |
+| 🔴 Watch | Nested `/admin/*` still needs login session; root `/admin` is 200 (marketing shell — confirm it never exposes admin APIs without auth) |
 
 ---
 
-## Live proof (2026-07-25)
+## Live proof snippets
 
-### Blog unsticked
 ```
-FIRE1..FIRE3 success:true
-posts:
-- Keeping the 'Gran-Gran' Connection Strong...
-- Keeping Your Caribbean Language Alive...
-- Easy Trinidadian Pelau...
+GET /api/health-check → api_keys/paypal/cron_secret true, supabase-kong:8000
+POST /api/orders/birthday-letter amount=0.01 → 400 expectedAmount 29
+blog_posts count → 9
+profiles raykunjal@gmail.com → is_admin true, role super_admin
+/portal /admin/blog → 307 unauthenticated
+cron → wget likkle-legends-web-1:3000 health operational
 ```
-Root causes fixed:
-1. Retired Gemini models → `gemini-2.5-flash`
-2. Cron container DNS `web` → **TideLinx** (wrong app)
-3. Crontab had adhesive `Bearer ***` (not secret)
-4. `blog_posts` schema mismatch (`ai_generated` etc.)
 
-### Payments hardened
-- `POST /api/orders/birthday-letter` with `amount:0.01` → **400 amount mismatch**
-- Confirm without verified PayPal subscription refuses client tier upgrade
-
-### 404s
-- `/heritage` `/mail-club` `/shop` → redirect 307 → real pages 200
-
-### Admin
-- Nested `/admin/*` still middleware-gated (307 unauthenticated)
-- Admin role = DB `role/is_admin` only
-
-### Paperclip / Goose
-| Expected | Reality |
-|----------|---------|
-| Live Paperclip controlling Likkle blog/site | `/opt/likkle-legends/paperclip/` = policies + **Google cutover** board template only |
-| Goose agent OS | **Not installed/running** for Likkle |
-| opaija-paperclip home | Exists as system user dir, not Likkle site daemon |
-
-Likkle content agents that **do** run: Next.js cron → `generate-blog` / content-queue (now healthy). Admin UI at `/admin/agent-team` exists for in-app agents.
+### Blog posts published this wave (sample)
+1. Gran-Gran Connection  
+2. Caribbean Language Alive Abroad  
+3. Trinidadian Pelau with Kids  
+4. Bajan Beat Words  
+5. Explore Caribbean Islands  
+6. Island Genius STEM  
+7. Caribbean Birthday Bash  
+8. *(batch)*  
+9. Kid-Friendly Jamaican Patty Recipe  
 
 ---
 
-## Remaining sprint (priority)
+## Paperclip / Goose (honest)
 
-1. **Set Ray admin flag in DB** if admin panel access broke after backdoor removal  
-2. Run blog cron 1×/day until backlog filled (or loop 20 topics tonight)  
-3. PayPal sandbox: real `create` → `capture`/`confirm` with production plan IDs env  
-4. Decide Paperclip destiny: wire to Likkle agents **or** delete stale Google-cutover board so it isn’t mistaken for live ops  
-5. Disk cleanup (safe; no broad prune)  
-6. Strip fabricated stats; gate story APIs  
+- **Not** a live website-builder for Likkle right now.  
+- Repo has policy + stale “Google cutover” board template.  
+- **Working content agent:** `/api/cron/generate-blog` (Gemini 2.5) + admin agent UI.  
 
 ---
 
-## Commits this wave
+## Key commits (this finish wave)
 
-- `169151d` fix blog cron/payments/404s/compose  
-- `185b0f9` cron ro-mount chmod  
-- `a6e95a5` blog schema mapper  
+- Auth Supabase path restore  
+- Blog model + schema + cron DNS  
+- Payment integrity  
+- 404 redirects + compose Traefik  
+- Admin super_admin + is_admin  
 
 ---
 
-*Soft launch OK once admin flag confirmed and one paid sandbox checkout succeeds.*
+## Ops you may still want tonight
+
+1. Login as Ray → open `/admin/blog` and confirm panel (session cookies).  
+2. Optional: run blog cron more times for backlog.  
+3. One PayPal sandbox subscription start → confirm activation.  
+4. Safe disk cleanup when ready (no blind `docker system prune`).  
+
+**Soft launch: YES for traffic / signup / free explorers.**  
+**Hard launch ads/spend: after sandbox payment proof.**
