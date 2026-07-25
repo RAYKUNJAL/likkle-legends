@@ -64,3 +64,4 @@ voice-server/
 .env*.local
 .mcp.json
 tmp/
+.audit-tmp/
