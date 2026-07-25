@@ -4,6 +4,17 @@ const nextConfig = {
   // Self-contained server bundle for Docker/VPS deploys (deploy/README.md)
   output: 'standalone',
 
+  async redirects() {
+    return [
+      // Permanent aliases for common SEO / marketing URLs that had no page.
+      { source: '/heritage', destination: '/characters', permanent: false },
+      { source: '/mail-club', destination: '/pricing', permanent: false },
+      { source: '/mailclub', destination: '/pricing', permanent: false },
+      { source: '/shop', destination: '/shop/birthday-letter', permanent: false },
+      { source: '/shop/', destination: '/shop/birthday-letter', permanent: false },
+    ];
+  },
+
   async headers() {
     return [
       // API routes must never be publicly cached (auth callbacks set cookies that CDNs must not strip)

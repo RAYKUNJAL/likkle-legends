@@ -39,10 +39,11 @@ async function getPayPalAccessToken(): Promise<string> {
 }
 
 // ── Verify PayPal subscription and derive tier from plan_id ───────────────────
+// FAIL CLOSED: never grant entitlement from a client-supplied tier when PayPal is unreachable.
 async function verifySubscriptionAndDeriveTier(
     subscriptionId: string,
     clientTier: string
-): Promise<{ tier: string; valid: boolean }> {
+): Promise<{ tier: string; valid: boolean; status?: string; error?: string }> {
     try {
         const token = await getPayPalAccessToken();
         const res = await fetch(`${PAYPAL_BASE}/v1/billing/subscriptions/${encodeURIComponent(subscriptionId)}`, {
@@ -50,32 +51,43 @@ async function verifySubscriptionAndDeriveTier(
         });
 
         if (!res.ok) {
-            // If PayPal lookup fails, fall back to client tier but log it
-            console.warn(`[SECURITY] PayPal subscription lookup failed for ${subscriptionId}, using client tier`);
-            return { tier: clientTier, valid: false };
+            const body = await res.text().catch(() => '');
+            console.warn(`[SECURITY] PayPal subscription lookup failed for ${subscriptionId}: ${res.status} ${body.slice(0, 200)}`);
+            return { tier: '', valid: false, error: 'PayPal subscription verification failed' };
         }
 
         const data = await res.json() as { plan_id?: string; status?: string };
-
-        // Map plan_id to tier
-        const planEnvMap: Record<string, string> = {
-            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL || '__none__']: 'digital_legends',
-            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER || '__none__']: 'starter_mailer',
-            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS || '__none__']: 'legends_plus',
-            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY || '__none__']: 'family_legacy',
-        };
-
-        const derivedTier = data.plan_id ? (planEnvMap[data.plan_id] || clientTier) : clientTier;
-
-        // If derived tier differs from client tier, use the verified one
-        if (derivedTier !== clientTier) {
-            console.warn(`[SECURITY] Tier mismatch: client sent "${clientTier}" but PayPal plan_id maps to "${derivedTier}" — using verified tier`);
+        const activeStatuses = new Set(['ACTIVE', 'APPROVED', 'SUSPENDED']); // SUSPENDED still proves purchase existed
+        if (!data.status || !activeStatuses.has(String(data.status).toUpperCase())) {
+            return { tier: '', valid: false, status: data.status, error: `Subscription not active (${data.status || 'unknown'})` };
         }
 
-        return { tier: derivedTier, valid: true };
+        // Map plan_id → internal tier. Never fall back to clientTier for unknown map.
+        const planEnvMap: Record<string, string> = {
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL || '__none__']: 'plan_digital_legends',
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL_YEARLY || '__none__']: 'plan_digital_legends',
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER || '__none__']: 'plan_mail_intro',
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_MAIL_YEARLY || '__none__']: 'plan_mail_intro',
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS || '__none__']: 'plan_legends_plus',
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_PLUS_YEARLY || '__none__']: 'plan_legends_plus',
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY || '__none__']: 'plan_family_legacy',
+            [process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY_YEARLY || process.env.NEXT_PUBLIC_PLAN_FAMILY_YEARLY || '__none__']: 'plan_family_legacy',
+        };
+
+        const derivedTier = data.plan_id ? planEnvMap[data.plan_id] : undefined;
+        if (!derivedTier) {
+            console.warn(`[SECURITY] Unmapped PayPal plan_id=${data.plan_id} clientTier=${clientTier}`);
+            return { tier: '', valid: false, status: data.status, error: 'Unknown PayPal plan' };
+        }
+
+        if (clientTier && derivedTier !== clientTier && clientTier !== derivedTier.replace(/^plan_/, '')) {
+            console.warn(`[SECURITY] Tier mismatch: client="${clientTier}" verified="${derivedTier}" — using verified`);
+        }
+
+        return { tier: derivedTier, valid: true, status: data.status };
     } catch (err) {
         console.error('PayPal subscription verification error:', err);
-        return { tier: clientTier, valid: false };
+        return { tier: '', valid: false, error: 'PayPal verification exception' };
     }
 }
 
@@ -167,13 +179,33 @@ export async function POST(request: NextRequest) {
         const userIdToUpdate = user.id;
 
         // ── Verify tier against PayPal subscription ──
-        // The client sends a `tier` value, but we must not trust it.
-        // For subscription-based payments, verify the plan_id with PayPal.
-        let verifiedTier = tier;
-        if (subscriptionId && tier !== 'plan_free_forever') {
-            const verification = await verifySubscriptionAndDeriveTier(subscriptionId, tier);
-            verifiedTier = verification.tier;
-        }
+                // The client sends a `tier` value — never trust it for paid plans.
+                let verifiedTier = tier;
+                if (subscriptionId && tier !== 'plan_free_forever') {
+                    const verification = await verifySubscriptionAndDeriveTier(subscriptionId, tier);
+                    if (!verification.valid || !verification.tier) {
+                        return NextResponse.json(
+                            { error: verification.error || 'Could not verify PayPal subscription' },
+                            { status: 402 }
+                        );
+                    }
+                    verifiedTier = verification.tier;
+                } else if (!subscriptionId && orderId && tier !== 'plan_free_forever') {
+                    // One-time order path: still refuse to take client tier alone for paid plans.
+                    // Entitlement must come from a known free tier or a verified subscription.
+                    if (tier && tier !== 'plan_free_forever') {
+                        // For one-time boxes we keep tier only if it is an explicit free marker;
+                        // otherwise assign digital by default is unsafe - reject.
+                        console.warn(`[SECURITY] Paid confirm without subscriptionId rejected tier=${tier} order=${orderId}`);
+                        // Allow only when tier is free forever; otherwise require subscriptionId.
+                        if (!String(tier).includes('free')) {
+                            return NextResponse.json(
+                                { error: 'subscriptionId required to activate paid plan' },
+                                { status: 400 }
+                            );
+                        }
+                    }
+                }
 
         const TRIAL_DAYS = 7;
         const trialEndsAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);

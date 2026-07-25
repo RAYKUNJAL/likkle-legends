@@ -113,7 +113,7 @@ export const SUBSCRIPTION_PLANS = {
         id: 'plan_family_legacy',
         name: 'Family Legacy',
         paypalPlanId: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_FAMILY'),
-        paypalPlanIdYearly: requireEnv('NEXT_PUBLIC_PLAN_FAMILY_YEARLY'),
+        paypalPlanIdYearly: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_FAMILY_YEARLY') || requireEnv('NEXT_PUBLIC_PLAN_FAMILY_YEARLY', { optional: true }),
         price: 34.99,
         priceYearly: 349.00,
         interval: 'month',

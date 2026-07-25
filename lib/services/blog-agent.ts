@@ -105,23 +105,23 @@ IMPORTANT:
 - Add a brief call-to-action mentioning Likkle Legends at the end
 - Make it genuinely helpful and shareable`;
 
-    // List of models to try in order of preference
-    const models = [
-        'gemini-2.0-flash',
-        'gemini-1.5-flash',
-        'gemini-1.5-pro',
-        'gemini-pro'
-    ];
+    // Current Google AI models (verified 2026-07 against ListModels).
+        // gemini-2.0-flash / 1.5 / gemini-pro were retired and 404'd the whole blog cron.
+        const models = [
+            'gemini-2.5-flash',
+            'gemini-2.5-pro',
+            'gemini-2.0-flash-001',
+            'gemini-2.0-flash-lite-001',
+        ];
 
-    let lastError: any = null;
+        let lastError: any = null;
 
-    for (const model of models) {
-        try {
-            console.log(`Trying model: ${model}...`);
+        for (const model of models) {
+            try {
+                console.log(`Trying model: ${model}...`);
 
-            // Use v1 for gemini-pro, v1beta for others
-            const version = model === 'gemini-pro' ? 'v1' : 'v1beta';
-            const url = `https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${apiKey}`;
+                const version = 'v1beta';
+                const url = `https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${apiKey}`;
 
             const response = await fetch(url, {
                 method: 'POST',

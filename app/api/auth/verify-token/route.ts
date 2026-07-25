@@ -65,21 +65,22 @@ export async function POST(request: NextRequest) {
       .single();
 
     const role = profile?.role || 'user';
-    const isAdmin = profile?.is_admin || data.user.email?.includes('admin');
+        // Admin only if DB says so — never trust email substrings like "admin".
+        const isAdmin = profile?.is_admin === true || profile?.role === 'admin';
 
-    return NextResponse.json(
-      {
-        valid: true,
-        user: {
-          id: data.user.id,
-          email: data.user.email,
-          role,
-          isAdmin,
-          roleLevel: ROLES[role as keyof typeof ROLES] || ROLES.guest,
-        },
-      },
-      { status: 200 }
-    );
+        return NextResponse.json(
+          {
+            valid: true,
+            user: {
+              id: data.user.id,
+              email: data.user.email,
+              role,
+              isAdmin,
+              roleLevel: ROLES[role as keyof typeof ROLES] || ROLES.guest,
+            },
+          },
+          { status: 200 }
+        );
   } catch (error) {
     console.error('Token verification error:', error);
     return NextResponse.json(

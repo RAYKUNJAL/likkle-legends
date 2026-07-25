@@ -1,6 +1,6 @@
-# Likkle Legends — self-hosted stack (VPS)
-# Open-source tooling only: Docker, Caddy (auto-HTTPS), Alpine cron.
-# See deploy/README.md for the full runbook.
+# Likkle Legends — production stack for trini (Coolify Traefik owns :80/:443).
+# Do NOT start a Caddy service on this host — Traefik is the sole edge proxy.
+# See /data/coolify/proxy/dynamic/likkle-legends.yaml for routing + /supabase strip.
 
 services:
   web:
@@ -11,11 +11,25 @@ services:
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://www.likklelegends.com}
         NEXT_PUBLIC_PAYPAL_CLIENT_ID: ${NEXT_PUBLIC_PAYPAL_CLIENT_ID}
-    # always: recover the app even after a full VPS reboot or a crash
     restart: always
     env_file: .env.production
     expose:
       - "3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ll-http.entryPoints=http"
+      - "traefik.http.routers.ll-http.rule=Host(`likklelegends.com`) || Host(`www.likklelegends.com`)"
+      - "traefik.http.routers.ll-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.ll-https.entryPoints=https"
+      - "traefik.http.routers.ll-https.rule=Host(`likklelegends.com`) || Host(`www.likklelegends.com`)"
+      - "traefik.http.routers.ll-https.tls=true"
+      - "traefik.http.routers.ll-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.ll-https.service=ll-svc"
+      - "traefik.http.services.ll-svc.loadbalancer.server.port=3000"
+    networks:
+      - default
+      - coolify
+      - supabase_default
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
@@ -23,38 +37,29 @@ services:
       retries: 3
       start_period: 40s
 
-  caddy:
-    image: caddy:2-alpine
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    environment:
-      SITE_DOMAIN: ${SITE_DOMAIN:-www.likklelegends.com}
-      SITE_DOMAIN_ALT: ${SITE_DOMAIN_ALT:-likklelegends.com}
-    # Wait for the app to be healthy before Caddy starts proxying — prevents
-    # the "Caddy up, app down → 404 page not found" state on fresh boots.
-    depends_on:
-      web:
-        condition: service_healthy
-
-  # Replaces Vercel Cron: fires the app's /api/cron/* routes on schedule.
+  # Fires /api/cron/* on schedule. MUST share likkle-legends_default with web so
+  # likkle-legends-web-1 DNS resolves. Never rely on bare hostname `web` on a
+  # multi-stack host (it collides with other compose projects).
   cron:
     image: alpine:3.20
     restart: always
     env_file: .env.production
+    environment:
+      WEB_URL: http://likkle-legends-web-1:3000
     volumes:
       - ./deploy/crontab:/etc/crontabs/root:ro
-    command: ["crond", "-f", "-l", "6"]
+      - ./deploy/run-cron.sh:/scripts/run-cron.sh:ro
+    command: ["sh", "-c", "apk add --no-cache wget >/dev/null && chmod +x /scripts/run-cron.sh && crond -f -l 6"]
     depends_on:
       web:
         condition: service_healthy
+    networks:
+      - default
 
-volumes:
-  caddy_data:
-  caddy_config:
+networks:
+  coolify:
+    external: true
+    name: coolify
+  supabase_default:
+    external: true
+    name: supabase_default

@@ -60,22 +60,41 @@ export async function POST(request: NextRequest) {
         }
 
         const purchaseUnit = captureData.purchase_units[0];
-        const transaction = purchaseUnit.payments.captures[0];
-        let customId: Record<string, unknown> = {};
-        try {
-            customId = JSON.parse(purchaseUnit.custom_id || '{}');
-        } catch (_e) {
-            console.error('Invalid custom_id JSON from PayPal:', purchaseUnit.custom_id);
-            return NextResponse.json({ error: 'Invalid order metadata' }, { status: 400 });
-        }
+                const transaction = purchaseUnit.payments.captures[0];
+                let customId: Record<string, unknown> = {};
+                try {
+                    customId = JSON.parse(purchaseUnit.custom_id || '{}');
+                } catch (_e) {
+                    console.error('Invalid custom_id JSON from PayPal:', purchaseUnit.custom_id);
+                    return NextResponse.json({ error: 'Invalid order metadata' }, { status: 400 });
+                }
 
-        // 3. Fulfill Order (DB Insert)
-        if (transaction.status === 'COMPLETED') {
-            const productId = customId.productId as string | undefined; // e.g. single_track, streak_freeze
-            const contentId = customId.contentId as string | undefined; // song uuid
-            const childId = customId.childId as string | undefined; // for gamification products
+                // 3. Fulfill Order (DB Insert) — only after capture COMPLETED + amount matches catalog
+                if (transaction.status === 'COMPLETED') {
+                    const productId = customId.productId as string | undefined; // e.g. single_track, streak_freeze
+                    const contentId = customId.contentId as string | undefined; // song uuid
+                    const childId = customId.childId as string | undefined; // for gamification products
+                    const capturedAmount = parseFloat(transaction.amount?.value || 'NaN');
 
-            if (productId === 'streak_freeze') {
+                    const { MUSIC_STORE_PRODUCTS, GAMIFICATION_PRODUCTS } = await import('@/lib/paypal');
+                    const catalog =
+                        (productId && (MUSIC_STORE_PRODUCTS as any)[productId]) ||
+                        (productId && (GAMIFICATION_PRODUCTS as any)[productId]) ||
+                        null;
+                    if (catalog && Number.isFinite(Number(catalog.price))) {
+                        const expected = Number(catalog.price);
+                        if (!Number.isFinite(capturedAmount) || Math.abs(capturedAmount - expected) > 0.05) {
+                            console.error(
+                                `[SECURITY] Capture amount mismatch order=${orderID} product=${productId} captured=${capturedAmount} expected=${expected}`
+                            );
+                            return NextResponse.json(
+                                { error: 'Payment amount does not match product price' },
+                                { status: 400 }
+                            );
+                        }
+                    }
+
+                    if (productId === 'streak_freeze') {
                 // Add one streak freeze to inventory
                 const { data: freezeRow } = await supabaseAdmin
                     .from('streak_freezes')

@@ -1,25 +1,37 @@
 # Likkle Legends scheduled jobs (replaces vercel.json "crons" on the VPS).
-# Runs inside the `cron` container; hits the web container over the
-# compose network with the CRON_SECRET bearer token the routes expect.
+# Runs inside the `cron` container. MUST resolve to the Likkle web container —
+# do NOT use the bare hostname `web` on hosts where multiple stacks alias `web`
+# (on trini, `web` currently resolves to tidelinx-api on caddy_default).
+#
+# Host is hard-coded to the compose service DNS name on likkle-legends_default.
+# Auth uses the CRON_SECRET from the container env (passed via wget header from a
+# tiny wrapper so the secret is never committed). See deploy/run-cron.sh.
+#
 # Times are UTC.
 
+SHELL=/bin/sh
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
 # Daily content queue processing — 08:00
-0 8 * * * wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/content-queue
+0 8 * * * /scripts/run-cron.sh /api/cron/content-queue
 
 # Weekly content generation — Mondays 09:00
-0 9 * * 1 wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/content-generation
+0 9 * * 1 /scripts/run-cron.sh /api/cron/content-generation
 
 # Weekly email digest — Sundays 09:00
-0 9 * * 0 wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/process-emails
+0 9 * * 0 /scripts/run-cron.sh /api/cron/process-emails
 
 # Daily nudge emails — 18:00
-0 18 * * * wget -qO- --header="Authorization: Bearer $CRON_SECRET" "http://web:3000/api/cron/process-emails?type=nudge"
+0 18 * * * /scripts/run-cron.sh /api/cron/process-emails?type=nudge
 
 # Daily nurture sequence — 09:00
-0 9 * * * wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/nurture
+0 9 * * * /scripts/run-cron.sh /api/cron/nurture
 
 # Daily streak freeze — 00:05
-5 0 * * * wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/streak-freeze
+5 0 * * * /scripts/run-cron.sh /api/cron/streak-freeze
 
 # Daily blog generation — 08:00
-0 8 * * * wget -qO- --header="Authorization: Bearer $CRON_SECRET" http://web:3000/api/cron/generate-blog
+0 8 * * * /scripts/run-cron.sh /api/cron/generate-blog
+
+# Catch-up: also run blog generation at 20:00 in case the morning run failed
+0 20 * * * /scripts/run-cron.sh /api/cron/generate-blog
