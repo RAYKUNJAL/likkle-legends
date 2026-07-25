@@ -105,7 +105,11 @@ export async function updateSession(request: NextRequest) {
                 .eq('id', user.id)
                 .single();
 
-            const isUserAdmin = profile?.role === 'admin' || profile?.is_admin === true;
+            const role = String(profile?.role || '').toLowerCase();
+            const isUserAdmin =
+                profile?.is_admin === true ||
+                role === 'admin' ||
+                role === 'super_admin';
 
             if (profileError || !isUserAdmin) {
                 console.warn(`[AUTH] Unauthorized admin access attempt by ${user.email} (id: ${user.id}) to ${pathname}`);
