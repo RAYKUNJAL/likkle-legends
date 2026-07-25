@@ -9,8 +9,15 @@ export async function updateSession(request: NextRequest) {
         },
     })
 
-    const supabaseUrl = serverEnv.SUPABASE_URL;
-    const supabaseKey = serverEnv.SUPABASE_ANON_KEY;
+    // CRITICAL: use the PUBLIC Supabase URL (same as browser client) so cookie
+    // names match. If server uses internal URL and browser uses public URL,
+    // cookie names differ and sessions never reach the browser → login loop.
+    const supabaseUrl =
+        process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
+        serverEnv.SUPABASE_URL;
+    const supabaseKey =
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() ||
+        serverEnv.SUPABASE_ANON_KEY;
 
     if ((!supabaseUrl || !supabaseKey) && serverEnv.NODE_ENV !== 'production') {
         console.warn('[AUTH] Supabase middleware skipped in local dev because credentials are missing.');
