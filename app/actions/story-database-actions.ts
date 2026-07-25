@@ -57,12 +57,41 @@ export async function selectStoryAction(selection: {
         }
 
         if (!stories || stories.length === 0) {
-            const errorMsg = `No stories found even after applying all fallback options.`;
-            console.error("[StoryDatabaseAction] ❌ " + errorMsg);
-            return {
-                success: false,
-                error: errorMsg
-            };
+            // FALLBACK: Use Tanty Spice AI agent to generate a story on the fly
+            console.log("[StoryDatabaseAction] 🪄 No pre-built stories found — calling Tanty Spice AI agent...");
+            try {
+                const { generateTantyStory } = await import('@/lib/agents/tanty-story-agent');
+                const aiStory = await generateTantyStory({
+                    childName: selection.childName || 'Little Legend',
+                    childAge: selection.childAge || 5,
+                    island: selection.island || 'TT',
+                    character: 'tanty_spice',
+                });
+                // Convert to StoryBook-like format for the reader
+                const storyBook = {
+                    book_meta: {
+                        title: aiStory.title,
+                        setting_island: selection.island || 'Trinidad',
+                    },
+                    structure: {
+                        pages: aiStory.pages.map((p, i) => ({
+                            page_number: i + 1,
+                            narrative_text: p.text,
+                            illustration_brief: p.illustration,
+                        })),
+                    },
+                    guides: {
+                        tanty: { name: 'Tanty Spice', intro: aiStory.summary },
+                    },
+                };
+                return { success: true, story: storyBook as any };
+            } catch (aiErr: any) {
+                console.error("[StoryDatabaseAction] AI fallback failed:", aiErr.message);
+                return {
+                    success: false,
+                    error: `No stories found and Tanty Spice is resting. Please try again. (${aiErr.message || 'AI unavailable'})`,
+                };
+            }
         }
 
         // Pick a random story from matching ones (for variety)

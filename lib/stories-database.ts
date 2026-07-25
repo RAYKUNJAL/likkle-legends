@@ -3,7 +3,8 @@
  * Query stories from Supabase with intelligent filtering
  */
 
-import { supabase } from '@/lib/storage';
+import { supabase } from '@/lib/supabase-client';
+import { supabaseAdmin } from '@/lib/supabase-client';
 import { StoryBook } from '@/types/story';
 import { transformToStoryBook } from '@/lib/story-transformer';
 
