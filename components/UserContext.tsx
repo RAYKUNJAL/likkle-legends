@@ -152,127 +152,210 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
   const [unreadCount, setUnreadCount] = useState(0);
   const [unlockedBadge, setUnlockedBadge] = useState<any | null>(null);
 
-  // Refresh user profile
-  const refreshUser = useCallback(async (sessionUser?: SessionUserLike | null) => {
-    try {
-      let userObj = sessionUser;
-
-      if (!userObj) {
-        // High security auth fetch (always verifies JWT). Guard with a timeout
-        // + cached-session fallback so a hung Web Lock can't freeze the app.
-        try {
-          const res = await Promise.race([
-            supabase.auth.getUser(),
-            new Promise<{ data: { user: any }, error: any }>((resolve) =>
-              setTimeout(() => resolve({ data: { user: null }, error: null }), 7000)
-            ),
-          ]);
-          userObj = res?.data?.user as any;
-        } catch (userError) {
-          console.error('[UserContext] Auth User Error:', userError);
-        }
-        if (!userObj) {
-          const { data } = await supabase.auth.getSession();
-          userObj = data?.session?.user as any;
-        }
-      }
-
-      if (!userObj) {
-        setUser(null);
-        setDigitalPossessions([]);
-        setChildren([]);
-        setActiveChildState(null);
-        return;
-      }
-
-      // Parallel fetch for profile and digital possessions
-      const [profileRes, possessionsRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', userObj.id).single(),
-        supabase.from('digital_possessions').select('product_id').eq('user_id', userObj.id)
-      ]);
-
-      const { data: profile } = profileRes;
-      const { data: possessions } = possessionsRes;
-
-      if (possessions) {
-        setDigitalPossessions(possessions.map(p => p.product_id));
-      }
-
-      if (profile) {
-        const meta = userObj.user_metadata || {};
-        setUser({
-          ...(profile as Profile),
-          parental_controls: meta.parental_controls || (profile as any).parental_controls || undefined,
-        } as Profile);
-      } else {
-        // Fallback: If profile row is missing (trigger delay/fail), construct from session
-        console.warn('Profile missing from DB, using session fallback');
-        const meta = userObj.user_metadata || {};
-        const fallbackProfile: Profile = {
-          id: userObj.id,
-          full_name: meta.full_name || 'Legend Parent',
-          email: userObj.email || '',
-          subscription_tier: (meta.chosen_plan as any) || 'free',
-          subscription_status: 'inactive',
-          country_code: 'US',
-          currency: 'USD',
-          has_grandparent_dashboard: false,
-          has_heritage_dna_story: false,
-          onboarding_completed: false,
-          parent_name: meta.full_name?.split(' ')[0] || 'Parent',
-          marketing_opt_in: false,
-          is_admin: false,
-          role: meta.role || 'parent',
-        };
-        setUser(fallbackProfile);
-
-        // Self-healing: create the profile row if it doesn't exist
-        supabase.from('profiles').upsert({
-          id: fallbackProfile.id,
-          email: fallbackProfile.email,
-          full_name: fallbackProfile.full_name,
-          role: 'parent'
-        }, { onConflict: 'id' }).then(({ error }: { error: any }) => {
-          if (error && !error.message.includes('permission denied')) {
-            console.error('Self-healing profile creation error:', error);
-          }
+  /** Prefer cookie-session bridge — browser GoTrue often can't see httpOnly SSR cookies. */
+    const hydrateFromCookieBridge = useCallback(async (): Promise<boolean> => {
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 8000);
+        const res = await fetch('/api/auth/me', {
+          method: 'GET',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          signal: ctrl.signal,
         });
-      }
-    } catch (error) {
-      console.error('Error refreshing user:', error);
-    }
-  }, []);
+        clearTimeout(timer);
+        if (!res.ok) return false;
+        const body = await res.json();
+        if (!body?.authenticated || !body?.profile) return false;
 
-  // Refresh children
-  const refreshChildren = useCallback(async (userIdOverride?: string) => {
-    const userId = userIdOverride || user?.id;
-    if (!userId) return;
+        const p = body.profile;
+        const next: Profile = {
+          id: p.id,
+          full_name: p.full_name || 'Legend Parent',
+          email: p.email || '',
+          subscription_tier: (p.subscription_tier as Profile['subscription_tier']) || 'free',
+          subscription_status: (p.subscription_status as Profile['subscription_status']) || 'inactive',
+          country_code: p.country_code || 'US',
+          currency: p.currency || 'USD',
+          role: (p.role === 'super_admin' ? 'admin' : p.role) || 'parent',
+          is_admin: !!(p.is_admin || p.role === 'admin' || p.role === 'super_admin'),
+          has_grandparent_dashboard: !!p.has_grandparent_dashboard,
+          has_heritage_dna_story: !!p.has_heritage_dna_story,
+          onboarding_completed: !!p.onboarding_completed,
+          parent_name: p.parent_name || 'Parent',
+          marketing_opt_in: !!p.marketing_opt_in,
+          whatsapp_number: p.whatsapp_number,
+          created_at: p.created_at,
+        };
+        setUser(next);
 
-    try {
-      const { data } = await supabase
-        .from('children')
-        .select('*')
-        .eq('parent_id', userId)
-        .order('created_at', { ascending: true });
-
-      if (data) {
-        const normalized = (data as Child[]).map((c) => normalizeChildName(c)) as Child[];
-        setChildren(normalized);
-
-        // Restore active child from localStorage or set first child as active
-        const savedChildId = localStorage.getItem('activeChildId');
-        const savedChild = normalized.find((c: Child) => c.id === savedChildId);
-
-        if (savedChild) {
-          setActiveChildState(savedChild as Child);
-        } else if (normalized.length > 0) {
-          setActiveChildState(normalized[0] as Child);
+        const kidsRaw = Array.isArray(body.children) ? body.children : [];
+        if (kidsRaw.length > 0) {
+          const normalized = kidsRaw.map((c: any) => normalizeChildName(c)) as Child[];
+          setChildren(normalized);
+          const savedChildId = typeof window !== 'undefined' ? localStorage.getItem('activeChildId') : null;
+          const savedChild = normalized.find((c) => c.id === savedChildId);
+          setActiveChildState(savedChild || normalized[0] || null);
         }
+        return true;
+      } catch (err) {
+        console.warn('[UserContext] cookie bridge failed', err);
+        return false;
       }
-    } catch (error) {
-      console.error('Error refreshing children:', error);
-    }
-  }, [user?.id]);
+    }, []);
+
+    // Refresh user profile
+    const refreshUser = useCallback(async (sessionUser?: SessionUserLike | null) => {
+      try {
+        // Always try cookie bridge first — this is what works after server-action login.
+        const bridged = await hydrateFromCookieBridge();
+        if (bridged) return;
+
+        let userObj = sessionUser;
+
+        if (!userObj) {
+          // Browser GoTrue path (localStorage session). Hard-timeout so portal never freezes.
+          try {
+            const res = await Promise.race([
+              supabase.auth.getUser(),
+              new Promise<{ data: { user: any }, error: any }>((resolve) =>
+                setTimeout(() => resolve({ data: { user: null }, error: null }), 4000)
+              ),
+            ]);
+            userObj = res?.data?.user as any;
+          } catch (userError) {
+            console.error('[UserContext] Auth User Error:', userError);
+          }
+          if (!userObj) {
+            try {
+              const { data } = await Promise.race([
+                supabase.auth.getSession(),
+                new Promise<{ data: { session: any } }>((resolve) =>
+                  setTimeout(() => resolve({ data: { session: null } }), 2500)
+                ),
+              ]);
+              userObj = data?.session?.user as any;
+            } catch {
+              userObj = null;
+            }
+          }
+        }
+
+        if (!userObj) {
+          // Don't wipe existing hydrated user on a transient bridge/session race
+          return;
+        }
+
+        // Parallel fetch for profile and digital possessions
+        const [profileRes, possessionsRes] = await Promise.all([
+          supabase.from('profiles').select('*').eq('id', userObj.id).maybeSingle(),
+          supabase.from('digital_possessions').select('product_id').eq('user_id', userObj.id),
+        ]);
+
+        const { data: profile } = profileRes;
+        const { data: possessions } = possessionsRes;
+
+        if (possessions) {
+          setDigitalPossessions(possessions.map((p: any) => p.product_id));
+        }
+
+        if (profile) {
+          const meta = userObj.user_metadata || {};
+          setUser({
+            ...(profile as Profile),
+            full_name: (profile as any).full_name || meta.full_name || 'Legend Parent',
+            email: (profile as any).email || userObj.email || '',
+            is_admin:
+              !!(profile as any).is_admin ||
+              (profile as any).role === 'admin' ||
+              (profile as any).role === 'super_admin',
+            role:
+              (profile as any).role === 'super_admin'
+                ? 'admin'
+                : ((profile as any).role as Profile['role']) || 'parent',
+            parental_controls: meta.parental_controls || (profile as any).parental_controls || undefined,
+          } as Profile);
+        } else {
+          // Fallback: If profile row is missing (trigger delay/fail), construct from session
+          console.warn('Profile missing from DB, using session fallback');
+          const meta = userObj.user_metadata || {};
+          const fallbackProfile: Profile = {
+            id: userObj.id,
+            full_name: meta.full_name || 'Legend Parent',
+            email: userObj.email || '',
+            subscription_tier: (meta.chosen_plan as any) || 'free',
+            subscription_status: 'inactive',
+            country_code: 'US',
+            currency: 'USD',
+            has_grandparent_dashboard: false,
+            has_heritage_dna_story: false,
+            onboarding_completed: false,
+            parent_name: meta.full_name?.split(' ')[0] || 'Parent',
+            marketing_opt_in: false,
+            is_admin: false,
+            role: meta.role || 'parent',
+          };
+          setUser(fallbackProfile);
+
+          // Self-healing: create the profile row if it doesn't exist
+          supabase.from('profiles').upsert({
+            id: fallbackProfile.id,
+            email: fallbackProfile.email,
+            full_name: fallbackProfile.full_name,
+            role: 'parent',
+          }, { onConflict: 'id' }).then(({ error }: { error: any }) => {
+            if (error && !String(error.message || '').includes('permission denied')) {
+              console.error('Self-healing profile creation error:', error);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error refreshing user:', error);
+      }
+    }, [hydrateFromCookieBridge]);
+
+    // Refresh children
+    const refreshChildren = useCallback(async (userIdOverride?: string) => {
+      const userId = userIdOverride || user?.id;
+      if (!userId) return;
+
+      try {
+        // Live schema may use parent_id OR primary_user_id
+        let data: any[] | null = null;
+        const primary = await supabase
+          .from('children')
+          .select('*')
+          .or(`parent_id.eq.${userId},primary_user_id.eq.${userId}`)
+          .order('created_at', { ascending: true });
+        if (!primary.error) {
+          data = primary.data;
+        } else {
+          const fallback = await supabase
+            .from('children')
+            .select('*')
+            .eq('parent_id', userId)
+            .order('created_at', { ascending: true });
+          data = fallback.data;
+        }
+
+        if (data) {
+          const normalized = (data as Child[]).map((c) => normalizeChildName(c)) as Child[];
+          setChildren(normalized);
+
+          // Restore active child from localStorage or set first child as active
+          const savedChildId = localStorage.getItem('activeChildId');
+          const savedChild = normalized.find((c: Child) => c.id === savedChildId);
+
+          if (savedChild) {
+            setActiveChildState(savedChild as Child);
+          } else if (normalized.length > 0) {
+            setActiveChildState(normalized[0] as Child);
+          }
+        }
+      } catch (error) {
+        console.error('Error refreshing children:', error);
+      }
+    }, [user?.id]);
 
   // Refresh notifications
   const refreshNotifications = useCallback(async (userIdOverride?: string) => {
@@ -419,60 +502,32 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     let mounted = true;
 
     const initialize = async () => {
-      if (!mounted) return;
-      setIsLoading(true);
+          if (!mounted) return;
+          setIsLoading(true);
 
-      if (!shouldHydrateAuth) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        // getUser() makes a network call AND holds a Web Lock. On slow
-        // connections, across multiple tabs, or under lock contention it can
-        // hang — which would freeze the app on "Connecting to Island" forever.
-        // Race it against a timeout and fall back to the cached session so the
-        // portal always loads. getUser still runs in the background via the
-        // onAuthStateChange listener to verify the JWT.
-        const authTimeout = new Promise<{ data: { user: any } }>((resolve) =>
-          setTimeout(() => resolve({ data: { user: null } }), 7000)
-        );
-        let supabaseUser: any = null;
-        try {
-          const res = await Promise.race([supabase.auth.getUser(), authTimeout]);
-          supabaseUser = res?.data?.user ?? null;
-        } catch {
-          supabaseUser = null;
-        }
-        // Fallback: read the locally-cached session (fast, no verification round-trip)
-        if (!supabaseUser) {
-          try {
-            const { data } = await Promise.race([
-              supabase.auth.getSession(),
-              new Promise<{ data: { session: any } }>((resolve) =>
-                setTimeout(() => resolve({ data: { session: null } }), 4000)
-              ),
-            ]);
-            supabaseUser = data?.session?.user ?? null;
-          } catch {
-            supabaseUser = null;
+          if (!shouldHydrateAuth) {
+            setIsLoading(false);
+            return;
           }
-        }
 
-        if (supabaseUser && mounted) {
           try {
-            await refreshUser(supabaseUser as any);
+            // Cookie bridge first (server-action sessions use httpOnly cookies).
+            // Short timeouts on getUser/getSession so we NEVER stick on "Connecting to Island".
+            const bridged = await hydrateFromCookieBridge();
+            if (!bridged && mounted) {
+              try {
+                await refreshUser();
+              } catch (err) {
+                console.error('refreshUser failed:', err);
+              }
+            }
           } catch (err) {
-            console.error("refreshUser failed:", err);
+            console.error('Auth initialization failed:', err);
+          } finally {
+            if (mounted) setIsLoading(false);
           }
-        }
-      } catch (err) {
-        console.error("Auth initialization failed:", err);
-      } finally {
-        if (mounted) setIsLoading(false);
-      }
-    };
-    void initialize();
+        };
+        void initialize();
 
     if (!shouldHydrateAuth) {
       return () => {
@@ -502,7 +557,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [refreshUser, mergeAnonymousData, shouldHydrateAuth]);
+  }, [refreshUser, mergeAnonymousData, shouldHydrateAuth, hydrateFromCookieBridge]);
 
   // Load children when user changes
   useEffect(() => {
