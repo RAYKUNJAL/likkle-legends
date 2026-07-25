@@ -49,7 +49,7 @@ services:
     volumes:
       - ./deploy/crontab:/etc/crontabs/root:ro
       - ./deploy/run-cron.sh:/scripts/run-cron.sh:ro
-    command: ["sh", "-c", "apk add --no-cache wget >/dev/null && chmod +x /scripts/run-cron.sh && crond -f -l 6"]
+    command: ["sh", "-c", "apk add --no-cache wget >/dev/null && crond -f -l 6"]
     depends_on:
       web:
         condition: service_healthy
