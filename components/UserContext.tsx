@@ -384,13 +384,16 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     }
   }, [children]);
 
-  // Logout
+  // Logout — explicit user action. Wipe everything.
   const logout = async () => {
-    await supabase.auth.signOut();
+    try { await supabase.auth.signOut(); } catch {}
     setUser(null);
     setChildren([]);
     setActiveChildState(null);
-    localStorage.removeItem('activeChildId');
+    setDigitalPossessions([]);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('activeChildId');
+    }
   };
 
   const clearUnlockedBadge = () => setUnlockedBadge(null);
@@ -535,23 +538,39 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
       };
     }
 
-    // Listen for ALL auth changes to keep context synced
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED' || event === 'INITIAL_SESSION') {
-        const userId = session?.user?.id;
-        if (event === 'SIGNED_IN' && userId) {
-          await mergeAnonymousData(userId);
-        }
-        if (session?.user) {
-          await refreshUser(session.user);
-        }
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setChildren([]);
-        setActiveChildState(null);
-        localStorage.removeItem('activeChildId');
-      }
-    });
+    // Listen for auth changes — but NEVER let GoTrue's null-session wipe a
+        // cookie-bridge-hydrated user. The browser GoTrue client cannot read
+        // httpOnly server-set cookies, so it fires SIGNED_OUT spuriously.
+        // Only wipe on an explicit, user-initiated signOut (handled by signOutAction).
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+            const userId = session?.user?.id;
+            if (event === 'SIGNED_IN' && userId) {
+              await mergeAnonymousData(userId);
+            }
+            if (session?.user) {
+              // Only refresh if we don't already have a user (avoid redundant fetches)
+              setUser(prev => {
+                if (!prev) {
+                  void refreshUser(session.user);
+                }
+                return prev;
+              });
+            }
+          } else if (event === 'INITIAL_SESSION') {
+            // INITIAL_SESSION with null is GoTrue saying "no local session" —
+            // NOT a sign-out. Ignore it; cookie bridge handles hydration.
+            if (session?.user) {
+              setUser(prev => {
+                if (!prev) void refreshUser(session.user);
+                return prev;
+              });
+            }
+          }
+          // SIGNED_OUT is handled by signOutAction calling supabase.auth.signOut()
+          // + explicitly wiping state. Don't wipe here — GoTrue fires SIGNED_OUT
+          // when it can't find a local session, which is NOT the same as logout.
+        });
 
     return () => {
       mounted = false;
