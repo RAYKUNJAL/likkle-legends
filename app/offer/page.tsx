@@ -182,16 +182,16 @@ function ContentCard({ emoji, title, desc, gradient }: { emoji: string; title: s
 }
 
 // ─── Character card ───────────────────────────────────────────────────────────
-function CharacterCard({ emoji, name, role, catchphrase, gradient }: { emoji: string; name: string; role: string; catchphrase: string; gradient: string }) {
+function CharacterCard({ src, name, role, catchphrase, gradient }: { src: string; name: string; role: string; catchphrase: string; gradient: string }) {
   return (
     <div className="group relative flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-2">
-      <div className={`relative w-20 h-20 rounded-full ${gradient} flex items-center justify-center text-3xl shadow-lg mb-3 transition-transform group-hover:scale-110`}>
-        {emoji}
+      <div className={`relative w-24 h-24 rounded-full ${gradient} p-1 shadow-lg mb-3 transition-transform group-hover:scale-110 overflow-hidden`}>
+        <img src={src} alt={name} className="w-full h-full object-cover rounded-full" />
       </div>
       <h3 className="text-sm font-bold text-[#1c1c1c]">{name}</h3>
       <p className="text-xs text-[#5f5f5d] mb-1">{role}</p>
       <p className="text-xs italic text-[#0e9aa7] opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-w-[140px]">
-        "{catchphrase}"
+        &ldquo;{catchphrase}&rdquo;
       </p>
     </div>
   );
@@ -247,8 +247,15 @@ export default function OfferPage() {
           <p className="text-xs text-[#5f5f5d]/70 mt-4">Digital access for families worldwide. Physical mail options shown where available.</p>
         </div>
 
-        {/* Hero SVG */}
-        <div className="mx-auto max-w-2xl mt-8" dangerouslySetInnerHTML={{ __html: HERO_SVG }} />
+        {/* Hero — real character images in a row */}
+        <div className="mx-auto max-w-2xl mt-10 flex flex-wrap justify-center gap-3 md:gap-4">
+          <img src="/images/dilly-doubles.jpg" alt="Dilly Doubles" className="w-20 h-20 md:w-28 md:h-28 rounded-2xl object-cover shadow-lg border-2 border-white" style={{ animation: "ll-float 4s ease-in-out infinite" }} />
+          <img src="/images/tanty_spice_avatar.jpg" alt="Tanty Spice" className="w-24 h-24 md:w-32 md:h-32 rounded-2xl object-cover shadow-lg border-2 border-white" style={{ animation: "ll-float 4s ease-in-out infinite 0.5s" }} />
+          <img src="/images/roti-new.jpg" alt="R.O.T.I." className="w-20 h-20 md:w-28 md:h-28 rounded-2xl object-cover shadow-lg border-2 border-white" style={{ animation: "ll-float 4s ease-in-out infinite 1s" }} />
+          <img src="/images/scorcha_pepper.jpg" alt="Scorcha Pepper" className="w-20 h-20 md:w-28 md:h-28 rounded-2xl object-cover shadow-lg border-2 border-white" style={{ animation: "ll-float 4s ease-in-out infinite 1.5s" }} />
+          <img src="/images/mango_moko.png" alt="Mango Moko" className="w-20 h-20 md:w-28 md:h-28 rounded-2xl object-cover shadow-lg border-2 border-white" style={{ animation: "ll-float 4s ease-in-out infinite 2s" }} />
+        </div>
+        <p className="text-center mt-4 text-sm font-bold text-[#0e9aa7]">Meet the five Legends 🌺</p>
       </section>
 
       {/* ── 3. Hero trust block ── */}
@@ -384,11 +391,11 @@ export default function OfferPage() {
             Likkle Legends is built around memorable island-inspired characters, stories, and adventures that give children familiar faces to return to as they learn. This makes the experience feel less like a worksheet and more like a world they want to be part of.
           </p>
           <div className="flex flex-wrap justify-center gap-6 mb-10">
-            <CharacterCard emoji="⚡" name="Dilly Doubles" role="Hype-man & Buddy" catchphrase="Lesss goooo, Legend!" gradient="bg-gradient-to-br from-[#5ecbff] to-[#1e93e6]" />
-            <CharacterCard emoji="👵🏾" name="Tanty Spice" role="Storyteller & Heart" catchphrase="Come nuh, sit down wid me." gradient="bg-gradient-to-br from-[#fb8fd0] to-[#e0479f]" />
-            <CharacterCard emoji="🤖" name="R.O.T.I." role="Learning Robot" catchphrase="Brains on—sunshine mode!" gradient="bg-gradient-to-br from-[#b79cff] to-[#7c3aed]" />
-            <CharacterCard emoji="🌶️" name="Scorcha Pepper" role="Feelings Coach" catchphrase="Hot feelings, cool choices." gradient="bg-gradient-to-br from-[#ff8b9c] to-[#e0324b]" />
-            <CharacterCard emoji="🥭" name="Mango Moko" role="Island Lookout" catchphrase="Stand tall and look again." gradient="bg-gradient-to-br from-[#ffd166] to-[#f97316]" />
+            <CharacterCard src="/images/dilly-doubles.jpg" name="Dilly Doubles" role="Hype-man & Buddy" catchphrase="Lesss goooo, Legend!" gradient="bg-gradient-to-br from-[#5ecbff] to-[#1e93e6]" />
+            <CharacterCard src="/images/tanty_spice_avatar.jpg" name="Tanty Spice" role="Storyteller & Heart" catchphrase="Come nuh, sit down wid me." gradient="bg-gradient-to-br from-[#fb8fd0] to-[#e0479f]" />
+            <CharacterCard src="/images/roti-new.jpg" name="R.O.T.I." role="Learning Robot" catchphrase="Brains on—sunshine mode!" gradient="bg-gradient-to-br from-[#b79cff] to-[#7c3aed]" />
+            <CharacterCard src="/images/scorcha_pepper.jpg" name="Scorcha Pepper" role="Feelings Coach" catchphrase="Hot feelings, cool choices." gradient="bg-gradient-to-br from-[#ff8b9c] to-[#e0324b]" />
+            <CharacterCard src="/images/mango_moko.png" name="Mango Moko" role="Island Lookout" catchphrase="Stand tall and look again." gradient="bg-gradient-to-br from-[#ffd166] to-[#f97316]" />
           </div>
           <CTAButton />
         </div>
