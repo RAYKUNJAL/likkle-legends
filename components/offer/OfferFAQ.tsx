@@ -52,10 +52,10 @@ export default function OfferFAQ() {
         return (
           <div
             key={i}
-            className={`rounded-2xl border transition-all overflow-hidden ${
+            className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
               isOpen
-                ? 'border-[var(--caribbean-mango)]/40 bg-white shadow-md'
-                : 'border-slate-200 bg-white/80 hover:border-[var(--caribbean-sky)]/50'
+                ? 'border-[#fb7118]/30 bg-white shadow-[0_14px_36px_-18px_rgba(251,113,24,0.4)]'
+                : 'border-[#eceae4] bg-white/70 hover:border-[#0e9aa7]/40 hover:bg-white'
             }`}
           >
             <button
@@ -64,27 +64,30 @@ export default function OfferFAQ() {
               aria-expanded={isOpen}
               className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6 sm:py-5"
             >
-              <span className="font-montserrat text-base font-bold text-slate-800 sm:text-lg">
+              <span className="font-montserrat text-base font-bold tracking-tight text-[#1c1c1c] sm:text-lg">
                 {item.q}
               </span>
               <span
-                className={`flex h-7 w-7 flex-none items-center justify-center rounded-full text-lg font-bold transition-all ${
+                className={`flex h-8 w-8 flex-none items-center justify-center rounded-full text-lg font-bold transition-all duration-300 ${
                   isOpen
-                    ? 'bg-[var(--caribbean-mango)] text-white rotate-45'
-                    : 'bg-amber-50 text-[var(--caribbean-mango)]'
+                    ? 'rotate-45 bg-gradient-to-br from-[#fb7118] to-[#fbbf24] text-white shadow-md'
+                    : 'bg-[#fef9f0] text-[#fb7118]'
                 }`}
                 aria-hidden="true"
               >
                 +
               </span>
             </button>
-            {isOpen && (
-              <div className="px-5 pb-5 sm:px-6 sm:pb-6">
-                <p className="font-quicksand text-sm leading-relaxed text-slate-600 sm:text-base">
+            <div
+              className="grid transition-all duration-300 ease-out"
+              style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
+            >
+              <div className="overflow-hidden">
+                <p className="px-5 pb-5 font-quicksand text-sm leading-relaxed text-[#5f5f5d] sm:px-6 sm:pb-6 sm:text-base">
                   {item.a}
                 </p>
               </div>
-            )}
+            </div>
           </div>
         );
       })}

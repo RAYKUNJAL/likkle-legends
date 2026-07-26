@@ -1,557 +1,463 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import OfferFAQ from '@/components/offer/OfferFAQ';
+import type { Metadata } from "next";
+import OfferFAQ from "@/components/offer/OfferFAQ";
 
 export const metadata: Metadata = {
-  title: 'Caribbean Learning That Feels Like Home — Intro Mailer',
-  description:
-    'Stories, phonics, and Caribbean activities for kids 3–8. Built for diaspora families abroad. Start with the Intro Mailer today.',
-  alternates: {
-    canonical: 'https://www.likklelegends.com/offer',
-  },
-  openGraph: {
-    title: 'Caribbean Learning That Feels Like Home — Intro Mailer',
-    description:
-      'Stories, phonics, and Caribbean activities for kids 3–8. Built for diaspora families abroad.',
-    url: 'https://www.likklelegends.com/offer',
-    siteName: 'Likkle Legends',
-    type: 'website',
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  title: "Likkle Legends — Caribbean Learning for Kids 3–8",
+  description: "Caribbean learning that feels like home. Stories, phonics, and activities for kids 3–8.",
+  robots: "index, follow",
 };
 
-const CTA_LABEL = 'Start with the Intro Mailer';
-const CTA_HREF = '/offer/checkout';
+const CTA_LABEL = "Start with the Intro Mailer";
+const CTA_HREF = "/offer/checkout";
 
-// Reusable CTA button — same warm gradient style repeated 5x across the page.
-function CTAButton({
-  label = CTA_LABEL,
-  href = CTA_HREF,
-  size = 'lg',
-}: {
-  label?: string;
-  href?: string;
-  size?: 'lg' | 'md';
-}) {
-  const base =
-    'inline-flex items-center justify-center rounded-2xl font-montserrat font-extrabold text-white bg-gradient-to-r from-orange-400 to-amber-400 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all';
-  const sizes = {
-    lg: 'px-8 py-4 text-lg',
-    md: 'px-6 py-3 text-base',
-  };
+// ─────────────────────────────────────────────────────────────────────────────
+// Hero character SVG — 5 Likkle Legends on a Caribbean beach.
+// Hand-crafted by the brand team. Past VERBATIM — do not modify.
+// ─────────────────────────────────────────────────────────────────────────────
+const HERO_SVG = `
+<div className="relative mx-auto w-full max-w-[560px]">
+  <svg
+    viewBox="0 0 560 520"
+    width="100%"
+    role="img"
+    aria-label="The five Likkle Legends characters on a Caribbean beach with a story mailer"
+    style={{ display: "block", filter: "drop-shadow(0 30px 55px rgba(15,23,42,.20))" }}
+  >
+    <defs>
+      <linearGradient id="sky3" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stopColor="#c7ecff" /><stop offset="0.55" stopColor="#a7ddf7" /><stop offset="1" stopColor="#8ed2f2" />
+      </linearGradient>
+      <radialGradient id="sun3" cx="0.5" cy="0.45" r="0.55">
+        <stop offset="0" stopColor="#fff7d8" /><stop offset="0.5" stopColor="#ffd76a" /><stop offset="1" stopColor="#ffb020" />
+      </radialGradient>
+      <linearGradient id="sea3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#33c0cc" /><stop offset="1" stopColor="#0e9aa7" /></linearGradient>
+      <linearGradient id="sand3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffe9b8" /><stop offset="1" stopColor="#f4c97b" /></linearGradient>
+      <linearGradient id="env3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ffffff" /><stop offset="1" stopColor="#fff2df" /></linearGradient>
+      <linearGradient id="cta3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#fb7118" /><stop offset="1" stopColor="#fbbf24" /></linearGradient>
+      <linearGradient id="dDilly" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#5ecbff" /><stop offset="1" stopColor="#1e93e6" /></linearGradient>
+      <linearGradient id="dTanty" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#fb8fd0" /><stop offset="1" stopColor="#e0479f" /></linearGradient>
+      <linearGradient id="dRoti"  x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#b79cff" /><stop offset="1" stopColor="#7c3aed" /></linearGradient>
+      <linearGradient id="dScor"  x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ff8b9c" /><stop offset="1" stopColor="#e0324b" /></linearGradient>
+      <linearGradient id="dMango" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ffd166" /><stop offset="1" stopColor="#f97316" /></linearGradient>
+      <clipPath id="round3"><rect x="0" y="0" width="560" height="520" rx="46" /></clipPath>
+    </defs>
+
+    <g clipPath="url(#round3)">
+      <rect width="560" height="520" fill="url(#sky3)" />
+      <circle cx="452" cy="104" r="52" fill="url(#sun3)" />
+      <circle cx="452" cy="104" r="70" fill="#ffd76a" opacity="0.16" />
+      <g fill="#ffffff" opacity="0.8">
+        <ellipse cx="120" cy="80" rx="40" ry="17" /><ellipse cx="146" cy="74" rx="28" ry="14" /><ellipse cx="310" cy="52" rx="28" ry="12" />
+      </g>
+      <path d="M0 230 Q140 214 280 230 T560 230 V300 H0 Z" fill="url(#sea3)" />
+      <g stroke="#eafcff" strokeWidth="3" fill="none" opacity="0.55">
+        <path d="M40 262 q18 -9 36 0 t36 0" /><path d="M440 270 q18 -9 36 0 t36 0" />
+      </g>
+      <path d="M0 280 Q160 258 340 280 T560 276 V520 H0 Z" fill="url(#sand3)" />
+
+      <g opacity="0.95">
+        <path d="M56 300 C50 258 48 228 58 196" stroke="#a06a2c" strokeWidth="9" fill="none" strokeLinecap="round" />
+        <g fill="#2e9e5b">
+          <path d="M58 196 C28 182 8 186 -6 200 C20 192 42 196 58 206 Z" />
+          <path d="M58 196 C88 182 108 186 122 200 C96 192 74 196 58 206 Z" />
+          <path d="M58 196 C46 166 28 152 8 148 C32 158 46 176 58 202 Z" />
+        </g>
+      </g>
+
+      <g transform="translate(372 128) scale(0.72)">
+        <rect x="0" y="0" width="170" height="118" rx="16" fill="url(#env3)" stroke="#f0d9b3" strokeWidth="2" />
+        <rect x="20" y="-20" width="130" height="95" rx="10" fill="#ffffff" stroke="#ffe0b0" strokeWidth="2" />
+        <rect x="36" y="-4" width="98" height="9" rx="4" fill="#fb923c" opacity="0.85" />
+        <rect x="36" y="12" width="82" height="7" rx="3" fill="#0ea5a4" opacity="0.5" />
+        <rect x="36" y="26" width="92" height="7" rx="3" fill="#94a3b8" opacity="0.45" />
+        <text x="85" y="60" textAnchor="middle" fontSize="26">🌴</text>
+      </g>
+
+      <g fill="#c99a4e" opacity="0.32">
+        <ellipse cx="86" cy="452" rx="44" ry="11" />
+        <ellipse cx="184" cy="466" rx="50" ry="12" />
+        <ellipse cx="286" cy="470" rx="52" ry="13" />
+        <ellipse cx="388" cy="466" rx="50" ry="12" />
+        <ellipse cx="486" cy="452" rx="44" ry="11" />
+      </g>
+
+      <g transform="translate(86 372)">
+        <circle r="56" fill="url(#dDilly)" /><circle r="56" fill="#fff" opacity="0.10" />
+        <ellipse cx="-18" cy="-12" rx="12" ry="15" fill="#fff" /><circle cx="-16" cy="-8" r="6" fill="#0f172a" />
+        <ellipse cx="18" cy="-12" rx="12" ry="15" fill="#fff" /><circle cx="20" cy="-8" r="6" fill="#0f172a" />
+        <path d="M-14 16 Q0 28 14 16" stroke="#0f172a" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+        <path d="M2 -40 L-10 -26 L-2 -26 L-12 -12 L12 -30 L2 -30 Z" fill="#fde047" stroke="#f59e0b" strokeWidth="1.5" />
+        <circle cx="-32" cy="10" r="6" fill="#bfe6ff" opacity="0.7" /><circle cx="32" cy="10" r="6" fill="#bfe6ff" opacity="0.7" />
+      </g>
+
+      <g transform="translate(184 384)">
+        <circle r="62" fill="url(#dTanty)" /><circle r="62" fill="#fff" opacity="0.10" />
+        <path d="M-48 -28 A52 52 0 0 1 48 -28 L42 -42 A58 58 0 0 0 -42 -42 Z" fill="#e2e8f0" />
+        <ellipse cx="-20" cy="-6" rx="11" ry="14" fill="#fff" /><circle cx="-18" cy="-3" r="5.5" fill="#0f172a" />
+        <ellipse cx="20" cy="-6" rx="11" ry="14" fill="#fff" /><circle cx="22" cy="-3" r="5.5" fill="#0f172a" />
+        <circle cx="-20" cy="-5" r="15" fill="none" stroke="#0f172a" strokeWidth="2.5" opacity="0.5" />
+        <circle cx="20" cy="-5" r="15" fill="none" stroke="#0f172a" strokeWidth="2.5" opacity="0.5" />
+        <path d="M-15 24 Q0 38 15 24" stroke="#0f172a" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+        <circle cx="-34" cy="12" r="7" fill="#ffd1e6" /><circle cx="34" cy="12" r="7" fill="#ffd1e6" />
+      </g>
+
+      <g transform="translate(286 384)">
+        <circle r="66" fill="url(#dRoti)" /><circle r="66" fill="#fff" opacity="0.10" />
+        <rect x="-40" y="-34" width="80" height="60" rx="18" fill="#eef2ff" stroke="#c7d2fe" strokeWidth="3" />
+        <line x1="0" y1="-34" x2="0" y2="-50" stroke="#c7d2fe" strokeWidth="4" /><circle cx="0" cy="-54" r="5.5" fill="#fbbf24" />
+        <circle cx="-17" cy="-6" r="10" fill="#0f172a" /><circle cx="-14" cy="-9" r="3.5" fill="#67e8f9" />
+        <circle cx="17" cy="-6" r="10" fill="#0f172a" /><circle cx="20" cy="-9" r="3.5" fill="#67e8f9" />
+        <rect x="-13" y="12" width="26" height="7" rx="3.5" fill="#7c3aed" />
+      </g>
+
+      <g transform="translate(388 384)">
+        <circle r="60" fill="url(#dScor)" /><circle r="60" fill="#fff" opacity="0.10" />
+        <path d="M0 -52 q9 -7 3 -18" stroke="#2e9e5b" strokeWidth="6" fill="none" strokeLinecap="round" />
+        <ellipse cx="-18" cy="-6" rx="11" ry="14" fill="#fff" /><circle cx="-16" cy="-3" r="5.5" fill="#0f172a" />
+        <ellipse cx="18" cy="-6" rx="11" ry="14" fill="#fff" /><circle cx="20" cy="-3" r="5.5" fill="#0f172a" />
+        <path d="M-16 20 Q0 36 16 20 Q8 26 -16 20" fill="#0f172a" />
+        <path d="M-34 4 q-5 7 -2 14 M34 4 q5 7 2 14" stroke="#fff" strokeWidth="2.5" fill="none" opacity="0.55" />
+      </g>
+
+      <g transform="translate(486 372)">
+        <circle r="56" fill="url(#dMango)" /><circle r="56" fill="#fff" opacity="0.10" />
+        <path d="M-6 -50 q6 -8 16 -6" stroke="#2e9e5b" strokeWidth="5" fill="none" strokeLinecap="round" />
+        <ellipse cx="8" cy="-44" rx="10" ry="5" fill="#2e9e5b" transform="rotate(-25 8 -44)" />
+        <ellipse cx="-18" cy="-10" rx="11" ry="14" fill="#fff" /><circle cx="-16" cy="-6" r="5.5" fill="#0f172a" />
+        <ellipse cx="18" cy="-10" rx="11" ry="14" fill="#fff" /><circle cx="20" cy="-6" r="5.5" fill="#0f172a" />
+        <path d="M-13 16 Q0 27 13 16" stroke="#0f172a" strokeWidth="4.5" fill="none" strokeLinecap="round" />
+        <circle cx="-30" cy="8" r="6" fill="#ffe0a3" opacity="0.8" /><circle cx="30" cy="8" r="6" fill="#ffe0a3" opacity="0.8" />
+      </g>
+    </g>
+
+    <g transform="translate(160 456)">
+      <rect x="0" y="0" width="240" height="44" rx="22" fill="#ffffff" stroke="#ffe0b0" strokeWidth="2" />
+      <text x="120" y="28" textAnchor="middle" fontSize="15" fontWeight="700" fill="#0f172a" fontFamily="Montserrat, sans-serif">Meet the five Legends</text>
+    </g>
+
+    <g transform="translate(30 250)">
+      <rect x="0" y="0" width="146" height="50" rx="25" fill="#ffffff" stroke="#ffe0b0" strokeWidth="2" />
+      <circle cx="27" cy="25" r="15" fill="url(#cta3)" /><text x="27" y="31" textAnchor="middle" fontSize="15" fill="#fff">✓</text>
+      <text x="50" y="22" fontSize="12" fontWeight="700" fill="#0f172a" fontFamily="Montserrat, sans-serif">Ages 3–8</text>
+      <text x="50" y="37" fontSize="9.5" fill="#64748b" fontFamily="Montserrat, sans-serif">phonics + culture</text>
+    </g>
+  </svg>
+</div>
+`;
+
+// ─── CTA button (shared, 5x repeats) ──────────────────────────────────────────
+function CTAButton({ variant = "primary" }: { variant?: "primary" | "white" }) {
+  const base = "inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-base font-black tracking-tight transition-all duration-300 hover:scale-[1.03] hover:shadow-xl active:scale-95";
+  const styles = variant === "white"
+    ? "bg-white text-[#fb7118] shadow-lg"
+    : "bg-gradient-to-r from-[#fb7118] to-[#fbbf24] text-white shadow-lg shadow-orange-200/50";
   return (
-    <Link href={href} className={`${base} ${sizes[size]}`}>
-      🌴 {label}
-    </Link>
+    <a href={CTA_HREF} className={`${base} ${styles}`}>
+      {CTA_LABEL}
+      <span aria-hidden>→</span>
+    </a>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Section data
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Trust badge ──────────────────────────────────────────────────────────────
+function TrustBadge({ icon, text }: { icon: string; text: string }) {
+  return (
+    <div className="flex items-center gap-2 rounded-full bg-white border border-[#eceae4] px-4 py-2 text-sm font-bold text-[#1c1c1c] shadow-sm">
+      <span className="text-base">{icon}</span>
+      {text}
+    </div>
+  );
+}
 
-const TRUST_POINTS = [
-  { emoji: '👶', label: 'Ages 3–8' },
-  { emoji: '🌍', label: 'Caribbean diaspora families' },
-  { emoji: '📖', label: 'Daily literacy practice' },
-  { emoji: '🔐', label: 'Member portal access' },
-];
+// ─── Content card ─────────────────────────────────────────────────────────────
+function ContentCard({ emoji, title, desc, gradient }: { emoji: string; title: string; desc: string; gradient: string }) {
+  return (
+    <div className="group relative overflow-hidden rounded-2xl bg-white border border-[#eceae4] p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-[#fbbf24]/40">
+      <div className={`absolute top-0 left-0 right-0 h-1.5 ${gradient}`} />
+      <div className="text-3xl mb-3">{emoji}</div>
+      <h3 className="text-lg font-bold text-[#1c1c1c] mb-1">{title}</h3>
+      <p className="text-sm text-[#5f5f5d] leading-relaxed">{desc}</p>
+    </div>
+  );
+}
 
-const PROBLEM_BULLETS = [
-  {
-    emoji: '🏝️',
-    text: 'Your child only hears Caribbean stories from grandparents — and you worry the culture will fade in the next generation.',
-  },
-  {
-    emoji: '📚',
-    text: 'Most learning apps feel generic and disconnected from who your family is. Nothing reflects home.',
-  },
-  {
-    emoji: '⏰',
-    text: 'Between work, school runs, and life, you do not have hours to plan culture lessons or hunt down phonics activities.',
-  },
-  {
-    emoji: '💬',
-    text: 'Your kids are picking up the local accent fast — and slowly losing the words, songs, and sayings that mean home to you.',
-  },
-];
-
-const STEPS = [
-  {
-    n: '1',
-    title: 'Start with the Intro Mailer',
-    body: 'A one-time purchase that unlocks your child\'s first personalized Caribbean story mailer, activity sheets, and portal preview.',
-  },
-  {
-    n: '2',
-    title: 'Meet the Legends',
-    body: 'Your child joins Dilly, Tanty, R.O.T.I., Scorcha, and Mango on the member portal for read-aloud stories and learning activities.',
-  },
-  {
-    n: '3',
-    title: 'Learn & grow together',
-    body: 'Each month brings a new mailer matched to your child\'s age band — phonics, stories, and activities that keep Caribbean culture alive at home.',
-  },
-];
-
-const WHATS_INSIDE = [
-  { emoji: '✉️', title: 'Personalized Story Mailer', body: 'A Caribbean-themed story mailed to your child, personalized with their name and heritage island.' },
-  { emoji: '🎨', title: 'Printable Activity Sheets', body: 'Phonics, coloring, and counting worksheets matched to your child\'s age band (3–4, 4–6, 6–8).' },
-  { emoji: '📖', title: 'Read-Aloud Story Library', body: 'Audio stories in the portal read by Caribbean voices — listen together or let your child explore solo.' },
-  { emoji: '🧩', title: 'Learning Activities & Games', body: 'Flag matching, island trivia, and phonics games that turn screen time into culture time.' },
-  { emoji: '🤖', title: 'Kid-Safe AI Buddy Chat', body: 'Your child chats with the five Legends in COPPA-compliant, parent-managed conversations.' },
-  { emoji: '🏆', title: 'XP, Badges & Progress', body: 'Kids earn rewards and track reading streaks — so learning Caribbean culture feels like an adventure.' },
-];
-
-const AGE_BANDS = [
-  {
-    band: 'Ages 3–4 · Pre-readers',
-    points: ['Letter recognition & sounds', 'Vocabulary building', 'Read-aloud Caribbean stories'],
-  },
-  {
-    band: 'Ages 4–6 · Early readers',
-    points: ['Blending & sight words', 'Simple Caribbean-themed sentences', 'Guided phonics activities'],
-  },
-  {
-    band: 'Ages 6–8 · Growing readers',
-    points: ['Reading fluency practice', 'Comprehension with Caribbean stories', 'Independent activity sheets'],
-  },
-];
-
-const CHARACTERS = [
-  { emoji: '⚡', name: 'Dilly' },
-  { emoji: '👵🏾', name: 'Tanty' },
-  { emoji: '🤖', name: 'R.O.T.I.' },
-  { emoji: '🌶️', name: 'Scorcha' },
-  { emoji: '🥭', name: 'Mango' },
-];
-
-const INCLUDED = [
-  'Personalized Caribbean story mailer',
-  'Printable activity sheets (your child\'s age band)',
-  'Preview access to the member portal',
-  'Meet all five Legends & try the buddy chat',
-  'Read-aloud story library sample',
-  '30-day money-back guarantee',
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Page
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Character card ───────────────────────────────────────────────────────────
+function CharacterCard({ emoji, name, role, catchphrase, gradient }: { emoji: string; name: string; role: string; catchphrase: string; gradient: string }) {
+  return (
+    <div className="group relative flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-2">
+      <div className={`relative w-20 h-20 rounded-full ${gradient} flex items-center justify-center text-3xl shadow-lg mb-3 transition-transform group-hover:scale-110`}>
+        {emoji}
+      </div>
+      <h3 className="text-sm font-bold text-[#1c1c1c]">{name}</h3>
+      <p className="text-xs text-[#5f5f5d] mb-1">{role}</p>
+      <p className="text-xs italic text-[#0e9aa7] opacity-0 group-hover:opacity-100 transition-opacity duration-300 max-w-[140px]">
+        "{catchphrase}"
+      </p>
+    </div>
+  );
+}
 
 export default function OfferPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-sky-200 via-amber-50 to-white text-slate-800 font-montserrat">
-      {/* 1. Header — minimal: logo + Member Login + Help only */}
-      <header className="sticky top-0 z-50 border-b border-amber-100 bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl" aria-hidden="true">🌴</span>
-            <span className="font-fredoka text-xl font-bold text-slate-900 sm:text-2xl">
-              Likkle Legends
-            </span>
-          </Link>
-          <nav className="flex items-center gap-4 text-sm sm:gap-6">
-            <Link
-              href="/login"
-              className="font-montserrat font-semibold text-slate-600 hover:text-[var(--caribbean-mango)] transition-colors"
-            >
-              Member Login
-            </Link>
-            <Link
-              href="/faq"
-              className="font-montserrat font-semibold text-slate-600 hover:text-[var(--caribbean-mango)] transition-colors"
-            >
-              Help
-            </Link>
-          </nav>
+    <div className="min-h-screen bg-[#fef9f0] text-[#1c1c1c]" style={{ fontFamily: "Montserrat, sans-serif" }}>
+      {/* ── CSS animations ── */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes ll-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+        @keyframes ll-drift { 0% { transform: translateX(0); } 100% { transform: translateX(40px); } }
+        .ll-hero-svg { animation: ll-float 4s ease-in-out infinite; }
+        .ll-cloud { animation: ll-drift 30s linear infinite alternate; }
+        @media (prefers-reduced-motion: reduce) {
+          .ll-hero-svg, .ll-cloud { animation: none !important; }
+        }
+      `}} />
+
+      {/* ── 1. Header ── */}
+      <header className="sticky top-0 z-50 backdrop-blur-md bg-[#fef9f0]/80 border-b border-[#eceae4]/60">
+        <div className="mx-auto max-w-6xl px-5 h-16 flex items-center justify-between">
+          <span className="text-xl font-black tracking-tight text-[#1c1c1c]">Likkle Legends</span>
+          <div className="flex items-center gap-5 text-xs font-semibold text-[#5f5f5d]">
+            <a href="/login" className="hover:text-[#0e9aa7] transition-colors">Member Login</a>
+            <a href="/faq" className="hover:text-[#0e9aa7] transition-colors">Help</a>
+          </div>
         </div>
       </header>
 
-      {/* 2. Hero */}
-      <section className="relative overflow-hidden px-4 pb-16 pt-12 sm:px-6 sm:pt-16">
-        <div className="mx-auto max-w-6xl">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <div className="text-center lg:text-left">
-              <p className="mb-4 inline-block rounded-full bg-amber-100 px-4 py-1.5 font-montserrat text-xs font-bold uppercase tracking-wider text-[var(--caribbean-mango)] sm:text-sm">
-                For Caribbean Families Abroad
-              </p>
-              <h1 className="font-fredoka text-4xl font-bold leading-tight text-slate-900 sm:text-5xl lg:text-6xl">
-                Caribbean learning that feels like home for kids 3–8
-              </h1>
-              <p className="mx-auto mt-5 max-w-xl font-quicksand text-lg leading-relaxed text-slate-600 lg:mx-0">
-                Stories, phonics, and hands-on activities that keep your child connected to
-                Caribbean culture — wherever in the world your family lives now.
-              </p>
+      {/* ── 2. Hero ── */}
+      <section className="relative overflow-hidden px-5 pt-12 pb-8">
+        {/* Drifting clouds */}
+        <div className="absolute top-10 left-[5%] text-4xl opacity-20 ll-cloud pointer-events-none">☁️</div>
+        <div className="absolute top-20 right-[15%] text-3xl opacity-15 pointer-events-none">☁️</div>
 
-              {/* CTA #1 */}
-              <div className="mt-8 flex flex-col items-center gap-3 lg:items-start">
-                <CTAButton />
-                <Link
-                  href="/sample"
-                  className="font-montserrat text-sm font-semibold text-slate-500 underline-offset-4 hover:text-[var(--caribbean-ocean)] hover:underline"
-                >
-                  Preview a Sample
-                </Link>
-                <p className="font-quicksand text-xs text-slate-500 sm:text-sm">
-                  🌍 Digital access worldwide instantly · 🇺🇸 Physical mail ships to US within 48 hours
-                </p>
-              </div>
-            </div>
-
-            {/* Visual placeholder card */}
-            <div className="flex justify-center">
-              <div className="relative w-full max-w-sm rounded-3xl bg-gradient-to-br from-[var(--caribbean-sky)] via-amber-100 to-[var(--caribbean-papaya)] p-8 shadow-2xl">
-                <div className="absolute -top-4 -right-4 rounded-full bg-white px-4 py-1 text-2xl shadow-lg">
-                  🌴
-                </div>
-                <div className="flex flex-col items-center gap-4 text-center">
-                  <div className="text-6xl" aria-hidden="true">📖</div>
-                  <p className="font-fredoka text-xl font-bold text-slate-800">
-                    Your child&apos;s first mailer
-                  </p>
-                  <ul className="space-y-2 font-quicksand text-sm font-semibold text-slate-700">
-                    <li>✉️ Personalized story mailer</li>
-                    <li>🎨 Activity sheets</li>
-                    <li>🔓 Portal preview</li>
-                  </ul>
-                  <div className="mt-2 rounded-full bg-white/70 px-4 py-1.5 font-montserrat text-xs font-bold text-slate-600">
-                    mailer · activity sheets · portal preview
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. Hero trust block */}
-      <section className="px-4 sm:px-6">
-        <div className="mx-auto max-w-5xl rounded-2xl border border-amber-100 bg-white/80 p-4 shadow-sm sm:p-6">
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-            {TRUST_POINTS.map((t) => (
-              <li
-                key={t.label}
-                className="flex flex-col items-center gap-2 rounded-xl bg-amber-50 px-3 py-4 text-center"
-              >
-                <span className="text-2xl" aria-hidden="true">{t.emoji}</span>
-                <span className="font-montserrat text-xs font-bold text-slate-700 sm:text-sm">
-                  {t.label}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* 4. Problem section */}
-      <section className="px-4 py-16 sm:px-6 sm:py-20">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="mb-3 font-montserrat text-xs font-bold uppercase tracking-widest text-[var(--caribbean-spice)]">
-            The struggle is real
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0e9aa7] mb-3">For Caribbean Families Abroad</p>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight text-[#1c1c1c] mb-4">
+            Caribbean learning that feels like{" "}
+            <span className="bg-gradient-to-r from-[#fb7118] to-[#fbbf24] bg-clip-text text-transparent">home</span>
+            {" "}for kids 3–8
+          </h1>
+          <p className="text-lg text-[#5f5f5d] leading-relaxed max-w-xl mx-auto mb-6">
+            Stories, phonics practice, and school-style activities designed to help children grow in reading, confidence, and connection to their Caribbean roots.
           </p>
-          <h2 className="font-fredoka text-3xl font-bold text-slate-900 sm:text-4xl">
-            Raising Caribbean kids abroad is harder than it looks
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl font-quicksand text-lg leading-relaxed text-slate-600">
-            You moved across the world for opportunity — and you are proud of that. But keeping
-            Caribbean culture alive for your kids takes real work, and most learning tools were
-            not built for families like yours.
-          </p>
-          <ul className="mt-8 grid gap-4 text-left sm:grid-cols-2">
-            {PROBLEM_BULLETS.map((b) => (
-              <li
-                key={b.text}
-                className="flex gap-3 rounded-2xl bg-white/70 p-5 shadow-sm border border-slate-100"
-              >
-                <span className="text-2xl" aria-hidden="true">{b.emoji}</span>
-                <span className="font-quicksand text-sm leading-relaxed text-slate-700 sm:text-base">
-                  {b.text}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* 5. Solution section */}
-      <section className="px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-3xl rounded-3xl bg-gradient-to-br from-sky-100 via-amber-50 to-white p-8 text-center shadow-md sm:p-12">
-          <p className="mb-3 font-montserrat text-xs font-bold uppercase tracking-widest text-[var(--caribbean-ocean)]">
-            The Likkle Legends way
-          </p>
-          <h2 className="font-fredoka text-3xl font-bold text-slate-900 sm:text-4xl">
-            A little piece of the Caribbean, delivered to your child
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl font-quicksand text-lg leading-relaxed text-slate-600">
-            Likkle Legends turns Caribbean culture into a learning adventure your child will
-            actually look forward to. Each mailer blends phonics and reading practice with the
-            stories, songs, and sayings of home — so your kids grow up literate <em>and</em> rooted.
-          </p>
-        </div>
-      </section>
-
-      {/* 6. How it works */}
-      <section className="px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
-            <h2 className="font-fredoka text-3xl font-bold text-slate-900 sm:text-4xl">
-              How it works
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl font-quicksand text-lg text-slate-600">
-              Three simple steps from order to your child&apos;s first Caribbean learning adventure.
-            </p>
+          <div className="flex flex-col items-center gap-3">
+            <CTAButton />
+            <a href="/offer/checkout" className="text-sm font-semibold text-[#0e9aa7] underline underline-offset-2 hover:text-[#fb7118] transition-colors">
+              Preview a Sample
+            </a>
           </div>
-          <ol className="grid gap-6 md:grid-cols-3">
-            {STEPS.map((s) => (
-              <li
-                key={s.n}
-                className="relative rounded-2xl border border-amber-100 bg-white p-6 text-center shadow-sm"
-              >
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-orange-400 to-amber-400 font-montserrat text-xl font-extrabold text-white shadow-md">
+          <p className="text-xs text-[#5f5f5d]/70 mt-4">Digital access for families worldwide. Physical mail options shown where available.</p>
+        </div>
+
+        {/* Hero SVG */}
+        <div className="mx-auto max-w-2xl mt-8" dangerouslySetInnerHTML={{ __html: HERO_SVG }} />
+      </section>
+
+      {/* ── 3. Hero trust block ── */}
+      <section className="px-5 py-6">
+        <div className="mx-auto max-w-3xl flex flex-wrap justify-center gap-3">
+          <TrustBadge icon="👧" text="Ages 3–8" />
+          <TrustBadge icon="🏝️" text="Caribbean Diaspora" />
+          <TrustBadge icon="📚" text="Literacy Practice" />
+          <TrustBadge icon="✨" text="Portal Access" />
+        </div>
+      </section>
+
+      {/* ── 4. Problem section ── */}
+      <section className="px-5 py-16">
+        <div className="mx-auto max-w-2xl">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center mb-6">
+            Your child can grow up proud of where they come from — and still get real learning support
+          </h2>
+          <p className="text-[#5f5f5d] text-center leading-relaxed mb-8">
+            Many Caribbean parents abroad want more than generic kids&apos; content. They want something that helps their child stay connected to culture while also making reading, language, and home learning feel more engaging and more personal.
+          </p>
+          <div className="grid gap-3">
+            {[
+              { e: "🌍", t: "Learning that feels culturally distant" },
+              { e: "📱", t: "Screen time that entertains but does not guide" },
+              { e: "📝", t: "Home practice that feels hard to keep consistent" },
+              { e: "💛", t: "A child who needs something they can actually connect with" },
+            ].map((b) => (
+              <div key={b.t} className="flex items-center gap-3 rounded-xl bg-white border border-[#eceae4] p-4 transition-all hover:-translate-y-0.5 hover:shadow-md">
+                <span className="text-xl">{b.e}</span>
+                <span className="text-sm font-semibold text-[#1c1c1c]">{b.t}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. Solution section ── */}
+      <section className="px-5 py-16 bg-gradient-to-b from-[#a7ddf7]/30 to-[#fef9f0]">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4">
+            Likkle Legends brings culture, literacy, and play together in one experience
+          </h2>
+          <p className="text-[#5f5f5d] leading-relaxed">
+            Each learning experience combines Caribbean-inspired stories, early literacy activities, and guided ways for families to read, talk, and learn together. It is designed to feel warm and fun for children while still giving parents something more structured than random content.
+          </p>
+        </div>
+      </section>
+
+      {/* ── 6. How it works ── */}
+      <section className="px-5 py-16">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center mb-12">How it works</h2>
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            {/* connecting line */}
+            <div className="hidden md:block absolute top-8 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-[#fb7118]/20 via-[#fbbf24]/40 to-[#0e9aa7]/20" />
+            {[
+              { n: 1, t: "Choose your child's age band", d: "Pick the learning experience that fits your child best, from early sound play to more independent reading and writing.", c: "from-[#fb7118] to-[#f97316]" },
+              { n: 2, t: "Start with your first learning pack", d: "Get an intro experience with guided activities, themed learning, and a first look at the Likkle Legends world.", c: "from-[#fbbf24] to-[#fb7118]" },
+              { n: 3, t: "Unlock more through the portal", d: "Continue with digital activities, stories, and member content designed to keep your child engaged beyond day one.", c: "from-[#0e9aa7] to-[#33c0cc]" },
+            ].map((s) => (
+              <div key={s.n} className="relative flex flex-col items-center text-center">
+                <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${s.c} flex items-center justify-center text-white text-2xl font-black shadow-lg mb-4 z-10`}>
                   {s.n}
                 </div>
-                <h3 className="font-fredoka text-xl font-bold text-slate-900">{s.title}</h3>
-                <p className="mt-3 font-quicksand text-sm leading-relaxed text-slate-600 sm:text-base">
-                  {s.body}
-                </p>
-              </li>
+                <h3 className="text-lg font-bold mb-2">{s.t}</h3>
+                <p className="text-sm text-[#5f5f5d] leading-relaxed">{s.d}</p>
+              </div>
             ))}
-          </ol>
-
-          {/* CTA #2 */}
-          <div className="mt-10 text-center">
+          </div>
+          <div className="text-center mt-10">
             <CTAButton />
           </div>
         </div>
       </section>
 
-      {/* 7. What's inside */}
-      <section className="px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
-            <h2 className="font-fredoka text-3xl font-bold text-slate-900 sm:text-4xl">
-              What&apos;s inside
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl font-quicksand text-lg text-slate-600">
-              Everything your child needs to learn and feel at home — in one Intro Mailer.
-            </p>
+      {/* ── 7. What's inside ── */}
+      <section className="px-5 py-16 bg-white/50">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center mb-10">What your child gets</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <ContentCard emoji="📖" title="Story-led learning" desc="Caribbean-centered themes that make every story feel like coming home." gradient="bg-gradient-to-r from-[#fb7118] to-[#f97316]" />
+            <ContentCard emoji="🔤" title="Phonics & literacy" desc="Early reading practice woven naturally into stories and activities." gradient="bg-gradient-to-r from-[#0e9aa7] to-[#33c0cc]" />
+            <ContentCard emoji="📝" title="Activity sheets" desc="School-style guided tasks you can print and use at home." gradient="bg-gradient-to-r from-[#fbbf24] to-[#fb7118]" />
+            <ContentCard emoji="⚡" title="Character adventures" desc="Familiar island characters that make learning feel like a world to explore." gradient="bg-gradient-to-r from-[#5ecbff] to-[#1e93e6]" />
+            <ContentCard emoji="portal" title="Portal access" desc="Continue learning with digital activities, stories, and member content." gradient="bg-gradient-to-r from-[#b79cff] to-[#7c3aed]" />
+            <ContentCard emoji="👨‍👩‍👧" title="Parent guidance" desc="Make home learning easier with structured, parent-friendly support." gradient="bg-gradient-to-r from-[#fb8fd0] to-[#e0479f]" />
           </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {WHATS_INSIDE.map((c) => (
-              <div
-                key={c.title}
-                className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
-              >
-                <div className="mb-3 text-3xl" aria-hidden="true">{c.emoji}</div>
-                <h3 className="font-fredoka text-lg font-bold text-slate-900">{c.title}</h3>
-                <p className="mt-2 font-quicksand text-sm leading-relaxed text-slate-600">
-                  {c.body}
-                </p>
+          <div className="text-center mt-10">
+            <CTAButton />
+          </div>
+        </div>
+      </section>
+
+      {/* ── 8. Literacy credibility ── */}
+      <section className="px-5 py-16">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center mb-4">
+            Real phonics and school-style practice, made more engaging
+          </h2>
+          <p className="text-[#5f5f5d] text-center leading-relaxed mb-10">
+            Likkle Legends includes activities that help children practice early literacy foundations such as rhyme, sound awareness, letter-sound connections, blending, vocabulary, and simple reading tasks. The focus is to make reading practice feel more inviting through stories, characters, and culturally familiar learning moments.
+          </p>
+          <div className="grid md:grid-cols-3 gap-5">
+            {[
+              { age: "Ages 3–4", items: ["Sound play", "Rhymes", "Listening", "Vocabulary", "Early language"], c: "from-[#5ecbff] to-[#0e9aa7]" },
+              { age: "Ages 4–6", items: ["Letter sounds", "Blending", "Handwriting", "First words", "Reading practice"], c: "from-[#fb7118] to-[#fbbf24]" },
+              { age: "Ages 6–8", items: ["Reading practice", "Vocabulary", "Comprehension", "Guided written work", "Creative writing"], c: "from-[#b79cff] to-[#7c3aed]" },
+            ].map((band) => (
+              <div key={band.age} className="rounded-2xl bg-white border border-[#eceae4] overflow-hidden">
+                <div className={`h-2 bg-gradient-to-r ${band.c}`} />
+                <div className="p-5">
+                  <h3 className="text-lg font-bold mb-3">{band.age}</h3>
+                  <ul className="space-y-2">
+                    {band.items.map((item) => (
+                      <li key={item} className="flex items-center gap-2 text-sm text-[#5f5f5d]">
+                        <span className="text-[#0e9aa7]">✓</span> {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA after What's Inside (#3) */}
-      <section className="px-4 pb-12 sm:px-6">
+      {/* ── 9. Character section ── */}
+      <section className="px-5 py-16 bg-gradient-to-b from-[#fef9f0] to-[#fff2df]">
         <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4">Meet the world your child can grow with</h2>
+          <p className="text-[#5f5f5d] leading-relaxed mb-10">
+            Likkle Legends is built around memorable island-inspired characters, stories, and adventures that give children familiar faces to return to as they learn. This makes the experience feel less like a worksheet and more like a world they want to be part of.
+          </p>
+          <div className="flex flex-wrap justify-center gap-6 mb-10">
+            <CharacterCard emoji="⚡" name="Dilly Doubles" role="Hype-man & Buddy" catchphrase="Lesss goooo, Legend!" gradient="bg-gradient-to-br from-[#5ecbff] to-[#1e93e6]" />
+            <CharacterCard emoji="👵🏾" name="Tanty Spice" role="Storyteller & Heart" catchphrase="Come nuh, sit down wid me." gradient="bg-gradient-to-br from-[#fb8fd0] to-[#e0479f]" />
+            <CharacterCard emoji="🤖" name="R.O.T.I." role="Learning Robot" catchphrase="Brains on—sunshine mode!" gradient="bg-gradient-to-br from-[#b79cff] to-[#7c3aed]" />
+            <CharacterCard emoji="🌶️" name="Scorcha Pepper" role="Feelings Coach" catchphrase="Hot feelings, cool choices." gradient="bg-gradient-to-br from-[#ff8b9c] to-[#e0324b]" />
+            <CharacterCard emoji="🥭" name="Mango Moko" role="Island Lookout" catchphrase="Stand tall and look again." gradient="bg-gradient-to-br from-[#ffd166] to-[#f97316]" />
+          </div>
           <CTAButton />
         </div>
       </section>
 
-      {/* 8. Literacy credibility */}
-      <section className="px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-4xl">
-          <div className="text-center">
-            <p className="mb-3 font-montserrat text-xs font-bold uppercase tracking-widest text-[var(--caribbean-ocean)]">
-              Built on real reading science
-            </p>
-            <h2 className="font-fredoka text-3xl font-bold text-slate-900 sm:text-4xl">
-              Literacy that grows with your child
-            </h2>
-            <p className="mx-auto mt-5 max-w-2xl font-quicksand text-lg leading-relaxed text-slate-600">
-              Likkle Legends follows a phonics-based progression matched to your child&apos;s
-              reading stage. Every mailer and activity sheet meets your child where they are —
-              from first letter sounds to confident, fluent reading.
-            </p>
-          </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {AGE_BANDS.map((a) => (
-              <div
-                key={a.band}
-                className="rounded-2xl border border-amber-100 bg-white p-6 shadow-sm"
-              >
-                <h3 className="font-fredoka text-lg font-bold text-slate-900">{a.band}</h3>
-                <ul className="mt-3 space-y-2">
-                  {a.points.map((p) => (
-                    <li key={p} className="flex items-start gap-2 font-quicksand text-sm text-slate-600">
-                      <span className="mt-1 flex-none text-[var(--caribbean-palm)]" aria-hidden="true">✓</span>
-                      <span>{p}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 9. Character section */}
-      <section className="px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-4xl rounded-3xl bg-gradient-to-br from-[var(--caribbean-papaya)]/20 via-amber-50 to-sky-100 p-8 text-center shadow-md sm:p-12">
-          <p className="mb-3 font-montserrat text-xs font-bold uppercase tracking-widest text-[var(--caribbean-mango)]">
-            Meet the Legends
-          </p>
-          <h2 className="font-fredoka text-3xl font-bold text-slate-900 sm:text-4xl">
-            Five Caribbean friends your child will love
-          </h2>
-          <p className="mx-auto mt-5 max-w-2xl font-quicksand text-lg leading-relaxed text-slate-600">
-            Dilly, Tanty, R.O.T.I., Scorcha, and Mango guide your child through every story,
-            activity, and chat. They are the heart of Likkle Legends — friendly, funny, and
-            unmistakably Caribbean.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-8">
-            {CHARACTERS.map((c) => (
-              <div key={c.name} className="flex flex-col items-center gap-2">
-                <span className="text-4xl sm:text-5xl" aria-hidden="true">{c.emoji}</span>
-                <span className="font-fredoka text-sm font-bold text-slate-800 sm:text-base">
-                  {c.name}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* CTA #4 */}
-          <div className="mt-10">
-            <CTAButton />
-          </div>
-        </div>
-      </section>
-
-      {/* 10. Offer section */}
-      <section className="px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-xl">
-          <div className="rounded-3xl border-2 border-amber-300 bg-white p-8 shadow-2xl sm:p-10">
-            <div className="text-center">
-              <p className="mb-2 font-montserrat text-xs font-bold uppercase tracking-widest text-[var(--caribbean-mango)]">
-                The Offer
-              </p>
-              <h2 className="font-fredoka text-3xl font-bold text-slate-900 sm:text-4xl">
-                Intro Mailer
-              </h2>
-              <p className="mt-2 font-quicksand text-base text-slate-600">
-                Everything you need to try Likkle Legends with your child.
-              </p>
+      {/* ── 10. Offer section ── */}
+      <section className="px-5 py-16">
+        <div className="mx-auto max-w-md">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center mb-8">Start with a simple first step</h2>
+          <div className="rounded-3xl bg-white border-2 border-[#fbbf24]/30 shadow-xl overflow-hidden">
+            <div className="bg-gradient-to-r from-[#fb7118] to-[#fbbf24] p-5 text-center">
+              <h3 className="text-2xl font-black text-white">Intro Mailer</h3>
             </div>
-
-            <ul className="mt-8 space-y-3">
-              {INCLUDED.map((item) => (
-                <li key={item} className="flex items-start gap-3">
-                  <span className="mt-0.5 flex-none text-lg text-[var(--caribbean-palm)]" aria-hidden="true">✓</span>
-                  <span className="font-quicksand text-sm font-semibold text-slate-700 sm:text-base">
+            <div className="p-6">
+              <p className="text-sm text-[#5f5f5d] leading-relaxed mb-5">
+                A low-friction way to explore the Likkle Legends experience with your child. Start with guided activities, early literacy practice, and a first step into the stories, characters, and portal.
+              </p>
+              <ul className="space-y-3 mb-6">
+                {["Intro learning pack", "Age-appropriate activity set", "First portal access step", "Parent guidance for getting started"].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-sm font-semibold text-[#1c1c1c]">
+                    <span className="w-5 h-5 rounded-full bg-[#fbbf24]/20 flex items-center justify-center text-[#fb7118] text-xs">✓</span>
                     {item}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            {/* CTA #5 */}
-            <div className="mt-8 flex flex-col items-center gap-2">
-              <CTAButton />
-              <p className="font-quicksand text-xs text-slate-500">
-                One-time purchase · No subscription · 30-day money-back guarantee
-              </p>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-col items-center gap-2">
+                <CTAButton />
+                <p className="text-xs text-[#5f5f5d]/70 mt-2">What&apos;s included and pricing are shown clearly before checkout.</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 11. FAQ */}
-      <section className="px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-10 text-center">
-            <h2 className="font-fredoka text-3xl font-bold text-slate-900 sm:text-4xl">
-              Frequently asked questions
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl font-quicksand text-lg text-slate-600">
-              Everything parents ask before starting the Intro Mailer.
-            </p>
-          </div>
+      {/* ── 11. FAQ ── */}
+      <section className="px-5 py-16 bg-white/50">
+        <div className="mx-auto max-w-2xl">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center mb-8">Questions?</h2>
           <OfferFAQ />
         </div>
       </section>
 
-      {/* 12. Final CTA */}
-      <section className="px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-3xl rounded-3xl bg-gradient-to-r from-orange-400 to-amber-400 p-8 text-center shadow-2xl sm:p-12">
-          <h2 className="font-fredoka text-3xl font-bold text-white sm:text-4xl">
-            Give your child a piece of home
+      {/* ── 12. Final CTA ── */}
+      <section className="px-5 py-20 bg-gradient-to-br from-[#fb7118] to-[#fbbf24]">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-4">
+            Help your child grow in reading, confidence, and cultural connection
           </h2>
-          <p className="mx-auto mt-4 max-w-xl font-quicksand text-lg text-white/90">
-            Start with the Intro Mailer today — and watch your child fall in love with Caribbean
-            learning, one mailer at a time.
+          <p className="text-white/90 leading-relaxed mb-8">
+            Start with a simple first step designed to make literacy practice feel more personal, more joyful, and easier to bring into everyday family life.
           </p>
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <Link
-              href={CTA_HREF}
-              className="inline-flex items-center justify-center rounded-2xl bg-white px-8 py-4 font-montserrat text-lg font-extrabold text-orange-500 shadow-lg hover:-translate-y-1 hover:shadow-2xl transition-all"
-            >
-              🌴 {CTA_LABEL}
-            </Link>
-            <p className="font-quicksand text-sm text-white/90">
-              Already a member?{' '}
-              <Link href="/login" className="font-bold underline underline-offset-4 hover:text-white">
-                Log in
-              </Link>
-            </p>
-          </div>
+          <CTAButton variant="white" />
+          <a href="/login" className="block mt-4 text-sm font-semibold text-white/80 underline underline-offset-2 hover:text-white transition-colors">
+            Already a member? Log in
+          </a>
         </div>
       </section>
 
-      {/* 13. Footer — minimal */}
-      <footer className="border-t border-amber-100 bg-white/80 px-4 py-10 sm:px-6">
-        <div className="mx-auto max-w-5xl">
-          <div className="flex flex-col items-center gap-4 text-center">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-2xl" aria-hidden="true">🌴</span>
-              <span className="font-fredoka text-lg font-bold text-slate-900">
-                Likkle Legends
-              </span>
-            </Link>
-            <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 font-montserrat text-xs font-semibold text-slate-500 sm:text-sm">
-              <Link href="/login" className="hover:text-[var(--caribbean-mango)] transition-colors">
-                Member Login
-              </Link>
-              <Link href="/faq" className="hover:text-[var(--caribbean-mango)] transition-colors">
-                Help / Contact
-              </Link>
-              <Link href="/privacy" className="hover:text-[var(--caribbean-mango)] transition-colors">
-                Privacy
-              </Link>
-              <Link href="/terms" className="hover:text-[var(--caribbean-mango)] transition-colors">
-                Terms
-              </Link>
-            </nav>
-            <p className="max-w-md font-quicksand text-xs text-slate-400">
-              🚚 Physical mail ships to the US within 48 hours. Digital access available worldwide
-              instantly.
-            </p>
-            <p className="max-w-md font-quicksand text-xs text-slate-400">
-              🔒 Likkle Legends is COPPA-compliant and built kid-safe. No ads, no third-party
-              tracking on your child&apos;s activity.
-            </p>
-            <p className="mt-2 font-montserrat text-xs text-slate-400">
-              © {new Date().getFullYear()} Likkle Legends. Made with 🧡 for Caribbean families abroad.
-            </p>
-          </div>
+      {/* ── 13. Footer ── */}
+      <footer className="px-5 py-8 bg-[#fef9f0] border-t border-[#eceae4]">
+        <div className="mx-auto max-w-4xl flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs font-semibold text-[#5f5f5d]">
+          <a href="/login" className="hover:text-[#0e9aa7]">Member Login</a>
+          <a href="/faq" className="hover:text-[#0e9aa7]">Help / Contact</a>
+          <a href="/privacy" className="hover:text-[#0e9aa7]">Privacy Policy</a>
+          <a href="/terms" className="hover:text-[#0e9aa7]">Terms</a>
+          <span className="text-[#5f5f5d]/60">Shipping / access varies by destination</span>
+          <span className="text-[#5f5f5d]/60">COPPA compliant — child safety first</span>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
