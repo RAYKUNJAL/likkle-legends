@@ -247,8 +247,8 @@ export const TANTY_ISLAND_ENGINE = {
         platform: "Google GenAI"
     },
     technical_stack: {
-        brain_model: "gemini-2.0-flash-exp",
-        vocal_model: "gemini-2.0-flash-exp",
+        brain_model: "gemini-2.5-flash",
+        vocal_model: "gemini-2.5-flash",
         audio_sample_rate: 24000,
         input_sample_rate: 16000
     },

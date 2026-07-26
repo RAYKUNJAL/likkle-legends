@@ -71,8 +71,8 @@ export const ROTI_VOICE_ENGINE = {
         targetAge: "6-9"
     },
     technical_stack: {
-        brain_model: "gemini-2.0-flash-exp",
-        vocal_model: "gemini-2.0-flash",
+        brain_model: "gemini-2.5-flash",
+        vocal_model: "gemini-2.5-flash",
         audio_sample_rate: 24000,
         audio_format: "WAV"
     },

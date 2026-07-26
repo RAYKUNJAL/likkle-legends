@@ -149,7 +149,7 @@ export async function narrateText(text: string): Promise<AudioBuffer | null> {
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
             contents: [{ parts: [{ text: prompt }] }],
             config: {
                 responseModalities: [Modality.AUDIO],
@@ -196,7 +196,7 @@ export async function generateBirthdaySong(childName: string, guide: string = "T
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
             contents: [{ parts: [{ text: prompt }] }],
             config: {
                 responseModalities: [Modality.AUDIO],
@@ -247,7 +247,7 @@ export async function* getTantySpiceResponseStream(userPrompt: string, ageGroup:
     const ai = new GoogleGenAI({ apiKey });
     try {
         const response = await ai.models.generateContentStream({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash",
             contents: userPrompt,
             config: {
                 systemInstruction: getTantySystemInstruction(ageGroup),

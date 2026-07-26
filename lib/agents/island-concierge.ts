@@ -6,7 +6,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ISLAND_REGISTRY, IslandPack } from '@/lib/registries/islands';
 
 const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
-const MODEL_NAME = 'gemini-2.0-flash-exp'; // Cheap, fast, good enough for kids content
+const MODEL_NAME = 'gemini-2.5-flash'; // Cheap, fast, good enough for kids content
 
 export interface ConciergeLesson {
     island_code: string;

@@ -28,7 +28,7 @@ const getGeminiModel = () => {
     if (!GEMINI_KEY) throw new Error('Gemini API Key is missing.');
     const genAI = new GoogleGenerativeAI(GEMINI_KEY);
     return genAI.getGenerativeModel({
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash',
         generationConfig: { temperature: 0.9, maxOutputTokens: 4096 },
     });
 };

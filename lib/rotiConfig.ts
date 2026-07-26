@@ -163,7 +163,7 @@ export const ROTI_VISUAL = {
 // 🔧 TECHNICAL STACK
 // ============================================
 export const ROTI_TECHNICAL = {
-    brainModel: "gemini-2.0-flash-exp", // Fast, good for chat
+    brainModel: "gemini-2.5-flash", // Fast, good for chat
     voiceModel: "gemini-2.5-flash-preview-tts", // Premium TTS model for human-like voice
     voiceName: "Leda", // Warm, articulate - perfect for teaching kids
     voiceModes: {

@@ -33,7 +33,7 @@ export class IslandBrainOrchestrator {
         this.genAI = new GoogleGenerativeAI(apiKey);
         // COMMERCIAL UPGRADE: Switched to Gemini 2.0 Flash for production
         this.model = this.genAI.getGenerativeModel({
-            model: "gemini-2.0-flash", // UPGRADED from 1.5
+            model: "gemini-2.5-flash", // UPGRADED from 1.5
             safetySettings: SAFETY_SETTINGS,
             generationConfig: {
                 responseMimeType: "application/json"

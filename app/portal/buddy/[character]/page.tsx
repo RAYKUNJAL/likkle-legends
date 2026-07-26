@@ -35,6 +35,12 @@ interface Limits {
     burstUsed: number;
     burstLimit: number;
     trialLabel?: string | null;
+    trial?: {
+        limit: number;
+        remaining: number;
+        characterId: string;
+        exhausted: boolean;
+    } | null;
 }
 
 interface QuickPrompt {
@@ -420,7 +426,9 @@ export default function CharacterChatPage() {
 
     if (!config) return null;
 
+    const isTantyTrial = characterId === 'tanty_spice';
     const isPaidBuddyAccount = !isLoading && !!user && canAccess('starter_mailer');
+    const trialExhausted = isTantyTrial && !isPaidBuddyAccount && limits?.trial?.exhausted;
 
     const childProfile: CharacterChild | null = activeChild ? {
         first_name: activeChild.first_name,
@@ -542,8 +550,17 @@ export default function CharacterChatPage() {
                 <div className="px-4 py-2 border-b border-slate-200 bg-white/90">
                     {limits && (
                         <p className={`text-xs font-semibold ${nearLimit ? 'text-amber-700' : 'text-slate-600'}`}>
-                            {dailyLeft !== null ? `${dailyLeft} chats left today.` : 'Buddy chat limits are active.'}
-                            {limits.trialLabel ? ` ${limits.trialLabel}` : ''}
+                            {limits.trial ? (
+                                <>
+                                    {limits.trial.remaining} free Tanty {limits.trial.remaining === 1 ? 'chat' : 'chats'} left today.
+                                    {limits.trialLabel ? ` ${limits.trialLabel}` : ''}
+                                </>
+                            ) : dailyLeft !== null ? (
+                                `${dailyLeft} chats left today.`
+                            ) : (
+                                'Buddy chat limits are active.'
+                            )}
+                            {limits.trialLabel && !limits.trial ? ` ${limits.trialLabel}` : ''}
                         </p>
                     )}
                     {statusMessage && (
@@ -563,7 +580,7 @@ export default function CharacterChatPage() {
                             <p className="text-slate-500 text-sm font-semibold">Loading your buddy...</p>
                         </div>
                     </div>
-                ) : !isPaidBuddyAccount ? (
+                ) : (!isPaidBuddyAccount && !isTantyTrial) ? (
                     <div className="flex h-full items-center justify-center px-5 py-8">
                         <div className="w-full max-w-md rounded-[2rem] border border-amber-200 bg-white p-6 shadow-lg">
                             <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
@@ -571,7 +588,7 @@ export default function CharacterChatPage() {
                             </div>
                             <h2 className="mt-4 text-2xl font-black text-slate-900">Buddy chat requires a paid plan.</h2>
                             <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">
-                                Upgrade to unlock commercial-grade voice chat, safe memory, and the full buddy experience for your child.
+                                Upgrade to unlock unlimited buddy chat, safe memory, and the full buddy experience for your child.
                             </p>
                             <div className="mt-5 flex gap-3">
                                 <button
@@ -583,12 +600,41 @@ export default function CharacterChatPage() {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => router.push('/portal')}
-                                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-700"
+                                    onClick={() => router.push('/portal/buddy/tanty_spice')}
+                                    className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-black text-orange-700"
                                 >
-                                    Back to Portal
+                                    Try Tanty Free →
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                ) : trialExhausted ? (
+                    <div className="flex h-full items-center justify-center px-5 py-8">
+                        <div className="w-full max-w-md rounded-[2rem] border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 p-6 shadow-lg">
+                            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 text-3xl">
+                                💝
+                            </div>
+                            <h2 className="mt-4 text-2xl font-black text-slate-900">You've used all 5 free Tanty chats today!</h2>
+                            <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">
+                                Tanty Spice loves talking with you! Upgrade to keep the conversation going — unlimited chats with Tanty and all the Legends, anytime.
+                            </p>
+                            <div className="mt-5 flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => router.push('/pricing')}
+                                    className="rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-3 text-sm font-black text-white shadow-lg hover:scale-105 transition-transform"
+                                >
+                                    Unlock Unlimited Tanty →
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => router.push('/portal/buddy')}
+                                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-700"
+                                >
+                                    Back to Legends
+                                </button>
+                            </div>
+                            <p className="mt-3 text-xs text-slate-400 font-medium">Your free chats reset tomorrow. Come back then for more stories! 🌺</p>
                         </div>
                     </div>
                 ) : isLoadingHistory ? (

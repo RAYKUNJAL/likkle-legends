@@ -49,7 +49,7 @@ export async function startAnansiGame(difficulty: "easy" | "medium" | "hard" = "
         }
 
         const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `You are Anansi the Spider, the trickster and storyteller of Caribbean folklore.
     Generate a simple, fun riddle for a child (age 6-8) to help you build your web.
@@ -107,7 +107,7 @@ export async function submitAnansiAnswer(currentState: AnansiGameState, answer: 
         }
 
         const genAI = new GoogleGenerativeAI(API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
         const prompt = `You are Anansi.
     Context: You asked: "${currentState.currentRiddle.question}" (Category: ${currentState.currentRiddle.targetCategory}).

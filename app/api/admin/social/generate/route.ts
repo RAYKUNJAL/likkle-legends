@@ -22,7 +22,7 @@ async function generateWithGemini(prompt: string): Promise<string> {
   if (!apiKey) throw new Error('GEMINI_API_KEY not set');
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -145,7 +145,7 @@ Return ONLY valid JSON array, no markdown:
       meta: { post_count: posts.length, days: posts.map((p: { day: string }) => p.day), triggered_by: triggeredBy },
     });
 
-    return NextResponse.json({ posts, success: true, generated_by: 'gemini-2.0-flash' });
+    return NextResponse.json({ posts, success: true, generated_by: 'gemini-2.5-flash' });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Unknown error';
     

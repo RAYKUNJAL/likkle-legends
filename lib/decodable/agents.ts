@@ -19,7 +19,7 @@ function getGenAI(): GoogleGenerativeAI {
 async function callAgent(agentId: keyof typeof SYSTEM_PROMPTS, userPrompt: string): Promise<any> {
     const genAI = getGenAI();
     const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         generationConfig: { responseMimeType: "application/json" }
     });
 

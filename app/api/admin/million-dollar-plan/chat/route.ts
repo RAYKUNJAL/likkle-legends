@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/api/require-admin';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_AGENT_MODEL = process.env.GEMINI_AGENT_MODEL || 'gemini-2.0-flash';
+const GEMINI_AGENT_MODEL = process.env.GEMINI_AGENT_MODEL || 'gemini-2.5-flash';
 
 export async function POST(req: NextRequest) {
   const auth = await requireAdmin(req);

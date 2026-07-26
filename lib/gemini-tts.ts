@@ -52,7 +52,7 @@ export async function generateGeminiSpeech(
             options.model,
             process.env.GEMINI_TTS_MODEL,
             "models/gemini-2.5-flash-preview-tts",
-            "models/gemini-2.0-flash"
+            "models/gemini-2.5-flash"
         ].filter(Boolean) as string[];
 
         let response: any = null;

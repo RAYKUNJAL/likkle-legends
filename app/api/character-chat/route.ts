@@ -22,6 +22,69 @@ const MODEL_SAFETY_SETTINGS: SafetySetting[] = [
     { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE }
 ];
 
+const TANTY_TRIAL_CHARACTER: CharacterId = 'tanty_spice';
+const TANTY_TRIAL_DAILY_LIMIT = 5;
+
+/**
+ * Get today's (server-local midnight) usage count for a child + character
+ * from the character_chat_usage table. Returns 0 if no row exists.
+ */
+async function getTantyTrialUsage(childId: string, characterId: string): Promise<number> {
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
+
+    const { data, error } = await supabaseAdmin
+        .from('character_chat_usage')
+        .select('chat_count')
+        .eq('child_id', childId)
+        .eq('character_id', characterId)
+        .eq('chat_date', todayStr)
+        .maybeSingle();
+
+    if (error) {
+        console.error('character_chat_usage read error:', error.message);
+        return 0;
+    }
+    return data?.chat_count || 0;
+}
+
+/**
+ * Increment today's usage count for a child + character.
+ * Upserts the row (insert with count=1 if missing, otherwise increment).
+ * Uses RPC-free approach: read-then-write is fine since this is a single
+ * server-side admin client and trial enforcement is best-effort.
+ */
+async function incrementTantyTrialUsage(childId: string, characterId: string): Promise<void> {
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+
+    const { data: existing } = await supabaseAdmin
+        .from('character_chat_usage')
+        .select('id, chat_count')
+        .eq('child_id', childId)
+        .eq('character_id', characterId)
+        .eq('chat_date', todayStr)
+        .maybeSingle();
+
+    if (existing) {
+        const { error } = await supabaseAdmin
+            .from('character_chat_usage')
+            .update({ chat_count: (existing.chat_count || 0) + 1 })
+            .eq('id', existing.id);
+        if (error) console.error('character_chat_usage update error:', error.message);
+    } else {
+        const { error } = await supabaseAdmin
+            .from('character_chat_usage')
+            .insert({
+                child_id: childId,
+                character_id: characterId,
+                chat_date: todayStr,
+                chat_count: 1
+            });
+        if (error) console.error('character_chat_usage insert error:', error.message);
+    }
+}
+
 const UNSAFE_USER_PATTERNS: RegExp[] = [
     /\b(kill|hurt|stab|shoot|weapon|bomb|poison)\b/i,
     /\b(self[\s-]?harm|suicide|end my life)\b/i,
@@ -217,7 +280,12 @@ export async function GET(request: NextRequest) {
             .eq('id', user.id)
             .single();
 
-        if (!hasPaidBuddyAccess(profile)) {
+        const hasPaid = hasPaidBuddyAccess(profile);
+        const isTantyTrialCharacter = characterId === TANTY_TRIAL_CHARACTER;
+
+        // Free users can access Tanty Spice (5 chats/day trial). All other
+        // characters require a paid account.
+        if (!hasPaid && !isTantyTrialCharacter) {
             return NextResponse.json({
                 error: 'Buddy chat requires a paid account.',
                 code: 'BUDDY_PREMIUM_REQUIRED'
@@ -232,7 +300,21 @@ export async function GET(request: NextRequest) {
             .order('created_at', { ascending: true })
             .limit(MAX_HISTORY_ROWS);
 
-        return NextResponse.json({ history: history || [] });
+        // For Tanty trial users, also return today's trial usage so the UI
+        // can show the remaining-free-chats counter.
+        const responseBody: Record<string, unknown> = { history: history || [] };
+        if (isTantyTrialCharacter && !hasPaid) {
+            const used = await getTantyTrialUsage(childId, characterId);
+            responseBody.trial = {
+                used,
+                limit: TANTY_TRIAL_DAILY_LIMIT,
+                remaining: Math.max(0, TANTY_TRIAL_DAILY_LIMIT - used),
+                characterId: TANTY_TRIAL_CHARACTER,
+                upgradeUrl: '/pricing'
+            };
+        }
+
+        return NextResponse.json(responseBody);
     } catch (e: any) {
         console.error('History load error:', e);
         return NextResponse.json({ error: e.message }, { status: 500 });
@@ -302,7 +384,12 @@ export async function POST(request: NextRequest) {
             .eq('id', user.id)
             .single();
 
-        if (!hasPaidBuddyAccess(profile)) {
+        const hasPaid = hasPaidBuddyAccess(profile);
+        const isTantyTrialCharacter = characterId === TANTY_TRIAL_CHARACTER;
+
+        // Free users can access Tanty Spice (5 chats/day trial). All other
+        // characters require a paid account.
+        if (!hasPaid && !isTantyTrialCharacter) {
             return NextResponse.json({
                 error: 'Buddy chat requires a paid account.',
                 code: 'BUDDY_PREMIUM_REQUIRED'
@@ -330,6 +417,23 @@ export async function POST(request: NextRequest) {
 
         const dailyUsed = usedToday || 0;
         const burstUsed = usedBurst || 0;
+
+        // Tanty Spice free trial: 5 free chats/day for non-paid users, tracked
+        // in the character_chat_usage table. Paid users fall through to the
+        // existing daily/burst limits (effectively unlimited).
+        if (isTantyTrialCharacter && !hasPaid) {
+            const trialUsed = await getTantyTrialUsage(childId, characterId);
+            if (trialUsed >= TANTY_TRIAL_DAILY_LIMIT) {
+                return NextResponse.json({
+                    error: 'TANTY_TRIAL_EXHAUSTED',
+                    message: "You've used all 5 free Tanty Spice chats today! Upgrade for unlimited chats with Tanty and all characters.",
+                    remaining: 0,
+                    limit: TANTY_TRIAL_DAILY_LIMIT,
+                    used: trialUsed,
+                    upgradeUrl: '/pricing'
+                }, { status: 402 });
+            }
+        }
 
         if (dailyUsed >= policy.dailyLimit) {
             return NextResponse.json({
