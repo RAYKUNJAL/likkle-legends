@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from 'react';
+import { useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronRight, ChevronLeft, Sparkles, Volume2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -78,6 +78,13 @@ function ChildOnboardingContent() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [isSpeaking, setIsSpeaking] = useState(false);
+
+    // Name is kept in formData for the API submission, but the input itself
+    // is uncontrolled (defaultValue) so that browser automation / IME / autofill
+    // methods that set the native input value directly still work reliably.
+    // `nameEntered` mirrors the live value for the Continue button gate.
+    const nameInputRef = useRef<HTMLInputElement>(null);
+    const [nameEntered, setNameEntered] = useState(searchParams.get('childName') || '');
 
     const [formData, setFormData] = useState({
         first_name: searchParams.get('childName') || '',
@@ -161,11 +168,15 @@ function ChildOnboardingContent() {
 
         setIsSubmitting(true);
         try {
+            // Final name safety: prefer formData, fall back to the live DOM
+            // input value so an input method that bypassed React state still
+            // submits the name the user actually typed.
+            const submitName = (formData.first_name || nameInputRef.current?.value || '').trim();
             const res = await fetch('/api/onboarding/children', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    first_name: formData.first_name,
+                    first_name: submitName,
                     age: formData.age,
                     age_track: formData.age < 6 ? 'mini' : 'big',
                     primary_island: formData.primary_island,
@@ -189,7 +200,13 @@ function ChildOnboardingContent() {
     };
 
     const isStepValid = () => {
-        if (step === 1) return formData.first_name.length > 1;
+        if (step === 1) {
+            // Prefer the live mirror; fall back to the raw DOM value in case an
+            // input method updated the field without firing React's onChange.
+            const live = nameEntered.trim();
+            const dom = nameInputRef.current?.value?.trim() ?? '';
+            return (live || dom).length > 1;
+        }
         if (step === 3) return !!formData.primary_island;
         return true;
     };
@@ -283,9 +300,14 @@ function ChildOnboardingContent() {
                             <div className="space-y-6">
                                 <div className="text-7xl animate-bounce-slow">🎨</div>
                                 <input
+                                    ref={nameInputRef}
                                     type="text"
-                                    value={formData.first_name}
-                                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                                    defaultValue={formData.first_name}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setNameEntered(v);
+                                        setFormData((prev) => ({ ...prev, first_name: v }));
+                                    }}
                                     placeholder="Type your name here..."
                                     className="w-full text-center text-4xl font-black text-blue-900 border-b-8 border-blue-50 focus:border-primary focus:outline-none py-4 placeholder:text-blue-100"
                                     autoFocus

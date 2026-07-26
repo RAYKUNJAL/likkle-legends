@@ -494,6 +494,15 @@ export default function ChildPortalPage() {
         { id: 'buddy', label: 'My Buddy', icon: MessageCircle, color: 'from-emerald-500 to-teal-500' },
     ];
 
+    // Bottom nav for mobile — 5 key items + More button (opens drawer for the rest)
+    const bottomNavItems = [
+        { id: 'home', label: 'Village', icon: MapIcon },
+        { id: 'stories', label: 'Stories', icon: BookOpen },
+        { id: 'games', label: 'Games', icon: Palette, route: '/portal/games' },
+        { id: 'radio', label: 'Radio', icon: Radio },
+        { id: 'buddy', label: 'Buddy', icon: MessageCircle, route: '/portal/buddy' },
+    ];
+
     const parentalControls = normalizeParentalControls((user as any)?.parental_controls);
 
     const sectionAllowed = (section: string) => {
@@ -612,7 +621,7 @@ export default function ChildPortalPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-sky-200 via-sky-50 to-amber-50 font-heading overflow-hidden relative">
+        <div className="min-h-screen bg-gradient-to-b from-sky-200 via-sky-50 to-amber-50 font-heading overflow-x-hidden relative">
             {/* Sunny island backdrop — matches the games hub design */}
             <div className="absolute -top-20 -right-20 w-72 h-72 bg-gradient-to-br from-yellow-300 to-amber-400 rounded-full blur-2xl opacity-60 pointer-events-none" />
             <div className="absolute top-24 left-[12%] text-6xl opacity-20 pointer-events-none select-none">☁️</div>
@@ -621,7 +630,7 @@ export default function ChildPortalPage() {
             <div className="absolute bottom-8 right-[3%] text-7xl opacity-15 pointer-events-none select-none">🌴</div>
 
             {/* Mobile Header */}
-            <header className="lg:hidden absolute top-0 left-0 right-0 h-20 px-6 flex items-center justify-between z-30 bg-white/80 backdrop-blur-md border-b border-primary/10">
+            <header className="lg:hidden sticky top-0 z-30 h-20 px-6 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-primary/10">
                 <div className="flex items-center gap-3">
                     <button
                         onClick={() => setIsSidebarOpen(true)}
@@ -644,52 +653,13 @@ export default function ChildPortalPage() {
                 )}
             </header>
 
-            {/* Top Desktop Header - Overlay Style */}
-            <header className="fixed top-0 left-0 lg:left-[280px] right-0 z-40 h-24 bg-white/40 backdrop-blur-xl border-b border-white/20 px-8 hidden lg:flex items-center justify-between">
-                <div className="flex items-center gap-6">
-                    <div className="bg-white/50 px-6 py-2 rounded-2xl border border-white/50 shadow-sm">
-                        <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">
-                            {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)} Channel
-                        </h2>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                    {/* Teacher VIP Indicator */}
-                    {(user?.role === 'teacher' || user?.is_admin) && (
-                        <div className="flex items-center gap-2 bg-amber-50 text-amber-600 px-4 py-2.5 rounded-2xl border border-amber-100 font-black text-xs uppercase tracking-widest animate-pulse">
-                            <BadgeCheck size={18} /> Teacher VIP
-                        </div>
-                    )}
-
-                    <div className="flex items-center gap-3 bg-white/80 p-1.5 pr-6 rounded-[1.5rem] border border-white/50 shadow-md">
-                        <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center text-lg font-black shadow-lg">
-                            {activeChild?.first_name?.charAt(0) || 'L'}
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1">XP Level</span>
-                            <span className="text-sm font-black text-slate-900 leading-none">{activeChild?.total_xp.toLocaleString()}</span>
-                        </div>
-                    </div>
-
-                    {activeChild && (
-                        <button
-                            onClick={() => setGiftModalOpen(true)}
-                            className="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center hover:bg-amber-100 hover:scale-105 transition-all shadow-md shadow-amber-100/50"
-                            title="Gift a Mango"
-                        >
-                            <Gift size={22} fill="currentColor" />
-                        </button>
-                    )}
-                </div>
-            </header>
-
-            <div className="flex h-screen overflow-hidden">
-                {/* Character Sidebar (Desktop & Mobile Drawer) */}
+            {/* Layout: sidebar + scrollable content. No overflow-hidden so nothing gets clipped. */}
+            <div className="flex min-h-screen lg:h-screen">
+                {/* Character Sidebar (Desktop static + Mobile Drawer) */}
                 <aside className={`
-                    fixed inset-y-0 left-0 z-50 w-[280px] bg-gradient-to-b from-sky-400 via-[#3ABEF9] to-cyan-500 translate-x-[-100%] transition-transform duration-500 ease-spring lg:relative lg:translate-x-0
+                    fixed inset-y-0 left-0 z-50 w-[280px] bg-gradient-to-b from-sky-400 via-[#3ABEF9] to-cyan-500 translate-x-[-100%] transition-transform duration-500 ease-spring lg:sticky lg:top-0 lg:translate-x-0 lg:shrink-0 lg:h-screen
                     ${isSidebarOpen ? 'translate-x-0 shadow-[20px_0_60px_rgba(0,0,0,0.1)]' : ''}
-                    flex flex-col items-center justify-start py-12 overflow-y-auto overflow-x-hidden
+                    flex flex-col items-center justify-start py-12 lg:overflow-y-auto
                 `}>
                     <button
                         onClick={() => setIsSidebarOpen(false)}
@@ -808,10 +778,52 @@ export default function ChildPortalPage() {
                     />
                 )}
 
-                {/* Main Viewport */}
-                <main className="flex-1 relative overflow-y-auto pt-24 lg:pt-16 px-6 lg:px-12 pb-32 lg:pb-24">
-                    {/* CRO: Free / Trial upgrade banner — spans full width */}
-                    <div className="-mx-6 lg:-mx-12 -mt-24 lg:-mt-16 mb-4 sticky top-0 z-20">
+                {/* Content column: desktop header (sticky) + scrollable main. Scrolls independently on desktop. */}
+                <div className="flex-1 min-w-0 flex flex-col lg:h-screen lg:overflow-y-auto">
+                    {/* Desktop Header — sticky at top of content column, never overlaps */}
+                    <header className="hidden lg:flex sticky top-0 z-40 h-20 bg-white/40 backdrop-blur-xl border-b border-white/20 px-8 items-center justify-between shrink-0">
+                        <div className="flex items-center gap-6">
+                            <div className="bg-white/50 px-6 py-2 rounded-2xl border border-white/50 shadow-sm">
+                                <h2 className="text-xl font-black text-slate-900 tracking-tight leading-none">
+                                    {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)} Channel
+                                </h2>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            {/* Teacher VIP Indicator */}
+                            {(user?.role === 'teacher' || user?.is_admin) && (
+                                <div className="flex items-center gap-2 bg-amber-50 text-amber-600 px-4 py-2.5 rounded-2xl border border-amber-100 font-black text-xs uppercase tracking-widest animate-pulse">
+                                    <BadgeCheck size={18} /> Teacher VIP
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-3 bg-white/80 p-1.5 pr-6 rounded-[1.5rem] border border-white/50 shadow-md">
+                                <div className="w-10 h-10 bg-slate-900 text-white rounded-xl flex items-center justify-center text-lg font-black shadow-lg">
+                                    {activeChild?.first_name?.charAt(0) || 'L'}
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1">XP Level</span>
+                                    <span className="text-sm font-black text-slate-900 leading-none">{activeChild?.total_xp.toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            {activeChild && (
+                                <button
+                                    onClick={() => setGiftModalOpen(true)}
+                                    className="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center hover:bg-amber-100 hover:scale-105 transition-all shadow-md shadow-amber-100/50"
+                                    title="Gift a Mango"
+                                >
+                                    <Gift size={22} fill="currentColor" />
+                                </button>
+                            )}
+                        </div>
+                    </header>
+
+                    {/* Main Viewport — padded for mobile header + bottom nav; desktop scrolls in parent column */}
+                    <main className="relative px-5 lg:px-12 pt-20 pb-28 lg:pb-12 lg:pt-6">
+                    {/* CRO: Free / Trial upgrade banner — sits at top of content, sticky within main scroll */}
+                    <div className="-mx-5 lg:-mx-12 mb-4 sticky top-0 z-20">
                         <FreeTierBanner />
                     </div>
                     {/* Streak Widget (Desktop) */}
@@ -1298,6 +1310,48 @@ export default function ChildPortalPage() {
                         </div>
                     )}
                 </main>
+                </div>
+
+                {/* Bottom tab bar — mobile-first navigation (5 key items + More) */}
+                <nav
+                    aria-label="Quick navigation"
+                    className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-primary/10 flex items-stretch justify-around h-20 px-2 pb-[env(safe-area-inset-bottom,0px)]"
+                >
+                    {bottomNavItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = activeSection === item.id;
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => {
+                                    if (!sectionAllowed(item.id as PortalSection) || screenTimeExceeded) {
+                                        setBlockedMessage(screenTimeExceeded
+                                            ? "Today's screen time is used up! A parent can add more minutes in Parent Controls."
+                                            : 'This channel is currently locked by parent controls.');
+                                        return;
+                                    }
+                                    if (item.route) {
+                                        router.push(item.route);
+                                    } else {
+                                        setActiveSection(item.id as PortalSection);
+                                    }
+                                }}
+                                className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 transition-colors ${isActive ? 'text-[#3ABEF9]' : 'text-slate-400'}`}
+                            >
+                                <Icon size={22} />
+                                <span className="text-[10px] font-black uppercase tracking-wide">{item.label}</span>
+                            </button>
+                        );
+                    })}
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="flex-1 flex flex-col items-center justify-center gap-1 py-2 text-slate-400 hover:text-[#3ABEF9] transition-colors"
+                        aria-label="More navigation"
+                    >
+                        <Menu size={22} />
+                        <span className="text-[10px] font-black uppercase tracking-wide">More</span>
+                    </button>
+                </nav>
             </div>
 
             {/* Premium Media Players */}

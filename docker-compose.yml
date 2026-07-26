@@ -15,17 +15,13 @@ services:
     env_file: .env.production
     expose:
       - "3000"
+    # Traefik routing is handled by the file-based dynamic config at
+    # /data/coolify/proxy/dynamic/likkle-legends.yaml (managed by scripts/deploy-likkle.sh).
+    # Do NOT add traefik.* router/service labels here — the container is on 3 networks
+    # (default, coolify, supabase_default) and the docker provider would pick the wrong
+    # network IP, causing 502s after every recreate. The file YAML pins the coolify IP.
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.ll-http.entryPoints=http"
-      - "traefik.http.routers.ll-http.rule=Host(`likklelegends.com`) || Host(`www.likklelegends.com`)"
-      - "traefik.http.routers.ll-http.middlewares=redirect-to-https"
-      - "traefik.http.routers.ll-https.entryPoints=https"
-      - "traefik.http.routers.ll-https.rule=Host(`likklelegends.com`) || Host(`www.likklelegends.com`)"
-      - "traefik.http.routers.ll-https.tls=true"
-      - "traefik.http.routers.ll-https.tls.certresolver=letsencrypt"
-      - "traefik.http.routers.ll-https.service=ll-svc"
-      - "traefik.http.services.ll-svc.loadbalancer.server.port=3000"
+      - "traefik.enable=false"
     networks:
       - default
       - coolify
