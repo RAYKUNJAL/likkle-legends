@@ -126,9 +126,13 @@ export async function narrateBook(bookId: string): Promise<NarrationResult> {
                 }
             }
 
-            // Get public URL
+            // Get public URL (use public path proxy, not internal kong)
             const { data: urlData } = supabaseAdmin.storage.from('story-narrations').getPublicUrl(path);
-            audioUrls.push(urlData?.publicUrl || '');
+            const publicUrl = urlData?.publicUrl || '';
+            const fixedUrl = publicUrl.includes('supabase-kong')
+                ? publicUrl.replace('http://supabase-kong:8000', 'https://www.likklelegends.com/supabase')
+                : publicUrl;
+            audioUrls.push(fixedUrl);
         } catch (err: any) {
             console.error(`[TantyNarrator] Page ${i + 1} error:`, err.message);
             audioUrls.push('');

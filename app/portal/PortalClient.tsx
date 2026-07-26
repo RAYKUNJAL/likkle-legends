@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
     Sparkles, BookOpen, Palette, Play,
     Trophy, Crown, Lock, Gift, Video, Radio,
-    Map as MapIcon, LogOut, Download, Menu, X, ShoppingBag, LayoutDashboard, MessageCircle, Info
+    Map as MapIcon, LogOut, Download, Menu, X, ShoppingBag, LayoutDashboard, MessageCircle, Info, Mic
 } from 'lucide-react';
 import nextDynamic from 'next/dynamic';
 import { useUser } from '@/components/UserContext';
@@ -492,6 +492,7 @@ export default function ChildPortalPage() {
         { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
         { id: 'music-hub', label: 'Market', icon: ShoppingBag, color: 'from-indigo-600 to-purple-700' },
         { id: 'buddy', label: 'My Buddy', icon: MessageCircle, color: 'from-emerald-500 to-teal-500' },
+        { id: 'voice-chat', label: 'Voice Chat', icon: Mic, color: 'from-purple-500 to-pink-500' },
     ];
 
     // Bottom nav for mobile — 5 key items + More button (opens drawer for the rest)
@@ -720,6 +721,8 @@ export default function ChildPortalPage() {
                                             router.push('/portal/music');
                                         } else if (item.id === 'buddy') {
                                             router.push('/portal/buddy');
+                                        } else if (item.id === 'voice-chat') {
+                                            router.push('/portal/voice-chat');
                                         } else {
                                             setActiveSection(item.id as PortalSection);
                                             setIsSidebarOpen(false); // Close on mobile
