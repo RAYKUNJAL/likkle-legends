@@ -12,22 +12,29 @@ export const maxDuration = 300; // 5 min for batch narration
  */
 export async function POST(req: NextRequest) {
     try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        // Allow CRON_SECRET bearer for admin-triggered batch narration
+        const authHeader = req.headers.get('authorization');
+        const cronSecret = process.env.CRON_SECRET;
+        if (cronSecret && authHeader === `Bearer ${cronSecret}`) {
+            // Authorized via CRON_SECRET — proceed
+        } else {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+            if (!user) {
+                return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            }
 
-        // Admin check
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role, is_admin')
-            .eq('id', user.id)
-            .maybeSingle();
+            // Admin check
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role, is_admin')
+                .eq('id', user.id)
+                .maybeSingle();
 
-        if (!profile?.is_admin && profile?.role !== 'admin' && profile?.role !== 'super_admin') {
-            return NextResponse.json({ error: 'Admin only' }, { status: 403 });
+            if (!profile?.is_admin && profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+                return NextResponse.json({ error: 'Admin only' }, { status: 403 });
+            }
         }
 
         const body = await req.json();
