@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { supabaseAdmin } from '@/lib/supabase-client';
 import { XP_ACTIONS } from '@/lib/gamification';
 
 // ============================================================
@@ -33,15 +34,15 @@ export async function checkDailyLogin(childId: string): Promise<{
     const today = new Date().toISOString().split('T')[0];
 
     // --- Check if already logged in today ---
-    const { data: existingLogin } = await supabase
+    const { data: existingLogin } = await supabaseAdmin
         .from('daily_logins')
         .select('id, streak_day')
         .eq('child_id', childId)
         .eq('login_date', today)
         .maybeSingle();
 
-    // Check chess state for today regardless
-    const { data: chestRow } = await supabase
+    // Check chest state for today
+    const { data: chestRow } = await supabaseAdmin
         .from('reward_chests')
         .select('id, unlocked_at')
         .eq('child_id', childId)
@@ -61,11 +62,11 @@ export async function checkDailyLogin(childId: string): Promise<{
     }
 
     // --- Compute new streak ---
-    const { data: child } = await supabase
+    const { data: child } = await supabaseAdmin
         .from('children')
         .select('current_streak, last_activity_date, total_xp, earned_badges')
         .eq('id', childId)
-        .single();
+        .maybeSingle();
 
     if (!child) return { alreadyLoggedIn: false, streakDay: 1, xpAwarded: 0, badgeUnlocked: null, chestReady: false };
 
@@ -100,7 +101,7 @@ export async function checkDailyLogin(childId: string): Promise<{
 
     // --- Persist: update child + insert daily_login + create today's chest ---
     await Promise.all([
-        supabase.from('children').update({
+        supabaseAdmin.from('children').update({
             current_streak: newStreak,
             longest_streak: Math.max(newStreak, child.current_streak || 0),
             total_xp: newXP,
@@ -108,7 +109,7 @@ export async function checkDailyLogin(childId: string): Promise<{
             earned_badges: updatedBadges,
         }).eq('id', childId),
 
-        supabase.from('daily_logins').insert({
+        supabaseAdmin.from('daily_logins').insert({
             child_id: childId,
             login_date: today,
             xp_awarded: xpAwarded,
@@ -117,13 +118,13 @@ export async function checkDailyLogin(childId: string): Promise<{
         }),
 
         // Create today's chest (if it doesn't exist yet)
-        supabase.from('reward_chests').upsert({
+        supabaseAdmin.from('reward_chests').upsert({
             child_id: childId,
             chest_date: today,
         }, { onConflict: 'child_id,chest_date', ignoreDuplicates: true }),
 
         // Log badge earning if any
-        ...(badgeUnlocked ? [supabase.from('badge_earnings').upsert(
+        ...(badgeUnlocked ? [supabaseAdmin.from('badge_earnings').upsert(
             { child_id: childId, badge_id: badgeUnlocked },
             { onConflict: 'child_id,badge_id', ignoreDuplicates: true }
         )] : []),
@@ -165,11 +166,10 @@ export async function openDailyChest(childId: string): Promise<{
     rewardValue: string | null;
     error?: string;
 }> {
-    const supabase = createClient();
     const today = new Date().toISOString().split('T')[0];
 
     // Fetch today's chest
-    const { data: chest } = await supabase
+    const { data: chest } = await supabaseAdmin
         .from('reward_chests')
         .select('id, unlocked_at')
         .eq('child_id', childId)
@@ -184,25 +184,25 @@ export async function openDailyChest(childId: string): Promise<{
 
     // Apply reward
     if (reward.type === 'xp') {
-        const { data: child } = await supabase.from('children').select('total_xp').eq('id', childId).single();
+        const { data: child } = await supabaseAdmin.from('children').select('total_xp').eq('id', childId).maybeSingle();
         if (child) {
-            await supabase.from('children').update({
+            await supabaseAdmin.from('children').update({
                 total_xp: (child.total_xp || 0) + parseInt(reward.value)
             }).eq('id', childId);
         }
     } else if (reward.type === 'badge') {
-        const { data: child } = await supabase.from('children').select('earned_badges').eq('id', childId).single();
+        const { data: child } = await supabaseAdmin.from('children').select('earned_badges').eq('id', childId).maybeSingle();
         const earnedBadges: string[] = child?.earned_badges || [];
         if (!earnedBadges.includes(reward.value)) {
             await Promise.all([
-                supabase.from('children').update({ earned_badges: [...earnedBadges, reward.value] }).eq('id', childId),
-                supabase.from('badge_earnings').upsert({ child_id: childId, badge_id: reward.value }, { onConflict: 'child_id,badge_id', ignoreDuplicates: true }),
+                supabaseAdmin.from('children').update({ earned_badges: [...earnedBadges, reward.value] }).eq('id', childId),
+                supabaseAdmin.from('badge_earnings').upsert({ child_id: childId, badge_id: reward.value }, { onConflict: 'child_id,badge_id', ignoreDuplicates: true }),
             ]);
         }
     }
 
     // Mark chest as opened
-    await supabase.from('reward_chests').update({
+    await supabaseAdmin.from('reward_chests').update({
         unlocked_at: new Date().toISOString(),
         reward_type: reward.type,
         reward_value: reward.value,

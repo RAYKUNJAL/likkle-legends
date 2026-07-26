@@ -4,11 +4,31 @@ import { NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
     try {
+        const url = new URL(req.url);
+        const slug = url.searchParams.get('slug');
+
+        if (slug) {
+            // Fetch single book with full content for the reader
+            const { data: book, error } = await supabaseAdmin
+                .from('stories_library')
+                .select('*')
+                .eq('slug', slug)
+                .eq('is_active', true)
+                .maybeSingle();
+
+            if (error || !book) {
+                return NextResponse.json({ error: 'Story not found' }, { status: 404 });
+            }
+
+            return NextResponse.json({ story: book });
+        }
+
+        // List all active books with full content (for library + reader)
         const { data: stories, error } = await supabaseAdmin
             .from('stories_library')
-            .select('id, title, slug, summary, cover_image_url, tradition, reading_level, age_track, island_code, character, xp_reward, estimated_reading_time_minutes')
+            .select('*')
             .eq('is_active', true)
             .order('created_at', { ascending: false });
 
