@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+
+// Prevent Next.js from trying to statically generate this massive client component
+export const dynamic = 'force-dynamic';
 import { useRouter } from 'next/navigation';
 import {
     Sparkles, BookOpen, Palette, Play,
