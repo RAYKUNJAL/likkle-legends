@@ -10,8 +10,6 @@ import {
     Map as MapIcon, LogOut, Download, Menu, X, ShoppingBag, LayoutDashboard, MessageCircle, Info
 } from 'lucide-react';
 import nextDynamic from 'next/dynamic';
-// Prevent Next.js from trying to statically generate this massive client component
-export const dynamic = 'force-dynamic';
 import { useUser } from '@/components/UserContext';
 import { getStorybooks, getVideos, logActivity } from '@/lib/database';
 import { calculateLevel, LEVELS } from '@/lib/gamification';
