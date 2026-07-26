@@ -3,16 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-// Prevent Next.js from trying to statically generate this massive client component
-export const dynamic = 'force-dynamic';
 import { useRouter } from 'next/navigation';
 import {
     Sparkles, BookOpen, Palette, Play,
     Trophy, Crown, Lock, Gift, Video, Radio,
     Map as MapIcon, LogOut, Download, Menu, X, ShoppingBag, LayoutDashboard, MessageCircle, Info
 } from 'lucide-react';
-import dynamic from 'next/dynamic';
+import nextDynamic from 'next/dynamic';
+// Prevent Next.js from trying to statically generate this massive client component
+export const dynamic = 'force-dynamic';
 import { useUser } from '@/components/UserContext';
 import { getStorybooks, getVideos, logActivity } from '@/lib/database';
 import { calculateLevel, LEVELS } from '@/lib/gamification';
@@ -28,30 +27,30 @@ import { addScreenMinute, getTodayScreenMinutes, normalizeParentalControls } fro
 
 // ─── Lazy-loaded heavy components ────────────────────────────────────────────
 // Only loaded when the user navigates to that section — keeps initial bundle small.
-const TantyRadio = dynamic(() => import('@/components/TantyRadio'), { ssr: false });
-const IslandTileGrid = dynamic(() => import('@/components/IslandTileGrid'), {
+const TantyRadio = nextDynamic(() => import('@/components/TantyRadio'), { ssr: false });
+const IslandTileGrid = nextDynamic(() => import('@/components/IslandTileGrid'), {
     ssr: false,
     loading: () => <IslandVillageMapSkeleton />,
 });
-const PremiumVideoPlayer = dynamic(() => import('@/components/PremiumVideoPlayer'), { ssr: false });
-const LeaderboardPanel = dynamic(() => import('@/components/portal/LeaderboardPanel'), { ssr: false });
-const FamilyChallengesPanel = dynamic(() => import('@/components/portal/FamilyChallengesPanel'), { ssr: false });
-const CraftCorner = dynamic(() => import('@/components/portal/CraftCorner').then(m => ({ default: m.CraftCorner })), { ssr: false });
-const PrintablesSection = dynamic(() => import('@/components/PrintablesSection').then(m => ({ default: m.PrintablesSection })), { ssr: false });
+const PremiumVideoPlayer = nextDynamic(() => import('@/components/PremiumVideoPlayer'), { ssr: false });
+const LeaderboardPanel = nextDynamic(() => import('@/components/portal/LeaderboardPanel'), { ssr: false });
+const FamilyChallengesPanel = nextDynamic(() => import('@/components/portal/FamilyChallengesPanel'), { ssr: false });
+const CraftCorner = nextDynamic(() => import('@/components/portal/CraftCorner').then(m => ({ default: m.CraftCorner })), { ssr: false });
+const PrintablesSection = nextDynamic(() => import('@/components/PrintablesSection').then(m => ({ default: m.PrintablesSection })), { ssr: false });
 
 // Modals — only rendered when triggered, so lazy load them too
-const BadgeUnlockModal = dynamic(() => import('@/components/gamification/BadgeUnlockModal'), { ssr: false });
-const StreakWidget = dynamic(() => import('@/components/portal/StreakWidget'), {
+const BadgeUnlockModal = nextDynamic(() => import('@/components/gamification/BadgeUnlockModal'), { ssr: false });
+const StreakWidget = nextDynamic(() => import('@/components/portal/StreakWidget'), {
     ssr: false,
     loading: () => <StreakWidgetSkeleton />,
 });
-const DailyChestModal = dynamic(() => import('@/components/portal/DailyChestModal'), { ssr: false });
-const StreakShareCard = dynamic(() => import('@/components/portal/StreakShareCard'), { ssr: false });
-const CoppaConsentModal = dynamic(() => import('@/components/auth/CoppaConsentModal'), { ssr: false });
-const UpgradeModal = dynamic(() => import('@/components/UpgradeModal'), { ssr: false });
-const DoubleXPBanner = dynamic(() => import('@/components/portal/DoubleXPBanner'), { ssr: false });
-const MangoGiftModal = dynamic(() => import('@/components/portal/MangoGiftModal'), { ssr: false });
-const FeatureUpgradeModal = dynamic(() => import('@/components/FeatureUpgradeModal'), { ssr: false });
+const DailyChestModal = nextDynamic(() => import('@/components/portal/DailyChestModal'), { ssr: false });
+const StreakShareCard = nextDynamic(() => import('@/components/portal/StreakShareCard'), { ssr: false });
+const CoppaConsentModal = nextDynamic(() => import('@/components/auth/CoppaConsentModal'), { ssr: false });
+const UpgradeModal = nextDynamic(() => import('@/components/UpgradeModal'), { ssr: false });
+const DoubleXPBanner = nextDynamic(() => import('@/components/portal/DoubleXPBanner'), { ssr: false });
+const MangoGiftModal = nextDynamic(() => import('@/components/portal/MangoGiftModal'), { ssr: false });
+const FeatureUpgradeModal = nextDynamic(() => import('@/components/FeatureUpgradeModal'), { ssr: false });
 import { FreeTierBanner } from '@/components/portal/FreeTierBanner';
 import { fireConversionEvent, trackEvent } from '@/lib/analytics';
 
