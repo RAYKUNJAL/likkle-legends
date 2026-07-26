@@ -3,6 +3,10 @@ import type { Metadata } from "next";
 import { Fredoka, Quicksand, Montserrat } from "next/font/google";
 import "./globals.css";
 
+// Skip static generation — many pages fetch from Supabase at build time
+// and fail in Docker where there's no DB connection. Force dynamic rendering.
+export const dynamic = 'force-dynamic';
+
 // Montserrat: primary brand font — preloaded (critical)
 const montserrat = Montserrat({
   variable: "--font-montserrat",
