@@ -22,6 +22,9 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
     NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL \
     NEXT_PUBLIC_PAYPAL_CLIENT_ID=$NEXT_PUBLIC_PAYPAL_CLIENT_ID \
     NEXT_TELEMETRY_DISABLED=1
+# Increase Node.js stack size — the portal page is a massive component tree
+# that overflows the default 984KB stack during Next.js static analysis
+ENV NODE_OPTIONS="--stack-size=4096"
 RUN npm run build
 
 # ---- run ----
