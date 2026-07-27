@@ -499,7 +499,80 @@ export const ADMIN_NEW_ORDER_TEMPLATE = (parentName: string, tier: string, email
     <p><b>Tier:</b> ${tier}</p>
 </div>
 `;
-// 11. WEEKLY DIGEST (Phase 3 Retention)
+// 11. OFFER WELCOME / CONFIRMATION EMAIL (2026 CRO)
+// Sent immediately after a successful PayPal purchase on /offer/checkout.
+// Inline template — no separate template file needed.
+export const OFFER_WELCOME_EMAIL_TEMPLATE = (firstName: string, hasPhonicsPack: boolean) => `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Likkle Legends! 🎉</title>
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; color: #1c1c1c; background: #fef9f0; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 28px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #fb7118, #fbbf24); padding: 48px 36px; text-align: center; color: #ffffff; }
+        .body { padding: 40px 36px; }
+        .btn { display: inline-block; padding: 18px 38px; background: linear-gradient(to right, #fb7118, #fbbf24); color: #ffffff !important; text-decoration: none; border-radius: 18px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; font-size: 14px; }
+        .steps { background: #fffaf0; border-radius: 20px; padding: 24px; margin: 28px 0; }
+        .step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+        .step-num { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #fb7118; color: #fff; font-weight: 900; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .bonus { background: linear-gradient(135deg, #fff7ed, #fef3c7); border: 2px solid #fdba74; border-radius: 20px; padding: 22px; margin: 24px 0; }
+        .footer { text-align: center; padding: 28px 36px; background: #fef9f0; color: #6b7280; font-size: 12px; }
+        a { color: #fb7118; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 30px; font-weight: 900;">Welcome to Likkle Legends! 🎉</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.95;">Your Caribbean learning adventure starts now.</p>
+        </div>
+        <div class="body">
+            <p style="font-size: 17px; font-weight: 800; color: #1c1c1c;">Hi ${firstName},</p>
+            <p style="font-size: 16px; line-height: 1.7; color: #3a3a3a;">
+                We&apos;re so glad you&apos;re here. Your Intro Mailer is on its way — here&apos;s what to do next to unlock everything for your child.
+            </p>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div style="font-size: 15px; color: #3a3a3a;"><b>Check your email</b> for your account confirmation and login link.</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div style="font-size: 15px; color: #3a3a3a;"><b>Create your child&apos;s profile</b> — tell us their name and age band so every story and activity fits where they are right now.</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div style="font-size: 15px; color: #3a3a3a;"><b>Start exploring the portal</b> — meet Dilly, Tanty, R.O.T.I., Scorcha &amp; Mango. Hear a read-aloud, try a phonics game, say hello to your child&apos;s new buddy.</div>
+                </div>
+            </div>
+
+            ${hasPhonicsPack ? `
+            <div class="bonus">
+                <h4 style="margin: 0 0 6px 0; color: #c2410c; font-size: 16px; font-weight: 900;">🎨 Printable Phonics Pack — UNLOCKED!</h4>
+                <p style="margin: 0; color: #9a3412; font-size: 14px;">Your bonus age-based sound, reading and literacy activities are ready in your portal. Print them and start today!</p>
+            </div>
+            ` : ''}
+
+            <div style="text-align: center; margin: 32px 0;">
+                <a href="https://likklelegends.com/portal" class="btn">Open the portal →</a>
+            </div>
+
+            <p style="font-size: 14px; color: #6b7280; text-align: center;">
+                Questions? Just reply to this email — we&apos;re a small Caribbean team and we read every message. 🌺
+            </p>
+        </div>
+        <div class="footer">
+            <p style="margin: 0 0 6px 0;">🌺 Likkle Legends — Caribbean learning that feels like home for kids 3–8.</p>
+            <p style="margin: 0;">You received this because you started your Likkle Legends journey.</p>
+        </div>
+    </div>
+</body>
+</html>`;
+
+// 12. WEEKLY DIGEST (Phase 3 Retention)
 export const WEEKLY_DIGEST_TEMPLATE = (parentName: string, stats: any[]) => `
 <!DOCTYPE html>
 <html>

@@ -1,13 +1,86 @@
 import type { Metadata } from "next";
 import OfferFAQ from "@/components/offer/OfferFAQ";
+import MetaPixel from "@/components/offer/MetaPixel";
+import GA4Pixel from "@/components/offer/GA4Pixel";
+import TikTokPixel from "@/components/offer/TikTokPixel";
+import {
+  TrustBar,
+  AsFeaturedIn,
+  SocialProofBadges,
+  JoinCounter,
+  Testimonials,
+} from "@/components/offer/SocialProof";
+import HeroHeadlineAB from "@/components/offer/HeroHeadlineAB";
+import MailerVisual from "@/components/offer/MailerVisual";
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_APP_URL || "https://www.likklelegends.com";
 
 export const metadata: Metadata = {
   title: "Likkle Legends — Caribbean Learning for Kids 3–8",
-  description: "Caribbean learning that feels like home. Stories, phonics, and activities for kids 3–8.",
+  description:
+    "Caribbean learning that feels like home. Stories, phonics, and activities for kids 3–8.",
   robots: "index, follow",
+  openGraph: {
+    title: "Caribbean Learning That Feels Like Home | Likkle Legends",
+    description:
+      "Stories, phonics practice, and school-style activities designed to help children grow in reading, confidence, and connection to their Caribbean roots.",
+    url: `${SITE_URL}/offer`,
+    siteName: "Likkle Legends",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Caribbean Learning That Feels Like Home | Likkle Legends",
+    description:
+      "Stories, phonics practice, and school-style activities for kids 3–8.",
+  },
 };
 
-const CTA_LABEL = "Start with the Intro Mailer";
+// 2026 CTA copy variants for A/B testing (toggle here, or wire to a URL param /
+// feature flag / edge config). Each variant frames the action as *claiming*
+// something — not buying — to match the "gift, not a product spec" framing.
+type HeroVariant = {
+  eyebrow: string;
+  headline: string;     // may contain a <span> gradient via JSX in render below
+  subheadline: string;
+  ctaLabel: string;
+  ctaMicrocopy: string;
+};
+
+// NOTE: headlines are rendered in JSX so the gradient <span> is applied there,
+// not here. The strings below hold the plain-text segments.
+const HERO_VARIANTS: Record<"A" | "B" | "C", HeroVariant> = {
+  A: {
+    eyebrow: "For Caribbean Families Abroad",
+    headline: "Caribbean learning that feels like home for kids 3–8",
+    subheadline:
+      "Stories, phonics practice, and school-style activities designed to help children grow in reading, confidence, and connection to their Caribbean roots.",
+    ctaLabel: "Start Your Child's Journey",
+    ctaMicrocopy: "7-day free trial • Cancel anytime • Secure checkout",
+  },
+  B: {
+    eyebrow: "Caribbean Roots, Real Reading Skills",
+    headline: "Help your child read, learn, and love their Caribbean roots",
+    subheadline:
+      "Phonics-based learning woven into Caribbean stories and characters your child will love coming back to — built for diaspora families raising proud, confident readers ages 3–8.",
+    ctaLabel: "Start Your Child's Journey",
+    ctaMicrocopy: "7-day free trial • Cancel anytime • Secure checkout",
+  },
+  C: {
+    eyebrow: "Learning Your Child Will Actually Ask For",
+    headline: "The Caribbean learning adventure your child will actually want to do",
+    subheadline:
+      "Not another worksheet. Not another screen. A world of island characters, stories, and phonics practice your child looks forward to — while you watch their reading grow.",
+    ctaLabel: "Start Your Child's Journey",
+    ctaMicrocopy: "7-day free trial • Cancel anytime • Secure checkout",
+  },
+};
+
+// Active variant for the live page. Swap to "B" or "C" to test, or read
+// from a query string / edge config in a real A/B harness.
+const ACTIVE_HERO: "A" | "B" | "C" = "A";
+
 const CTA_HREF = "/offer/checkout";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -146,16 +219,33 @@ const HERO_SVG = `
 `;
 
 // ─── CTA button (shared, 5x repeats) ──────────────────────────────────────────
-function CTAButton({ variant = "primary" }: { variant?: "primary" | "white" }) {
+// 2026 CRO: button label now comes from the active hero variant so the
+// whole funnel speaks with one voice. Optional microcopy renders under the
+// button on the hero and final CTA (the highest-friction decision points).
+function CTAButton({
+  variant = "primary",
+  showMicrocopy = false,
+}: {
+  variant?: "primary" | "white";
+  showMicrocopy?: boolean;
+}) {
   const base = "inline-flex items-center justify-center gap-2 rounded-full px-8 py-4 text-base font-black tracking-tight transition-all duration-300 hover:scale-[1.03] hover:shadow-xl active:scale-95";
   const styles = variant === "white"
     ? "bg-white text-[#fb7118] shadow-lg"
     : "bg-gradient-to-r from-[#fb7118] to-[#fbbf24] text-white shadow-lg shadow-orange-200/50";
+  const hero = HERO_VARIANTS[ACTIVE_HERO];
   return (
-    <a href={CTA_HREF} className={`${base} ${styles}`}>
-      {CTA_LABEL}
-      <span aria-hidden>→</span>
-    </a>
+    <div className="flex flex-col items-center gap-2">
+      <a href={CTA_HREF} className={`${base} ${styles}`}>
+        {hero.ctaLabel}
+        <span aria-hidden>→</span>
+      </a>
+      {showMicrocopy && (
+        <p className="text-xs font-semibold text-[#5f5f5d]/80">
+          {hero.ctaMicrocopy}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -200,6 +290,11 @@ function CharacterCard({ src, name, role, catchphrase, gradient }: { src: string
 export default function OfferPage() {
   return (
     <div className="min-h-screen bg-[#fef9f0] text-[#1c1c1c]" style={{ fontFamily: "Montserrat, sans-serif" }}>
+      {/* ── Tracking pixels (Meta, GA4, TikTok) — fire PageView/ViewContent ── */}
+      <MetaPixel event="PageView" />
+      <GA4Pixel event="page_view" />
+      <TikTokPixel event="ViewContent" params={{ content_name: 'intro_mailer', content_type: 'product' }} />
+
       {/* ── CSS animations ── */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes ll-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
@@ -229,17 +324,11 @@ export default function OfferPage() {
         <div className="absolute top-20 right-[15%] text-3xl opacity-15 pointer-events-none">☁️</div>
 
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0e9aa7] mb-3">For Caribbean Families Abroad</p>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.05] tracking-tight text-[#1c1c1c] mb-4">
-            Caribbean learning that feels like{" "}
-            <span className="bg-gradient-to-r from-[#fb7118] to-[#fbbf24] bg-clip-text text-transparent">home</span>
-            {" "}for kids 3–8
-          </h1>
-          <p className="text-lg text-[#5f5f5d] leading-relaxed max-w-xl mx-auto mb-6">
-            Stories, phonics practice, and school-style activities designed to help children grow in reading, confidence, and connection to their Caribbean roots.
-          </p>
+          {/* 2026: eyebrow, headline, and subheadline now driven by the active
+              hero variant so A/B copy is one constant flip (see HERO_VARIANTS). */}
+<HeroHeadlineAB />
           <div className="flex flex-col items-center gap-3">
-            <CTAButton />
+            <CTAButton showMicrocopy />
             <a href="/offer/checkout" className="text-sm font-semibold text-[#0e9aa7] underline underline-offset-2 hover:text-[#fb7118] transition-colors">
               Preview a Sample
             </a>
@@ -268,21 +357,30 @@ export default function OfferPage() {
         </div>
       </section>
 
+      {/* ── 3.5. Trust bar (truthful social proof) ── */}
+      <TrustBar />
+
       {/* ── 4. Problem section ── */}
+      {/* 2026: rewritten for emotional resonance with the Caribbean diaspora.
+          The goal is to make parents feel *understood*, not sold to — so we
+          name the specific pain (a child who can name their country but not
+          its food, a grandparent's accent that feels foreign) before
+          introducing the solution. */}
       <section className="px-5 py-16">
         <div className="mx-auto max-w-2xl">
           <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center mb-6">
-            Your child can grow up proud of where they come from — and still get real learning support
+            You left the islands for a better life. You want your child to feel that same connection to where they come from.
           </h2>
           <p className="text-[#5f5f5d] text-center leading-relaxed mb-8">
-            Many Caribbean parents abroad want more than generic kids&apos; content. They want something that helps their child stay connected to culture while also making reading, language, and home learning feel more engaging and more personal.
+            You crossed oceans so your family could have more. But somewhere between the new school, the new accent, and the new routine, the thread back home can start to feel thin. Your child says they&apos;re from your island — but they can&apos;t name the national dish, can&apos;t follow when Grandma calls, and looks puzzled at the songs you grew up singing.
           </p>
           <div className="grid gap-3">
             {[
-              { e: "🌍", t: "Learning that feels culturally distant" },
-              { e: "📱", t: "Screen time that entertains but does not guide" },
-              { e: "📝", t: "Home practice that feels hard to keep consistent" },
-              { e: "💛", t: "A child who needs something they can actually connect with" },
+              { e: "🍛", t: "Your child says they're from your island — but can't name the national dish" },
+              { e: "👵", t: "Grandma calls from home and your child can't follow the conversation" },
+              { e: "📚", t: "The learning apps you've tried don't sound or look like where you come from" },
+              { e: "🌍", t: "You want more than 'generic kids content' — you want something that feels like home" },
+              { e: "💛", t: "You worry the culture will thin out with every year you're away" },
             ].map((b) => (
               <div key={b.t} className="flex items-center gap-3 rounded-xl bg-white border border-[#eceae4] p-4 transition-all hover:-translate-y-0.5 hover:shadow-md">
                 <span className="text-xl">{b.e}</span>
@@ -290,6 +388,9 @@ export default function OfferPage() {
               </div>
             ))}
           </div>
+          <p className="text-center text-[#5f5f5d] leading-relaxed mt-8 italic">
+            You&apos;re not asking for much. Just something that helps your child stay Caribbean while they learn — without you having to build it all yourself after a long day.
+          </p>
         </div>
       </section>
 
@@ -304,6 +405,9 @@ export default function OfferPage() {
           </p>
         </div>
       </section>
+
+      {/* ── 5.5. As featured in (placeholder for future press) ── */}
+      <AsFeaturedIn />
 
       {/* ── 6. How it works ── */}
       <section className="px-5 py-16">
@@ -402,33 +506,70 @@ export default function OfferPage() {
       </section>
 
       {/* ── 10. Offer section ── */}
+      {/* 2026: reframed from a product spec ("Intro Mailer") into a gift your
+          child is *receiving*. Value anchoring (less than a drive-thru meal)
+          and risk reversal (7-day free trial, no-questions cancel) live right
+          beside the CTA — the two highest-friction moments for cold traffic. */}
       <section className="px-5 py-16">
         <div className="mx-auto max-w-md">
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center mb-8">Start with a simple first step</h2>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center mb-3">
+            Your child&apos;s first step home
+          </h2>
+          <p className="text-center text-[#5f5f5d] leading-relaxed mb-8">
+            A month of Caribbean learning for less than one drive-thru meal.
+          </p>
           <div className="rounded-3xl bg-white border-2 border-[#fbbf24]/30 shadow-xl overflow-hidden">
             <div className="bg-gradient-to-r from-[#fb7118] to-[#fbbf24] p-5 text-center">
-              <h3 className="text-2xl font-black text-white">Intro Mailer</h3>
+              <h3 className="text-2xl font-black text-white">The Intro Mailer</h3>
+              <p className="text-white/90 text-sm font-semibold mt-1">A gift to open, not a product to buy</p>
+            </div>
+            {/* Truthful urgency: intro price is the launch price and may rise
+                as more content is added. No fake countdown — just an honest
+                note that the current price is the introductory one. */}
+            <div className="bg-[#fff7e6] border-b border-[#fbbf24]/30 px-6 py-2.5 text-center">
+              <p className="text-xs font-bold text-[#fb7118]">
+                ⏳ Limited intro price — locks in your rate for life
+              </p>
             </div>
             <div className="p-6">
               <p className="text-sm text-[#5f5f5d] leading-relaxed mb-5">
-                A low-friction way to explore the Likkle Legends experience with your child. Start with guided activities, early literacy practice, and a first step into the stories, characters, and portal.
+                Everything your child needs to meet the five Legends, hear a Caribbean story that sounds like home, and take their first real steps in reading — all in one welcoming pack.
               </p>
               <ul className="space-y-3 mb-6">
-                {["Intro learning pack", "Age-appropriate activity set", "First portal access step", "Parent guidance for getting started"].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-sm font-semibold text-[#1c1c1c]">
-                    <span className="w-5 h-5 rounded-full bg-[#fbbf24]/20 flex items-center justify-center text-[#fb7118] text-xs">✓</span>
-                    {item}
+                {[
+                  { gift: "A personalized Caribbean story mailer", note: "with your child's name inside" },
+                  { gift: "A set of printable activity sheets", note: "phonics + island themes, ready to use" },
+                  { gift: "First access to the member portal", note: "meet the five Legends, hear stories read aloud" },
+                  { gift: "Parent guidance for getting started", note: "so you're never figuring it out alone" },
+                ].map((item) => (
+                  <li key={item.gift} className="flex items-start gap-3 text-sm font-semibold text-[#1c1c1c]">
+                    <span className="mt-0.5 w-5 h-5 rounded-full bg-[#fbbf24]/20 flex items-center justify-center text-[#fb7118] text-xs shrink-0">✓</span>
+                    <span>
+                      {item.gift}
+                      <span className="block text-[#5f5f5d] font-normal text-xs mt-0.5">{item.note}</span>
+                    </span>
                   </li>
                 ))}
               </ul>
+              {/* Risk reversal — placed immediately before the CTA. */}
+              <div className="rounded-xl bg-[#0e9aa7]/5 border border-[#0e9aa7]/15 p-4 mb-5">
+                <p className="text-sm font-semibold text-[#1c1c1c] leading-relaxed">
+                  Try it for 7 days free. If your child doesn&apos;t love it, cancel — no questions asked.
+                </p>
+              </div>
               <div className="flex flex-col items-center gap-2">
-                <CTAButton />
+                <CTAButton showMicrocopy />
+                <JoinCounter />
+                <SocialProofBadges />
                 <p className="text-xs text-[#5f5f5d]/70 mt-2">What&apos;s included and pricing are shown clearly before checkout.</p>
               </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ── 10.5. Testimonials (placeholder, ready for real quotes) ── */}
+      <Testimonials />
 
       {/* ── 11. FAQ ── */}
       <section className="px-5 py-16 bg-white/50">
@@ -447,7 +588,7 @@ export default function OfferPage() {
           <p className="text-white/90 leading-relaxed mb-8">
             Start with a simple first step designed to make literacy practice feel more personal, more joyful, and easier to bring into everyday family life.
           </p>
-          <CTAButton variant="white" />
+          <CTAButton variant="white" showMicrocopy />
           <a href="/login" className="block mt-4 text-sm font-semibold text-white/80 underline underline-offset-2 hover:text-white transition-colors">
             Already a member? Log in
           </a>

@@ -40,6 +40,18 @@ const FAQ_ITEMS: FAQItem[] = [
     q: 'Do I need any special device or app?',
     a: 'No. Likkle Legends runs in any modern web browser on a phone, tablet, or computer. Activity sheets are printable PDFs you can open on any device.',
   },
+  {
+    q: 'Will my child actually learn, or is this just for fun?',
+    a: 'Both — and the learning is real. Every mailer is built around early literacy outcomes: letter-sound recognition, blending, sight words, vocabulary, and reading comprehension, grouped by age band (3–4, 4–6, 6–8). The Caribbean stories and characters are the *vehicle* for the phonics and reading practice — they keep your child coming back so the practice actually sticks. You\'ll see the work in the printable activity sheets and portal tasks; your child just experiences it as a story they love.',
+  },
+  {
+    q: 'How is this different from YouTube or ABCmouse?',
+    a: 'Two things no generic app offers: (1) a Caribbean cultural connection — the stories, songs, characters, and references sound and look like where your child comes from, not a generic cartoon; and (2) structured phonics woven into that culture, not random videos. YouTube entertains but doesn\'t guide; ABCmouse is thorough but culturally generic. Likkle Legends is the one place your child gets real reading practice inside a world that feels like home.',
+  },
+  {
+    q: 'What if my child doesn\'t speak a Caribbean language?',
+    a: 'That\'s completely fine — and very common. Likkle Legends is built in English for English-speaking families, so it works whether you\'re from Jamaica, Trinidad, Barbados, Guyana, or anywhere in the diaspora. The Caribbean flavor is in the stories, characters, food references, and culture — not in a language barrier. It\'s designed for kids who are growing up abroad and may only speak English but still deserve to feel connected to their roots.',
+  },
 ];
 
 export default function OfferFAQ() {

@@ -9,6 +9,9 @@ import toast from 'react-hot-toast';
 import { SUBSCRIPTION_PLANS } from '@/lib/paypal';
 import { supabase } from '@/lib/supabase-client';
 import { fireConversionEvent } from '@/lib/analytics';
+import MetaPixel from '@/components/offer/MetaPixel';
+import GA4Pixel from '@/components/offer/GA4Pixel';
+import TikTokPixel from '@/components/offer/TikTokPixel';
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb';
 
@@ -65,6 +68,11 @@ function UpsellContent() {
             }}
         >
             <main className="min-h-screen bg-gradient-to-b from-sky-200 via-amber-50 to-white font-montserrat">
+                {/* ── Tracking pixels — fire ViewContent on upsell page ── */}
+                <MetaPixel event="ViewContent" params={{ content_name: 'plan_legends_plus', value: LEGENDS_PRICE, currency: 'USD' }} />
+                <GA4Pixel event="view_item" params={{ currency: 'USD', value: LEGENDS_PRICE, items: [{ item_id: 'plan_legends_plus', item_name: 'Legends Plus', price: LEGENDS_PRICE, quantity: 1 }] }} />
+                <TikTokPixel event="ViewContent" params={{ content_name: 'plan_legends_plus', value: LEGENDS_PRICE, currency: 'USD' }} />
+
                 {/* Minimal header: logo + "One-time offer" */}
                 <header className="sticky top-0 z-50 border-b border-amber-100 bg-white/90 backdrop-blur-md">
                     <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3 sm:px-6">

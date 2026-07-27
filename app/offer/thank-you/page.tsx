@@ -1,11 +1,35 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import MetaPixel from '@/components/offer/MetaPixel';
+import GA4Pixel from '@/components/offer/GA4Pixel';
+import TikTokPixel from '@/components/offer/TikTokPixel';
+import PurchaseTracker from '@/components/offer/PurchaseTracker';
+
+const SITE_URL =
+    process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com';
+
+// Intro Mailer price — kept in sync with lib/paypal.ts SUBSCRIPTION_PLANS.plan_mail_intro.price.
+const INTRO_PRICE = 9.99;
 
 export const metadata: Metadata = {
     title: 'Welcome to Likkle Legends! 🎉',
     description:
         'Your Intro Mailer is on its way. Here is what happens next on your Caribbean learning adventure.',
     robots: { index: false, follow: true },
+    openGraph: {
+        title: 'Caribbean Learning That Feels Like Home | Likkle Legends',
+        description:
+            'Stories, phonics practice, and school-style activities designed to help children grow in reading, confidence, and connection to their Caribbean roots.',
+        url: `${SITE_URL}/offer/thank-you`,
+        siteName: 'Likkle Legends',
+        type: 'website',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: 'Caribbean Learning That Feels Like Home | Likkle Legends',
+        description:
+            'Stories, phonics practice, and school-style activities for kids 3–8.',
+    },
 };
 
 const NEXT_STEPS = [
@@ -70,6 +94,12 @@ export default function OfferThankYouPage({
 
     return (
         <main className="min-h-screen bg-gradient-to-b from-sky-200 via-amber-50 to-white font-montserrat">
+            {/* ── Tracking pixels — fire Purchase on thank-you page ── */}
+            <MetaPixel event="Purchase" params={{ value: INTRO_PRICE, currency: 'USD', content_name: 'intro_mailer' }} />
+            <GA4Pixel event="purchase" params={{ transaction_id: `intro_${Date.now()}`, value: INTRO_PRICE, currency: 'USD', items: [{ item_id: 'plan_mail_intro', item_name: 'Intro Mailer', price: INTRO_PRICE, quantity: 1 }] }} />
+            <TikTokPixel event="CompletePayment" params={{ value: INTRO_PRICE, currency: 'USD', content_name: 'intro_mailer' }} />
+            <PurchaseTracker value={INTRO_PRICE} upgraded={upgraded} />
+
             {/* Minimal header: logo */}
             <header className="border-b border-amber-100 bg-white/90 backdrop-blur-md">
                 <div className="mx-auto flex max-w-4xl items-center justify-center px-4 py-4 sm:px-6">

@@ -125,7 +125,7 @@ function CheckoutContent() {
             }}
         >
             <main className="min-h-screen bg-[#FFFDF7] flex flex-col">
-                {/* ── Minimal header: logo + secure checkout ── */}
+                {/* ── Minimal header: logo + secure checkout + 30-second promise ── */}
                 <header className="w-full bg-white border-b border-zinc-100">
                     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
                         <Link href="/" className="relative w-40 h-10 sm:w-48 sm:h-12 shrink-0">
@@ -137,11 +137,18 @@ function CheckoutContent() {
                                 priority
                             />
                         </Link>
-                        <div className="flex items-center gap-2 text-deep/60">
-                            <Lock size={16} className="text-success" />
-                            <span className="text-xs font-black uppercase tracking-widest">
-                                Secure Checkout
+                        <div className="flex items-center gap-4 text-deep/60">
+                            {/* 2026 CRO: 30-second checkout promise reduces a top
+                                cart-abandonment fear ("this is going to be long"). */}
+                            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-success">
+                                ⏱️ 30-Second Checkout
                             </span>
+                            <div className="flex items-center gap-2 text-deep/60">
+                                <Lock size={16} className="text-success" />
+                                <span className="text-xs font-black uppercase tracking-widest">
+                                    Secure Checkout
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </header>
@@ -561,10 +568,25 @@ function CheckoutContent() {
                                     )}
 
                                     <p className="text-[10px] text-deep/40 font-medium leading-relaxed text-center">
-                                        Payments are processed securely by PayPal. Use your PayPal
-                                        balance or pay directly with a Debit/Credit Card.
+                                        🔒 Your payment is secured by PayPal. Use your PayPal
+                                        balance or pay directly with a Debit/Credit Card — we never
+                                        see or store your card details.
                                     </p>
                                 </div>
+
+                                {/* 2026 CRO: inline objection handler. Cold traffic
+                                    often abandons here because a subscription that
+                                    bills after a trial still asks for payment up
+                                    front. Answer it before they bounce. */}
+                                <details className="group rounded-xl bg-deep/[0.02] border border-zinc-100 px-4 py-3">
+                                    <summary className="flex cursor-pointer items-center justify-between gap-3 text-xs font-bold text-deep/70 list-none">
+                                        <span>Why am I paying before getting access?</span>
+                                        <span className="text-deep/40 transition-transform group-open:rotate-45" aria-hidden>+</span>
+                                    </summary>
+                                    <p className="mt-2 text-[11px] font-medium leading-relaxed text-deep/60">
+                                        You&apos;re not. Your 7-day free trial means <span className="font-bold text-success">nothing is charged today</span> — PayPal just confirms your payment method so access stays uninterrupted after the trial. If you cancel within 7 days, you&apos;re never charged. If you love it, the first monthly charge happens only after your child has had a full week to try the stories, activities, and portal.
+                                    </p>
+                                </details>
 
                                 {/* Trust badges */}
                                 <div className="pt-3 border-t border-zinc-100 grid grid-cols-3 gap-2">
