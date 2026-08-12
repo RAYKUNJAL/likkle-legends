@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { checkRateLimit } from '@/lib/api/rate-limit';
+import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE } from '@/lib/email';
 
 async function createInitialChild(
   supabase: SupabaseClient,
@@ -48,9 +50,14 @@ async function createInitialChild(
  * Creates a free account from the /free-trial landing page.
  * Fires the Meta Conversions API Lead event server-side.
  * Triggers the nurture email sequence.
+ * Sends a magic login link via email — never returns the link in JSON.
  */
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'global';
+    const rateLimited = checkRateLimit(`free-trial:${ip}`, 5, 60_000);
+    if (rateLimited) return rateLimited;
+
     const { email, parentName, childName, island, source, adCharacter } = await req.json();
 
     if (!email || !email.includes('@')) {
@@ -168,19 +175,35 @@ export async function POST(req: NextRequest) {
       }),
     }).catch(() => {}); // Fire and forget
 
-    // ── 7. Sign in the user ────────────────────────────────────────────────
-    // Generate a magic link so they land on the portal without needing a password
-    const { data: linkData } = await supabase.auth.admin.generateLink({
+    // ── 7. Email magic login link (never return it to the client) ──────────
+    let emailSent = false;
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email,
       options: { redirectTo: `${siteUrl}/api/auth/callback?next=/portal` },
     });
 
+    if (linkError) {
+      console.error('[Free Trial API] generateLink failed:', linkError.message);
+    } else if (linkData?.properties?.action_link) {
+      const emailResult = await sendEmail({
+        to: email,
+        subject: 'Your Likkle Legends Login Link 🌴',
+        html: CONFIRMATION_EMAIL_TEMPLATE(parentName || 'Legend Parent', linkData.properties.action_link),
+      });
+      emailSent = Boolean(emailResult?.success);
+      if (!emailSent) {
+        console.error('[Free Trial API] Failed to send magic login email');
+      }
+    }
+
     return NextResponse.json({
       success: true,
       userId,
-      magicLink: linkData?.properties?.action_link || null,
-      message: 'Account created! Welcome to Likkle Legends.',
+      emailSent,
+      message: emailSent
+        ? 'Account created! Check your email for a login link.'
+        : 'Account created! Please log in to continue.',
     });
 
   } catch (err) {
