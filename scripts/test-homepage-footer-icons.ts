@@ -1,9 +1,9 @@
 /**
- * Guards the homepage footer against undefined React elements.
+ * Guards shared and homepage footers against undefined React elements.
  *
- * lucide-react 1.x removed Instagram / Twitter / Facebook. FooterV2 used to
- * import those names and render them as <Icon />, which crashed homepage SSR
- * with: "Element type is invalid ... got: undefined".
+ * lucide-react 1.x removed Instagram / Twitter / Facebook. Footer.tsx and
+ * FooterV2 used to import those names and render them as <Icon />, which
+ * crashed SSR with: "Element type is invalid ... got: undefined".
  */
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -29,25 +29,35 @@ function main() {
         assert(html.includes("<svg"), `${name} must render an <svg>, got: ${html}`);
     }
 
-    const footerSource = readFileSync(
-        resolve(process.cwd(), "components/landing-v2/FooterV2.tsx"),
+    for (const relPath of [
+        "components/landing-v2/FooterV2.tsx",
+        "components/Footer.tsx",
+    ]) {
+        const source = readFileSync(resolve(process.cwd(), relPath), "utf8");
+        assert(
+            !/\{[^}]*\b(Instagram|Twitter|Facebook)\b[^}]*\}\s+from\s+["']lucide-react["']/.test(
+                source
+            ),
+            `${relPath} must not import Instagram, Twitter, or Facebook from lucide-react`
+        );
+        assert(
+            source.includes("InstagramIcon") &&
+                source.includes("TwitterIcon") &&
+                source.includes("FacebookIcon"),
+            `${relPath} must render the local SocialBrandIcons replacements`
+        );
+    }
+
+    const sharedFooter = readFileSync(
+        resolve(process.cwd(), "components/Footer.tsx"),
         "utf8"
     );
     assert(
-        !footerSource.includes('from "lucide-react"') ||
-            !/\{[^}]*\b(Instagram|Twitter|Facebook)\b[^}]*\}\s+from\s+["']lucide-react["']/.test(
-                footerSource
-            ),
-        "FooterV2 must not import Instagram, Twitter, or Facebook from lucide-react"
-    );
-    assert(
-        footerSource.includes("InstagramIcon") &&
-            footerSource.includes("TwitterIcon") &&
-            footerSource.includes("FacebookIcon"),
-        "FooterV2 must render the local SocialBrandIcons replacements"
+        /\{[^}]*\bMail\b[^}]*\}\s+from\s+["']lucide-react["']/.test(sharedFooter),
+        "Footer.tsx must keep Mail on lucide-react"
     );
 
-    console.log("homepage footer social icons: ok");
+    console.log("footer social icons: ok");
 }
 
 main();
