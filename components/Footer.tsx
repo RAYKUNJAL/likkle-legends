@@ -3,7 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { siteContent } from '@/lib/content';
-import { Instagram, Facebook, Twitter, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
+import { InstagramIcon, FacebookIcon, TwitterIcon } from '@/components/landing-v2/SocialBrandIcons';
 
 export default function Footer() {
     const { footer } = siteContent;
@@ -27,13 +28,13 @@ export default function Footer() {
                     {/* Social Icons - Branding Fix */}
                     <div className="flex items-center gap-4">
                         <a href="https://www.instagram.com/likklelegends" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
-                            <Instagram size={20} />
+                            <InstagramIcon size={20} />
                         </a>
                         <a href="https://www.facebook.com/likklelegends" target="_blank" rel="noopener noreferrer" title="Facebook" aria-label="Facebook" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
-                            <Facebook size={20} />
+                            <FacebookIcon size={20} />
                         </a>
                         <a href="https://twitter.com/likklelegends" target="_blank" rel="noopener noreferrer" title="Twitter" aria-label="Twitter" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
-                            <Twitter size={20} />
+                            <TwitterIcon size={20} />
                         </a>
                         <a href="mailto:hello@likklelegends.com" title="Email" aria-label="Email" className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all text-white/60">
                             <Mail size={20} />
