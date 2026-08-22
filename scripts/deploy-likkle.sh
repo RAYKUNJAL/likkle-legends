@@ -43,6 +43,10 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
     git stash push -u -m "auto-stash before deploy $(date -u +%FT%TZ)" >/dev/null
 fi
 git pull --ff-only origin main
+# git may lose the exec bit on run-cron.sh (tracked as 100644), which breaks
+# crond inside the cron container (Permission denied). Re-assert here so every
+# deploy is self-healing.
+chmod +x deploy/run-cron.sh 2>/dev/null || true
 
 # ── 2. Source .env.production ───────────────────────────────────────────────
 echo "==> [2/9] Sourcing .env.production"
