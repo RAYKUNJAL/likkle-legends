@@ -9,10 +9,13 @@
  * Keeping them in one file means a single place to swap placeholder → real IDs.
  */
 
-// ─── Replace these placeholders before launch ─────────────────────────────
-export const META_PIXEL_ID = 'YOUR_META_PIXEL_ID';
-export const GA4_MEASUREMENT_ID = 'G-YOUR_GA4_ID';
-export const TIKTOK_PIXEL_ID = 'YOUR_TIKTOK_PIXEL_ID';
+// ─── Tracking IDs (env-driven at build time; real Meta pixel as fallback) ─
+export const META_PIXEL_ID =
+    process.env.NEXT_PUBLIC_META_PIXEL_ID || '4385961946335645';
+export const GA4_MEASUREMENT_ID =
+    process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID || '';
+export const TIKTOK_PIXEL_ID =
+    process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID || '';
 // ──────────────────────────────────────────────────────────────────────────
 
 export const SITE_URL =

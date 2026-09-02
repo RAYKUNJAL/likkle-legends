@@ -93,6 +93,32 @@ function CheckoutContent() {
     const emailValid = validateEmail(formData.email) === null;
     const formReady = emailValid && !!formData.firstName.trim() && !!formData.lastName.trim();
 
+    // Abandoned-checkout capture: once a valid email is present, tell the
+    // server so the recovery cron can send a reminder if payment is never
+    // completed. Debounced 3s after typing stops; server upserts by email.
+    useEffect(() => {
+        if (!emailValid || isProcessing) return;
+        const t = setTimeout(() => {
+            const payload = {
+                email: formData.email.trim(),
+                firstName: formData.firstName.trim() || undefined,
+                country: formData.country || undefined,
+                cartValue: INTRO_PRICE + (formData.addPhonicsPack ? PHONICS_PACK_PRICE : 0),
+                plan: 'plan_mail_intro',
+            };
+            fetch('/api/abandoned-checkout/capture', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            }).catch(() => {
+                // Best-effort: never block checkout on capture failure.
+            });
+        }, 3000);
+        return () => clearTimeout(t);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [emailValid, formData.email, isProcessing]);
+
+
     const handleEmailBlur = () => {
         setEmailTouched(true);
         setEmailError(validateEmail(formData.email));

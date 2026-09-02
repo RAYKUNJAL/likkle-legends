@@ -11,6 +11,8 @@ services:
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://www.likklelegends.com}
         NEXT_PUBLIC_PAYPAL_CLIENT_ID: ${NEXT_PUBLIC_PAYPAL_CLIENT_ID}
+        NEXT_PUBLIC_META_PIXEL_ID: ${NEXT_PUBLIC_META_PIXEL_ID}
+        NEXT_PUBLIC_GA4_MEASUREMENT_ID: ${NEXT_PUBLIC_GA4_MEASUREMENT_ID}
     restart: always
     env_file: .env.production
     expose:

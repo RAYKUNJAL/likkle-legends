@@ -35,3 +35,5 @@ PATH=/usr/sbin:/usr/bin:/sbin:/bin
 
 # Catch-up: also run blog generation at 20:00 in case the morning run failed
 0 20 * * * /scripts/run-cron.sh /api/cron/generate-blog
+# Abandoned checkout reminders — every 30 min (cheap scan, idempotent)
+*/30 * * * * /scripts/run-cron.sh /api/cron/abandoned-checkout-reminders
