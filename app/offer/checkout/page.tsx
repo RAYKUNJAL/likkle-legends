@@ -20,6 +20,10 @@ import toast from 'react-hot-toast';
 import { SUBSCRIPTION_PLANS } from '@/lib/paypal';
 import { supabase } from '@/lib/supabase-client';
 import { fireConversionEvent } from '@/lib/analytics';
+import MetaPixel from '@/components/offer/MetaPixel';
+import GA4Pixel from '@/components/offer/GA4Pixel';
+import TikTokPixel from '@/components/offer/TikTokPixel';
+import { fireAddPaymentInfo } from '@/lib/offer-tracking';
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb';
 
@@ -151,6 +155,10 @@ function CheckoutContent() {
             }}
         >
             <main className="min-h-screen bg-[#FFFDF7] flex flex-col">
+                {/* ── Tracking: InitiateCheckout when the checkout page opens ── */}
+                <MetaPixel event="InitiateCheckout" params={{ content_name: 'intro_mailer', content_type: 'product' }} />
+                <GA4Pixel event="begin_checkout" params={{ currency: 'USD', value: INTRO_PRICE, items: [{ item_id: 'plan_mail_intro', item_name: 'Intro Mailer', price: INTRO_PRICE, quantity: 1 }] }} />
+                <TikTokPixel event="InitiateCheckout" params={{ content_name: 'intro_mailer', value: INTRO_PRICE, currency: 'USD' }} />
                 {/* ── Minimal header: logo + secure checkout + 30-second promise ── */}
                 <header className="w-full bg-white border-b border-zinc-100">
                     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
@@ -469,6 +477,14 @@ function CheckoutContent() {
                                                 }}
                                                 disabled={!formReady || isProcessing}
                                                 onInit={() => setPaypalReady(true)}
+                                                onClick={(_data, actions) => {
+                                                    fireAddPaymentInfo({
+                                                        content_name: 'intro_mailer',
+                                                        value: INTRO_PRICE + (formData.addPhonicsPack ? PHONICS_PACK_PRICE : 0),
+                                                        currency: 'USD',
+                                                    });
+                                                    return actions.resolve();
+                                                }}
                                                 createSubscription={(_data, actions) => {
                                                     const targetPlanId =
                                                         process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER ||
