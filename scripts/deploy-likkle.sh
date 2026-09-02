@@ -111,6 +111,9 @@ fi
 echo "       New IP: $NEW_IP"
 
 # ── 6. Rewrite the Traefik dynamic YAML ─────────────────────────────────────
+if [ ! -d "$(dirname "$PROXY_YAML")" ]; then
+    echo "==> [6-8/9] SKIPPED (no local Traefik dynamic dir on this host - proxy is pinned on trini; public-site checks still run)"
+else
 echo "==> [6/9] Writing $PROXY_YAML (IP=$NEW_IP, redirect-to-https added)"
 
 # Back up the existing file
@@ -213,6 +216,7 @@ if [ "$proxy_healthy" != true ]; then
     echo "       WARNING: coolify-proxy not healthy after ${HEALTH_TIMEOUT}×2s — continuing anyway"
     docker logs --tail 10 "$PROXY_CONTAINER" 2>&1 | sed 's/^/       /' || true
 fi
+fi
 
 # Give Traefik a moment to load the dynamic config
 sleep 2
@@ -236,6 +240,7 @@ if [ "$https_ok" != true ]; then
     fails=$((fails + 1))
 fi
 
+if [ -d "$(dirname "$PROXY_YAML")" ]; then
 # b) HTTP → HTTPS redirect
 http_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 \
     -H 'Host: likklelegends.com' \
@@ -266,6 +271,9 @@ if [ "$yaml_ip" = "$NEW_IP" ]; then
 else
     echo "    ✗ YAML IP mismatch    → YAML has '$yaml_ip', container has '$NEW_IP'"
     fails=$((fails + 1))
+fi
+else
+    echo "    - skipped local proxy checks (b/c/d): no local Traefik dir on this host"
 fi
 
 echo ""
