@@ -69,6 +69,7 @@
     "recharts": "^3.7.0",
     "remotion": "^4.0.456",
     "resend": "^6.8.0",
+    "sharp": "^0.33.5",
     "swiper": "^12.1.2",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",

@@ -2,7 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Calendar, Clock, ArrowLeft, Share2, Twitter, Facebook, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, ArrowLeft, Share2, ChevronRight } from 'lucide-react';
+import { TwitterIcon, FacebookIcon } from '@/components/landing-v2/SocialBrandIcons';
 import { getPostBySlug, getRelatedPosts, getCategories } from '@/lib/services/blog';
 
 interface Props {
@@ -183,7 +184,7 @@ export default async function BlogPostPage({ params }: Props) {
                                 title="Share on Twitter"
                                 className="w-10 h-10 rounded-full bg-[#1DA1F2] text-white flex items-center justify-center hover:scale-110 transition-transform"
                             >
-                                <Twitter size={18} />
+                                <TwitterIcon size={18} />
                             </a>
                             <a
                                 href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://likklelegends.com/blog/${post.slug}`)}`}
@@ -192,7 +193,7 @@ export default async function BlogPostPage({ params }: Props) {
                                 title="Share on Facebook"
                                 className="w-10 h-10 rounded-full bg-[#4267B2] text-white flex items-center justify-center hover:scale-110 transition-transform"
                             >
-                                <Facebook size={18} />
+                                <FacebookIcon size={18} />
                             </a>
                         </div>
 

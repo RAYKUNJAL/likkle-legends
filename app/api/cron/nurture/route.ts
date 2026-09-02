@@ -8,7 +8,8 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization');
 
     // In Vercel, CRON_SECRET is automatically injected as 'Bearer <token>'
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && process.env.NODE_ENV === 'production') {
+    // Fail-closed: in production, an unset CRON_SECRET must never allow access.
+    if (process.env.NODE_ENV === 'production' && (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`)) {
         return new NextResponse('Unauthorized', { status: 401 });
     }
 

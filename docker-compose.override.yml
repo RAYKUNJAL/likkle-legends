@@ -1,0 +1,11 @@
+# build-server override: Caddy (host network) reaches the app via published port.
+# trini's Traefik also reaches it cross-server at :3000 until DNS moves here.
+services:
+  web:
+    ports:
+      - "3000:3000"
+    networks:
+      - default
+  cron:
+    networks:
+      - default

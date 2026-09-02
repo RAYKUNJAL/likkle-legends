@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import {
     AdminLayout, RefreshCw, Globe, ShieldCheck, Zap
 } from '@/components/admin/AdminComponents';
-import { Save, Facebook, Play, Target } from 'lucide-react';
+import { Save, Play, Target } from 'lucide-react';
+import { FacebookIcon } from '@/components/landing-v2/SocialBrandIcons';
 import { getPixelSettings, savePixelSettings } from '@/app/actions/pixels';
 
 export default function AdminPixelsPage() {
@@ -92,7 +93,7 @@ export default function AdminPixelsPage() {
                         <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-6">
                             <div className="flex items-center gap-3">
                                 <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                                    <Facebook size={24} />
+                                    <FacebookIcon size={24} />
                                 </div>
                                 <div>
                                     <h3 className="font-black text-gray-900 text-lg">Meta (Facebook)</h3>

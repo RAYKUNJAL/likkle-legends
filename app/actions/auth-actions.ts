@@ -112,13 +112,16 @@ export async function signupAction(formData: {
             }
         }
 
-        // `profiles` is a read-only view over `users` (+ subscriptions), so
-        // persist signup details to the `users` table the view derives from.
+        // `profiles` is a real table populated by the on_auth_user_created
+        // trigger (id, email, full_name, first_name only) -- island heritage
+        // and full parent name must be patched here after signup.
         const { error: profileError } = await supabaseAdmin
-            .from("users")
+            .from("profiles")
             .update({
                 first_name: parentName,
+                full_name: parentName,
                 origin_island: island,
+                preferred_island_code: island,
             })
             .eq("id", userId);
 

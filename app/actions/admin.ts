@@ -147,17 +147,13 @@ export async function verifyAdmin(token: string) {
             admin.from('profiles').select('is_admin, role').eq('id', user.id).single()
         ]);
 
-        const isDevAdmin =
-            user.email === 'admin@likklelegends.com' ||
-            user.email === 'raykunjal@gmail.com';
-
         const hasAdminRole =
             adminCheck.data?.role === 'admin' ||
             adminCheck.data?.role === 'super_admin' ||
             profileCheck.data?.is_admin === true ||
             profileCheck.data?.role === 'admin';
 
-        if (!hasAdminRole && !isDevAdmin) {
+        if (!hasAdminRole) {
             console.warn(`verifyAdmin: Access denied for ${user.email}`);
             throw new Error("Forbidden: Admin access required");
         }

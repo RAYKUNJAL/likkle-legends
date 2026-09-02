@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Share2, Trophy, Users, Gift, ArrowRight, Loader2, CheckCircle2, Copy, Twitter, Facebook, MessageCircle } from 'lucide-react';
+import { Share2, Trophy, Users, Gift, ArrowRight, Loader2, CheckCircle2, Copy, MessageCircle } from 'lucide-react';
+import { TwitterIcon, FacebookIcon } from '@/components/landing-v2/SocialBrandIcons';
 import toast from 'react-hot-toast';
 
 interface ContestEntryFormProps {
@@ -145,13 +146,13 @@ export function ContestStatusCard({ entry, prizes, leaderboard }: ContestStatusC
                             onClick={() => handleShare('Twitter')}
                             className="flex-1 h-12 bg-[#1DA1F2] rounded-xl flex items-center justify-center gap-2 font-bold text-xs"
                         >
-                            <Twitter size={16} /> Twitter
+                            <TwitterIcon size={16} /> Twitter
                         </button>
                         <button
                             onClick={() => handleShare('Facebook')}
                             className="flex-1 h-12 bg-[#4267B2] rounded-xl flex items-center justify-center gap-2 font-bold text-xs"
                         >
-                            <Facebook size={16} /> Facebook
+                            <FacebookIcon size={16} /> Facebook
                         </button>
                         <button
                             onClick={() => handleShare('WhatsApp')}

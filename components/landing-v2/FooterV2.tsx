@@ -3,7 +3,8 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { Instagram, Twitter, Facebook, Mail, Sparkles, ArrowRight, ShieldCheck, Globe } from "lucide-react";
+import { Sparkles, ArrowRight, ShieldCheck, Globe } from "lucide-react";
+import { InstagramIcon, TwitterIcon, FacebookIcon } from "@/components/landing-v2/SocialBrandIcons";
 
 export const FooterV2 = () => {
     return (
@@ -31,9 +32,9 @@ export const FooterV2 = () => {
                             </p>
                             <div className="flex gap-3 sm:gap-6">
                                 {[
-                                    { Icon: Instagram, href: 'https://www.instagram.com/likklelegends', label: 'Instagram' },
-                                    { Icon: Twitter, href: 'https://twitter.com/likklelegends', label: 'Twitter' },
-                                    { Icon: Facebook, href: 'https://www.facebook.com/likklelegends', label: 'Facebook' },
+                                    { Icon: InstagramIcon, href: 'https://www.instagram.com/likklelegends', label: 'Instagram' },
+                                    { Icon: TwitterIcon, href: 'https://twitter.com/likklelegends', label: 'Twitter' },
+                                    { Icon: FacebookIcon, href: 'https://www.facebook.com/likklelegends', label: 'Facebook' },
                                 ].map(({ Icon, href, label }) => (
                                     <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="w-12 h-12 sm:w-16 sm:h-16 bg-white/5 rounded-xl sm:rounded-2xl flex items-center justify-center hover:bg-primary transition-all duration-500 border border-white/5 hover:-translate-y-2">
                                         <Icon size={20} />
