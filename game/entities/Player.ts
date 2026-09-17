@@ -16,9 +16,10 @@ export default class Player extends Phaser.GameObjects.Container {
     super(scene, x, y);
     scene.add.existing(this);
 
-    this.sprite = scene.add.image(0, 0, 'vendor').setScale(0.3);
-    this.sprite.setBlendMode(Phaser.BlendModes.MULTIPLY); 
-    
+    // Sprites now have real transparency, so NORMAL blend (the old MULTIPLY
+    // was a hack to hide the baked white backgrounds and darkened the art).
+    this.sprite = scene.add.image(0, 0, 'vendor').setScale(0.18);
+
     // Shadow
     const shadow = scene.add.ellipse(0, 65, 80, 20, 0x000000, 0.2);
 
