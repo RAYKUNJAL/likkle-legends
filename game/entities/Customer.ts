@@ -15,17 +15,16 @@ export default class Customer extends Phaser.GameObjects.Container {
     super(scene, x, y);
     scene.add.existing(this);
 
-    this.sprite = scene.add.image(0, 0, 'customer').setScale(0.28);
-    this.sprite.setBlendMode(Phaser.BlendModes.MULTIPLY);
-    
-    const shadow = scene.add.ellipse(0, 70, 80, 20, 0x000000, 0.2);
+    this.sprite = scene.add.image(0, 0, 'customer').setScale(0.2);
+
+    const shadow = scene.add.ellipse(0, 60, 80, 20, 0x000000, 0.2);
     
     // Order Speech (Web Speech API)
     this.order = new DoublesOrder();
     this.playOrderVoice();
 
     // Speech Bubble (Visual)
-    this.bubble = scene.add.container(0, -100);
+    this.bubble = scene.add.container(0, -82);
     const bubbleBg = scene.add.rectangle(0, 0, 140, 70, 0xffffff, 0.95).setStrokeStyle(3, 0x4e342e);
     this.orderText = scene.add.text(0, 0, this.order.getDescription(), {
         fontFamily: 'Inter, sans-serif',
@@ -38,7 +37,7 @@ export default class Customer extends Phaser.GameObjects.Container {
     this.bubble.add([bubbleBg, this.orderText]);
     
     // Hearts
-    const heartsCont = scene.add.container(0, -150);
+    const heartsCont = scene.add.container(0, -120);
     for (let i = 0; i < this.maxPatience; i++) {
         const h = scene.add.text(-40 + i * 20, 0, '❤️', { fontSize: '18px' }).setOrigin(0.5);
         this.hearts.push(h);
