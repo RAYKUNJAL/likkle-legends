@@ -151,14 +151,14 @@ export default function ChildPortalPage() {
     const router = useRouter();
 
     const goToMusicLibrary = useCallback(() => {
-        router.push('/portal/songs');
+        router.push('/portal/music');
     }, [router]);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
         const sec = new URLSearchParams(window.location.search).get('sec');
         if (sec === 'songs' || sec === 'music' || sec === 'music-hub') {
-            router.replace('/portal/songs');
+            router.replace('/portal/music');
         }
     }, [router]);
     const {

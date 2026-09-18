@@ -75,7 +75,7 @@ export default function FreeRadioPage() {
                         <p className="text-sm font-black text-[#102543]">Want a saved family library?</p>
                         <p className="mt-1 text-sm text-[#51617b]">Sign in to keep favorites in the portal. Public radio stays free right here.</p>
                     </div>
-                    <Link href="/login?redirect=/portal/songs" className="mt-4 inline-flex min-h-12 items-center justify-center rounded-full bg-[#102543] px-6 py-3 text-sm font-bold text-white sm:mt-0">
+                    <Link href="/login?redirect=/portal/music" className="mt-4 inline-flex min-h-12 items-center justify-center rounded-full bg-[#102543] px-6 py-3 text-sm font-bold text-white sm:mt-0">
                         Sign in for my library
                     </Link>
                 </div>
