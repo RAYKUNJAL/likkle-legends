@@ -47,17 +47,15 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
         // 1. Show preview briefy for "Island Magic" effect
         setShowPassportPreview(true);
 
-        // 2. Build redirect URL
         const params = new URLSearchParams({
             childName: passportData.childName,
-            heritage: passportData.island.toUpperCase(),
-            ageBand: passportData.ageBand,
-            plan: 'plan_mail_intro'
+            island: passportData.island,
+            age: passportData.ageBand.startsWith('3') ? '4' : '6',
+            plan: 'free'
         });
 
-        // 3. Set a slight timeout so they see their passport before landing on checkout
         setTimeout(() => {
-            router.push(`/checkout?${params.toString()}`);
+            router.push(`/signup?${params.toString()}`);
         }, 1200);
     };
 
@@ -91,13 +89,21 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
                                 <Button
                                     size="lg"
                                     className="rounded-2xl h-14 text-lg font-bold bg-gradient-to-r from-[var(--caribbean-ocean)] to-[var(--caribbean-mango)] hover:shadow-2xl text-white shadow-lg hover:-translate-y-1 transition-all"
-                                    onClick={() => router.push('/checkout?plan=plan_mail_intro')}
+                                    onClick={() => router.push('/signup?plan=free')}
                                 >
-                                    ✨ Claim Your Child's Passport ($10)
+                                    Start free — no credit card
+                                </Button>
+                                <Button
+                                    size="lg"
+                                    variant="outline"
+                                    className="rounded-2xl h-14 text-lg font-bold border-2"
+                                    onClick={() => router.push('/listen')}
+                                >
+                                    Listen to island radio
                                 </Button>
 
                                 <p className="text-center text-sm text-slate-600 font-semibold">
-                                    🚚 Physical mail ships to US within 48 hours  |  🌍 Digital access worldwide instantly
+                                    Free explorer account first. Paid mail kits are listed separately when checkout is open.
                                 </p>
                             </div>
 
@@ -119,12 +125,12 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
 
                             {/* Social Proof */}
                             <div className="bg-[var(--caribbean-sun)]/5 rounded-xl p-6 border border-[var(--caribbean-sun)]/20">
-                                <p className="text-sm font-bold text-slate-700 mb-3">✓ What's Included in the $10 Intro Pass:</p>
+                                <p className="text-sm font-bold text-slate-700 mb-3">✓ What a free explorer account includes:</p>
                                 <ul className="space-y-2 text-sm text-slate-600">
-                                    <li>✓ First personalized Legend Envelope mailed to your door</li>
-                                    <li>✓ Legend Key Code to unlock exclusive Island Pack</li>
-                                    <li>✓ Instant access to all 5 Learning Zones</li>
-                                    <li>✓ 30-Day money-back guarantee (no questions asked)</li>
+                                    <li>✓ Playable island radio songs we can stream today</li>
+                                    <li>✓ Working games — Island Hop, Tanty's Kitchen, and more</li>
+                                    <li>✓ Parent setup with no credit card</li>
+                                    <li>✓ Custom song and mail kits listed separately when ready</li>
                                 </ul>
                             </div>
                         </div>

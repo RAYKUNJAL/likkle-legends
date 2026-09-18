@@ -1010,7 +1010,7 @@ function FinalCTASection() {
           </h2>
 
           <p className="text-lg sm:text-xl opacity-95 max-w-lg mx-auto">
-            Join 10,000+ Caribbean families. Free 7-day trial. No credit card needed. Cancel anytime.
+            Join Caribbean families. Start a free explorer account — no credit card. Paid checkout is listed separately when it is open.
           </p>
 
           <button

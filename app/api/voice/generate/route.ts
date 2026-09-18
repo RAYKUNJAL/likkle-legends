@@ -31,6 +31,28 @@ function resolveGoogleVoiceCharacter(voice: string): GoogleVoiceCharacter {
     return normalizeCharacterVoiceId(voice);
 }
 
+function voiceProvidersConfigured() {
+    return Boolean(
+        serverEnv.ELEVENLABS_API_KEY ||
+        process.env.GOOGLE_CLOUD_TTS_API_KEY ||
+        process.env.GOOGLE_API_KEY
+    );
+}
+
+export async function GET() {
+    const available = voiceProvidersConfigured();
+    return NextResponse.json(
+        {
+            available,
+            providers: {
+                elevenlabs: Boolean(serverEnv.ELEVENLABS_API_KEY),
+                googleTts: Boolean(process.env.GOOGLE_CLOUD_TTS_API_KEY || process.env.GOOGLE_API_KEY),
+            },
+        },
+        { status: available ? 200 : 503 }
+    );
+}
+
 export async function POST(request: NextRequest) {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'global';
     const bucketResponse = checkRateLimit(`voice-gen:${ip}`, 6, 10000);

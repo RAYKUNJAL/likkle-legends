@@ -10,7 +10,7 @@ const tiers = [
         price: "$0",
         billing: "Free forever",
         highlight: false,
-        cta: { label: "Sample the Vibe", href: "/checkout?plan=plan_free_forever" },
+        cta: { label: "Start free — no card", href: "/signup?plan=free" },
         icon: Star,
         features: [
             { text: "Limited portal preview", included: true },
@@ -27,7 +27,7 @@ const tiers = [
         billing: "One-time payment",
         highlight: true,
         ribbon: "MOST POPULAR",
-        cta: { label: "Claim Your Child's Passport", href: "/checkout?plan=plan_mail_intro" },
+        cta: { label: "Start free — paid checkout not open", href: "/signup?plan=free" },
         icon: Zap,
         trustNotes: ["US mail only (CA/UK coming soon)", "30-Day Triple Promise"],
         features: [
@@ -44,7 +44,7 @@ const tiers = [
         price: "$19.99",
         billing: "per month",
         highlight: false,
-        cta: { label: "Join the Family", href: "/checkout?plan=plan_legends_plus" },
+        cta: { label: "Start free — paid checkout not open", href: "/signup?plan=free" },
         icon: Crown,
         mailNote: "Monthly mail is US-only to start",
         waitlistCta: { label: "Join Canada/UK Waitlist", href: "/waitlist" },
@@ -90,7 +90,7 @@ export const TripleTier = () => {
                         viewport={{ once: true }}
                         className="text-lg text-deep/40 font-medium max-w-xl mx-auto"
                     >
-                        No surprises. No hidden fees. Cancel anytime.
+                        Free explorer is open now. Paid mail and Plus checkout stay listed as planned prices until that cart is live.
                     </motion.p>
                 </div>
 
@@ -220,9 +220,9 @@ export const TripleTier = () => {
                     className="flex flex-wrap items-center justify-center gap-8 mt-16 pt-16 border-t border-zinc-100"
                 >
                     {[
-                        { icon: ShieldCheck, label: "Secure Checkout" },
-                        { icon: Star, label: "4.98/5.0 Rating" },
-                        { icon: Check, label: "Cancel Anytime" },
+                        { icon: ShieldCheck, label: "No card for free" },
+                        { icon: Star, label: "Kid-safe portal" },
+                        { icon: Check, label: "Start anytime" },
                     ].map(({ icon: Icon, label }) => (
                         <div key={label} className="flex items-center gap-2">
                             <Icon size={16} className="text-success" />

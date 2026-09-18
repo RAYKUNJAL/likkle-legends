@@ -25,7 +25,7 @@ interface IslandTileGridProps {
 const DESTINATIONS: TileDestination[] = [
     { id: 'stories', title: 'Story Island', description: 'Read & listen', icon: BookOpen, gradient: 'from-lime-400 to-green-500', emoji: '📚' },
     { id: 'games', title: 'Play Port', description: 'Games & fun', icon: Palette, gradient: 'from-emerald-400 to-teal-500', emoji: '🎮' },
-    { id: 'songs', title: 'Rhythm Reef', description: 'Songs & dance', icon: Music, gradient: 'from-pink-400 to-rose-500', emoji: '🎵' },
+    { id: 'songs', title: 'Explore Music', description: 'Songs & radio', icon: Music, gradient: 'from-pink-400 to-rose-500', emoji: '🎵' },
     { id: 'missions', title: 'Adventure Atoll', description: 'Quests', icon: Target, gradient: 'from-amber-400 to-orange-500', emoji: '🗺️' },
     { id: 'story-studio', title: 'Create Magic', description: 'Make your own stories', icon: Sparkles, gradient: 'from-purple-400 to-fuchsia-500', emoji: '✨' },
     { id: 'lessons', title: 'Cinema Cay', description: 'Watch & learn', icon: Play, gradient: 'from-indigo-400 to-blue-500', emoji: '🎬' },

@@ -45,7 +45,7 @@ export default function LandingHero({ content }: { content: any }) {
 
                     <div className="flex flex-col sm:flex-row gap-5">
                         <Link
-                            href="/get-started"
+                            href="/free-trial"
                             className="btn btn-primary btn-lg px-10 py-6 text-xl shadow-premium hover:shadow-2xl hover:scale-[1.02] transition-all group flex items-center justify-center font-black"
                             style={{ borderRadius: '2rem' }}
                         >

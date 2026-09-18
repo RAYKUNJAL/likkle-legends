@@ -347,8 +347,8 @@ export const siteContent = {
         headline: "Ready to start your child's Caribbean adventure?",
         subheadline: "Join 500+ families building identity, emotional literacy, and joyful memories each month.",
         primary_cta: {
-            label: "Start Mail Club for $10/month",
-            href: "/get-started"
+            label: "Start free explorer",
+            href: "/free-trial"
         },
         secondary_cta: {
             label: "See what's inside a letter",
