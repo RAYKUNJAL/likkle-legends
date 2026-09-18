@@ -125,7 +125,7 @@ export default function MusicHub() {
                             <span className="italic underline decoration-wavy decoration-yellow-300">Music Hub</span>
                         </h1>
                         <p className="text-white/85 text-lg font-medium mb-10 leading-relaxed max-w-2xl">
-                            Play all 9 island tracks right now — or order a personalised song made just for your child, delivered in 24 hours.
+                            Play the island songs we can actually stream — or order a personalised song made just for your child.
                         </p>
                         <div className="flex flex-wrap gap-4">
                             <button

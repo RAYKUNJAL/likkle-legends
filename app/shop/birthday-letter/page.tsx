@@ -72,51 +72,38 @@ export default function BirthdayLetterPage() {
         container.innerHTML = '';
         pp.Buttons({
             style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'pay', height: 50 },
-            createOrder: (_data: any, actions: any) => {
-                return actions.order.create({
-                    purchase_units: [{
-                        amount: {
-                            value: sel.price.toFixed(2),
-                            currency_code: 'USD',
-                            breakdown: { item_total: { value: sel.price.toFixed(2), currency_code: 'USD' } },
-                        },
-                        items: [{
-                            name: `Likkle Legends — Birthday Letter (${sel.name})`,
-                            unit_amount: { value: sel.price.toFixed(2), currency_code: 'USD' },
-                            quantity: '1',
-                            category: 'PHYSICAL_GOODS',
-                            description: `Birthday letter for ${childName} (${character})`,
-                        }],
-                        shipping: {
-                            name: { full_name: `Parent of ${childName}` },
-                            email_address: parentEmail,
-                        },
-                    }],
-                    application_context: {
-                        shipping_preference: 'GET_FROM_FILE',
-                        user_action: 'PAY_NOW',
-                        brand_name: 'Likkle Legends',
-                    },
+            createOrder: async () => {
+                const res = await fetch('/api/orders/birthday-letter/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: selectedTier }),
                 });
+                const data = await res.json();
+                if (!res.ok || !data.id) {
+                    throw new Error(data.error || 'Could not start checkout');
+                }
+                return data.id;
             },
-            onApprove: async (_data: any, actions: any) => {
+            onApprove: async (data: any) => {
                 setProcessing(true);
                 try {
-                    const order = await actions.order.capture();
-                    await fetch('/api/orders/birthday-letter', {
+                    const res = await fetch('/api/orders/birthday-letter', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            orderId: order.id,
+                            orderId: data.orderID,
                             tier: selectedTier,
                             childName,
                             childAge,
                             character,
                             parentEmail,
                             message,
-                            amount: sel.price,
                         }),
-                    }).catch(() => {});
+                    });
+                    const json = await res.json();
+                    if (!res.ok) {
+                        throw new Error(json.error || 'Payment could not be verified');
+                    }
                     setSuccess(true);
                 } catch (_e) {
                     setPaypalError('Payment could not complete. Please try again.');

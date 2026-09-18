@@ -309,6 +309,16 @@ export async function POST(request: NextRequest) {
         const audioBuffer = await synthesizeElevenLabs(safeResponse, voiceId);
         const audioBase64 = audioBuffer ? audioBuffer.toString('base64') : '';
 
+        if (!audioBase64) {
+            return NextResponse.json({
+                text: safeResponse,
+                audioBase64: '',
+                voiceId,
+                voiceUnavailable: true,
+                error: 'Voice audio is not configured. You can still read the reply.',
+            });
+        }
+
         return NextResponse.json({
             text: safeResponse,
             audioBase64,

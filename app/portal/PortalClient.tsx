@@ -149,6 +149,18 @@ const VILLAGE_CINEMA_VIDEOS: Video[] = [
 
 export default function ChildPortalPage() {
     const router = useRouter();
+
+    const goToMusicLibrary = useCallback(() => {
+        router.push('/portal/songs');
+    }, [router]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const sec = new URLSearchParams(window.location.search).get('sec');
+        if (sec === 'songs' || sec === 'music' || sec === 'music-hub') {
+            router.replace('/portal/songs');
+        }
+    }, [router]);
     const {
         user,
         children,
@@ -716,12 +728,16 @@ export default function ChildPortalPage() {
                                             return;
                                         }
                                         if (item.id === 'games') {
+                                            setIsSidebarOpen(false);
                                             router.push('/portal/games');
-                                        } else if (item.id === 'music-hub') {
-                                            router.push('/portal/music');
+                                        } else if (item.id === 'music-hub' || item.id === 'songs') {
+                                            setIsSidebarOpen(false);
+                                            goToMusicLibrary();
                                         } else if (item.id === 'buddy') {
+                                            setIsSidebarOpen(false);
                                             router.push('/portal/buddy');
                                         } else if (item.id === 'voice-chat') {
+                                            setIsSidebarOpen(false);
                                             router.push('/portal/voice-chat');
                                         } else {
                                             setActiveSection(item.id as PortalSection);
@@ -979,6 +995,21 @@ export default function ChildPortalPage() {
                                 <p className="text-lg text-gray-500 font-medium">
                                     Where shall we go today, Little Legend?
                                 </p>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (!sectionAllowed('radio') || screenTimeExceeded) {
+                                            setBlockedMessage(screenTimeExceeded
+                                                ? "Today's screen time is used up! A parent can add more minutes in Parent Controls."
+                                                : 'This channel is currently locked by parent controls.');
+                                            return;
+                                        }
+                                        goToMusicLibrary();
+                                    }}
+                                    className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-500 text-white font-black text-sm shadow-lg hover:scale-105 active:scale-95 transition-all"
+                                >
+                                    🎵 Explore Music
+                                </button>
                                 {blockedMessage && (
                                     <div className="max-w-2xl rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700 flex items-start justify-between gap-3">
                                         <span>{blockedMessage}</span>
@@ -1017,6 +1048,14 @@ export default function ChildPortalPage() {
                                                     return;
                                                 }
                                                 router.push('/portal/games');
+                                            } else if (section === 'songs' || section === 'music' || section === 'music-hub') {
+                                                if (!sectionAllowed('radio') || screenTimeExceeded) {
+                                                    setBlockedMessage(screenTimeExceeded
+                                                        ? "Today's screen time is used up! A parent can add more minutes in Parent Controls."
+                                                        : 'This channel is currently locked by parent controls.');
+                                                    return;
+                                                }
+                                                goToMusicLibrary();
                                             } else {
                                                 if (!sectionAllowed(section as PortalSection) || screenTimeExceeded) {
                                                     setBlockedMessage(screenTimeExceeded

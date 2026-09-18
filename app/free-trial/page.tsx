@@ -87,18 +87,12 @@ export default function FreeTrialPage() {
 
       if (data.success) {
         setStep('success');
-        // Fire Meta Pixel Lead event
         if (typeof window !== 'undefined' && (window as any).fbq) {
           (window as any).fbq('track', 'Lead', { content_name: 'free_trial_signup', currency: 'USD', value: 0 });
         }
-        // Use magic link to establish session — plain router.push has no session cookie
-        setTimeout(() => {
-          if (data.magicLink) {
-            window.location.href = data.magicLink;
-          } else {
-            router.push('/portal');
-          }
-        }, 2000);
+        if (data.sessionEstablished) {
+          setTimeout(() => router.push('/portal'), 1600);
+        }
       } else {
         // If account already exists, redirect to login
         if (data.error?.includes('already') || data.error?.includes('exists')) {
@@ -259,12 +253,12 @@ export default function FreeTrialPage() {
                 <div className="text-6xl animate-bounce">🎉</div>
                 <h2 className="text-3xl font-black">Welcome to Likkle Legends!</h2>
                 <p className="text-white/60">
-                  {childName ? `${childName}'s` : 'Your'} Caribbean adventure is ready.
-                  Taking you to the island now...
+                  {childName ? `${childName}'s` : 'Your'} free explorer account is ready.
+                  If you are not taken to the portal, check your email or log in.
                 </p>
-                <div className="flex justify-center">
-                  <div className="w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
-                </div>
+                <a href="/login?redirect=/portal" className="inline-flex justify-center rounded-xl bg-white/10 px-5 py-3 text-sm font-bold text-white">
+                  Go to login
+                </a>
               </div>
             )}
           </div>

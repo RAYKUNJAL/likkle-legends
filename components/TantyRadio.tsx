@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Track } from '../lib/types';
 import { BRAND_NAME, RADIO_CHANNELS, RADIO_TRACKS as DEFAULT_TRACKS } from '../lib/constants';
+import { isPlayableAudioUrl } from '@/lib/song-catalog';
 import { getGlobalAudioContext, kickstartMobileAudio, narrateText } from '../services/geminiService';
 import { getGlobalPlaylist } from '../services/storageService';
 
@@ -21,7 +22,9 @@ const DJ_SNIPPETS: Record<string, string[]> = {
 
 const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks, defaultChannel }) => {
     // Start empty to prevent flash of defaults if user has cleared playlist
-    const [allTracks, setAllTracks] = useState<Track[]>(featuredTracks ?? []);
+    const [allTracks, setAllTracks] = useState<Track[]>(
+        (featuredTracks ?? []).filter((track) => isPlayableAudioUrl(track.url))
+    );
     const [isInitializing, setIsInitializing] = useState(!featuredTracks);
     const [activeChannel, setActiveChannel] = useState(defaultChannel ?? RADIO_CHANNELS[0]?.id ?? 'tanty_spice');
     const [isPlaying, setIsPlaying] = useState(false);
@@ -52,14 +55,14 @@ const TantyRadio: React.FC<TantyRadioProps> = ({ isLite = false, featuredTracks,
                 // Strict check: if customTracks is not null (even if empty array), use it.
                 // Only use DEFAULT_TRACKS if customTracks is explicitly null (never configured).
                 if (customTracks && customTracks.length > 0) {
-                    setAllTracks(customTracks);
+                    setAllTracks(customTracks.filter((track) => isPlayableAudioUrl(track.url)));
                 } else {
                     console.log("No custom tracks found, using defaults");
-                    setAllTracks(DEFAULT_TRACKS);
+                    setAllTracks(DEFAULT_TRACKS.filter((track) => isPlayableAudioUrl(track.url)));
                 }
             } catch (e) {
                 console.warn("Failed to fetch playlist", e);
-                setAllTracks(DEFAULT_TRACKS);
+                setAllTracks(DEFAULT_TRACKS.filter((track) => isPlayableAudioUrl(track.url)));
             } finally {
                 setIsInitializing(false);
             }

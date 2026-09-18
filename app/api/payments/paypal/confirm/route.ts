@@ -178,10 +178,9 @@ export async function POST(request: NextRequest) {
 
         const userIdToUpdate = user.id;
 
-        // ── Verify tier against PayPal subscription ──
-                // The client sends a `tier` value — never trust it for paid plans.
-                let verifiedTier = tier;
-                if (subscriptionId && tier !== 'plan_free_forever') {
+        // ── Verify tier against PayPal. Never initialize from the client value. ──
+                let verifiedTier = '';
+                if (subscriptionId) {
                     const verification = await verifySubscriptionAndDeriveTier(subscriptionId, tier);
                     if (!verification.valid || !verification.tier) {
                         return NextResponse.json(
@@ -190,21 +189,14 @@ export async function POST(request: NextRequest) {
                         );
                     }
                     verifiedTier = verification.tier;
-                } else if (!subscriptionId && orderId && tier !== 'plan_free_forever') {
-                    // One-time order path: still refuse to take client tier alone for paid plans.
-                    // Entitlement must come from a known free tier or a verified subscription.
-                    if (tier && tier !== 'plan_free_forever') {
-                        // For one-time boxes we keep tier only if it is an explicit free marker;
-                        // otherwise assign digital by default is unsafe - reject.
-                        console.warn(`[SECURITY] Paid confirm without subscriptionId rejected tier=${tier} order=${orderId}`);
-                        // Allow only when tier is free forever; otherwise require subscriptionId.
-                        if (!String(tier).includes('free')) {
-                            return NextResponse.json(
-                                { error: 'subscriptionId required to activate paid plan' },
-                                { status: 400 }
-                            );
-                        }
-                    }
+                } else if (tier === 'plan_free_forever') {
+                    verifiedTier = 'plan_free_forever';
+                } else {
+                    console.warn(`[SECURITY] Paid confirm without subscriptionId rejected tier=${tier} order=${orderId}`);
+                    return NextResponse.json(
+                        { error: 'subscriptionId required to activate a paid plan' },
+                        { status: 400 }
+                    );
                 }
 
         const TRIAL_DAYS = 7;

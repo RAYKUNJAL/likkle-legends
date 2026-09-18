@@ -58,7 +58,7 @@ export const NavbarV2 = () => {
                                         <LogIn size={16} strokeWidth={2.5} />
                                         Log In
                                     </Link>
-                                    <Link href="/signup?plan=mail_club" className="flex items-center gap-2 px-5 py-3 text-primary border-2 border-primary/20 hover:border-primary/40 font-black text-xs uppercase tracking-[0.15em] rounded-xl transition-all hover:bg-primary/5">
+                                    <Link href="/signup?plan=free" className="flex items-center gap-2 px-5 py-3 text-primary border-2 border-primary/20 hover:border-primary/40 font-black text-xs uppercase tracking-[0.15em] rounded-xl transition-all hover:bg-primary/5">
                                         <Gift size={14} />
                                         Free
                                     </Link>
@@ -105,7 +105,7 @@ export const NavbarV2 = () => {
                                     <Link href="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-3 py-4 sm:py-6 bg-zinc-50 text-deep font-black uppercase tracking-widest text-xs rounded-xl sm:rounded-[2rem]">
                                         <LogIn size={18} /> Log In
                                     </Link>
-                                    <Link href="/signup?plan=mail_club" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-3 py-4 sm:py-6 bg-primary/10 text-primary border-2 border-primary/20 font-black uppercase tracking-widest text-xs rounded-xl sm:rounded-[2rem]">
+                                    <Link href="/signup?plan=free" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-3 py-4 sm:py-6 bg-primary/10 text-primary border-2 border-primary/20 font-black uppercase tracking-widest text-xs rounded-xl sm:rounded-[2rem]">
                                         <Gift size={18} /> Sign Up Free
                                     </Link>
                                     <Link href="/checkout" onClick={() => setIsOpen(false)} className="group flex items-center justify-center gap-3 sm:gap-4 py-5 sm:py-8 bg-primary-gradient text-white rounded-xl sm:rounded-[2rem] font-black text-base sm:text-xl shadow-2xl shadow-primary/30">

@@ -129,6 +129,21 @@ export async function signupAction(formData: {
             console.error("[AUTH] Profile persist failed:", profileError.message);
         }
 
+        const freePlans = new Set(['free', 'mail_club', 'free_trial', 'plan_free_forever']);
+        if (freePlans.has(formData.plan)) {
+            try {
+                await supabaseAdmin.from('subscriptions').upsert({
+                    user_id: userId,
+                    plan_id: 'plan_free_forever',
+                    status: 'active',
+                    provider: 'none',
+                    provider_subscription_id: `free:${userId}`,
+                }, { onConflict: 'provider_subscription_id' });
+            } catch (subErr) {
+                console.warn('[AUTH] Free subscription upsert skipped:', subErr);
+            }
+        }
+
         let childId: string | undefined;
         const existingChild = await supabaseAdmin
             .from('children')

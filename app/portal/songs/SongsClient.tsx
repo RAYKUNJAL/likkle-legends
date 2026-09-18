@@ -10,6 +10,7 @@ import {
 import { useSearchParams } from 'next/navigation';
 import { useUser } from '@/components/UserContext';
 import { EmptyState } from '@/components/EmptyState';
+import { getPlayableCatalogSongs, isPlayableAudioUrl } from '@/lib/song-catalog';
 
 interface Song {
     id: string;
@@ -41,7 +42,9 @@ export default function SongsClient() {
                 const data = await getSongs();
 
                 // Map DB result to Song interface
-                const mappedSongs: Song[] = data.map((s: any) => ({
+                const mappedSongs: Song[] = data
+                    .filter((s: any) => isPlayableAudioUrl(s.audio_url))
+                    .map((s: any) => ({
                     id: s.id,
                     title: s.title,
                     artist: s.artist || 'Likkle Legends',
@@ -54,7 +57,29 @@ export default function SongsClient() {
                     play_count: 0
                 }));
 
-                setSongs(mappedSongs);
+                const catalogSongs: Song[] = getPlayableCatalogSongs().map((s) => ({
+                    id: s.id,
+                    title: s.title,
+                    artist: s.artist,
+                    album: 'Island Beats',
+                    duration_seconds: s.duration_seconds || 180,
+                    audio_url: s.url,
+                    cover_image_url: s.cover_image_url,
+                    island_origin: s.island_origin,
+                    tier_required: s.tier_required,
+                    play_count: 0,
+                }));
+
+                const seen = new Set(mappedSongs.map((s) => s.audio_url));
+                const merged = [...mappedSongs];
+                for (const song of catalogSongs) {
+                    if (!seen.has(song.audio_url)) {
+                        merged.push(song);
+                        seen.add(song.audio_url);
+                    }
+                }
+
+                setSongs(merged);
             } catch (error) {
                 console.error('Failed to load songs:', error);
             }
@@ -286,12 +311,26 @@ export default function SongsClient() {
                 {filteredSongs.length === 0 && (
                     <EmptyState
                         icon="🎵"
-                        title="No Songs Found"
-                        message="Your favorite melodies are playing hide and seek. Try 'All Songs' to see the full collection!"
-                        actionLabel="View All Songs"
-                        onAction={() => setActiveTab('all')}
+                        title="No playable songs yet"
+                        message="We only show songs we can actually play. Ask a grown-up to order a song made for you, or check back when more island tracks are ready."
+                        actionLabel="Music Made For You"
+                        onAction={() => { window.location.href = '/portal/music#custom'; }}
                     />
                 )}
+
+                <div className="mt-10 bg-gradient-to-r from-orange-500 to-amber-500 rounded-[2rem] p-6 text-white shadow-xl">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-white/80">Music made for you</p>
+                    <h3 className="text-2xl font-black mt-1">A real Caribbean song with your name in it</h3>
+                    <p className="text-white/85 font-medium mt-2 max-w-xl">
+                        Parents can order a custom island song — not a fake catalog track. Delivered as a real MP3.
+                    </p>
+                    <Link
+                        href="/portal/music#custom"
+                        className="inline-flex mt-4 px-5 py-3 bg-white text-orange-600 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-transform"
+                    >
+                        Order a custom song
+                    </Link>
+                </div>
             </main>
 
             {/* Player Bar */}

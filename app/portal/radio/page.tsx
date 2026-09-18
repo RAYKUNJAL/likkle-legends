@@ -98,7 +98,7 @@ export default function RadioPortalPage() {
                         <p className="text-xs uppercase tracking-widest text-white/70 font-bold mb-4 relative z-10">
                             Now Playing: {nowPlaying}
                         </p>
-                        <Link href="/portal?sec=songs" className="inline-flex items-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-transform">
+                        <Link href="/portal/songs" className="inline-flex items-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 transition-transform">
                             <Music4 size={16} /> Explore All Music
                         </Link>
                     </div>
