@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
     ArrowLeft, Gamepad2, Star, Lock, Play, Trophy, Clock,
-    Users, Sparkles, Brain, Palette, Zap, Crown, Gift, Wand2,
+    Users, Sparkles, Brain, Palette, Zap, Crown, Gift,
     Puzzle, Music, BookOpen, Map as MapIcon, Heart, Target, CheckCircle, Search
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
@@ -306,7 +306,7 @@ const FEATURED_GAMES = [
         learningFocus: 'Geography, flags, and capitals',
         isNew: true,
         isPopular: true,
-        game_url: '/games/island-hop',
+        game_url: '/games/island-hop.html',
     },
     {
         id: 'tantys-kitchen',
@@ -321,7 +321,7 @@ const FEATURED_GAMES = [
         learningFocus: 'Cooking, sorting, and following steps',
         isNew: true,
         isPopular: true,
-        game_url: '/games/tantys-kitchen',
+        game_url: '/games/tantys-kitchen.html',
     },
     {
         id: 'math-market',
@@ -336,7 +336,7 @@ const FEATURED_GAMES = [
         learningFocus: 'Counting, money, and mental math',
         isNew: true,
         isPopular: false,
-        game_url: '/games/math-market',
+        game_url: '/games/math-market.html',
     },
     {
         id: 'spelling-blaze',
@@ -351,7 +351,7 @@ const FEATURED_GAMES = [
         learningFocus: 'Spelling under pressure',
         isNew: true,
         isPopular: false,
-        game_url: '/games/spelling-blaze',
+        game_url: '/games/spelling-blaze.html',
     },
     {
         id: 'doubles-dash',
@@ -834,17 +834,7 @@ export default function GamesHubPage() {
                 )}
             </main>
 
-            {/* Coming Soon Banner */}
-            <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 pb-14">
-                <div className="bg-white/80 backdrop-blur-sm border-4 border-white rounded-[2rem] p-6 sm:p-8 text-center shadow-lg shadow-sky-100">
-                    <Wand2 className="mx-auto mb-3 text-fuchsia-400" size={36} />
-                    <h3 className="text-xl sm:text-2xl font-black mb-2 text-slate-700">More Island Adventures Coming Soon!</h3>
-                    <p className="text-slate-400 font-semibold max-w-md mx-auto text-sm sm:text-base">
-                        New educational games from the Likkle Legends universe are on the way,
-                        guided by R.O.T.I. and the crew. New game drops every week!
-                    </p>
-                </div>
-            </div>
+            <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 pb-14" />
         </div>
     );
 }

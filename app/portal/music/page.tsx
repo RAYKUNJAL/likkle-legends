@@ -210,7 +210,7 @@ export default function MusicHub() {
 
                         {/* Channel filter */}
                         <div className="flex flex-wrap gap-2">
-                            {[{ id: 'all', label: 'All Tracks', emoji: '🎶' }, ...RADIO_CHANNELS.map(ch => ({ id: ch.id, label: ch.label, emoji: CHANNEL_META[ch.id]?.emoji || '🎵' }))].map(ch => (
+                            {[{ id: 'all', label: 'All Tracks', emoji: '🎶' }, ...RADIO_CHANNELS.filter((channel) => RADIO_TRACKS.some((track) => track.channel === channel.id)).map(ch => ({ id: ch.id, label: ch.label, emoji: CHANNEL_META[ch.id]?.emoji || '🎵' }))].map(ch => (
                                 <button
                                     key={ch.id}
                                     onClick={() => setActiveChannel(ch.id)}
