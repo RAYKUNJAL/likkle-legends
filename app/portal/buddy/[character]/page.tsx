@@ -165,6 +165,7 @@ export default function CharacterChatPage() {
     const [isSending, setIsSending] = useState(false);
     const [isLoadingHistory, setIsLoadingHistory] = useState(true);
     const [voiceEnabled, setVoiceEnabled] = useState(false);
+    const [voiceAvailable, setVoiceAvailable] = useState<boolean | null>(null);
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [isVoiceMode, setIsVoiceMode] = useState(false);
     const [isListening, setIsListening] = useState(false);
@@ -209,6 +210,18 @@ export default function CharacterChatPage() {
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, statusMessage, errorMessage]);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetch('/api/voice/generate', { method: 'GET' })
+            .then((res) => {
+                if (!cancelled) setVoiceAvailable(res.ok);
+            })
+            .catch(() => {
+                if (!cancelled) setVoiceAvailable(false);
+            });
+        return () => { cancelled = true; };
+    }, []);
 
     useEffect(() => {
         if (isLoading) return;
@@ -291,6 +304,7 @@ export default function CharacterChatPage() {
             }
         } catch (_e) {
             setIsSpeaking(false);
+            setErrorMessage('Voice audio is not available right now. You can still chat in text.');
         }
     }, [config, characterId]);
 
@@ -500,10 +514,16 @@ export default function CharacterChatPage() {
                 )}
 
                 <button
-                    onClick={() => setIsVoiceMode(true)}
-                    className="w-9 h-9 bg-white text-slate-700 rounded-xl flex items-center justify-center transition-all flex-shrink-0 hover:scale-110 shadow-md"
-                    title="Open voice mode"
-                    aria-label="Open voice mode"
+                    onClick={() => {
+                        if (voiceAvailable === false) {
+                            setErrorMessage('Voice mode is unavailable right now. Typed chat still works.');
+                            return;
+                        }
+                        setIsVoiceMode(true);
+                    }}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all flex-shrink-0 hover:scale-110 shadow-md ${voiceAvailable === false ? 'bg-white/20 text-white' : 'bg-white text-slate-700'}`}
+                    title={voiceAvailable === false ? 'Voice mode unavailable' : 'Open voice mode'}
+                    aria-label={voiceAvailable === false ? 'Voice mode unavailable' : 'Open voice mode'}
                 >
                     <Mic size={16} />
                 </button>
