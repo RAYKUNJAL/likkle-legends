@@ -91,14 +91,7 @@ export default function FreeTrialPage() {
         if (typeof window !== 'undefined' && (window as any).fbq) {
           (window as any).fbq('track', 'Lead', { content_name: 'free_trial_signup', currency: 'USD', value: 0 });
         }
-        // Use magic link to establish session — plain router.push has no session cookie
-        setTimeout(() => {
-          if (data.magicLink) {
-            window.location.href = data.magicLink;
-          } else {
-            router.push('/portal');
-          }
-        }, 2000);
+        // Login is delivered by email — never consume a magic/action link from the API response.
       } else {
         // If account already exists, redirect to login
         if (data.error?.includes('already') || data.error?.includes('exists')) {
@@ -260,11 +253,14 @@ export default function FreeTrialPage() {
                 <h2 className="text-3xl font-black">Welcome to Likkle Legends!</h2>
                 <p className="text-white/60">
                   {childName ? `${childName}'s` : 'Your'} Caribbean adventure is ready.
-                  Taking you to the island now...
+                  Check your email (<span className="text-white/80">{email}</span>) for a secure login link.
                 </p>
-                <div className="flex justify-center">
-                  <div className="w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
-                </div>
+                <a
+                  href={`/login?email=${encodeURIComponent(email)}&redirect=/portal`}
+                  className="inline-block w-full py-4 rounded-xl font-black text-[#060D1F] text-lg bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 transition shadow-lg shadow-orange-500/30"
+                >
+                  Go to login →
+                </a>
               </div>
             )}
           </div>
