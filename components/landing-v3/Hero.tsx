@@ -97,7 +97,7 @@ export function Hero({ onOpenWaitlist }: HeroProps) {
                                     size="lg"
                                     variant="outline"
                                     className="rounded-2xl h-14 text-lg font-bold border-2"
-                                    onClick={() => router.push('/radio')}
+                                    onClick={() => router.push('/listen')}
                                 >
                                     Listen to island radio
                                 </Button>

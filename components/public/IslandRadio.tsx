@@ -153,8 +153,8 @@ export default function IslandRadio({
     };
 
     const headingId = `${variant}-radio-heading`;
-    const ctaHref = variant === 'member' ? '/portal/songs' : '/radio';
-    const ctaLabel = variant === 'member' ? 'Explore my music library' : variant === 'station' ? 'Stay on Island Radio' : 'Explore Island Radio';
+    const ctaHref = variant === 'member' ? '/portal/songs' : '/listen';
+    const ctaLabel = variant === 'member' ? 'Explore my music library' : variant === 'station' ? 'Stay on Island Radio' : 'Explore Music';
 
     if (!tracks.length || !station || !current) {
         return (
