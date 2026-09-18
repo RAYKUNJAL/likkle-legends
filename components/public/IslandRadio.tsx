@@ -84,6 +84,14 @@ export default function IslandRadio({
     const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const requested = new URLSearchParams(window.location.search).get('station');
+        if (requested && stations.some((station) => station.id === requested)) {
+            setActiveStationId(requested);
+        }
+    }, [stations]);
+
+    useEffect(() => {
         if (!stations.some((station) => station.id === activeStationId)) {
             setActiveStationId(stations[0]?.id || '');
         }

@@ -283,6 +283,33 @@ export function getChannelsWithPlayableTracks() {
     return RADIO_CHANNELS.filter((channel) => playable.some((track) => track.channel === channel.id));
 }
 
+const CHARACTER_CHANNEL: Record<string, string> = {
+    roti: 'roti',
+    'r.o.t.i.': 'roti',
+    'r.o.t.i': 'roti',
+    tanty_spice: 'tanty_spice',
+    'tanty-spice': 'tanty_spice',
+    tanty: 'tanty_spice',
+    dilly_doubles: 'dilly_doubles',
+    'dilly-doubles': 'dilly_doubles',
+    dilly: 'dilly_doubles',
+    steelpan_sam: 'steelpan_sam',
+    'steelpan-sam': 'steelpan_sam',
+    sam: 'steelpan_sam',
+};
+
+export function characterSlugToChannel(slugOrName?: string | null): string | null {
+    if (!slugOrName) return null;
+    const key = slugOrName.trim().toLowerCase();
+    return CHARACTER_CHANNEL[key] || CHARACTER_CHANNEL[key.replace(/[\s.]+/g, '_')] || null;
+}
+
+export function getPlayableSongsForCharacter(slugOrName?: string | null): CatalogSong[] {
+    const channel = characterSlugToChannel(slugOrName);
+    if (!channel) return [];
+    return getPlayableCatalogSongs().filter((song) => song.channel === channel);
+}
+
 export function isPlayableAudioUrl(url?: string | null): boolean {
     if (!url) return false;
     const trimmed = url.trim();

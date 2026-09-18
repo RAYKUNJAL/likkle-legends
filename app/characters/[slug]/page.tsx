@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { CheckCircle2, ArrowLeft, ArrowRight } from 'lucide-react';
+import { getPlayableSongsForCharacter } from '@/lib/song-catalog';
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
     const slug = params.slug;
@@ -59,6 +60,10 @@ export default async function CharacterDetailPage({ params }: { params: { slug: 
 }
 
 function CharacterDetailView(char: any) {
+    const fromId = getPlayableSongsForCharacter(char.id);
+    const playableSongs = fromId.length > 0 ? fromId : getPlayableSongsForCharacter(char.name);
+    const radioStation = playableSongs[0]?.channel;
+
     return (
         <div className="min-h-screen flex flex-col bg-white">
             <Navbar />
@@ -129,14 +134,46 @@ function CharacterDetailView(char: any) {
                                 </div>
                             )}
 
-                            <div className="pt-6">
+                            {playableSongs.length > 0 && (
+                                <div className="space-y-4 rounded-[2rem] border border-orange-100 bg-orange-50/70 p-6">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-orange-600">Hear {char.name.split(' ')[0]} today</p>
+                                    <ul className="space-y-3">
+                                        {playableSongs.map((song) => (
+                                            <li key={song.id} className="rounded-2xl bg-white p-4 shadow-sm">
+                                                <p className="font-black text-deep">{song.title}</p>
+                                                <p className="text-sm font-bold text-deep/50">{song.artist}</p>
+                                                <audio className="mt-3 w-full" controls preload="none" src={song.url}>
+                                                    <track kind="captions" />
+                                                </audio>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <Link
+                                        href={radioStation ? `/radio?station=${radioStation}` : '/radio'}
+                                        className="inline-flex items-center gap-2 font-black text-orange-600"
+                                    >
+                                        Open island radio
+                                        <ArrowRight className="w-4 h-4" />
+                                    </Link>
+                                </div>
+                            )}
+
+                            <div className="pt-6 flex flex-col sm:flex-row gap-3">
                                 <Link
-                                    href="/signup"
-                                    className="inline-flex items-center gap-3 bg-primary text-white text-xl font-black px-10 py-5 rounded-3xl shadow-xl shadow-primary/20 hover:bg-primary/90 hover:scale-105 transition-all"
+                                    href="/signup?plan=free"
+                                    className="inline-flex items-center justify-center gap-3 bg-primary text-white text-xl font-black px-10 py-5 rounded-3xl shadow-xl shadow-primary/20 hover:bg-primary/90 hover:scale-105 transition-all"
                                 >
-                                    Start Adventure Now
+                                    Start free — no card
                                     <ArrowRight className="w-6 h-6" />
                                 </Link>
+                                {playableSongs.length === 0 && (
+                                    <Link
+                                        href="/radio"
+                                        className="inline-flex items-center justify-center gap-3 bg-white border-2 border-orange-200 text-deep text-lg font-black px-8 py-5 rounded-3xl hover:bg-orange-50 transition-all"
+                                    >
+                                        Hear island radio
+                                    </Link>
+                                )}
                             </div>
                         </div>
                     </div>

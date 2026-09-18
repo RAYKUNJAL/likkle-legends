@@ -140,10 +140,16 @@ export default function LandingCharacters() {
                                     <ChevronRight size={20} className="text-deep/50" />
                                 </button>
                                 <Link
-                                    href="/#pricing"
+                                    href={
+                                        active.name.includes('Tanty') ? '/radio?station=tanty_spice'
+                                            : active.name.includes('R.O.T.I') ? '/radio?station=roti'
+                                                : '/radio'
+                                    }
                                     className="flex-1 flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-black rounded-2xl py-3 text-sm transition-all group"
                                 >
-                                    Start Learning with {active.name.split(' ')[0]}
+                                    {active.name.includes('Tanty') || active.name.includes('R.O.T.I')
+                                        ? `Hear ${active.name.split(' ')[0]}'s song`
+                                        : 'Hear island radio'}
                                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                                 </Link>
                             </div>

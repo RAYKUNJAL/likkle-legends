@@ -103,17 +103,21 @@ export function MeetTheLegends({ onOpenWaitlist }: MeetTheLegendsProps) {
                                         <Button
                                         onClick={() => {
                                             const characterHrefs: Record<string, string> = {
-                                                'Dilly Doubles': '/characters/dilly-doubles',
-                                                'R.O.T.I.': '/characters/roti',
-                                                'Tanty Spice': '/characters/tanty-spice',
-                                                'Mango Moko': '/games',
+                                                'Dilly Doubles': '/games/doubles-dash',
+                                                'R.O.T.I.': '/radio?station=roti',
+                                                'Tanty Spice': '/radio?station=tanty_spice',
+                                                'Mango Moko': '/games/island-hop.html',
                                             };
-                                            window.location.href = characterHrefs[char.name] || '/characters';
+                                            window.location.href = characterHrefs[char.name] || '/radio';
                                         }}
                                         variant="outline"
                                         className="w-full h-11 rounded-xl border-2 font-bold group-hover:bg-slate-50 transition-colors text-slate-700 border-slate-300"
                                     >
-                                        {char.name === 'Mango Moko' ? 'Play Island Hop' : 'Learn More'}
+                                        {char.name === 'Mango Moko' ? 'Play Island Hop'
+                                            : char.name === 'Dilly Doubles' ? 'Play Doubles Dash'
+                                            : char.name === 'Tanty Spice' ? "Hear Tanty's song"
+                                            : char.name === 'R.O.T.I.' ? "Hear R.O.T.I.'s song"
+                                            : 'Listen to island radio'}
                                     </Button>
                                 </CardContent>
                             </Card>

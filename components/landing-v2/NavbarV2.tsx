@@ -62,8 +62,8 @@ export const NavbarV2 = () => {
                                         <Gift size={14} />
                                         Free
                                     </Link>
-                                    <Link href="/checkout" className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all overflow-hidden">
-                                        <span className="relative z-10">Get Started</span>
+                                    <Link href="/signup?plan=free" className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-black text-xs tracking-[0.2em] uppercase shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all overflow-hidden">
+                                        <span className="relative z-10">Start Free</span>
                                         <ArrowRight size={18} className="relative z-10 group-hover:translate-x-1 transition-transform" />
                                         <div className="absolute inset-0 bg-primary-gradient opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                     </Link>
@@ -108,8 +108,8 @@ export const NavbarV2 = () => {
                                     <Link href="/signup?plan=free" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-3 py-4 sm:py-6 bg-primary/10 text-primary border-2 border-primary/20 font-black uppercase tracking-widest text-xs rounded-xl sm:rounded-[2rem]">
                                         <Gift size={18} /> Sign Up Free
                                     </Link>
-                                    <Link href="/checkout" onClick={() => setIsOpen(false)} className="group flex items-center justify-center gap-3 sm:gap-4 py-5 sm:py-8 bg-primary-gradient text-white rounded-xl sm:rounded-[2rem] font-black text-base sm:text-xl shadow-2xl shadow-primary/30">
-                                        Get Started
+                                    <Link href="/signup?plan=free" onClick={() => setIsOpen(false)} className="group flex items-center justify-center gap-3 sm:gap-4 py-5 sm:py-8 bg-primary-gradient text-white rounded-xl sm:rounded-[2rem] font-black text-base sm:text-xl shadow-2xl shadow-primary/30">
+                                        Start Free
                                         <Sparkles size={24} className="animate-pulse" />
                                     </Link>
                                 </>

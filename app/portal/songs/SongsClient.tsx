@@ -256,7 +256,7 @@ export default function SongsClient() {
                             <span className="font-black uppercase tracking-widest text-xs opacity-80">Live Now</span>
                         </div>
                         <h2 className="text-3xl font-black mb-2">Tanty's Island Radio</h2>
-                        <p className="text-white/80 max-w-md">Listen to non-stop Calypso, Reggae, and Folklore. Tanty's currently spinning "Steelpan Serenade"!</p>
+                        <p className="text-white/80 max-w-md">Play the island songs we can stream today — Drinking Water and Saving Money — then order a custom song if you want one made for your child.</p>
                     </div>
                     <Link
                         href="/portal/radio"
