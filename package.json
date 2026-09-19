@@ -18,7 +18,8 @@
     "import:songs:batch": "tsx legacy_scripts/import-songs-batch.ts",
     "import:printables:batch": "tsx legacy_scripts/import-printables-batch.ts",
     "test:generator": "tsx scripts/test-generator.ts",
-    "test:supabase": "tsx scripts/test-supabase.ts"
+    "test:supabase": "tsx scripts/test-supabase.ts",
+    "test:homepage-footer-icons": "tsx scripts/test-homepage-footer-icons.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.9",
