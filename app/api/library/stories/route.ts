@@ -1,31 +1,43 @@
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { NextResponse } from 'next/server';
+import { attachLocalCover, isKidsLibraryReady } from '@/lib/library-stories';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+function prepareStory(book: any) {
+    return attachLocalCover(book);
+}
 
 export async function GET(req: Request) {
     try {
         const url = new URL(req.url);
         const slug = url.searchParams.get('slug');
+        const id = url.searchParams.get('id');
+        const kidsOnly = url.searchParams.get('kids') !== '0';
 
-        if (slug) {
-            // Fetch single book with full content for the reader
-            const { data: book, error } = await supabaseAdmin
+        if (slug || id) {
+            let query = supabaseAdmin
                 .from('stories_library')
                 .select('*')
-                .eq('slug', slug)
-                .eq('is_active', true)
-                .maybeSingle();
+                .eq('is_active', true);
+
+            query = id ? query.eq('id', id) : query.eq('slug', slug);
+
+            const { data: book, error } = await query.maybeSingle();
 
             if (error || !book) {
                 return NextResponse.json({ error: 'Story not found' }, { status: 404 });
             }
 
-            return NextResponse.json({ story: book });
+            const prepared = prepareStory(book);
+            if (kidsOnly && !isKidsLibraryReady(prepared)) {
+                return NextResponse.json({ error: 'Story is not ready to read' }, { status: 404 });
+            }
+
+            return NextResponse.json({ story: prepared });
         }
 
-        // List all active books with full content (for library + reader)
         const { data: stories, error } = await supabaseAdmin
             .from('stories_library')
             .select('*')
@@ -37,7 +49,17 @@ export async function GET(req: Request) {
             return NextResponse.json({ stories: [] });
         }
 
-        return NextResponse.json({ stories: stories || [] });
+        const prepared = (stories || []).map(prepareStory);
+        const visible = kidsOnly ? prepared.filter(isKidsLibraryReady) : prepared;
+
+        return NextResponse.json({
+            stories: visible,
+            counts: {
+                total: prepared.length,
+                ready: visible.length,
+                missingCover: prepared.filter((s) => !s.cover_image_url).length,
+            },
+        });
     } catch (e: any) {
         console.error('API Error:', e);
         return NextResponse.json({ stories: [] });

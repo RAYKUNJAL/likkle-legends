@@ -27,15 +27,10 @@ export default function StorybooksPage() {
     const fetchStories = async (currentUserId?: string | null) => {
         setIsLoading(true);
         try {
-            // 1. Fetch Featured (Active) Stories
-            const { data: activeData, error: activeError } = await supabase
-                .from('storybooks')
-                .select('*')
-                .eq('is_active', true)
-                .order('created_at', { ascending: false });
-
-            if (activeError) throw activeError;
-            setStories(activeData || []);
+            const libraryRes = await fetch('/api/library/stories', { cache: 'no-store' });
+            const libraryJson = libraryRes.ok ? await libraryRes.json() : { stories: [] };
+            const libraryStories = Array.isArray(libraryJson.stories) ? libraryJson.stories : [];
+            setStories(libraryStories);
 
             // 2. Fetch User's Own (Personal) Stories
             if (currentUserId) {
@@ -127,8 +122,8 @@ export default function StorybooksPage() {
                             </div>
                         ) : stories.length === 0 && myStories.length === 0 ? (
                             <div className="col-span-2 text-center py-20 bg-white rounded-[4rem] border-2 border-dashed border-zinc-200">
-                                <p className="text-deep/30 font-black text-2xl uppercase tracking-widest">Your bookshelf is empty</p>
-                                <p className="text-deep/20 mt-2">Start a new adventure in the Studio to see it here!</p>
+                                <p className="text-deep/30 font-black text-2xl uppercase tracking-widest">No ready books yet</p>
+                                <p className="text-deep/20 mt-2">Only real Caribbean stories with covers and pages appear here.</p>
                                 <Link href="/portal/story-studio" className="mt-8 inline-flex items-center gap-2 text-primary font-black uppercase tracking-widest hover:gap-4 transition-all">
                                     Go to Studio <ArrowRight size={20} />
                                 </Link>
