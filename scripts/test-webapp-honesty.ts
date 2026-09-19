@@ -59,6 +59,14 @@ function testVoiceFailsClosedWithoutKeys() {
   assert.equal(ready.storyStudio.available, true);
 }
 
+function testArcadeRoutesRedirectToHtml() {
+  const config = readFileSync(resolve(process.cwd(), 'next.config.mjs'), 'utf8');
+  for (const id of ['island-hop', 'tantys-kitchen', 'math-market', 'spelling-blaze']) {
+    assert.ok(config.includes(`'/games/${id}'`));
+    assert.ok(config.includes(`'/games/${id}.html'`));
+  }
+}
+
 function testWorkingGamesOnly() {
   assert.equal(HIDDEN_GAME_IDS.has('story-library'), true);
   assert.equal(HIDDEN_GAME_IDS.has('cultural-quiz'), true);
@@ -73,6 +81,7 @@ testFreeTrialRouteSourceHasNoMagicLink();
 testFreeTrialNeverLeaksMagicLink();
 testBuddyFollowUpsStayInCharacter();
 testVoiceFailsClosedWithoutKeys();
+testArcadeRoutesRedirectToHtml();
 testWorkingGamesOnly();
 
 console.log('webapp honesty checks passed');

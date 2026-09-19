@@ -1,10 +1,5 @@
-import HtmlArcadeFrame from '@/components/games/HtmlArcadeFrame';
+import { redirect } from 'next/navigation';
 
 export default function IslandHopGame() {
-  return (
-    <HtmlArcadeFrame
-      title="Mango's Island Hop"
-      src="/games/island-hop/index.html"
-    />
-  );
+  redirect('/games/island-hop.html');
 }
