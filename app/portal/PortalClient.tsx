@@ -1117,7 +1117,7 @@ export default function ChildPortalPage() {
                                             <EmptyState
                                                 icon="📖"
                                                 title="No ready books yet"
-                                                message="The shelf only shows real Caribbean stories with covers and pages. None are ready right now."
+                                                message="The shelf only shows fully illustrated Caribbean picture books. None are ready right now."
                                             />
                                         </div>
                                     ) : (

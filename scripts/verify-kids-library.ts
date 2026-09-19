@@ -6,8 +6,10 @@
  */
 import {
     STORY_COVER_BY_SLUG,
-    attachLocalCover,
+    attachPageIllustrations,
     coverCounts,
+    isFullyIllustrated,
+    localCatalogStories,
     toKidsLibraryStory,
 } from '../lib/library-stories';
 
@@ -46,21 +48,27 @@ function fakeLiveRow(title: string, slug: string, withBody: boolean, cover: stri
 const before = Object.keys(STORY_COVER_BY_SLUG).map((slug, index) =>
     fakeLiveRow(LIVE_TITLES[index], slug, true, null)
 );
-const after = before.map(attachLocalCover);
+const after = before.map(attachPageIllustrations);
 const kids = after.map(toKidsLibraryStory).filter(Boolean);
+const catalog = localCatalogStories();
 
 const beforeCounts = coverCounts(before);
 const afterCounts = coverCounts(after);
+const catalogCounts = coverCounts(catalog);
 
 console.log('BEFORE covers', beforeCounts);
-console.log('AFTER covers', afterCounts);
+console.log('AFTER art attach', afterCounts);
+console.log('LOCAL CATALOG', catalogCounts);
 console.log('Kids-ready titles:', kids.map((s: any) => s.title));
 
-if (beforeCounts.withCover !== 0) {
-    throw new Error(`Expected live covers to start at 0, got ${beforeCounts.withCover}`);
+if (afterCounts.withCover !== 12 || afterCounts.fullyIllustrated !== 12 || afterCounts.kidsReady !== 12) {
+    throw new Error(`Expected 12 fully illustrated books, got ${JSON.stringify(afterCounts)}`);
 }
-if (afterCounts.withCover !== 12 || afterCounts.kidsReady !== 12) {
-    throw new Error(`Expected 12 covered ready books, got ${JSON.stringify(afterCounts)}`);
+if (catalogCounts.fullyIllustrated !== 12) {
+    throw new Error(`Local catalog is not fully illustrated: ${JSON.stringify(catalogCounts)}`);
+}
+if (!catalog.every(isFullyIllustrated)) {
+    throw new Error('A catalog book is missing page art');
 }
 
 const emptyBody = toKidsLibraryStory(fakeLiveRow('Ghost Book', 'ghost-book', false, '/images/x.png'));

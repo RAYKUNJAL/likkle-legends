@@ -383,7 +383,7 @@ export default function StoriesLibraryPage() {
                         <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
                             <BookOpen className="text-slate-200 mx-auto mb-4" size={64} />
                             <h4 className="text-2xl font-black text-slate-800 mb-2">No ready books here</h4>
-                            <p className="text-slate-500 max-w-sm mx-auto">Only real Caribbean stories with covers and pages are shown. Try clearing filters, or check back if the shelf is still warming up.</p>
+                            <p className="text-slate-500 max-w-sm mx-auto">Only fully illustrated Caribbean picture books appear here — cover plus art on every page. Try clearing filters if the shelf looks quiet.</p>
                             <button
                                 onClick={() => { setSearchQuery(''); setSelectedIsland('All Islands'); setSelectedCategory('All Categories'); setSelectedAgeGroup('all'); }}
                                 className="mt-6 px-6 py-2 bg-indigo-50 text-indigo-600 rounded-full font-bold hover:bg-indigo-100 transition-colors"

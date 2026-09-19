@@ -151,8 +151,10 @@ export default function IslandStoriesPage() {
             const rows = Array.isArray(data.stories) ? data.stories : [];
             setBooks(rows.filter((book: LibraryBook) => {
                 const pages = (book.content as any)?.pages || [];
-                const hasBody = pages.some((page: LibraryBookPage) => String(page?.text || '').trim());
-                return Boolean(book.cover_image_url) && hasBody;
+                const illustrated = pages.filter((page: LibraryBookPage) =>
+                    String(page?.text || '').trim() && String((page as any)?.image_url || page?.image_url || '').trim()
+                );
+                return Boolean(book.cover_image_url) && pages.length > 0 && illustrated.length === pages.length;
             }));
         } catch (err) {
             console.error('Failed to load stories', err);
@@ -421,7 +423,7 @@ export default function IslandStoriesPage() {
 
             {books.length === 0 ? (
                 <div className="text-center py-20">
-                    <p className="text-deep/40 text-lg font-bold">No ready books yet — only real stories with covers and pages appear here.</p>
+                    <p className="text-deep/40 text-lg font-bold">No fully illustrated picture books yet. We only show stories with art on every page.</p>
                 </div>
             ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

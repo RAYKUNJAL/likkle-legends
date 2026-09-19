@@ -1,8 +1,10 @@
 /**
  * Kids library helpers for the live stories_library API.
- * Does not invent titles or body text — only attaches known cover art
- * and filters out books that cannot actually be read.
+ * Does not invent titles or body text — attaches known cover + page art
+ * and only lists books that are fully illustrated end-to-end.
  */
+
+import liveLibraryStories from '@/lib/data/live-library-stories.json';
 
 export const STORY_COVER_BY_SLUG: Record<string, string> = {
     'the-river-mummas-gift': '/images/story-covers/the-river-mummas-gift.png',
@@ -127,6 +129,10 @@ export function extractStoryPages(story: any): LibraryStoryPage[] {
         .filter(Boolean) as LibraryStoryPage[];
 }
 
+export function pageImagePath(slug: string, pageNumber: number): string {
+    return `/images/story-pages/${slug}/page-${String(pageNumber).padStart(2, '0')}.png`;
+}
+
 export function attachLocalCover<T extends { slug?: string; cover_image_url?: string | null }>(story: T): T & { cover_image_url: string } {
     const existing = String(story?.cover_image_url || '').trim();
     if (existing) {
@@ -137,6 +143,46 @@ export function attachLocalCover<T extends { slug?: string; cover_image_url?: st
     return { ...story, cover_image_url: mapped || '' };
 }
 
+export function attachPageIllustrations(story: any): any {
+    const withCover = attachLocalCover(story);
+    const slug = String(withCover.slug || '').trim();
+    const content = parseContent(withCover);
+    const rawPages = Array.isArray(content.pages) ? content.pages : [];
+    const pages = rawPages.map((page: any, index: number) => {
+        const pageNumber = Number(page?.pageNumber || page?.page_number || index + 1);
+        const existing = String(
+            page?.image_url || page?.imageUrl || page?.illustration_url || page?.illustrationUrl || ''
+        ).trim();
+        const mapped = slug ? pageImagePath(slug, pageNumber) : '';
+        return {
+            ...page,
+            page_number: pageNumber,
+            image_url: existing || mapped,
+            imageUrl: existing || mapped,
+        };
+    });
+    return {
+        ...withCover,
+        content: {
+            ...content,
+            pages,
+        },
+    };
+}
+
+export function localCatalogStories(): any[] {
+    return (liveLibraryStories as any[]).map((story) => attachPageIllustrations({
+        ...story,
+        is_active: true,
+        cover_image_url: STORY_COVER_BY_SLUG[story.slug] || null,
+        content: {
+            pages: story.pages,
+            audio_urls: story.audio_urls || [],
+            narrated_by: story.narrated_by,
+        },
+    }));
+}
+
 export function hasCoverArt(story: { cover_image_url?: string | null; slug?: string }): boolean {
     return Boolean(attachLocalCover(story).cover_image_url);
 }
@@ -145,15 +191,24 @@ export function hasReadableBody(story: any): boolean {
     return extractStoryPages(story).length > 0;
 }
 
+export function isFullyIllustrated(story: any): boolean {
+    const prepared = attachPageIllustrations(story);
+    if (!prepared.cover_image_url) return false;
+    const pages = extractStoryPages(prepared);
+    if (pages.length === 0) return false;
+    return pages.every((page) => Boolean(page.imageUrl));
+}
+
 export function isKidsLibraryReady(story: any): boolean {
-    return hasCoverArt(story) && hasReadableBody(story);
+    return isFullyIllustrated(story);
 }
 
 export function toKidsLibraryStory(story: any): KidsLibraryStory | null {
     if (!story?.id || !story?.title) return null;
-    const withCover = attachLocalCover(story);
+    const withCover = attachPageIllustrations(story);
     const pages = extractStoryPages(withCover);
     if (!withCover.cover_image_url || pages.length === 0) return null;
+    if (pages.some((page) => !page.imageUrl)) return null;
 
     const islandCode = String(withCover.island_code || '');
     const ageTrack = String(withCover.age_track || 'big');
@@ -191,7 +246,7 @@ export function toReaderStory(story: any) {
             pages: kids.pages.map((page) => ({
                 pageNumber: page.pageNumber,
                 text: page.text,
-                imageUrl: page.imageUrl || kids.cover_image_url,
+                imageUrl: page.imageUrl,
                 audioUrl: page.audioUrl,
             })),
             glossary: Array.isArray(kids.content?.glossary) ? kids.content.glossary : [],
@@ -229,12 +284,13 @@ export async function fetchKidsLibraryStory(idOrSlug: string): Promise<KidsLibra
 }
 
 export function coverCounts(stories: any[]) {
-    const attached = stories.map(attachLocalCover);
+    const attached = stories.map(attachPageIllustrations);
     return {
         total: attached.length,
         withCover: attached.filter((s) => Boolean(s.cover_image_url)).length,
         missingCover: attached.filter((s) => !s.cover_image_url).length,
         readable: attached.filter(hasReadableBody).length,
+        fullyIllustrated: attached.filter(isFullyIllustrated).length,
         kidsReady: attached.filter(isKidsLibraryReady).length,
     };
 }
