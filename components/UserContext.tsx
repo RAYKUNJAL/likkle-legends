@@ -542,12 +542,13 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
         // cookie-bridge-hydrated user. The browser GoTrue client cannot read
         // httpOnly server-set cookies, so it fires SIGNED_OUT spuriously.
         // Only wipe on an explicit, user-initiated signOut (handled by signOutAction).
-        if (typeof supabase.auth?.onAuthStateChange !== 'function') {
+        const authApi = (supabase as { auth?: { onAuthStateChange?: typeof supabase.auth.onAuthStateChange } })?.auth;
+        if (!authApi || typeof authApi.onAuthStateChange !== 'function') {
           return () => {
             mounted = false;
           };
         }
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        const { data: { subscription } } = authApi.onAuthStateChange(async (event, session) => {
           if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
             const userId = session?.user?.id;
             if (event === 'SIGNED_IN' && userId) {
