@@ -6,9 +6,10 @@
 import { StoryBook } from '@/types/story';
 
 export function transformToStoryBook(dbStory: any): StoryBook {
-    const content = typeof dbStory.content_json === 'string'
-        ? JSON.parse(dbStory.content_json)
-        : dbStory.content_json;
+    const rawContent = dbStory.content ?? dbStory.content_json;
+    const content = typeof rawContent === 'string'
+        ? JSON.parse(rawContent)
+        : rawContent || {};
 
     // If already full structure, return as-is
     if (content.book_meta && content.structure) {
@@ -98,7 +99,7 @@ export function transformToStoryBook(dbStory: any): StoryBook {
                 page_number: page.page_number || idx + 1,
                 layout: 'single_page',
                 background_setting: `island-${dbStory.island_code}-scene`,
-                narrative_text: page.narrative_text,
+                narrative_text: page.narrative_text || page.text || page.story_text || '',
                 decodability_constraints: {
                     allowed_graphemes: getGraphemesForLevel(dbStory.reading_level),
                     max_new_graphemes: dbStory.reading_level === 'emergent' ? 2 : 4,
@@ -122,7 +123,7 @@ export function transformToStoryBook(dbStory: any): StoryBook {
                     include_sound_effects: true,
                     pace: dbStory.reading_level === 'emergent' ? 'slow' : 'moderate'
                 }
-            }))
+            })).filter((page: any) => String(page.narrative_text || '').trim())
         },
         assessment: {
             after_story_questions: [],

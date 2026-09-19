@@ -89,13 +89,16 @@ export default function StoryStudioPage() {
                 childName: activeChild?.first_name || 'Little Legend'
             });
 
-            if (result.success && result.story) {
-                // Store in session storage for the dynamic reader to pick up
+            const pageCount = result.story?.structure?.pages?.filter((p: any) =>
+                String(p?.narrative_text || p?.text || '').trim()
+            ).length || 0;
+
+            if (result.success && result.story && pageCount > 0) {
                 sessionStorage.setItem('current_story_draft', JSON.stringify(result.story));
                 router.push(`/portal/stories/dynamic/session`);
             } else {
                 setStep('island');
-                alert(result.error || "Tanty had a little ink spill! Let's try again.");
+                alert(result.error || "That tale is not ready in the library yet. Try another legend, or come back soon.");
             }
         } catch (error) {
             console.error("Generation error:", error);
@@ -275,9 +278,9 @@ export default function StoryStudioPage() {
                             </div>
 
                             <div className="space-y-4 max-w-sm">
-                                <h2 className="text-3xl font-black text-deep italic">Tanty is fetching...</h2>
+                                <h2 className="text-3xl font-black text-deep italic">Looking in the library...</h2>
                                 <p className="text-deep/40 font-bold leading-relaxed">
-                                    Pulling the perfect story from our library just for you! ✨
+                                    Checking for a real matching tale. If it is not ready, we will say so — no pretend books.
                                 </p>
                             </div>
 
