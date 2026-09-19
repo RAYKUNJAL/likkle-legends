@@ -29,10 +29,10 @@ export const WORKING_PORTAL_GAMES: WorkingGame[] = [
 ];
 
 export const WORKING_ARCADE_GAMES: WorkingGame[] = [
-  { id: 'island-hop', title: "Mango's Island Hop", href: '/games/island-hop', kind: 'arcade' },
-  { id: 'tantys-kitchen', title: "Tanty's Kitchen", href: '/games/tantys-kitchen', kind: 'arcade' },
-  { id: 'math-market', title: "R.O.T.I.'s Math Market", href: '/games/math-market', kind: 'arcade' },
-  { id: 'spelling-blaze', title: "Scorcha's Spelling Blaze", href: '/games/spelling-blaze', kind: 'arcade' },
+  { id: 'island-hop', title: "Mango's Island Hop", href: '/games/island-hop.html', kind: 'arcade' },
+  { id: 'tantys-kitchen', title: "Tanty's Kitchen", href: '/games/tantys-kitchen.html', kind: 'arcade' },
+  { id: 'math-market', title: "R.O.T.I.'s Math Market", href: '/games/math-market.html', kind: 'arcade' },
+  { id: 'spelling-blaze', title: "Scorcha's Spelling Blaze", href: '/games/spelling-blaze.html', kind: 'arcade' },
   { id: 'doubles-dash', title: 'Doubles Dash', href: '/games/doubles-dash', kind: 'arcade' },
 ];
 

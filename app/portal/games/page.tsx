@@ -263,7 +263,7 @@ const FEATURED_GAMES = [
         learningFocus: 'Geography, flags, and capitals',
         isNew: true,
         isPopular: true,
-        game_url: '/games/island-hop',
+        game_url: '/games/island-hop.html',
     },
     {
         id: 'tantys-kitchen',
@@ -278,7 +278,7 @@ const FEATURED_GAMES = [
         learningFocus: 'Cooking, sorting, and following steps',
         isNew: true,
         isPopular: true,
-        game_url: '/games/tantys-kitchen',
+        game_url: '/games/tantys-kitchen.html',
     },
     {
         id: 'math-market',
@@ -293,7 +293,7 @@ const FEATURED_GAMES = [
         learningFocus: 'Counting, money, and mental math',
         isNew: true,
         isPopular: false,
-        game_url: '/games/math-market',
+        game_url: '/games/math-market.html',
     },
     {
         id: 'spelling-blaze',
@@ -308,7 +308,7 @@ const FEATURED_GAMES = [
         learningFocus: 'Spelling under pressure',
         isNew: true,
         isPopular: false,
-        game_url: '/games/spelling-blaze',
+        game_url: '/games/spelling-blaze.html',
     },
     {
         id: 'doubles-dash',
