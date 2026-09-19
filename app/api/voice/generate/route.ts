@@ -6,6 +6,7 @@ import { generateSpeech, VoiceCharacter } from '@/lib/elevenlabs';
 import { serverEnv } from '@/lib/env/server';
 import { requireSupabaseToken } from '@/lib/api/require-supabase-token';
 import { checkRateLimit } from '@/lib/api/rate-limit';
+import { hasTtsKeys } from '@/lib/portal-capabilities';
 
 const MAX_TTS_CHARS = 900;
 const BLOCKED_TTS_PATTERN = /\b(kill|weapon|suicide|porn|sex|address|phone number|email me|meet me)\b/i;
@@ -68,6 +69,14 @@ export async function POST(request: NextRequest) {
         const isDev = serverEnv.NODE_ENV !== 'production';
         if (!isDev) {
             await requireSupabaseToken(request);
+        }
+
+        if (!hasTtsKeys()) {
+            return NextResponse.json({
+                error: 'Voice is not configured. Island Voice needs ElevenLabs or Google TTS keys.',
+                code: 'VOICE_NOT_CONFIGURED',
+                mode: 'turn-based',
+            }, { status: 503 });
         }
 
         const requestedVoice = String(voice || 'tanty_spice');

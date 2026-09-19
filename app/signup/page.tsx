@@ -64,6 +64,7 @@ function SignupForm() {
         () => ISLANDS.find((island) => island.id === formData.island) || ISLANDS[ISLANDS.length - 1],
         [formData.island]
     );
+    const isFreePlan = ['free', 'mail_club', 'free_trial', 'FREE_ONBOARDING'].includes(plan);
 
     useEffect(() => {
         trackEvent('signup_viewed', { plan, island: formData.island });
@@ -193,6 +194,12 @@ function SignupForm() {
                                 <div className="text-3xl">{selectedIsland.flag}</div>
                                 <p className="mt-1 text-[10px] font-black uppercase tracking-widest text-primary">{selectedIsland.name}</p>
                             </div>
+                        </div>
+
+                        <div className={`mb-6 rounded-2xl border px-4 py-3 text-sm font-bold ${isFreePlan ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
+                            {isFreePlan
+                                ? 'You are creating a free account. No card. Paid buddy, full library, and mail kits stay locked until you upgrade.'
+                                : 'This creates your parent account. Checkout is a separate paid step — this page is not a billed free trial.'}
                         </div>
 
                         <form className="space-y-5" onSubmit={handleSignup}>

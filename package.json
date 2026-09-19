@@ -19,6 +19,7 @@
     "import:printables:batch": "tsx legacy_scripts/import-printables-batch.ts",
     "test:generator": "tsx scripts/test-generator.ts",
     "test:supabase": "tsx scripts/test-supabase.ts",
+    "test:webapp-honesty": "tsx scripts/test-webapp-honesty.ts",
     "verify:kids-library": "tsx scripts/verify-kids-library.ts",
     "verify:story-products": "tsx scripts/verify-story-products.ts",
     "narrate:stories": "tsx scripts/regenerate-story-narration.ts",

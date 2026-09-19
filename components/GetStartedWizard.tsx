@@ -226,15 +226,20 @@ export default function GetStartedWizard() {
 
                                 <div className="flex-1 w-full lg:w-auto space-y-4">
                                     <button
-                                        onClick={() => handlePlanSelect('legends_plus_annual')} // Assuming ID exists or maps to Legends Plus Annual
+                                        onClick={() => handlePlanSelect('legends_plus_annual')}
                                         className="btn btn-primary btn-lg w-full py-6 text-xl shadow-xl shadow-primary/20 flex items-center justify-center gap-2"
                                     >
-                                        Start Your Trial <ArrowRight />
+                                        Continue to paid signup <ArrowRight />
                                     </button>
-                                    <div className="text-center">
+                                    <div className="text-center space-y-2">
                                         <button onClick={() => handlePlanSelect('mail_club')} className="text-sm font-bold text-deep/40 hover:text-deep hover:underline">
-                                            Or start with basic Mail Club ($10/mo)
+                                            Or start with Mail Club ($10/mo)
                                         </button>
+                                        <div>
+                                            <Link href="/free-trial" className="text-sm font-black text-blue-600 hover:underline">
+                                                Create a free account instead — no card
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

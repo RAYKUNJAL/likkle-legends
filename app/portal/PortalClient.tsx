@@ -1009,19 +1009,48 @@ export default function ChildPortalPage() {
                                 {isPortalIdleReady ? (
                                     <IslandTileGrid
                                         onNavigate={(section) => {
-                                            if (section === 'story-studio') {
-                                                // Restricted feature - check COPPA
-                                                let locallyVerified = false;
-                                                try {
-                                                    locallyVerified = Boolean(typeof window !== 'undefined' && localStorage.getItem('ll_age_verified_at'));
-                                                } catch {}
-                                                if (user?.age_verified_at || activeChild?.age_verified || locallyVerified) {
-                                                    router.push('/portal/story-studio');
-                                                } else {
-                                                    setPendingRoute('/portal/story-studio');
-                                                    setIsCoppaModalOpen(true);
+                                            if (section === 'songs' || section === 'music') {
+                                                router.push('/portal/music');
+                                                return;
+                                            }
+                                            if (section === 'buddy') {
+                                                if (!parentalControls.allow_buddy) {
+                                                    setBlockedMessage('Buddy chat is currently locked by parent controls.');
+                                                    return;
                                                 }
-                                            } else if (section === 'games') {
+                                                router.push('/portal/buddy');
+                                                return;
+                                            }
+                                            if (section === 'story-studio') {
+                                                const openStoryStudio = () => {
+                                                    // Restricted feature - check COPPA, including the
+                                                    // local flag set when the success write is still in flight.
+                                                    let locallyVerified = false;
+                                                    try {
+                                                        locallyVerified = Boolean(typeof window !== 'undefined' && localStorage.getItem('ll_age_verified_at'));
+                                                    } catch {}
+                                                    if (user?.age_verified_at || activeChild?.age_verified || locallyVerified) {
+                                                        router.push('/portal/story-studio');
+                                                    } else {
+                                                        setPendingRoute('/portal/story-studio');
+                                                        setIsCoppaModalOpen(true);
+                                                    }
+                                                };
+                                                void fetch('/api/portal/capabilities')
+                                                    .then((res) => (res.ok ? res.json() : null))
+                                                    .then((data) => {
+                                                        if (data?.storyStudio && data.storyStudio.available === false) {
+                                                            setBlockedMessage(data.storyStudio.reason || 'Story Studio is coming soon — the story service is not connected yet.');
+                                                            return;
+                                                        }
+                                                        openStoryStudio();
+                                                    })
+                                                    .catch(() => {
+                                                        openStoryStudio();
+                                                    });
+                                                return;
+                                            }
+                                            if (section === 'games') {
                                                 if (!sectionAllowed('games') || screenTimeExceeded) {
                                                     setBlockedMessage(screenTimeExceeded
                                                         ? "Today's screen time is used up! A parent can add more minutes in Parent Controls."
