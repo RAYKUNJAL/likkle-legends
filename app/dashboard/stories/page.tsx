@@ -20,9 +20,11 @@ export default function StorybooksPage() {
         const loadInitialData = async () => {
             let currentUserId: string | null = null;
             try {
-                const { data } = await supabase.auth.getUser();
-                currentUserId = data?.user?.id || null;
-                if (currentUserId) setUserId(currentUserId);
+                if (typeof supabase.auth?.getUser === 'function') {
+                    const { data } = await supabase.auth.getUser();
+                    currentUserId = data?.user?.id || null;
+                    if (currentUserId) setUserId(currentUserId);
+                }
             } catch (err) {
                 console.warn('Dashboard auth lookup skipped:', err);
             }
