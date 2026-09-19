@@ -10,6 +10,8 @@ import {
     coverCounts,
     isFullyIllustrated,
     localCatalogStories,
+    mergeParentLibraryStories,
+    parentOfficialStories,
     toKidsLibraryStory,
 } from '../lib/library-stories';
 
@@ -111,6 +113,27 @@ if (!unlocked) {
 const unknownTitle = kids.find((s: any) => !LIVE_TITLES.includes(s.title));
 if (unknownTitle) {
     throw new Error(`Invented title leaked: ${unknownTitle.title}`);
+}
+
+const parentOfficial = parentOfficialStories();
+const parentShelf = mergeParentLibraryStories(parentOfficial, []);
+if (parentShelf.length !== 12 || parentShelf.some((s) => !s.is_official || !s.cover_image_url || !s.href.startsWith('/library/stories/'))) {
+    throw new Error(`Parent library must show the same 12 illustrated books, got ${parentShelf.length}`);
+}
+if (parentShelf.some((s) => !LIVE_TITLES.includes(s.title))) {
+    throw new Error('Parent library leaked an invented title');
+}
+
+const emptyParent = mergeParentLibraryStories([], []);
+if (emptyParent.length !== 0) {
+    throw new Error('Parent library must stay honestly empty when no illustrated books are ready');
+}
+
+const parentWithPersonal = mergeParentLibraryStories(parentOfficial, [
+    { id: 'mine', title: 'My Family Tale', summary: 'A personal story', user_id: 'parent-1', cover_image_url: '/images/x.png' },
+]);
+if (parentWithPersonal.length !== 13 || parentWithPersonal.filter((s) => s.is_official).length !== 12) {
+    throw new Error('Personal storybooks should sit beside the official 12, not replace them');
 }
 
 console.log('verify-kids-library: PASS');

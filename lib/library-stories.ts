@@ -296,3 +296,53 @@ export function coverCounts(stories: any[]) {
         kidsReady: attached.filter(isKidsLibraryReady).length,
     };
 }
+
+export function parentOfficialStories(): KidsLibraryStory[] {
+    return localCatalogStories().map(toKidsLibraryStory).filter(Boolean) as KidsLibraryStory[];
+}
+
+export interface ParentLibraryItem {
+    id: string;
+    slug?: string;
+    title: string;
+    summary?: string;
+    cover_image_url?: string;
+    user_id?: string | null;
+    is_official: boolean;
+    href: string;
+}
+
+export function mergeParentLibraryStories(
+    official: Array<KidsLibraryStory | null | undefined> = [],
+    personal: any[] = [],
+): ParentLibraryItem[] {
+    const officialItems: ParentLibraryItem[] = official
+        .filter((story): story is KidsLibraryStory => Boolean(story?.id && story?.title && story?.cover_image_url))
+        .map((story) => ({
+            id: story.id,
+            slug: story.slug,
+            title: story.title,
+            summary: story.summary,
+            cover_image_url: story.cover_image_url,
+            user_id: null,
+            is_official: true,
+            href: `/library/stories/${story.slug || story.id}`,
+        }));
+
+    const seen = new Set(officialItems.map((story) => story.title.toLowerCase()));
+    const personalItems: ParentLibraryItem[] = (personal || [])
+        .filter((row) => row?.id && row?.title)
+        .filter((row) => !seen.has(String(row.title).toLowerCase()))
+        .map((row) => ({
+            id: String(row.id),
+            slug: row.slug ? String(row.slug) : undefined,
+            title: String(row.title),
+            summary: row.summary || row.short_hook || '',
+            cover_image_url: row.cover_image_url || row.image || '',
+            user_id: row.user_id || 'personal',
+            is_official: false,
+            href: row.slug ? `/library/stories/${row.slug}` : `/portal/stories/${row.id}`,
+        }));
+
+    return [...officialItems, ...personalItems];
+}

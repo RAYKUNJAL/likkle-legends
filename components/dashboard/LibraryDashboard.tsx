@@ -10,6 +10,11 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase-client';
 import { deleteStorybookAction } from '@/app/actions/story-actions';
+import {
+    fetchKidsLibraryStories,
+    mergeParentLibraryStories,
+    parentOfficialStories,
+} from '@/lib/library-stories';
 import toast from 'react-hot-toast';
 
 type Tab = 'stories' | 'workbooks';
@@ -26,38 +31,57 @@ export function LibraryDashboard({ user }: LibraryDashboardProps) {
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        if (user) {
-            loadLibrary();
-        }
+        loadLibrary();
     }, [user]);
 
     const loadLibrary = async () => {
         setIsLoading(true);
         try {
-            // Load Personal + Official Stories
-            const { data: storyData, error: storyError } = await supabase
-                .from('storybooks')
-                .select('*')
-                .or(`user_id.eq.${user?.id},and(user_id.is.null,is_active.eq.true)`)
-                .order('created_at', { ascending: false });
+            // Official shelf is the live 12 illustrated books, not the empty storybooks table.
+            let official = parentOfficialStories();
+            try {
+                const live = await fetchKidsLibraryStories();
+                if (live.length > 0) official = live;
+            } catch (err) {
+                console.warn('Live library API unavailable; using local illustrated catalog.', err);
+            }
 
-            if (storyError) throw storyError;
-            setStories(storyData || []);
+            let personal: any[] = [];
+            if (user?.id) {
+                const { data: storyData, error: storyError } = await supabase
+                    .from('storybooks')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false });
 
-            // Load Personal Workbooks/Packs from generated_content
-            const { data: packData, error: packError } = await supabase
-                .from('generated_content')
-                .select('*')
-                .eq('family_id', user?.id)
-                .in('content_type', ['pack', 'activity_pack'])
-                .order('created_at', { ascending: false });
+                if (storyError) {
+                    console.warn('Personal storybooks unavailable:', storyError.message);
+                } else {
+                    personal = storyData || [];
+                }
 
-            if (packError) throw packError;
-            setWorkbooks(packData || []);
+                const { data: packData, error: packError } = await supabase
+                    .from('generated_content')
+                    .select('*')
+                    .eq('family_id', user.id)
+                    .in('content_type', ['pack', 'activity_pack'])
+                    .order('created_at', { ascending: false });
 
+                if (packError) {
+                    console.warn('Personal workbooks unavailable:', packError.message);
+                    setWorkbooks([]);
+                } else {
+                    setWorkbooks(packData || []);
+                }
+            } else {
+                setWorkbooks([]);
+            }
+
+            setStories(mergeParentLibraryStories(official, personal));
         } catch (err) {
             console.error('Failed to load library:', err);
-            toast.error('Could not fetch your treasures.');
+            setStories(mergeParentLibraryStories(parentOfficialStories(), []));
+            toast.error('Could not fetch extra treasures. Showing the illustrated books we have.');
         } finally {
             setIsLoading(false);
         }
@@ -139,7 +163,11 @@ export function LibraryDashboard({ user }: LibraryDashboardProps) {
             ) : filteredItems.length === 0 ? (
                 <div className="text-center py-20 border-4 border-dashed border-slate-50 rounded-[3rem]">
                     <div className="text-6xl mb-6 opacity-30">📚</div>
-                    <p className="text-slate-400 font-black uppercase tracking-widest text-xs">Your library is currently empty</p>
+                    <p className="text-slate-400 font-black uppercase tracking-widest text-xs">
+                        {activeTab === 'stories'
+                            ? 'No illustrated Caribbean books are ready yet'
+                            : 'No workbooks in this collection yet'}
+                    </p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -180,7 +208,7 @@ function LibraryItemCard({ item, type, onDelete }: { item: any, type: Tab, onDel
                 )}
 
                 <div className="absolute top-4 right-4 flex gap-2">
-                    {!item.user_id && (
+                    {(item.is_official || !item.user_id) && (
                         <div className="bg-amber-400 text-white px-3 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg flex items-center gap-1.5">
                             <BadgeCheck size={14} /> Official
                         </div>
@@ -208,7 +236,7 @@ function LibraryItemCard({ item, type, onDelete }: { item: any, type: Tab, onDel
 
                 <div className="flex items-center gap-3">
                     <Link
-                        href={type === 'stories' ? `/portal/stories/${item.id}` : '#'}
+                        href={type === 'stories' ? (item.href || `/library/stories/${item.slug || item.id}`) : '#'}
                         className="flex-1 bg-slate-900 text-white py-3 rounded-xl font-black text-center text-[10px] uppercase tracking-widest hover:bg-primary transition-colors"
                     >
                         {type === 'stories' ? 'Read Story' : 'Open Pack'}
