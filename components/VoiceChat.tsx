@@ -89,6 +89,9 @@ export default function VoiceChat() {
             if (interim) setInterimText(interim);
             if (finalText.trim()) {
                 setInterimText('');
+                shouldListenRef.current = false;
+                try { recognition.stop(); } catch { /* noop */ }
+                setListening(false);
                 sendToCharacter(finalText.trim());
             }
         };
@@ -301,7 +304,7 @@ export default function VoiceChat() {
                         <ArrowLeft size={20} />
                         <span className="hidden sm:inline">Back</span>
                     </a>
-                    <h1 className="text-xl font-black text-slate-800">🎙️ Voice Chat</h1>
+                    <h1 className="text-xl font-black text-slate-800">🎙️ Turn-based Voice</h1>
                     <div className="w-10" />
                 </div>
             </header>
@@ -349,7 +352,10 @@ export default function VoiceChat() {
                             {charConfig.persona.tagline}
                         </p>
                         <p className="text-emerald-600 font-bold mt-4">
-                            Tap the mic below and let&apos;s chat!
+                            Tap the mic, say one thing, then wait for a spoken reply.
+                        </p>
+                        <p className="text-slate-400 text-xs font-semibold mt-2 max-w-sm mx-auto">
+                            This is turn-based (speak → think → talk back). It is not live two-way calling.
                         </p>
                     </div>
                 )}
@@ -454,10 +460,10 @@ export default function VoiceChat() {
 
                     <p className="text-xs font-bold text-slate-500">
                         {listening
-                            ? 'Listening... tap to stop'
+                            ? 'Listening for one turn... tap to stop'
                             : thinking
                             ? `${charConfig.persona.name} is thinking...`
-                            : 'Tap the mic and talk!'}
+                            : 'One turn at a time — tap the mic, then wait for the reply.'}
                     </p>
                 </div>
             </div>

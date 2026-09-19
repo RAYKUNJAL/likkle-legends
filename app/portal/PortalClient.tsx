@@ -1001,15 +1001,44 @@ export default function ChildPortalPage() {
                                 {isPortalIdleReady ? (
                                     <IslandTileGrid
                                         onNavigate={(section) => {
-                                            if (section === 'story-studio') {
-                                                // Restricted feature - check COPPA
-                                                if (user?.age_verified_at || activeChild?.age_verified) {
-                                                    router.push('/portal/story-studio');
-                                                } else {
-                                                    setPendingRoute('/portal/story-studio');
-                                                    setIsCoppaModalOpen(true);
+                                            if (section === 'songs' || section === 'music') {
+                                                router.push('/portal/music');
+                                                return;
+                                            }
+                                            if (section === 'buddy') {
+                                                if (!parentalControls.allow_buddy) {
+                                                    setBlockedMessage('Buddy chat is currently locked by parent controls.');
+                                                    return;
                                                 }
-                                            } else if (section === 'games') {
+                                                router.push('/portal/buddy');
+                                                return;
+                                            }
+                                            if (section === 'story-studio') {
+                                                void fetch('/api/portal/capabilities')
+                                                    .then((res) => (res.ok ? res.json() : null))
+                                                    .then((data) => {
+                                                        if (data?.storyStudio && data.storyStudio.available === false) {
+                                                            setBlockedMessage(data.storyStudio.reason || 'Story Studio is coming soon — the story service is not connected yet.');
+                                                            return;
+                                                        }
+                                                        if (user?.age_verified_at || activeChild?.age_verified) {
+                                                            router.push('/portal/story-studio');
+                                                        } else {
+                                                            setPendingRoute('/portal/story-studio');
+                                                            setIsCoppaModalOpen(true);
+                                                        }
+                                                    })
+                                                    .catch(() => {
+                                                        if (user?.age_verified_at || activeChild?.age_verified) {
+                                                            router.push('/portal/story-studio');
+                                                        } else {
+                                                            setPendingRoute('/portal/story-studio');
+                                                            setIsCoppaModalOpen(true);
+                                                        }
+                                                    });
+                                                return;
+                                            }
+                                            if (section === 'games') {
                                                 if (!sectionAllowed('games') || screenTimeExceeded) {
                                                     setBlockedMessage(screenTimeExceeded
                                                         ? "Today's screen time is used up! A parent can add more minutes in Parent Controls."

@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Loader2, Mic, Send, Volume2, X } from "lucide-react";
 import { CharacterConfig, CharacterChild } from "@/lib/characterConfig";
+import type { BuddyFollowUp } from "@/lib/buddy-followups";
 
 declare global {
     interface Window {
@@ -35,6 +36,9 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
         characterConfig.persona.welcomeMessage(child.first_name, child.current_streak || 0)
     );
     const [error, setError] = useState<string | null>(null);
+    const [voiceReady, setVoiceReady] = useState<boolean | null>(null);
+    const [buddyReady, setBuddyReady] = useState<boolean | null>(null);
+    const [followUps, setFollowUps] = useState<BuddyFollowUp[]>([]);
 
     const recognitionRef = useRef<any | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -46,6 +50,32 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
                 ? window.SpeechRecognition || window.webkitSpeechRecognition
                 : null;
         setSpeechSupported(Boolean(SpeechRecognitionAPI));
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetch("/api/portal/capabilities")
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (cancelled || !data) return;
+                setBuddyReady(data.buddy?.available !== false);
+                setVoiceReady(data.voice?.available === true);
+                if (data.voice?.available === false) {
+                    setError(data.voice.reason || "Spoken replies are off until voice keys are configured.");
+                } else if (data.buddy?.available === false) {
+                    setError(data.buddy.reason || "Buddy chat is not configured.");
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setBuddyReady(false);
+                    setVoiceReady(false);
+                    setError("Could not check voice services. Island Voice stays off until they respond.");
+                }
+            });
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     useEffect(() => {
@@ -155,6 +185,10 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
             }
 
             setLastReply(reply);
+            setFollowUps(Array.isArray(data?.followUps) ? data.followUps : []);
+            if (voiceReady === false) {
+                return;
+            }
             await speakReply(reply);
         } catch (err: any) {
             setError(err?.message || "Voice chat failed");
@@ -175,8 +209,13 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
                 ? window.SpeechRecognition || window.webkitSpeechRecognition
                 : null;
 
+        if (buddyReady === false) {
+            setError("Buddy chat is not configured, so voice turns stay closed.");
+            return;
+        }
+
         if (!SpeechRecognitionAPI) {
-            setError("Speech recognition is not available in this browser.");
+            setError("Speech recognition is not available in this browser. Type a turn instead.");
             return;
         }
 
@@ -234,7 +273,7 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
                             <img src={persona.avatarUrl} alt={persona.name} className="h-full w-full object-cover" />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-xs font-black uppercase tracking-[0.2em] text-white/70">Voice Buddy</p>
+                            <p className="text-xs font-black uppercase tracking-[0.2em] text-white/70">Turn-based Island Voice</p>
                             <h2 className="text-3xl font-black leading-none">{persona.name}</h2>
                             <p className="mt-2 text-sm font-semibold text-white/80">{persona.tagline}</p>
                         </div>
@@ -254,6 +293,22 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
                         <p className="mt-2 min-h-[80px] text-sm font-medium leading-relaxed">{lastReply}</p>
                     </div>
 
+                    {followUps.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                            {followUps.map((prompt) => (
+                                <button
+                                    key={prompt.text}
+                                    type="button"
+                                    disabled={busy || buddyReady === false}
+                                    onClick={() => void sendMessage(prompt.text)}
+                                    className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-700 disabled:opacity-40"
+                                >
+                                    {prompt.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
                     {error && (
                         <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
                             {error}
@@ -264,7 +319,7 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
                         <button
                             type="button"
                             onClick={isListening ? stopListening : startListening}
-                            disabled={isThinking}
+                            disabled={isThinking || buddyReady === false}
                             className={`flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg transition-all ${isListening ? "bg-rose-500" : `bg-gradient-to-r ${visual.gradient}`
                                 } disabled:opacity-50`}
                             title={isListening ? "Stop listening" : "Start listening"}
@@ -300,7 +355,7 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
                             rows={2}
                             placeholder={`Type a message for ${persona.name}...`}
                             className="flex-1 resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-100"
-                            disabled={busy}
+                            disabled={busy || buddyReady === false}
                         />
                         <button
                             type="submit"
@@ -315,9 +370,11 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
 
                     <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
                         <Volume2 size={14} />
-                        {speechSupported
-                            ? "Mic input and spoken replies are enabled on supported browsers."
-                            : "Browser voice input is unavailable here, but typed messages still speak back."}
+                        {voiceReady === false
+                            ? "Spoken replies are off until voice keys are set. This is not live two-way calling."
+                            : speechSupported
+                                ? "One turn at a time: you speak, the buddy thinks, then it talks back. Not live two-way calling."
+                                : "Mic input is unavailable here. Type a turn and the buddy can still speak the reply if voice keys are set."}
                     </div>
                 </div>
             </div>
