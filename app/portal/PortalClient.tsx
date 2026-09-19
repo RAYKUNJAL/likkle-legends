@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import nextDynamic from 'next/dynamic';
 import { useUser } from '@/components/UserContext';
-import { getStorybooks, getVideos, logActivity } from '@/lib/database';
+import { getVideos, logActivity } from '@/lib/database';
+import { fetchKidsLibraryStories } from '@/lib/library-stories';
 import { calculateLevel, LEVELS } from '@/lib/gamification';
 import { RADIO_TRACKS } from '@/lib/constants';
 import { EmptyState } from '@/components/EmptyState';
@@ -220,12 +221,19 @@ export default function ChildPortalPage() {
         setContentErrors((prev) => ({ ...prev, stories: '' }));
         try {
             const data = await Promise.race([
-                getStorybooks(),
+                fetchKidsLibraryStories(),
                 new Promise<never>((_, reject) =>
                     setTimeout(() => reject(new Error('Stories request timed out.')), 12000)
                 ),
             ]);
-            setStories(data as Storybook[]);
+            setStories(data.map((story) => ({
+                id: story.id,
+                title: story.title,
+                summary: story.summary,
+                cover_image_url: story.cover_image_url,
+                tier_required: story.tier_required,
+                reading_time_minutes: story.reading_time_minutes,
+            })));
         } catch (error) {
             console.error("Failed to fetch stories:", error);
             setContentErrors((prev) => ({ ...prev, stories: 'We could not load stories right now.' }));
@@ -1078,6 +1086,12 @@ export default function ChildPortalPage() {
                                                 <p className="text-blue-700/60 font-bold uppercase text-[10px] sm:text-xs tracking-widest">Tales from across the Caribbean</p>
                                             </div>
                                         </div>
+                                        <Link
+                                            href="/portal/stories"
+                                            className="text-sm font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest"
+                                        >
+                                            Open full library →
+                                        </Link>
                                     </div>
 
                                     {loadingStates.stories || !hasLoadedStories ? (
@@ -1102,8 +1116,8 @@ export default function ChildPortalPage() {
                                         <div className="col-span-full">
                                             <EmptyState
                                                 icon="📖"
-                                                title="The Library is Growing"
-                                                message="Tanty is still writing our first legends. Check back soon for stories from across the islands!"
+                                                title="No ready books yet"
+                                                message="The shelf only shows fully illustrated Caribbean picture books. None are ready right now."
                                             />
                                         </div>
                                     ) : (

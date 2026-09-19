@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import StoryReader from '@/components/portal/StoryReader';
-import { SAMPLE_ANANSI_STORY } from '@/lib/mocks/sample-story';
 import { StoryBook } from '@/types/story';
 
 export default function DynamicStoryPage() {
@@ -28,11 +27,7 @@ export default function DynamicStoryPage() {
             }
         }
 
-        // Fallback or normal loading
-        setTimeout(() => {
-            setStory(SAMPLE_ANANSI_STORY);
-            setIsLoading(false);
-        }, 1500);
+        setIsLoading(false);
     }, [params.id]);
 
     if (isLoading) {
@@ -48,7 +43,22 @@ export default function DynamicStoryPage() {
         );
     }
 
-    if (!story) return null;
+    if (!story) {
+        return (
+            <div className="min-h-screen bg-zinc-900 flex items-center justify-center p-8 text-center">
+                <div className="space-y-4 max-w-md">
+                    <p className="text-white font-black text-2xl">No story is ready</p>
+                    <p className="text-white/50 font-bold">Story Studio only opens a real library tale. Nothing was found for this session.</p>
+                    <button
+                        onClick={() => router.push('/portal/stories')}
+                        className="px-6 py-3 bg-primary text-white rounded-2xl font-black"
+                    >
+                        Back to Library
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <StoryReader
