@@ -8,21 +8,27 @@ import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { BookOpen, Star, ArrowRight, Lock, Sparkles, RefreshCw, Trash2, Library } from 'lucide-react';
 import { deleteStorybookAction } from '@/app/actions/story-actions';
-import { fetchKidsLibraryStories } from '@/lib/library-stories';
+import { fetchKidsLibraryStories, parentOfficialStories } from '@/lib/library-stories';
 
 export default function StorybooksPage() {
-    const [stories, setStories] = useState<any[]>([]);
+    const [stories, setStories] = useState<any[]>(() => parentOfficialStories());
     const [myStories, setMyStories] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
         const loadInitialData = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) setUserId(user.id);
-            await fetchStories(user?.id);
+            let currentUserId: string | null = null;
+            try {
+                const { data } = await supabase.auth.getUser();
+                currentUserId = data?.user?.id || null;
+                if (currentUserId) setUserId(currentUserId);
+            } catch (err) {
+                console.warn('Dashboard auth lookup skipped:', err);
+            }
+            await fetchStories(currentUserId);
         };
-        loadInitialData();
+        void loadInitialData();
     }, []);
 
     const fetchStories = async (currentUserId?: string | null) => {
@@ -30,7 +36,7 @@ export default function StorybooksPage() {
         try {
             // Featured legends come from the live stories_library API — not storybooks.
             const libraryStories = await fetchKidsLibraryStories();
-            setStories(libraryStories);
+            setStories(libraryStories.length ? libraryStories : parentOfficialStories());
 
             // Personal creations stay on storybooks; a failure must not empty the featured grid.
             if (currentUserId) {
@@ -50,6 +56,7 @@ export default function StorybooksPage() {
             }
         } catch (error) {
             console.error('Error fetching stories:', error);
+            setStories(parentOfficialStories());
         } finally {
             setIsLoading(false);
         }

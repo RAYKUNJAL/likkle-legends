@@ -257,32 +257,49 @@ export function toReaderStory(story: any) {
 }
 
 export async function fetchKidsLibraryStories(): Promise<KidsLibraryStory[]> {
-    const response = await fetch('/api/library/stories', { cache: 'no-store' });
-    if (!response.ok) {
-        throw new Error(`Library stories request failed (${response.status})`);
+    try {
+        const response = await Promise.race([
+            fetch('/api/library/stories', { cache: 'no-store' }),
+            new Promise<Response>((_, reject) =>
+                setTimeout(() => reject(new Error('Library stories request timed out')), 8000)
+            ),
+        ]);
+        if (response.ok) {
+            const data = await response.json();
+            const rows = Array.isArray(data?.stories) ? data.stories : [];
+            const kids = rows.map(toKidsLibraryStory).filter(Boolean) as KidsLibraryStory[];
+            if (kids.length > 0) return kids;
+        } else {
+            console.warn(`Library stories request failed (${response.status}); using local illustrated catalog.`);
+        }
+    } catch (err) {
+        console.warn('Live library API unavailable; using local illustrated catalog.', err);
     }
-    const data = await response.json();
-    const rows = Array.isArray(data?.stories) ? data.stories : [];
-    return rows.map(toKidsLibraryStory).filter(Boolean) as KidsLibraryStory[];
+    return parentOfficialStories();
 }
 
 export async function fetchKidsLibraryStory(idOrSlug: string): Promise<KidsLibraryStory | null> {
     if (!idOrSlug) return null;
 
-    const byId = await fetch(`/api/library/stories?id=${encodeURIComponent(idOrSlug)}`, { cache: 'no-store' });
-    if (byId.ok) {
-        const data = await byId.json();
-        const kids = toKidsLibraryStory(data?.story);
-        if (kids) return kids;
+    try {
+        const byId = await fetch(`/api/library/stories?id=${encodeURIComponent(idOrSlug)}`, { cache: 'no-store' });
+        if (byId.ok) {
+            const data = await byId.json();
+            const kids = toKidsLibraryStory(data?.story);
+            if (kids) return kids;
+        }
+
+        const bySlug = await fetch(`/api/library/stories?slug=${encodeURIComponent(idOrSlug)}`, { cache: 'no-store' });
+        if (bySlug.ok) {
+            const data = await bySlug.json();
+            const kids = toKidsLibraryStory(data?.story);
+            if (kids) return kids;
+        }
+    } catch (err) {
+        console.warn('Live story lookup failed; using local illustrated catalog.', err);
     }
 
-    const bySlug = await fetch(`/api/library/stories?slug=${encodeURIComponent(idOrSlug)}`, { cache: 'no-store' });
-    if (bySlug.ok) {
-        const data = await bySlug.json();
-        return toKidsLibraryStory(data?.story);
-    }
-
-    return null;
+    return parentOfficialStories().find((story) => story.id === idOrSlug || story.slug === idOrSlug) || null;
 }
 
 export function coverCounts(stories: any[]) {

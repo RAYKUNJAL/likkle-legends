@@ -56,6 +56,9 @@ class SupabaseClientManager {
                 return {
                     auth: {
                         onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+                        getUser: async () => ({ data: { user: null }, error: null }),
+                        getSession: async () => ({ data: { session: null }, error: null }),
+                        signOut: async () => ({ error: null }),
                         admin: { createUser: () => Promise.resolve({ data: {}, error: null }) },
                     },
                     from: () => ({

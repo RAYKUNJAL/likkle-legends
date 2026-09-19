@@ -8,7 +8,7 @@ import {
     Search, Map, Heart, Sparkles, BookOpen, Compass, Award, Tag, Sparkle
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
-import { fetchKidsLibraryStories } from '@/lib/library-stories';
+import { fetchKidsLibraryStories, parentOfficialStories } from '@/lib/library-stories';
 import { trackEvent } from '@/lib/analytics';
 import { normalizeParentalControls } from '@/lib/parental-controls';
 
@@ -61,8 +61,21 @@ const AGE_GROUPS = [
 
 export default function StoriesLibraryPage() {
     const { activeChild, canAccess, user } = useUser();
-    const [stories, setStories] = useState<Story[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [stories, setStories] = useState<Story[]>(() =>
+        parentOfficialStories().map((sb) => ({
+            id: sb.id,
+            title: sb.title,
+            description: sb.summary,
+            cover_image: sb.cover_image_url,
+            island_origin: sb.island_theme,
+            category: sb.category,
+            age_group: sb.age_group,
+            tier_required: sb.tier_required,
+            reading_time: sb.reading_time_minutes,
+            completed: false,
+        }))
+    );
+    const [isLoading, setIsLoading] = useState(false);
     const [loadError, setLoadError] = useState<string | null>(null);
 
     // Filters
@@ -95,15 +108,15 @@ export default function StoriesLibraryPage() {
     }
 
     const loadStories = async () => {
-        setIsLoading(true);
         setLoadError(null);
         try {
-            const data = await Promise.race([
-                fetchKidsLibraryStories(),
-                new Promise<never>((_, reject) =>
-                    setTimeout(() => reject(new Error('Request timed out.')), 12000)
-                ),
-            ]);
+            let data = parentOfficialStories();
+            try {
+                const live = await fetchKidsLibraryStories();
+                if (live.length > 0) data = live;
+            } catch (err) {
+                console.warn('Portal stories API unavailable; using local illustrated catalog.', err);
+            }
 
             const mappedStories: Story[] = data.map((sb) => ({
                 id: sb.id,
@@ -133,7 +146,8 @@ export default function StoriesLibraryPage() {
 
         } catch (error) {
             console.error('Failed to load stories:', error);
-            setLoadError('We could not load stories right now.');
+            // Keep the local illustrated catalog on screen; only show empty if we have nothing.
+            setLoadError(null);
             trackEvent('stories_page_load_failed');
         } finally {
             setIsLoading(false);
