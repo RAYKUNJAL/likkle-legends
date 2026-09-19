@@ -91,14 +91,12 @@ export default function FreeTrialPage() {
         if (typeof window !== 'undefined' && (window as any).fbq) {
           (window as any).fbq('track', 'Lead', { content_name: 'free_trial_signup', currency: 'USD', value: 0 });
         }
-        // Use magic link to establish session — plain router.push has no session cookie
+        const loginPath = typeof data.next === 'string' && data.next.startsWith('/login')
+          ? data.next
+          : `/login?email=${encodeURIComponent(email)}&redirect=/portal`;
         setTimeout(() => {
-          if (data.magicLink) {
-            window.location.href = data.magicLink;
-          } else {
-            router.push('/portal');
-          }
-        }, 2000);
+          router.push(loginPath);
+        }, 1800);
       } else {
         // If account already exists, redirect to login
         if (data.error?.includes('already') || data.error?.includes('exists')) {
@@ -141,7 +139,7 @@ export default function FreeTrialPage() {
                 <div>
                   <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm px-3 py-1.5 rounded-full mb-4">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    Free forever — no credit card
+                    Free account — no credit card
                   </div>
                   <h1 className="text-4xl font-black leading-tight">
                     Your child's Caribbean
@@ -149,7 +147,7 @@ export default function FreeTrialPage() {
                     {' '}starts today
                   </h1>
                   <p className="text-white/60 mt-3 text-lg">
-                    Join 500+ Caribbean families. Free access to games, stories, and cultural adventures — forever.
+                    Create a free parent account. No card. This is not a paid Plus trial — paid features stay locked until you upgrade.
                   </p>
                 </div>
 
@@ -176,7 +174,7 @@ export default function FreeTrialPage() {
                   </button>
 
                   <p className="text-center text-white/30 text-xs">
-                    No credit card required · Cancel anytime · Join 500+ Caribbean families
+                    No credit card · Free account, not a billed trial · Log in after signup
                   </p>
                 </form>
 
@@ -257,10 +255,10 @@ export default function FreeTrialPage() {
             {step === 'success' && (
               <div className="text-center space-y-6 py-8">
                 <div className="text-6xl animate-bounce">🎉</div>
-                <h2 className="text-3xl font-black">Welcome to Likkle Legends!</h2>
+                <h2 className="text-3xl font-black">Free account created</h2>
                 <p className="text-white/60">
-                  {childName ? `${childName}'s` : 'Your'} Caribbean adventure is ready.
-                  Taking you to the island now...
+                  Next step: log in with {email || 'your email'} to open the kids portal.
+                  We do not auto-sign you in from this page.
                 </p>
                 <div className="flex justify-center">
                   <div className="w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
@@ -275,14 +273,14 @@ export default function FreeTrialPage() {
 
           {/* What's included */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-5">What's included — free forever:</h3>
+            <h3 className="text-white font-bold text-lg mb-5">What a free account includes:</h3>
             <div className="space-y-3">
               {[
-                { icon: '🎮', text: 'First level of every game — Island Hop, Math Market, Spelling Blaze, Tanty\'s Kitchen' },
-                { icon: '📖', text: 'Caribbean storybooks narrated by R.O.T.I., Tanty Spice & friends' },
-                { icon: '🎵', text: 'Tanty Radio — Caribbean educational songs for kids' },
-                { icon: '🖨️', text: '3 free printable worksheets every month' },
-                { icon: '🌍', text: 'Stories personalized to your island heritage' },
+                { icon: '🎮', text: 'Working island games in the portal catalog (we hide broken cards)' },
+                { icon: '📖', text: 'Free-tier Caribbean stories when they are in the library' },
+                { icon: '💬', text: '5 free Tanty Spice buddy chats per day' },
+                { icon: '🎵', text: 'Music Hub page — playable tracks only when audio is actually hosted' },
+                { icon: '🖨️', text: 'Printable worksheets that already exist in the portal' },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <span className="text-xl mt-0.5 shrink-0">{item.icon}</span>
@@ -295,7 +293,7 @@ export default function FreeTrialPage() {
           {/* Upgrade teaser */}
           <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-400/20 rounded-2xl p-5">
             <p className="text-yellow-400 font-bold text-sm mb-1">Want even more?</p>
-            <p className="text-white/60 text-sm">Upgrade to Premium ($4.99/mo) for full game access, all stories, monthly mail kits, and AI-powered learning plans.</p>
+            <p className="text-white/60 text-sm">Paid plans unlock more buddy chats and extra content. Checkout is a separate paid step — this page does not start a billed trial.</p>
           </div>
 
           {/* Testimonial */}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { buildFreeTrialSuccessBody, stripAuthSecrets } from '@/lib/auth/free-trial-response';
 
 async function createInitialChild(
   supabase: SupabaseClient,
@@ -168,24 +169,15 @@ export async function POST(req: NextRequest) {
       }),
     }).catch(() => {}); // Fire and forget
 
-    // ── 7. Sign in the user ────────────────────────────────────────────────
-    // Generate a magic link so they land on the portal without needing a password
-    const { data: linkData } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email,
-      options: { redirectTo: `${siteUrl}/api/auth/callback?next=/portal` },
-    });
-
-    return NextResponse.json({
-      success: true,
+    // Never mint or return a magic link in this JSON. Parents log in from /login.
+    return NextResponse.json(buildFreeTrialSuccessBody({
       userId,
-      magicLink: linkData?.properties?.action_link || null,
-      message: 'Account created! Welcome to Likkle Legends.',
-    });
+      loginPath: `/login?email=${encodeURIComponent(email)}&redirect=/portal`,
+    }));
 
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[Free Trial API]', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(stripAuthSecrets({ error: message }), { status: 500 });
   }
 }

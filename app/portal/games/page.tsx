@@ -12,6 +12,7 @@ import { CHARACTER_CONFIGS, CHARACTER_ORDER } from '@/lib/characterConfig';
 import { getGames, getRecentActivities } from '@/lib/database';
 import { getGameProgressMap, type GameProgressEntry } from '@/lib/game-progress';
 import { normalizeParentalControls } from '@/lib/parental-controls';
+import { HIDDEN_GAME_IDS, isWorkingGameId } from '@/lib/working-games';
 
 interface Game {
     id: string;
@@ -108,50 +109,6 @@ const FEATURED_GAMES = [
         isNew: true,
         isPopular: false,
     },
-    {
-        id: 'story-library',
-        title: 'Story Library Adventure',
-        description: 'Read guided Caribbean adventures with Tanty and R.O.T.I.!',
-        emoji: '📚',
-        gradient: 'from-purple-400 via-pink-500 to-rose-600',
-        tier: 'free',
-        category: 'adventure',
-        xp: 160,
-        time: '8-12 min',
-        learningFocus: 'Reading fluency, vocabulary, and comprehension',
-        isNew: false,
-        isPopular: true,
-    },
-    {
-        id: 'cultural-quiz',
-        title: 'Cultural Champion',
-        description: 'Become an expert on Caribbean traditions!',
-        emoji: '🏆',
-        gradient: 'from-yellow-400 via-amber-500 to-orange-600',
-        tier: 'starter_mailer',
-        category: 'trivia',
-        xp: 250,
-        time: '10 min',
-        learningFocus: 'Traditions, festivals, and identity',
-        isNew: false,
-        isPopular: true,
-    },
-    {
-        id: 'island-explorer',
-        title: 'Caribbean Flag Explorer',
-        description: 'Explore real Caribbean flags and learn each island!',
-        emoji: '🌴',
-        gradient: 'from-cyan-400 via-teal-500 to-green-600',
-        tier: 'legends_plus',
-        category: 'adventure',
-        xp: 300,
-        time: '8-10 min',
-        learningFocus: 'Flag recognition and country knowledge',
-        isNew: false,
-        isPopular: false,
-    },
-
-
     {
         id: 'color-match',
         title: 'Island Color Match',
@@ -411,7 +368,13 @@ export default function GamesHubPage() {
                 };
 
                 const extras = data
-                    .filter((game) => !featuredById.has(String(game.id)) && !featuredById.has(routeKeyOf(game)))
+                    .filter((game) => {
+                        const id = String(game.id);
+                        const route = routeKeyOf(game);
+                        if (HIDDEN_GAME_IDS.has(id) || HIDDEN_GAME_IDS.has(route)) return false;
+                        if (featuredById.has(id) || featuredById.has(route)) return false;
+                        return isWorkingGameId(id) || isWorkingGameId(route);
+                    })
                     .map((game) => ({
                         ...game,
                         category: GAME_TYPE_TO_CATEGORY[(game as any).category || (game as any).game_type || ''] || 'adventure',
@@ -641,7 +604,7 @@ export default function GamesHubPage() {
 
                     <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-8 text-white">
                         <div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-white/25 backdrop-blur-sm rounded-3xl flex items-center justify-center text-4xl sm:text-6xl shadow-xl group-hover:scale-110 group-hover:-rotate-6 transition-transform shrink-0">
-                            📚
+                            🫓
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -652,9 +615,9 @@ export default function GamesHubPage() {
                                     Kid Favorite
                                 </span>
                             </div>
-                            <h2 className="text-2xl sm:text-3xl font-black mb-1.5 drop-shadow-sm">Story Library Adventure</h2>
+                            <h2 className="text-2xl sm:text-3xl font-black mb-1.5 drop-shadow-sm">Doubles Dash</h2>
                             <p className="text-white/90 text-sm sm:text-lg mb-3 font-semibold">
-                                Jump into island stories with guided reading, fun vocabulary, and cultural lessons.
+                                Dash with Dilly through a working island game — then pick another title that actually plays.
                             </p>
                             <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm font-bold">
                                 <span className="flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1">
@@ -666,10 +629,10 @@ export default function GamesHubPage() {
                             </div>
                         </div>
                         <Link
-                            href="/portal/stories"
+                            href="/games/doubles-dash"
                             className="w-full md:w-auto px-8 py-4 bg-white text-fuchsia-600 rounded-full font-black text-base sm:text-lg shadow-xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2"
                         >
-                            <Play size={22} className="fill-fuchsia-600" /> Read Now
+                            <Play size={22} className="fill-fuchsia-600" /> Play Now
                         </Link>
                     </div>
                 </div>
@@ -838,10 +801,9 @@ export default function GamesHubPage() {
             <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 pb-14">
                 <div className="bg-white/80 backdrop-blur-sm border-4 border-white rounded-[2rem] p-6 sm:p-8 text-center shadow-lg shadow-sky-100">
                     <Wand2 className="mx-auto mb-3 text-fuchsia-400" size={36} />
-                    <h3 className="text-xl sm:text-2xl font-black mb-2 text-slate-700">More Island Adventures Coming Soon!</h3>
+                    <h3 className="text-xl sm:text-2xl font-black mb-2 text-slate-700">These games play today</h3>
                     <p className="text-slate-400 font-semibold max-w-md mx-auto text-sm sm:text-base">
-                        New educational games from the Likkle Legends universe are on the way,
-                        guided by R.O.T.I. and the crew. New game drops every week!
+                        We only list titles with a working route. Broken or duplicate cards stay hidden until they play.
                     </p>
                 </div>
             </div>
