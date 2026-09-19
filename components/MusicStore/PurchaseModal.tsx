@@ -68,8 +68,16 @@ export default function PurchaseModal({
                         <CheckCircle2 size={48} />
                     </div>
 
-                    <h2 className="text-2xl font-black text-gray-900 mb-2">Payment Successful!</h2>
-                    <p className="text-gray-500 mb-6 font-medium">Your receipt has been emailed.</p>
+                    <h2 className="text-2xl font-black text-gray-900 mb-2">
+                        {productKey === 'custom_song_request' ? 'Custom song confirmed!' : 'Payment Successful!'}
+                    </h2>
+                    <p className="text-gray-500 mb-6 font-medium">
+                        {productKey === 'custom_song_request'
+                            ? 'Your $24.99 request is paid. We will email when the song is ready.'
+                            : productKey === 'single_track'
+                                ? 'This track is now unlocked on your account.'
+                                : 'Your receipt has been emailed.'}
+                    </p>
 
                     <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-100 rounded-xl p-4 mb-6">
                         <div className="flex items-center justify-center gap-2 text-purple-700 font-bold mb-2">

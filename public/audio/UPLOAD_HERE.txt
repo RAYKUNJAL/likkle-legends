@@ -1,12 +1,13 @@
-DROP YOUR MP3 FILES IN THIS FOLDER.
+DROP RECOVERED MP3/M4A MASTERS IN THIS FOLDER.
 
-Expected filenames (match lib/constants.ts RADIO_TRACKS):
-  - island-morning.mp3       → Calm channel
-  - steelpan-serenade.mp3    → Learning channel
-  - tanty-story-time.mp3     → Story channel
-  - island-lullaby.mp3       → Lullaby channel
-  - caribbean-heritage.mp3   → Culture channel
-  - counting-with-roti.mp3   → Learning channel
+Playable catalog is owned files only (see lib/song-catalog.ts):
+  - /assets/youtube/music/drinking-water.mp3  → R.O.T.I Learning Lab
+  - /assets/youtube/music/saving-money.mp3    → Tanty Spice Show
 
-After dropping files here, run: git add public/audio && git commit && git push
-Vercel will serve them at /audio/filename.mp3 automatically.
+To restore a historical title (Island Alphabet, Coco Water, …):
+  1. Put the real master here (do not invent a new song)
+  2. Add it to OWNED_PLAYABLE_SONGS with status: 'playable'
+  3. Move the matching row out of RECOVERED_UNPLAYABLE_SONGS
+  4. Run: npx tsx scripts/probe-music-catalog.ts
+
+After dropping files: git add public/audio lib/song-catalog.ts && git commit && git push

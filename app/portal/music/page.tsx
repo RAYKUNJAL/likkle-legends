@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
     Music, Play, Pause, ChevronLeft, ChevronRight,
     Heart, Sparkles, Gift, Crown, Star, CheckCircle2, Zap, Download
@@ -8,6 +8,8 @@ import {
 import Link from 'next/link';
 import PurchaseModal from '@/components/MusicStore/PurchaseModal';
 import { RADIO_TRACKS, RADIO_CHANNELS } from '@/lib/constants';
+import { MUSIC_STORE_PRODUCTS } from '@/lib/paypal';
+import { getPlayableChannelIds } from '@/lib/song-catalog';
 
 // ── Channel metadata ──────────────────────────────────────────────────────────
 const CHANNEL_META: Record<string, { emoji: string; color: string; bg: string }> = {
@@ -66,8 +68,16 @@ export default function MusicHub() {
     const [customInstructions, setCustomInstructions] = useState('');
     const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
     const [customMetadata, setCustomMetadata] = useState<any>(null);
+    const [trackPurchase, setTrackPurchase] = useState<{ id: string; title: string } | null>(null);
+    const [ownedTrackIds, setOwnedTrackIds] = useState<string[]>([]);
+    const [customOrderConfirmed, setCustomOrderConfirmed] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement>(null);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (window.location.hash === '#custom') setActiveTab('custom');
+    }, []);
 
     const handlePlay = (trackId: string, url: string) => {
         const audio = audioRef.current;
@@ -82,6 +92,8 @@ export default function MusicHub() {
         }
     };
 
+    const playableChannelIds = getPlayableChannelIds();
+    const hubChannels = RADIO_CHANNELS.filter((ch) => playableChannelIds.includes(ch.id));
     const filteredTracks = activeChannel === 'all'
         ? RADIO_TRACKS
         : RADIO_TRACKS.filter(t => t.channel === activeChannel);
@@ -125,7 +137,7 @@ export default function MusicHub() {
                             <span className="italic underline decoration-wavy decoration-yellow-300">Music Hub</span>
                         </h1>
                         <p className="text-white/85 text-lg font-medium mb-10 leading-relaxed max-w-2xl">
-                            Play all 9 island tracks right now — or order a personalised song made just for your child, delivered in 24 hours.
+                            Play {RADIO_TRACKS.length} recovered island {RADIO_TRACKS.length === 1 ? 'track' : 'tracks'} right now — or order a personalised song made just for your child.
                         </p>
                         <div className="flex flex-wrap gap-4">
                             <button
@@ -210,7 +222,7 @@ export default function MusicHub() {
 
                         {/* Channel filter */}
                         <div className="flex flex-wrap gap-2">
-                            {[{ id: 'all', label: 'All Tracks', emoji: '🎶' }, ...RADIO_CHANNELS.map(ch => ({ id: ch.id, label: ch.label, emoji: CHANNEL_META[ch.id]?.emoji || '🎵' }))].map(ch => (
+                            {[{ id: 'all', label: 'All Tracks', emoji: '🎶' }, ...hubChannels.map(ch => ({ id: ch.id, label: ch.label, emoji: CHANNEL_META[ch.id]?.emoji || '🎵' }))].map(ch => (
                                 <button
                                     key={ch.id}
                                     onClick={() => setActiveChannel(ch.id)}
@@ -271,6 +283,19 @@ export default function MusicHub() {
                                                 <span className={`hidden sm:block text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex-shrink-0 ${meta.bg} ${meta.color}`}>
                                                     {RADIO_CHANNELS.find(c => c.id === track.channel)?.label || track.channel}
                                                 </span>
+                                                {ownedTrackIds.includes(track.id) ? (
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 flex items-center gap-1">
+                                                        <CheckCircle2 size={14} /> Owned
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setTrackPurchase({ id: track.id, title: track.title })}
+                                                        className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700"
+                                                    >
+                                                        Buy ${MUSIC_STORE_PRODUCTS.single_track.price.toFixed(2)}
+                                                    </button>
+                                                )}
                                             </div>
                                         );
                                     })}
@@ -358,7 +383,17 @@ export default function MusicHub() {
                 )}
 
                 {/* ── CUSTOM SONG TAB ── */}
-                {activeTab === 'custom' && (
+                {activeTab === 'custom' && customOrderConfirmed && (
+                    <div className="max-w-xl mx-auto bg-white rounded-[2rem] p-10 text-center shadow-xl border border-emerald-100">
+                        <CheckCircle2 className="mx-auto text-emerald-500" size={48} />
+                        <h2 className="mt-4 text-3xl font-black text-zinc-900">Custom song confirmed</h2>
+                        <p className="mt-3 text-zinc-500 font-medium">
+                            PayPal captured the $24.99 Custom Song request. We&apos;ll start writing it for {customChildName || 'your Likkle Legend'}.
+                        </p>
+                    </div>
+                )}
+
+                {activeTab === 'custom' && !customOrderConfirmed && (
                     <div className="max-w-4xl mx-auto animate-fade-in space-y-8">
                         <div className="bg-white rounded-[3rem] p-10 shadow-2xl border border-zinc-100 relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-8 opacity-10">
@@ -462,8 +497,24 @@ export default function MusicHub() {
                 onClose={() => setIsPurchaseModalOpen(false)}
                 productKey="custom_song_request"
                 contentTitle={customChildName ? `Custom Song for ${customChildName}` : 'Custom Song Request'}
-                onSuccess={() => setIsPurchaseModalOpen(false)}
+                onSuccess={() => {
+                    setIsPurchaseModalOpen(false);
+                    setCustomOrderConfirmed(true);
+                }}
                 metadata={customMetadata}
+            />
+            <PurchaseModal
+                isOpen={Boolean(trackPurchase)}
+                onClose={() => setTrackPurchase(null)}
+                productKey="single_track"
+                contentId={trackPurchase?.id}
+                contentTitle={trackPurchase?.title}
+                onSuccess={() => {
+                    if (trackPurchase) {
+                        setOwnedTrackIds((prev) => Array.from(new Set([...prev, trackPurchase.id])));
+                    }
+                    setTrackPurchase(null);
+                }}
             />
         </div>
     );

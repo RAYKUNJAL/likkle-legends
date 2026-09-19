@@ -1009,6 +1009,8 @@ export default function ChildPortalPage() {
                                                     setPendingRoute('/portal/story-studio');
                                                     setIsCoppaModalOpen(true);
                                                 }
+                                            } else if (section === 'songs' || section === 'music' || section === 'music-hub') {
+                                                router.push('/portal/music');
                                             } else if (section === 'games') {
                                                 if (!sectionAllowed('games') || screenTimeExceeded) {
                                                     setBlockedMessage(screenTimeExceeded

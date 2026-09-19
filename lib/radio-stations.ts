@@ -27,19 +27,7 @@ export function mapLegacyRadioCategory(input?: string): RadioSegmentId {
 }
 
 export function buildFreeFallbackTracks(): Track[] {
-    const base = RADIO_TRACKS.slice(0, 10);
-    if (base.length >= 10) return base;
-
-    const padded = [...base];
-    const first = base[0];
-    if (first) {
-        padded.push({
-            ...first,
-            id: `${first.id}-reprise`,
-            title: `${first.title} (Reprise)`,
-        });
-    }
-
-    return padded.slice(0, 10);
+    // Only owned playable files. Do not invent reprise rows to pad a count.
+    return RADIO_TRACKS.filter((track) => Boolean(track.url));
 }
 

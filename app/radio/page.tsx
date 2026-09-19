@@ -6,6 +6,7 @@ import Image from "next/image";
 import { ArrowLeft, Play, Pause, SkipBack, SkipForward, Radio, Sparkles, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { buildFreeFallbackTracks, RADIO_SEGMENTS } from "@/lib/radio-stations";
+import { filterPlayableTracks, isOwnedPlayableUrl } from "@/lib/song-catalog";
 
 type StationTrack = {
     id: string;
@@ -50,29 +51,26 @@ export default function FreeRadioPage() {
                     .eq("is_active", true)
                     .order("display_order", { ascending: true });
 
-                const freeSongs = (songs || [])
-                    .filter((song: any) => song.audio_url && !song.metadata?.is_premium)
-                    .slice(0, 10)
-                    .map((song: any) => ({
-                        id: song.id,
-                        title: song.title,
-                        artist: song.artist || "Likkle Legends",
-                        url: song.audio_url,
-                    }));
-
-                if (freeSongs.length >= 10) {
-                    setTracks(freeSongs);
-                    return;
-                }
+                const freeSongs = filterPlayableTracks(
+                    (songs || [])
+                        .filter((song: any) => song.audio_url && !song.metadata?.is_premium && isOwnedPlayableUrl(song.audio_url))
+                        .map((song: any) => ({
+                            id: song.id,
+                            title: song.title,
+                            artist: song.artist || "Likkle Legends",
+                            url: song.audio_url,
+                        }))
+                );
 
                 const ids = new Set(freeSongs.map((t: StationTrack) => t.id));
-                const padded = [...freeSongs];
+                const merged = [...freeSongs];
                 for (const t of fallbackTracks) {
-                    if (padded.length >= 10) break;
-                    if (ids.has(t.id)) continue;
-                    padded.push(t);
+                    if (ids.has(t.id) || ids.has(t.url)) continue;
+                    if (!isOwnedPlayableUrl(t.url)) continue;
+                    merged.push(t);
+                    ids.add(t.id);
                 }
-                setTracks(padded.slice(0, 10));
+                setTracks(merged.length > 0 ? merged : fallbackTracks);
             } catch (_e) {
                 setTracks(fallbackTracks);
             }
@@ -176,7 +174,7 @@ export default function FreeRadioPage() {
                     </div>
 
                     <p className="text-deep/60 font-medium mb-8">
-                        Enjoy a rotating 10-song loop. Upgrade for full premium DJ segments, more tracks, and exclusive drops.
+                        Enjoy the recovered island tracks that still have playable audio. Missing Suno/GCS masters stay off this list until they are re-hosted.
                     </p>
 
                     <div className="bg-zinc-50 rounded-2xl p-6 border border-zinc-100 mb-6">
