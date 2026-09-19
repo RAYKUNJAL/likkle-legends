@@ -168,7 +168,7 @@ export default function StorybooksPage() {
 }
 
 function StoryCard({ story, isPersonal = false, onDelete }: { story: any, isPersonal?: boolean, onDelete?: () => void }) {
-    const isLocked = !story.is_active && !isPersonal;
+    const isLocked = story.is_active === false && !isPersonal;
 
     return (
         <div className={`relative p-8 rounded-[4rem] border-2 transition-all duration-500 overflow-hidden group ${isLocked

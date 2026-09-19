@@ -76,6 +76,38 @@ if (emptyBody) {
     throw new Error('Stories without body must be omitted');
 }
 
+const coverOnlyUnknown = toKidsLibraryStory({
+    id: 'cover-only',
+    title: 'Cover Only Extra',
+    slug: 'not-a-live-catalog-slug',
+    summary: 'Has a cover and text but no real page art',
+    cover_image_url: '/images/x.png',
+    island_code: 'TT',
+    tradition: 'island_adventure',
+    age_track: 'big',
+    estimated_reading_time_minutes: 5,
+    content: { pages: [{ text: 'Words only. No illustration file.' }] },
+});
+if (coverOnlyUnknown) {
+    throw new Error('Cover-only extras must not slip past the fully-illustrated gate');
+}
+
+const staleRemote = attachPageIllustrations({
+    ...fakeLiveRow(LIVE_TITLES[0], Object.keys(STORY_COVER_BY_SLUG)[0], true, 'https://example.invalid/stale-cover.png'),
+    content: { pages: [{ text: 'A real Caribbean page of story text.', image_url: 'https://example.invalid/stale-page.png' }] },
+});
+if (!String(staleRemote.cover_image_url).startsWith('/images/story-covers/')) {
+    throw new Error('Known slugs must prefer local cover art over stale remote URLs');
+}
+if (!String(staleRemote.content.pages[0].image_url).startsWith('/images/story-pages/')) {
+    throw new Error('Known slugs must prefer local page art over stale remote URLs');
+}
+
+const unlocked = kids.every((s: any) => s.is_active === true);
+if (!unlocked) {
+    throw new Error('Kids-ready books must be marked active so dashboard cards do not lock');
+}
+
 const unknownTitle = kids.find((s: any) => !LIVE_TITLES.includes(s.title));
 if (unknownTitle) {
     throw new Error(`Invented title leaked: ${unknownTitle.title}`);

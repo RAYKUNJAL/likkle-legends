@@ -81,6 +81,7 @@ export interface KidsLibraryStory {
     age_group: string;
     tier_required: string;
     reading_time_minutes: number;
+    is_active: boolean;
     pages: LibraryStoryPage[];
     content: any;
 }
@@ -134,13 +135,11 @@ export function pageImagePath(slug: string, pageNumber: number): string {
 }
 
 export function attachLocalCover<T extends { slug?: string; cover_image_url?: string | null }>(story: T): T & { cover_image_url: string } {
-    const existing = String(story?.cover_image_url || '').trim();
-    if (existing) {
-        return { ...story, cover_image_url: existing };
-    }
     const slug = String(story?.slug || '').trim();
     const mapped = slug ? STORY_COVER_BY_SLUG[slug] : '';
-    return { ...story, cover_image_url: mapped || '' };
+    const existing = String(story?.cover_image_url || '').trim();
+    // Known catalog slugs always use the QC'd local cover so stale remote URLs cannot blank the shelf.
+    return { ...story, cover_image_url: mapped || existing || '' };
 }
 
 export function attachPageIllustrations(story: any): any {
@@ -153,12 +152,14 @@ export function attachPageIllustrations(story: any): any {
         const existing = String(
             page?.image_url || page?.imageUrl || page?.illustration_url || page?.illustrationUrl || ''
         ).trim();
-        const mapped = slug ? pageImagePath(slug, pageNumber) : '';
+        // Only invent local page paths for the 12 known catalog slugs. Cover-only extras
+        // must not pass the fully-illustrated gate just because we guessed a filename.
+        const mapped = slug && STORY_COVER_BY_SLUG[slug] ? pageImagePath(slug, pageNumber) : '';
         return {
             ...page,
             page_number: pageNumber,
-            image_url: existing || mapped,
-            imageUrl: existing || mapped,
+            image_url: mapped || existing,
+            imageUrl: mapped || existing,
         };
     });
     return {
@@ -227,6 +228,7 @@ export function toKidsLibraryStory(story: any): KidsLibraryStory | null {
         age_group: ageTrack === 'mini' ? '5-6' : '7-9',
         tier_required: String(withCover.tier_required || 'free'),
         reading_time_minutes: Number(withCover.estimated_reading_time_minutes || withCover.reading_time_minutes || 5),
+        is_active: true,
         pages,
         content: parseContent(withCover),
     };
