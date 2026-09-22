@@ -22,7 +22,14 @@
     "verify:kids-library": "tsx scripts/verify-kids-library.ts",
     "verify:story-products": "tsx scripts/verify-story-products.ts",
     "narrate:stories": "tsx scripts/regenerate-story-narration.ts",
-    "books:weekly": "tsx scripts/weekly-picture-book.ts"
+    "books:weekly": "tsx scripts/weekly-picture-book.ts",
+    "verify:island-helpers-prefs": "tsx scripts/verify-island-helpers-prefs.ts",
+    "verify:island-helpers-phrases": "tsx scripts/verify-island-helpers-phrases.ts",
+    "verify:island-helpers-speak": "tsx scripts/verify-island-helpers-speak.ts",
+    "verify:island-helpers-calm": "tsx scripts/verify-island-helpers-calm.ts",
+    "verify:island-helpers-phrase-timings": "tsx scripts/verify-island-helpers-phrase-timings.ts",
+    "verify:island-helpers-soundboard-copy": "tsx scripts/verify-island-helpers-soundboard-copy.ts",
+    "verify:island-helpers": "tsx scripts/verify-island-helpers-avoid-list.ts && tsx scripts/verify-island-helpers-prefs.ts && tsx scripts/verify-island-helpers-phrases.ts && tsx scripts/verify-island-helpers-phrase-timings.ts && tsx scripts/verify-island-helpers-calm.ts && tsx scripts/verify-island-helpers-speak.ts && tsx scripts/verify-island-helpers-soundboard-copy.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.9",
