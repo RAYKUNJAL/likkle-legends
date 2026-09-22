@@ -108,6 +108,10 @@ export const RADIO_TRACKS: Track[] = [
     { id: 'track-sam-1', title: 'Island Parrots',         artist: 'Steelpan Sam',  url: 'https://cdn1.suno.ai/ee0e94a6-d116-4116-992e-7ecb8fd76109.mp3', channel: 'steelpan_sam' },
     { id: 'track-sam-2', title: 'Iguana Song',            artist: 'Steelpan Sam',  url: 'https://cdn1.suno.ai/0303769f-299a-40dd-bc6a-890c405dbb07.mp3', channel: 'steelpan_sam' },
 ];
+
+// Preserve catalogue entries without offering broken playback on landing radio.
+export const UNAVAILABLE_RADIO_TRACKS: Track[] = [];
+
 export const QUESTS: Quest[] = [
     {
         id: 'q1',
