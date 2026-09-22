@@ -381,7 +381,7 @@ function PremiumStoryReaderInner({ story, onClose, onComplete }: PremiumStoryRea
             return;
         }
         // Fallback: speak substring only if no timings/file
-        const result = await speakPhrase({ text: phrase.text });
+        const result = await speakPhrase({ text: phrase.text, characterId: 'tanty_spice' });
         if (result.ok) {
             const audio = new Audio(result.audioUrl);
             void audio.play().catch(() => {});

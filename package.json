@@ -26,6 +26,7 @@
     "verify:island-helpers-prefs": "tsx scripts/verify-island-helpers-prefs.ts",
     "verify:island-helpers-phrases": "tsx scripts/verify-island-helpers-phrases.ts",
     "verify:island-helpers-speak": "tsx scripts/verify-island-helpers-speak.ts",
+    "verify:island-helpers-voice-routing": "tsx scripts/verify-island-helpers-voice-routing.ts",
     "verify:island-helpers-calm": "tsx scripts/verify-island-helpers-calm.ts",
     "verify:island-helpers-phrase-timings": "tsx scripts/verify-island-helpers-phrase-timings.ts",
     "verify:island-helpers-soundboard-copy": "tsx scripts/verify-island-helpers-soundboard-copy.ts",

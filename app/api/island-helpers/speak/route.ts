@@ -1,6 +1,7 @@
 /**
  * Island Helpers tap→speak API.
- * Reuses warm story voice (warmStoryVoiceId → RdKVaQgg8n1rUzICELn1) and WARM_VOICE_SETTINGS.
+ * Uses the character voice policy: R.O.T.I. is Ray's supplied ElevenLabs voice,
+ * Tanty stays on the warm story voice, and Sam/Mango fail closed while pending.
  * Returns audio/mpeg. In-memory cache avoids hammering ElevenLabs on repeat taps.
  */
 import { NextRequest, NextResponse } from 'next/server';
@@ -8,8 +9,15 @@ import {
   missingNarrationKeyMessage,
   WARM_ELEVENLABS_MODEL,
   WARM_VOICE_SETTINGS,
-  warmStoryVoiceId,
 } from '@/lib/story-narration-policy';
+import {
+  islandHelpersCharacterLabel,
+  islandHelpersVoiceId,
+} from '@/lib/island-helpers/voice-policy';
+import {
+  ISLAND_HELPERS_CHARACTER_IDS,
+  type IslandHelpersCharacterId,
+} from '@/lib/island-helpers/types';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,8 +37,25 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
     const text = typeof body?.text === 'string' ? body.text.trim() : '';
+    const rawCharacterId = body?.characterId;
+    if (!ISLAND_HELPERS_CHARACTER_IDS.includes(rawCharacterId as IslandHelpersCharacterId)) {
+      return NextResponse.json({ error: 'characterId is required' }, { status: 400 });
+    }
+    const characterId = rawCharacterId as IslandHelpersCharacterId;
     if (!text) {
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
+    }
+
+    const voiceId = islandHelpersVoiceId(characterId);
+    if (!voiceId) {
+      return NextResponse.json(
+        {
+          error: `${islandHelpersCharacterLabel(characterId)} voice is pending; no voice has been selected.`,
+          code: 'VOICE_ID_PENDING',
+          characterId,
+        },
+        { status: 503 },
+      );
     }
 
     const API_KEY = process.env.ELEVENLABS_API_KEY || process.env.VITE_ELEVENLABS_API_KEY;
@@ -41,15 +66,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const voiceId = warmStoryVoiceId();
-    const cacheKey = `${voiceId}::${text.toLowerCase()}`;
+    console.info(`[island-helpers/speak] characterId=${characterId} voiceId=${voiceId}`);
+    const cacheKey = `${characterId}::${voiceId}::${text.toLowerCase()}`;
     const hit = cache.get(cacheKey);
     if (hit) {
-      return new NextResponse(hit, {
+      return new NextResponse(new Uint8Array(hit), {
         headers: {
           'Content-Type': 'audio/mpeg',
           'Content-Length': hit.byteLength.toString(),
           'X-Island-Helpers-Cache': 'hit',
+          'X-Island-Helpers-Voice-Id': voiceId,
         },
       });
     }
@@ -78,11 +104,12 @@ export async function POST(req: NextRequest) {
     const audioBuffer = Buffer.from(await response.arrayBuffer());
     remember(cacheKey, audioBuffer);
 
-    return new NextResponse(audioBuffer, {
+    return new NextResponse(new Uint8Array(audioBuffer), {
       headers: {
         'Content-Type': 'audio/mpeg',
         'Content-Length': audioBuffer.byteLength.toString(),
         'X-Island-Helpers-Cache': 'miss',
+        'X-Island-Helpers-Voice-Id': voiceId,
       },
     });
   } catch (error: unknown) {

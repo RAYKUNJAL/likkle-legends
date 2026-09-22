@@ -7,7 +7,7 @@ import { missingNarrationKeyMessage } from '../lib/story-narration-policy';
 __clearSpeakCache();
 
 async function main() {
-  const empty = await speakPhrase({ text: '   ' });
+  const empty = await speakPhrase({ text: '   ', characterId: 'roti' });
   if (empty.ok) throw new Error('empty text must fail');
   if (!('error' in empty) || !empty.error) throw new Error('empty error message');
 
@@ -34,7 +34,7 @@ async function main() {
 
   try {
     __clearSpeakCache();
-    const miss = await speakPhrase({ text: 'Hello again unique' });
+    const miss = await speakPhrase({ text: 'Hello again unique', characterId: 'tanty_spice' });
     if (miss.ok) throw new Error('missing key should fail');
     if (!miss.error.includes('ELEVENLABS_API_KEY')) {
       throw new Error('missing-key posture should match warm narration message');

@@ -1,17 +1,17 @@
 /**
  * Island Helpers — tap→speak client helper.
- * POSTs to /api/island-helpers/speak which uses warmStoryVoiceId() (RdKVa…).
+ * POSTs to /api/island-helpers/speak with an explicit character voice.
  */
 import type { IslandHelpersCharacterId } from './types';
 
-export type SpeakRequest = { text: string; characterId?: IslandHelpersCharacterId };
+export type SpeakRequest = { text: string; characterId: IslandHelpersCharacterId };
 export type SpeakResult = { ok: true; audioUrl: string } | { ok: false; error: string };
 
 const clientCache = new Map<string, string>();
 const CACHE_MAX = 32;
 
-function cacheKey(text: string, characterId?: string): string {
-  return `${characterId || 'warm'}::${text.trim().toLowerCase()}`;
+function cacheKey(text: string, characterId: IslandHelpersCharacterId): string {
+  return `${characterId}::${text.trim().toLowerCase()}`;
 }
 
 export async function speakPhrase(req: SpeakRequest): Promise<SpeakResult> {
