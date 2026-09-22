@@ -13,6 +13,7 @@ import { Soundboard } from './Soundboard';
 import { DisplayModeToggle } from './DisplayModeToggle';
 import { FirstThenBoard } from './FirstThenBoard';
 import { openInStoryAacOverlay } from './InStoryAacOverlay';
+import { ParentExplainer } from './ParentExplainer';
 
 type Props = {
   /** Parent-gated controls on home; reader uses read-only display. */
@@ -61,6 +62,8 @@ export function JourneyToolsDrawer({ parentControls = false, defaultOpen = false
                 <X size={20} />
               </button>
             </div>
+
+            {parentControls ? <ParentExplainer compact /> : null}
 
             <section id="ih-drawer-calm" className="rounded-2xl bg-white border border-blue-100 p-4">
               <div className="flex items-center justify-between gap-3">
