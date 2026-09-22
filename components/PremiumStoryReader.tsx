@@ -21,6 +21,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { narrateWarmPage } from '@/app/actions/warm-narration';
 import { isWarmNarration, warmNarrationLabel, estimateNarrationTimings, scaleNarrationTimingsToDuration } from '@/lib/story-narration-policy';
+import { groupWordsIntoPhrases, activePhraseIndex, type TimedPhrase } from '@/lib/island-helpers/phrase-timings';
+import { loadPrefs } from '@/lib/island-helpers/prefs';
+import { CalmModeProvider } from '@/components/island-helpers/CalmModeProvider';
+import { useCalmMode } from '@/components/island-helpers/useCalmMode';
+import { JourneyToolsDrawer } from '@/components/island-helpers/JourneyToolsDrawer';
+import { speakPhrase } from '@/lib/island-helpers/speak';
 
 interface StoryPage {
     pageNumber: number;
@@ -71,12 +77,19 @@ function splitWords(text: string) {
     }, []);
 }
 
-export default function PremiumStoryReader({ story, onClose, onComplete }: PremiumStoryReaderProps) {
+function PremiumStoryReaderInner({ story, onClose, onComplete }: PremiumStoryReaderProps) {
     const pages = useMemo(() => story.content_json?.pages || [], [story]);
     const [currentPage, setCurrentPage] = useState(0);
     const [narration, setNarration] = useState<NarrationState>('idle');
     const hasWarmFiles = pages.some((page) => Boolean(page.audioUrl));
-    const [readAloud, setReadAloud] = useState(hasWarmFiles);
+    const { allowAutoplay, allowMotion } = useCalmMode();
+    const prefsBootstrap = typeof window !== 'undefined' ? loadPrefs() : null;
+    const initialReadAloud = prefsBootstrap
+        ? (prefsBootstrap.calmMode ? false : (prefsBootstrap.readAloudDefault && hasWarmFiles))
+        : hasWarmFiles;
+    const [readAloud, setReadAloud] = useState(initialReadAloud);
+    const [highlightPhraseIndex, setHighlightPhraseIndex] = useState<number | null>(null);
+    const phrasesRef = useRef<TimedPhrase[]>([]);
     const [narrationNote, setNarrationNote] = useState(
         isWarmNarration(story.narrated_by)
             ? warmNarrationLabel(story.narrated_by?.includes('gemini') ? 'gemini' : story.narrated_by?.includes('elevenlabs') ? 'elevenlabs' : null)
@@ -93,12 +106,20 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
     const voiceBlockedRef = useRef(false);
     const currentPageRef = useRef(0);
     const autoTurnRef = useRef(true);
-    const readAloudRef = useRef(hasWarmFiles);
+    const readAloudRef = useRef(initialReadAloud);
+    const allowAutoplayRef = useRef(allowAutoplay);
     const completedRef = useRef(false);
 
     useEffect(() => { currentPageRef.current = currentPage; }, [currentPage]);
     useEffect(() => { autoTurnRef.current = autoTurn; }, [autoTurn]);
     useEffect(() => { readAloudRef.current = readAloud; }, [readAloud]);
+    useEffect(() => { allowAutoplayRef.current = allowAutoplay; }, [allowAutoplay]);
+    useEffect(() => {
+        if (!allowAutoplay) {
+            setReadAloud(false);
+            // stop handled when toggling; avoid surprise autoplay under Calm / reduced-motion
+        }
+    }, [allowAutoplay]);
 
     const stopNarration = useCallback(() => {
         playTokenRef.current += 1;
@@ -109,6 +130,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             audioRef.current = null;
         }
         setHighlightIndex(null);
+        setHighlightPhraseIndex(null);
         setNarration('idle');
     }, []);
 
@@ -117,13 +139,15 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
         completedRef.current = true;
         stopNarration();
         setShowCompletion(true);
-        confetti({
-            particleCount: 150,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ['#FFD700', '#FF4500', '#1E90FF', '#32CD32'],
-        });
-    }, [stopNarration]);
+        if (allowMotion) {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FFD700', '#FF4500', '#1E90FF', '#32CD32'],
+            });
+        }
+    }, [stopNarration, allowMotion]);
 
     const goToPage = useCallback((index: number) => {
         stopNarration();
@@ -212,6 +236,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                 ? resolved.words
                 : estimateNarrationTimings(text);
             const timingsRef = { current: timings };
+            phrasesRef.current = groupWordsIntoPhrases(timings, text);
 
             const syncHighlight = () => {
                 const list = timingsRef.current;
@@ -220,12 +245,18 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                 let idx = list.findIndex(w => t >= w.start && t <= w.end);
                 if (idx === -1 && t > (list[list.length - 1]?.end || 0)) idx = list.length - 1;
                 if (idx >= 0) setHighlightIndex(idx);
+                const phrases = phrasesRef.current.length
+                    ? phrasesRef.current
+                    : groupWordsIntoPhrases(list, text);
+                phrasesRef.current = phrases;
+                setHighlightPhraseIndex(activePhraseIndex(phrases, t));
             };
 
             audio.onloadedmetadata = () => {
                 if (playTokenRef.current !== token) return;
                 const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
                 timingsRef.current = scaleNarrationTimingsToDuration(text, duration, timingsRef.current);
+                phrasesRef.current = groupWordsIntoPhrases(timingsRef.current, text);
             };
             audio.ontimeupdate = syncHighlight;
             audio.onended = () => {
@@ -275,6 +306,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
     useEffect(() => {
         if (showCompletion) return;
         if (!readAloudRef.current) return;
+        if (!allowAutoplayRef.current) return; // Calm Mode / prefers-reduced-motion: no surprise autoplay
         const timer = setTimeout(() => { void playNarration(); }, 400);
         return () => clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -311,8 +343,55 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
     const pageData = pages[currentPage] || { text: '', pageNumber: 1 };
     const tokens = useMemo(() => splitWords(pageData.text || ''), [pageData.text]);
+    const displayPhrases = useMemo(() => {
+        const text = pageData.text || '';
+        const cached = pageAudio[currentPage]?.words;
+        const words = cached?.length ? cached : estimateNarrationTimings(text);
+        return groupWordsIntoPhrases(words, text);
+    }, [pageData.text, pageAudio, currentPage]);
+
+    const replayPhrase = useCallback(async (phrase: TimedPhrase) => {
+        const pageIndex = currentPageRef.current;
+        const resolved = pageAudio[pageIndex] || (pages[pageIndex]?.audioUrl
+            ? { audioUrl: pages[pageIndex].audioUrl!, words: pages[pageIndex].audioWords || [] }
+            : null);
+        if (resolved?.audioUrl) {
+            stopNarration();
+            const token = ++playTokenRef.current;
+            const audio = new Audio(resolved.audioUrl);
+            audioRef.current = audio;
+            const onTime = () => {
+                if (playTokenRef.current !== token) return;
+                if (audio.currentTime >= phrase.end - 0.05) {
+                    audio.pause();
+                    setNarration('idle');
+                    setHighlightPhraseIndex(null);
+                } else {
+                    setHighlightPhraseIndex(activePhraseIndex([phrase], audio.currentTime) === 0 ? displayPhrases.findIndex(p => p.start === phrase.start) : null);
+                }
+            };
+            audio.onloadedmetadata = () => {
+                audio.currentTime = Math.max(0, phrase.start);
+                void audio.play().then(() => {
+                    if (playTokenRef.current === token) setNarration('playing');
+                }).catch(() => setNarration('idle'));
+            };
+            audio.ontimeupdate = onTime;
+            return;
+        }
+        // Fallback: speak substring only if no timings/file
+        const result = await speakPhrase({ text: phrase.text });
+        if (result.ok) {
+            const audio = new Audio(result.audioUrl);
+            void audio.play().catch(() => {});
+        }
+    }, [pageAudio, pages, stopNarration, displayPhrases]);
+
     const imageUrl = pageData.imageUrl || pageData.image_url || pageData.illustration_url || pageData.illustrationUrl || story.cover_image_url;
     const progress = pages.length ? ((currentPage + 1) / pages.length) * 100 : 0;
+    const motionProps = allowMotion
+        ? { initial: { opacity: 0, x: 40 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -40 }, transition: { duration: 0.25 } }
+        : { initial: false, animate: { opacity: 1 }, exit: undefined, transition: { duration: 0 } };
 
     if (!pages.length) {
         return (
@@ -375,10 +454,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                 ) : (
                     <motion.div
                         key={`page-${currentPage}`}
-                        initial={{ opacity: 0, x: 40 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -40 }}
-                        transition={{ duration: 0.25 }}
+                        {...motionProps}
                         className="flex-1 flex flex-col min-h-0"
                         onTouchStart={onTouchStart}
                         onTouchEnd={onTouchEnd}
@@ -397,6 +473,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                 <p className="text-white/50 text-xs font-bold">Page {currentPage + 1} of {pages.length}</p>
                             </div>
                             <div className="flex items-center gap-2">
+                                <JourneyToolsDrawer parentControls={false} />
                                 <button
                                     onClick={() => setAutoTurn(v => !v)}
                                     aria-label="Toggle auto page turn"
@@ -472,20 +549,40 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                 </AnimatePresence>
                             </div>
 
-                            {/* Text */}
+                            {/* Large phrase captions (GLP-aligned). Word karaoke remains secondary via highlightIndex. */}
                             <div className="flex-1 min-h-0 overflow-y-auto bg-white lg:rounded-[2rem] px-6 sm:px-10 py-6 sm:py-10 flex flex-col">
-                                <p className="text-xl sm:text-2xl lg:text-3xl leading-relaxed font-bold text-blue-950">
-                                    {tokens.map((token, i) => token.isWord ? (
-                                        <span
-                                            key={i}
-                                            className={`transition-colors duration-150 rounded-md px-0.5 ${token.wordIndex === highlightIndex ? 'bg-amber-300 text-blue-950' : ''}`}
-                                        >
-                                            {token.text}
-                                        </span>
-                                    ) : (
-                                        <span key={i}>{token.text}</span>
-                                    ))}
+                                <p className="sr-only" aria-live="polite">
+                                    {displayPhrases[highlightPhraseIndex ?? -1]?.text || pageData.text}
                                 </p>
+                                <div className="ih-captions text-[1.5rem] sm:text-[1.75rem] lg:text-[2rem] leading-relaxed font-black text-blue-950 space-y-3">
+                                    {displayPhrases.length ? displayPhrases.map((phrase, pi) => (
+                                        <button
+                                            key={`ph-${pi}`}
+                                            type="button"
+                                            onClick={() => void replayPhrase(phrase)}
+                                            className={`block w-full text-left rounded-xl px-2 py-1 transition-colors duration-150 ${
+                                                pi === highlightPhraseIndex
+                                                    ? 'bg-amber-300 text-blue-950 ring-2 ring-amber-500'
+                                                    : 'hover:bg-amber-50'
+                                            }`}
+                                        >
+                                            {phrase.text}
+                                        </button>
+                                    )) : (
+                                        <p className="text-xl sm:text-2xl lg:text-3xl leading-relaxed font-bold text-blue-950">
+                                            {tokens.map((token, i) => token.isWord ? (
+                                                <span
+                                                    key={i}
+                                                    className={`transition-colors duration-150 rounded-md px-0.5 ${token.wordIndex === highlightIndex ? 'bg-amber-300 text-blue-950' : ''}`}
+                                                >
+                                                    {token.text}
+                                                </span>
+                                            ) : (
+                                                <span key={i}>{token.text}</span>
+                                            ))}
+                                        </p>
+                                    )}
+                                </div>
                                 {pageData.question && (
                                     <div className="mt-6 bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 text-amber-900 font-bold text-base">
                                         🤔 {pageData.question}
@@ -569,5 +666,13 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                 )}
             </AnimatePresence>
         </div>
+    );
+}
+
+export default function PremiumStoryReader(props: PremiumStoryReaderProps) {
+    return (
+        <CalmModeProvider>
+            <PremiumStoryReaderInner {...props} />
+        </CalmModeProvider>
     );
 }
