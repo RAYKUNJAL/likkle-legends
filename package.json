@@ -29,7 +29,14 @@
     "verify:island-helpers-calm": "tsx scripts/verify-island-helpers-calm.ts",
     "verify:island-helpers-phrase-timings": "tsx scripts/verify-island-helpers-phrase-timings.ts",
     "verify:island-helpers-soundboard-copy": "tsx scripts/verify-island-helpers-soundboard-copy.ts",
-    "verify:island-helpers": "tsx scripts/verify-island-helpers-avoid-list.ts && tsx scripts/verify-island-helpers-prefs.ts && tsx scripts/verify-island-helpers-phrases.ts && tsx scripts/verify-island-helpers-phrase-timings.ts && tsx scripts/verify-island-helpers-calm.ts && tsx scripts/verify-island-helpers-speak.ts && tsx scripts/verify-island-helpers-soundboard-copy.ts"
+    "verify:island-helpers": "tsx scripts/verify-island-helpers-avoid-list.ts && tsx scripts/verify-island-helpers-prefs.ts && tsx scripts/verify-island-helpers-phrases.ts && tsx scripts/verify-island-helpers-phrase-timings.ts && tsx scripts/verify-island-helpers-calm.ts && tsx scripts/verify-island-helpers-speak.ts && tsx scripts/verify-island-helpers-soundboard-copy.ts && tsx scripts/verify-journey-stories-draft.ts && tsx scripts/verify-journey-stories-seeds.ts && tsx scripts/verify-journey-stories-safety.ts && tsx scripts/verify-journey-stories-generate.ts && tsx scripts/verify-journey-stories-publish.ts && tsx scripts/verify-island-helpers-slots.ts && tsx scripts/verify-island-helpers-schedule.ts",
+    "verify:journey-stories-draft": "tsx scripts/verify-journey-stories-draft.ts",
+    "verify:journey-stories-seeds": "tsx scripts/verify-journey-stories-seeds.ts",
+    "verify:journey-stories-safety": "tsx scripts/verify-journey-stories-safety.ts",
+    "verify:journey-stories-generate": "tsx scripts/verify-journey-stories-generate.ts",
+    "verify:journey-stories-publish": "tsx scripts/verify-journey-stories-publish.ts",
+    "verify:island-helpers-slots": "tsx scripts/verify-island-helpers-slots.ts",
+    "verify:island-helpers-schedule": "tsx scripts/verify-island-helpers-schedule.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.9",
