@@ -5,7 +5,10 @@ import Link from 'next/link';
 import { BookOpen } from 'lucide-react';
 import {
   IH_CALM_MODE,
+  IH_FIRST_THEN,
   IH_HOME_SUBTITLE,
+  IH_JOURNEY_CTA,
+  IH_JOURNEY_STORIES,
   IH_MY_PHRASES,
   IH_OPEN_IN_BOOK,
   IH_PRODUCT_NAME,
@@ -55,7 +58,29 @@ export function IslandHelpersHome() {
             >
               {IH_MY_PHRASES}
             </Link>
+            <Link
+              href="/island-helpers/schedule"
+              className="inline-flex items-center rounded-2xl bg-teal-50 px-5 py-3 text-teal-900 font-black"
+            >
+              {IH_FIRST_THEN}
+            </Link>
           </div>
+        </section>
+
+        <section className="rounded-[2rem] bg-white border-4 border-teal-200 p-6 shadow-lg space-y-3">
+          <h2 className="text-2xl font-black text-blue-950">{IH_JOURNEY_STORIES}</h2>
+          <p className="font-semibold text-blue-800/80">
+            Parent-made adventure storybooks for new places. Kids only see them after you Publish.
+          </p>
+          <Link
+            href="/island-helpers/journey-stories/new"
+            className="inline-flex rounded-2xl bg-teal-600 px-5 py-3 font-black text-white"
+          >
+            {IH_JOURNEY_CTA}
+          </Link>
+          <Link href="/island-helpers/journey-stories" className="ml-3 inline-flex font-black text-teal-800 underline">
+            My drafts
+          </Link>
         </section>
 
         <section className="rounded-[2rem] bg-white border border-teal-100 p-5 flex items-center justify-between gap-4">
