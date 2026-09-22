@@ -1011,7 +1011,11 @@ export default function ChildPortalPage() {
                                         onNavigate={(section) => {
                                             if (section === 'story-studio') {
                                                 // Restricted feature - check COPPA
-                                                if (user?.age_verified_at || activeChild?.age_verified) {
+                                                let locallyVerified = false;
+                                                try {
+                                                    locallyVerified = Boolean(typeof window !== 'undefined' && localStorage.getItem('ll_age_verified_at'));
+                                                } catch {}
+                                                if (user?.age_verified_at || activeChild?.age_verified || locallyVerified) {
                                                     router.push('/portal/story-studio');
                                                 } else {
                                                     setPendingRoute('/portal/story-studio');
@@ -1392,15 +1396,17 @@ export default function ChildPortalPage() {
                 <CoppaConsentModal
                     isOpen={isCoppaModalOpen}
                     onClose={() => setIsCoppaModalOpen(false)}
-                    onSuccess={async () => {
-                        const success = await verifyAge();
-                        if (success) {
-                            setIsCoppaModalOpen(false);
-                            if (pendingRoute) {
-                                router.push(pendingRoute);
-                                setPendingRoute(null);
-                            }
-                        }
+                    onSuccess={() => {
+                        // Navigate immediately — never leave the success spinner
+                        // waiting on a Supabase write (hang/RLS/network).
+                        const dest = pendingRoute || '/portal/story-studio';
+                        setIsCoppaModalOpen(false);
+                        setPendingRoute(null);
+                        router.push(dest);
+                        // Persist verification in the background (best-effort).
+                        void verifyAge().catch((err) => {
+                            console.error('[COPPA] background verifyAge failed:', err);
+                        });
                     }}
                 />
             )}
