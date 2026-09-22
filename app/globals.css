@@ -396,3 +396,27 @@
   object-fit: contain;
   filter: drop-shadow(0 25px 25px rgb(0 0 0 / 0.15));
 }
+
+/* —— Island Helpers Calm Mode (scoped; marketing landing-v5 not forced) —— */
+.ih-calm {
+  --ih-bg: #f3f7f6;
+  --ih-ink: #1e3a4c;
+}
+.ih-calm .ih-soundboard-card {
+  border-color: #c5d5d0 !important;
+  box-shadow: none !important;
+}
+.ih-calm .ih-captions {
+  letter-spacing: 0.01em;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ih-captions,
+  .ih-soundboard-card,
+  .ih-drawer-trigger {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+.ih-calm * {
+  scroll-behavior: auto !important;
+}
