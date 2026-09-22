@@ -7,10 +7,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Backpack, X } from 'lucide-react';
-import { IH_CALM_MODE, IH_KID_DRAWER_LABEL, IH_MY_PHRASES, IH_PRODUCT_NAME } from '@/lib/island-helpers/copy';
+import { IH_CALM_MODE, IH_JOURNEY_STORIES, IH_KID_DRAWER_LABEL, IH_MY_PHRASES, IH_PRODUCT_NAME } from '@/lib/island-helpers/copy';
 import { useCalmMode } from './useCalmMode';
 import { Soundboard } from './Soundboard';
 import { DisplayModeToggle } from './DisplayModeToggle';
+import { FirstThenBoard } from './FirstThenBoard';
+import { openInStoryAacOverlay } from './InStoryAacOverlay';
 
 type Props = {
   /** Parent-gated controls on home; reader uses read-only display. */
@@ -82,7 +84,38 @@ export function JourneyToolsDrawer({ parentControls = false, defaultOpen = false
               </div>
             </section>
 
-            <Soundboard />
+            <Soundboard showMixTab />
+
+            <section id="ih-drawer-schedule" className="rounded-2xl bg-white border border-blue-100 p-4">
+              <FirstThenBoard compact />
+            </section>
+
+
+            {parentControls ? (
+              <section className="rounded-2xl bg-white border border-teal-100 p-4 space-y-2">
+                <p className="font-black text-blue-950">{IH_JOURNEY_STORIES}</p>
+                <Link
+                  href="/island-helpers/journey-stories"
+                  className="inline-flex rounded-xl bg-teal-600 px-4 py-2 text-sm font-black text-white"
+                  onClick={() => setOpen(false)}
+                >
+                  Open Journey Stories
+                </Link>
+              </section>
+            ) : (
+              <section className="rounded-2xl bg-white border border-teal-100 p-4">
+                <button
+                  type="button"
+                  className="rounded-xl bg-amber-400 px-4 py-2 text-sm font-black text-blue-950"
+                  onClick={() => {
+                    setOpen(false);
+                    openInStoryAacOverlay();
+                  }}
+                >
+                  Open phrase strip
+                </button>
+              </section>
+            )}
 
             <section id="ih-drawer-phrases" className="rounded-2xl bg-white border border-blue-100 p-4 space-y-2">
               <p className="font-black text-blue-950">{IH_MY_PHRASES}</p>
