@@ -11,6 +11,7 @@ import { buildJourneyPrompt } from './prompt';
 import { applyJourneySafety } from './safety';
 import { JOURNEY_PAGE_ROLES, type JourneyPage, type JourneyStoryDraft } from './types';
 
+
 const CAST_NAMES: Record<IslandHelpersCharacterId, string> = {
   tanty_spice: 'Tanty Spice',
   steelpan_sam: 'Steelpan Sam',
@@ -29,6 +30,22 @@ export type GenerateJourneyRequest = {
 export type GenerateJourneyResponse =
   | { ok: true; draft: JourneyStoryDraft }
   | { ok: false; error: string; reasons?: string[]; draft?: JourneyStoryDraft };
+
+function sanitizeModelError(message: string): string {
+  let m = message || 'Generation failed';
+  // Never echo API keys or full provider payloads to clients
+  m = m.replace(/api_key:[A-Za-z0-9_-]+/gi, 'api_key:[redacted]');
+  m = m.replace(/AIza[0-9A-Za-z_-]{10,}/g, '[redacted]');
+  m = m.replace(/Key [A-Za-z0-9_-]{8,}/g, 'Key [redacted]');
+  if (/403|suspended|permission denied|CONSUMER_SUSPENDED/i.test(m)) {
+    return 'Story writing is unavailable right now (AI provider blocked). Try again later.';
+  }
+  if (/API[_ ]?KEY|UNAUTHENTICATED|401/i.test(m)) {
+    return 'Story writing is unavailable right now (missing or invalid AI key).';
+  }
+  // Keep short
+  return m.length > 180 ? m.slice(0, 177) + '…' : m;
+}
 
 function getApiKey(): string | null {
   const key =
@@ -129,11 +146,19 @@ export async function generateJourneyStory(
   }
 
   const apiKey = getApiKey();
+  const useOffline = (reason: string) => {
+    const offlinePages = req.scenarioId !== 'custom' ? offlineSeedPages(String(req.scenarioId)) : null;
+    if (!offlinePages) {
+      return { ok: false as const, error: reason };
+    }
+    const safety = applyJourneySafety(offlinePages);
+    if (!safety.ok) return { ok: false as const, error: reason, reasons: safety.reasons };
+    const draft = buildDraftShell(req, safety.pages, 'ready', []);
+    return { ok: true as const, draft };
+  };
+
   if (!apiKey) {
-    return {
-      ok: false,
-      error: 'Story writing is unavailable right now (missing AI key). Try again later.',
-    };
+    return useOffline('Story writing is unavailable right now (missing AI key). Try again later.');
   }
 
   const scenario = req.scenarioId !== 'custom' ? getScenario(req.scenarioId) : undefined;
@@ -183,8 +208,87 @@ export async function generateJourneyStory(
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Generation failed';
-    return { ok: false, error: message };
+    const sanitized = sanitizeModelError(message);
+    const offlineTry = useOffline(sanitized);
+    if (offlineTry.ok) return offlineTry;
+    return { ok: false, error: sanitized };
   }
+}
+
+
+/** Deterministic offline pages for seed scenarios when Gemini is unavailable. */
+export function offlineSeedPages(scenarioId: string): JourneyPage[] | null {
+  const packs: Record<string, { title: string; pages: string[] }> = {
+    dentist: {
+      title: 'R.O.T.I. Visits the Dentist',
+      pages: [
+        'A gentle chair adventure.',
+        'Today Tanty Spice and R.O.T.I. visit the dentist. The waiting room has soft chairs and a fish tank.',
+        'The room is bright. The chair leans back slowly. Tools may buzz softly like a tiny bee.',
+        'The dentist counts teeth and rinses with cool water. A comfort card is nearby.',
+        'All done! Friends feel proud. Smiles can rest and play again soon.',
+      ],
+    },
+    new_food: {
+      title: 'R.O.T.I. Tries Something New',
+      pages: [
+        'A tasting adventure.',
+        'R.O.T.I. sits with Tanty Spice at the table. A new island bite waits on a small plate.',
+        'It may smell warm or sweet. It may look crunchy or soft. Looking and smelling come first.',
+        'Friends can touch with a fork, take a tiny nibble, or save it for later. Choosing is okay.',
+        'R.O.T.I. feels proud for noticing. Trying new food can be a little adventure.',
+      ],
+    },
+    loud_fete: {
+      title: 'Steelpan Sam at the Loud Fête',
+      pages: [
+        'Music fills the street.',
+        'Steelpan Sam and Mango Moko walk toward the fête. Flags wave and feet step to the beat.',
+        'Drums boom. Steelpan rings bright. Crowds cheer. Sounds can feel big in the body.',
+        'Friends can step to a quieter corner, cover ears, or enjoy the music for a little while.',
+        'Sam feels glad for the rhythm and for knowing how to take a break. The fête can be fun in small pieces.',
+      ],
+    },
+    haircut: {
+      title: 'Tanty and the Haircut Day',
+      pages: [
+        'Cape day.',
+        'Tanty Spice helps with haircut day. The chair spins a little. A soft cape rests on shoulders.',
+        'Scissors may snip-snip. A spray bottle may mist cool water. The mirror shows a new look growing.',
+        'Friends can hold a comfort card and listen to calm words while hair gets trimmed.',
+        'All done. Hair feels light. Friends feel proud and ready to play.',
+      ],
+    },
+    airplane: {
+      title: "Mango Moko's Airplane Adventure",
+      pages: [
+        'Up in the clouds.',
+        'Mango Moko and Tanty Spice go to the airplane. Bags roll. Seats wait in neat rows.',
+        'The engine hums. Ears may feel pressured. The window shows clouds like cotton.',
+        'Seatbelts click. Friends can watch the sky, sip water, and rest while the plane flies.',
+        'Landing comes. Mango Moko feels proud for the journey. New places can start with a plane ride.',
+      ],
+    },
+    board_talks: {
+      title: 'My Board Talks for Me',
+      pages: [
+        'My voice on my board.',
+        'I bring my talk board when I play with friends. Tanty Spice smiles and listens.',
+        'I tap a phrase. Clear words come out. Friends hear what I mean.',
+        'My board is a real way to talk. Friends can wait and look at my words with care.',
+        'I feel proud. My board talks for me, and that is a strong island voice.',
+      ],
+    },
+  };
+  const pack = packs[scenarioId];
+  if (!pack) return null;
+  return JOURNEY_PAGE_ROLES.map((role, i) => ({
+    role,
+    title: role === 'title' ? pack.title : undefined,
+    text: pack.pages[i],
+    imageUrl: null,
+    coachingLineCount: 0,
+  }));
 }
 
 /** Exported for tests — deterministic dentist fixture pages. */
