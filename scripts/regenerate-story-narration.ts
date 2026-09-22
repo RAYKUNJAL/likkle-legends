@@ -12,6 +12,27 @@ import fs from 'fs';
 import path from 'path';
 import { synthesizeWarmNarration } from '../lib/story-narration';
 import { isWarmNarration } from '../lib/story-narration-policy';
+import { warmStoryVoiceId } from '../lib/story-narration-policy';
+
+function loadEnvProduction() {
+    const envPath = path.join(process.cwd(), '.env.production');
+    if (!fs.existsSync(envPath)) return;
+    for (const raw of fs.readFileSync(envPath, 'utf8').split(/\n/)) {
+        const line = raw.trim();
+        if (!line || line.startsWith('#')) continue;
+        const eq = line.indexOf('=');
+        if (eq <= 0) continue;
+        const key = line.slice(0, eq).trim();
+        let val = line.slice(eq + 1).trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+            val = val.slice(1, -1);
+        }
+        if (!(key in process.env) || !String(process.env[key] || '').trim()) {
+            process.env[key] = val;
+        }
+    }
+}
+loadEnvProduction();
 
 const root = process.cwd();
 const catalogPath = path.join(root, 'lib/data/live-library-stories.json');
@@ -44,6 +65,9 @@ async function main() {
         process.exit(1);
     }
 
+    const voiceId = warmStoryVoiceId();
+    console.log(`Using story voice id ${voiceId} (Tanty Spice)`);
+
     let provider: 'elevenlabs' | 'gemini' | null = null;
     for (const story of catalog) {
         const audioUrls: string[] = [];
@@ -63,7 +87,7 @@ async function main() {
             console.log(`Wrote ${audioUrls[audioUrls.length - 1]}`);
         }
         story.audio_urls = audioUrls;
-        story.narrated_by = `warm_island_narrator_${provider}`;
+        story.narrated_by = `warm_island_narrator_${provider}_tanty_spice`;
         fs.writeFileSync(catalogPath, JSON.stringify(catalog, null, 2) + '\n');
     }
 

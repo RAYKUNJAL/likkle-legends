@@ -20,7 +20,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { narrateWarmPage } from '@/app/actions/warm-narration';
-import { isWarmNarration, warmNarrationLabel } from '@/lib/story-narration-policy';
+import { isWarmNarration, warmNarrationLabel, estimateNarrationTimings, scaleNarrationTimingsToDuration } from '@/lib/story-narration-policy';
 
 interface StoryPage {
     pageNumber: number;
@@ -172,7 +172,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
         let resolved = pageAudio[pageIndex] || null;
         if (!resolved && pageData.audioUrl) {
-            resolved = { audioUrl: pageData.audioUrl, words: pageData.audioWords || [] };
+            resolved = { audioUrl: pageData.audioUrl, words: pageData.audioWords?.length ? pageData.audioWords : estimateNarrationTimings(text) };
         }
 
         if (!resolved) {
@@ -206,15 +206,28 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
         if (resolved?.audioUrl) {
             const audio = new Audio(resolved.audioUrl);
             audio.preload = 'auto';
-            const timings = resolved.words;
+            // Seed from saved/live word timings when present; otherwise estimate from text.
+            // Always rescale to the real clip duration so karaoke tracks speech.
+            let timings = (resolved.words && resolved.words.length)
+                ? resolved.words
+                : estimateNarrationTimings(text);
+            const timingsRef = { current: timings };
 
-            audio.ontimeupdate = () => {
-                if (playTokenRef.current !== token || !timings.length) return;
+            const syncHighlight = () => {
+                const list = timingsRef.current;
+                if (playTokenRef.current !== token || !list.length) return;
                 const t = audio.currentTime;
-                let idx = timings.findIndex(w => t >= w.start && t <= w.end);
-                if (idx === -1 && t > (timings[timings.length - 1]?.end || 0)) idx = timings.length - 1;
+                let idx = list.findIndex(w => t >= w.start && t <= w.end);
+                if (idx === -1 && t > (list[list.length - 1]?.end || 0)) idx = list.length - 1;
                 if (idx >= 0) setHighlightIndex(idx);
             };
+
+            audio.onloadedmetadata = () => {
+                if (playTokenRef.current !== token) return;
+                const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+                timingsRef.current = scaleNarrationTimingsToDuration(text, duration, timingsRef.current);
+            };
+            audio.ontimeupdate = syncHighlight;
             audio.onended = () => {
                 if (playTokenRef.current !== token) return;
                 handleNarrationEnd();
@@ -229,7 +242,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                 audioRef.current = null;
                 if (playTokenRef.current === token) {
                     setNarration('idle');
-                    setNarrationNote('Tap play again to hear the warm narrator.');
+                    setNarrationNote('Tap play again to hear Tanty Spice.');
                 }
                 return;
             }
@@ -420,6 +433,43 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                     draggable={false}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-sky-950/60 via-transparent to-transparent lg:hidden" />
+                                <AnimatePresence>
+                                    {(narration === 'playing' || narration === 'loading') && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 12, scale: 0.9 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                                            className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex items-center gap-2 rounded-full bg-black/55 backdrop-blur-md border border-amber-300/40 pl-1.5 pr-3 py-1.5 shadow-xl"
+                                            role="status"
+                                            aria-label="Tanty Spice is narrating"
+                                        >
+                                            <motion.span
+                                                className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-amber-300 shrink-0"
+                                                animate={{ scale: [1, 1.06, 1] }}
+                                                transition={{ repeat: Infinity, duration: 0.85 }}
+                                            >
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src="/images/tanty_spice_avatar.jpg" alt="" className="w-full h-full object-cover" draggable={false} />
+                                            </motion.span>
+                                            <div className="min-w-0">
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-amber-200 leading-none">Tanty Spice</p>
+                                                <p className="text-xs font-bold text-white leading-tight">
+                                                    {narration === 'loading' ? 'Getting ready…' : 'Reading aloud'}
+                                                </p>
+                                            </div>
+                                            <span className="flex gap-0.5 ml-1" aria-hidden>
+                                                {[0, 1, 2].map((i) => (
+                                                    <motion.span
+                                                        key={i}
+                                                        className="w-1 rounded-full bg-amber-300"
+                                                        animate={{ height: [4, 14, 4] }}
+                                                        transition={{ repeat: Infinity, duration: 0.55, delay: i * 0.12 }}
+                                                    />
+                                                ))}
+                                            </span>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
 
                             {/* Text */}
@@ -457,21 +507,51 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
                             <div className="flex flex-col items-center gap-1 min-w-0 max-w-[220px] sm:max-w-xs">
                                 <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-amber-200">
-                                    Warm island narrator
+                                    Tanty Spice narrator
                                 </span>
-                                <button
-                                    onClick={toggleNarration}
-                                    aria-label={narration === 'playing' ? 'Pause warm narration' : 'Play warm narration'}
-                                    className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-orange-500/40 active:scale-90 transition-all"
-                                >
-                                    {narration === 'loading' ? (
-                                        <Loader2 size={30} className="animate-spin" />
-                                    ) : narration === 'playing' ? (
-                                        <Pause size={30} />
-                                    ) : (
-                                        <Play size={30} className="ml-1" />
-                                    )}
-                                </button>
+                                <div className="relative flex items-center justify-center">
+                                    {/* Animated Tanty Spice narrator avatar while audio plays/loads */}
+                                    <motion.div
+                                        aria-hidden
+                                        className="absolute -left-14 sm:-left-16 w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-amber-300 shadow-lg bg-amber-100"
+                                        animate={
+                                            narration === 'playing'
+                                                ? { scale: [1, 1.08, 1], rotate: [0, -3, 3, 0] }
+                                                : narration === 'loading'
+                                                    ? { scale: [1, 1.04, 1], opacity: [0.7, 1, 0.7] }
+                                                    : { scale: 1, rotate: 0, opacity: 1 }
+                                        }
+                                        transition={
+                                            narration === 'playing' || narration === 'loading'
+                                                ? { repeat: Infinity, duration: narration === 'playing' ? 0.9 : 1.2, ease: 'easeInOut' }
+                                                : { duration: 0.2 }
+                                        }
+                                    >
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src="/images/tanty_spice_avatar.jpg"
+                                            alt=""
+                                            className="w-full h-full object-cover"
+                                            draggable={false}
+                                        />
+                                        {(narration === 'playing' || narration === 'loading') && (
+                                            <span className="absolute inset-0 rounded-full ring-2 ring-amber-400/70 animate-ping pointer-events-none" />
+                                        )}
+                                    </motion.div>
+                                    <button
+                                        onClick={toggleNarration}
+                                        aria-label={narration === 'playing' ? 'Pause Tanty Spice narration' : 'Play Tanty Spice narration'}
+                                        className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-orange-500/40 active:scale-90 transition-all"
+                                    >
+                                        {narration === 'loading' ? (
+                                            <Loader2 size={30} className="animate-spin" />
+                                        ) : narration === 'playing' ? (
+                                            <Pause size={30} />
+                                        ) : (
+                                            <Play size={30} className="ml-1" />
+                                        )}
+                                    </button>
+                                </div>
                                 <p className="text-[11px] sm:text-xs text-white/80 text-center leading-snug font-bold" role="status">
                                     {narrationNote}
                                 </p>
