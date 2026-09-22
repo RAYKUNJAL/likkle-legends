@@ -1,4 +1,5 @@
 import { Character, AdminCharacter, Quest, Track } from './types';
+import { getPlayableTracks } from '@/lib/song-catalog';
 
 export const BRAND_NAME = "Likkle Legends";
 export const TANTY_AVATAR = "/images/tanty_spice_avatar.jpg";
@@ -81,8 +82,9 @@ export const CHARACTERS: AdminCharacter[] = [
 ];
 
 // --- RADIO TRACKS ────────────────────────────────────────────────────────────
-// Add more Suno tracks: paste the share URL in chat and get the cdn1.suno.ai link.
-// Add more local MP3s: drop file in public/audio/ and use '/audio/filename.mp3'.
+// Only first-party files that still exist under /public. Dead Suno/GCS URLs
+// stay in lib/song-catalog.ts as inventory — never listed as playable.
+// Drop new masters in public/audio/ then add them to OWNED_PLAYABLE_SONGS.
 // ─────────────────────────────────────────────────────────────────────────────
 export const RADIO_CHANNELS = [
     { id: 'roti',          label: 'R.O.T.I Learning Lab', icon: '🤖' },
@@ -90,24 +92,7 @@ export const RADIO_CHANNELS = [
     { id: 'dilly_doubles', label: 'Dilly Vibes',          icon: '🎵' },
     { id: 'steelpan_sam',  label: 'Steelpan Sam Stage',   icon: '🥁' },
 ];
-export const RADIO_TRACKS: Track[] = [
-    // R.O.T.I Learning Lab
-    { id: 'track-roti-1', title: 'Island Alphabet',       artist: 'R.O.T.I',       url: 'https://cdn1.suno.ai/614d60d0-dce6-4fdf-8c65-4f6efdec40a3.mp3', channel: 'roti' },
-    { id: 'track-roti-2', title: 'Island Counting',       artist: 'R.O.T.I',       url: 'https://cdn1.suno.ai/d85cfbfe-41ac-4694-9000-54b8ab87f460.mp3', channel: 'roti' },
-    { id: 'track-roti-3', title: 'Likkle Legends Jingle', artist: 'R.O.T.I',       url: 'https://cdn1.suno.ai/b792349c-09ad-4d94-8e96-ef4077b39209.mp3', channel: 'roti' },
-
-    // Tanty Spice Show
-    { id: 'track-tanty-1', title: 'Coco Water',           artist: 'Tanty Spice',   url: 'https://cdn1.suno.ai/ed6d7539-ed37-4f21-a06c-73142ea2129d.mp3', channel: 'tanty_spice' },
-    { id: 'track-tanty-2', title: 'Sorell Drink',         artist: 'Tanty Spice',   url: 'https://cdn1.suno.ai/3f649c16-75ff-43de-99d6-17e4534d716b.mp3', channel: 'tanty_spice' },
-
-    // Dilly Vibes
-    { id: 'track-dilly-1', title: 'Angry Rooster',        artist: 'Dilly Doubles', url: 'https://cdn1.suno.ai/c5e7a4d5-3154-4a42-9106-e33f446b9b4b.mp3', channel: 'dilly_doubles' },
-    { id: 'track-dilly-2', title: 'Island Monkeys',       artist: 'Dilly Doubles', url: 'https://cdn1.suno.ai/6d2d490e-2cd6-4593-898d-ee6c82d7b4b8.mp3', channel: 'dilly_doubles' },
-
-    // Steelpan Sam Stage
-    { id: 'track-sam-1', title: 'Island Parrots',         artist: 'Steelpan Sam',  url: 'https://cdn1.suno.ai/ee0e94a6-d116-4116-992e-7ecb8fd76109.mp3', channel: 'steelpan_sam' },
-    { id: 'track-sam-2', title: 'Iguana Song',            artist: 'Steelpan Sam',  url: 'https://cdn1.suno.ai/0303769f-299a-40dd-bc6a-890c405dbb07.mp3', channel: 'steelpan_sam' },
-];
+export const RADIO_TRACKS: Track[] = getPlayableTracks();
 export const QUESTS: Quest[] = [
     {
         id: 'q1',

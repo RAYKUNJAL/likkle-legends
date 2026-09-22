@@ -3,9 +3,13 @@
  * All subscription changes must be committed to PayPal BEFORE updating local DB
  */
 
-const PAYPAL_API = process.env.NODE_ENV === "production"
-    ? "https://api-m.paypal.com"
-    : "https://api-m.sandbox.paypal.com";
+export function getPayPalApiBase() {
+    return process.env.PAYPAL_ENV === "sandbox" || process.env.NODE_ENV !== "production"
+        ? "https://api-m.sandbox.paypal.com"
+        : "https://api-m.paypal.com";
+}
+
+const PAYPAL_API = getPayPalApiBase();
 
 /**
  * Get PayPal OAuth access token
