@@ -47,6 +47,7 @@ const TRADITION_TO_CATEGORY: Record<string, string> = {
     river_mumma: 'Animals',
     chickcharney: 'Island History',
     island_adventure: 'Adventure',
+    journey_stories: 'Journey Stories',
 };
 
 const SLUG_TO_CATEGORY: Record<string, string> = {
@@ -266,6 +267,7 @@ export function toReaderStory(story: any) {
 }
 
 export async function fetchKidsLibraryStories(): Promise<KidsLibraryStory[]> {
+    const { mergeJourneyIntoKidsLibrary } = await import('@/lib/island-helpers/journey-stories/library-merge');
     try {
         const response = await Promise.race([
             fetch('/api/library/stories', { cache: 'no-store' }),
@@ -277,17 +279,25 @@ export async function fetchKidsLibraryStories(): Promise<KidsLibraryStory[]> {
             const data = await response.json();
             const rows = Array.isArray(data?.stories) ? data.stories : [];
             const kids = rows.map(toKidsLibraryStory).filter(Boolean) as KidsLibraryStory[];
-            if (kids.length > 0) return kids;
+            if (kids.length > 0) {
+                return typeof window !== 'undefined' ? mergeJourneyIntoKidsLibrary(kids) : kids;
+            }
         } else {
             console.warn(`Library stories request failed (${response.status}); using local illustrated catalog.`);
         }
     } catch (err) {
         console.warn('Live library API unavailable; using local illustrated catalog.', err);
     }
-    return parentOfficialStories();
+    const fallback = parentOfficialStories();
+    return typeof window !== 'undefined' ? mergeJourneyIntoKidsLibrary(fallback) : fallback;
 }
 
 export async function fetchKidsLibraryStory(idOrSlug: string): Promise<KidsLibraryStory | null> {
+    if (typeof window !== 'undefined') {
+        const { findPublishedJourneyStory } = await import('@/lib/island-helpers/journey-stories/library-merge');
+        const journey = findPublishedJourneyStory(idOrSlug);
+        if (journey) return journey;
+    }
     if (!idOrSlug) return null;
 
     try {
