@@ -17,7 +17,7 @@ type Props = {
 
 export function Soundboard({ initialCharacter = 'tanty_spice', displayModeOverride }: Props) {
   const [characterId, setCharacterId] = useState<IslandHelpersCharacterId>(initialCharacter);
-  const [cards, setCards] = useState<PhraseCard[]>([]);
+  const [cards, setCards] = useState<PhraseCard[]>(() => listByCharacter(initialCharacter));
   const [displayMode, setDisplayMode] = useState<DisplayMode>('text_images');
 
   const refresh = () => {

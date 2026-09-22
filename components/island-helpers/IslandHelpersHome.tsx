@@ -30,7 +30,7 @@ export function IslandHelpersHome() {
             <h1 className="text-2xl font-black text-blue-950">{IH_PRODUCT_NAME}</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/library" className="hidden sm:inline-flex items-center gap-1 rounded-2xl bg-blue-50 px-3 py-2 text-sm font-black text-blue-900">
+            <Link href="/portal/stories" className="hidden sm:inline-flex items-center gap-1 rounded-2xl bg-blue-50 px-3 py-2 text-sm font-black text-blue-900">
               <BookOpen size={16} /> Library
             </Link>
             <JourneyToolsDrawer parentControls />
@@ -44,7 +44,7 @@ export function IslandHelpersHome() {
           <p className="text-lg font-bold text-blue-800/80 leading-snug">{IH_HOME_SUBTITLE}</p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
-              href="/library"
+              href="/portal/stories"
               className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-400 px-5 py-3 text-white font-black shadow-md"
             >
               <BookOpen size={18} /> {IH_OPEN_IN_BOOK}
