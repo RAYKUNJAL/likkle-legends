@@ -9,18 +9,8 @@
  */
 
 import { supabaseAdmin } from '@/lib/supabase-client';
-
-const ELEVENLABS_API = 'https://api.elevenlabs.io/v1';
-
-// Tanty Spice voice — warm Caribbean grandmother
-// Using a voice that sounds warm and grandmotherly
-const TANTY_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS'; // fallback default
-const TANTY_VOICE_SETTINGS = {
-    stability: 0.75,
-    similarity_boost: 0.75,
-    style: 0.3, // slightly more expressive for storytelling
-    use_speaker_boost: true,
-};
+import { isWarmNarration } from '@/lib/story-narration-policy';
+import { synthesizeWarmNarration } from '@/lib/story-narration';
 
 export interface NarrationResult {
     bookId: string;
@@ -34,9 +24,9 @@ export interface NarrationResult {
  * Returns array of Supabase storage URLs for each page's audio.
  */
 export async function narrateBook(bookId: string): Promise<NarrationResult> {
-    const apiKey = process.env.ELEVENLABS_API_KEY;
+    const apiKey = process.env.ELEVENLABS_API_KEY || process.env.GEMINI_API_KEY;
     if (!apiKey) {
-        return { bookId, audioUrls: [], success: false, error: 'ELEVENLABS_API_KEY not set' };
+        return { bookId, audioUrls: [], success: false, error: 'ELEVENLABS_API_KEY or GEMINI_API_KEY not set' };
     }
 
     // Fetch the book
@@ -65,44 +55,25 @@ export async function narrateBook(bookId: string): Promise<NarrationResult> {
             continue;
         }
 
-        // Prepend Tanty's intro for page 1
-        const narrationText = i === 0
-            ? `Hello there! Tanty Spice here. I have a wonderful story for you. It's called ${book.title}. ${text}`
-            : text;
-
         try {
-            console.log(`[TantyNarrator] Generating audio for page ${i + 1}/${pages.length} of "${book.title}"`);
-
-            const res = await fetch(`${ELEVENLABS_API}/text-to-speech/${TANTY_VOICE_ID}`, {
-                method: 'POST',
-                headers: {
-                    'xi-api-key': apiKey,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    text: narrationText,
-                    model_id: 'eleven_multilingual_v2',
-                    voice_settings: TANTY_VOICE_SETTINGS,
-                }),
-            });
-
-            if (!res.ok) {
-                const errBody = await res.text();
-                console.error(`[TantyNarrator] ElevenLabs error page ${i + 1}:`, res.status, errBody.substring(0, 200));
+            console.log(`[TantyNarrator] Warm narration for page ${i + 1}/${pages.length} of "${book.title}"`);
+            const spoken = await synthesizeWarmNarration(text);
+            if (!spoken.ok) {
+                console.error(`[TantyNarrator] Page ${i + 1}:`, spoken.error);
                 audioUrls.push('');
                 continue;
             }
 
-            // Get audio as blob
-            const audioBuffer = await res.arrayBuffer();
+            const audioBuffer = spoken.audio;
+            const extension = spoken.contentType === 'audio/wav' ? 'wav' : 'mp3';
 
             // Upload to Supabase Storage
-            const path = `story-audio/${book.slug}/page-${String(i + 1).padStart(2, '0')}.mp3`;
+            const path = `story-audio/${book.slug}/page-${String(i + 1).padStart(2, '0')}.${extension}`;
             const { data: uploadData, error: uploadError } = await supabaseAdmin
                 .storage
                 .from('story-narrations')
                 .upload(path, audioBuffer, {
-                    contentType: 'audio/mpeg',
+                    contentType: spoken.contentType,
                     upsert: true,
                 });
 
@@ -111,7 +82,7 @@ export async function narrateBook(bookId: string): Promise<NarrationResult> {
                 if (uploadError.message.includes('not found') || uploadError.message.includes('Bucket')) {
                     await supabaseAdmin.storage.createBucket('story-narrations', { public: true });
                     const retry = await supabaseAdmin.storage.from('story-narrations').upload(path, audioBuffer, {
-                        contentType: 'audio/mpeg',
+                        contentType: spoken.contentType,
                         upsert: true,
                     });
                     if (retry.error) {
@@ -143,7 +114,8 @@ export async function narrateBook(bookId: string): Promise<NarrationResult> {
     }
 
     // Save audio URLs back to book metadata
-    const updatedContent = { ...content, audio_urls: audioUrls, narrated_by: 'tanty_spice_elevenlabs' };
+    const provider = audioUrls.some(Boolean) ? 'warm_island_narrator' : content.narrated_by;
+    const updatedContent = { ...content, audio_urls: audioUrls, narrated_by: provider };
     await supabaseAdmin.from('stories_library')
         .update({ content: updatedContent })
         .eq('id', bookId);
@@ -168,8 +140,8 @@ export async function narrateAllBooks(): Promise<NarrationResult[]> {
     const results: NarrationResult[] = [];
     for (const book of books) {
         const content = typeof book.content === 'string' ? JSON.parse(book.content) : book.content;
-        if (content.audio_urls && Array.isArray(content.audio_urls) && content.audio_urls.some((u: string) => u)) {
-            console.log(`[TantyNarrator] Skipping "${book.title}" — already narrated`);
+        if (isWarmNarration(content.narrated_by) && content.audio_urls && Array.isArray(content.audio_urls) && content.audio_urls.some((u: string) => u)) {
+            console.log(`[TantyNarrator] Skipping "${book.title}" — warm narration already saved`);
             results.push({ bookId: book.id, audioUrls: content.audio_urls, success: true });
             continue;
         }

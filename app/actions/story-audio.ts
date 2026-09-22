@@ -2,135 +2,88 @@
 
 import { BUCKETS } from "@/lib/storage";
 import { supabaseAdmin } from "@/lib/supabase-client";
-import { GoogleVoiceCharacter, synthesizeCharacterSpeech } from "@/lib/google-cloud-tts";
-
-type StoryAudioVoice = GoogleVoiceCharacter;
-
-interface StoryPageAudioWord {
-    text: string;
-    start: number;
-    end: number;
-}
+import { estimateNarrationTimings } from "@/lib/story-narration-policy";
+import { synthesizeWarmNarration } from "@/lib/story-narration";
 
 interface EnsureStoryPageAudioInput {
     storyId: string;
     pageIndex: number;
     text: string;
-    voice: StoryAudioVoice;
-}
-
-function estimateWordTimings(text: string): StoryPageAudioWord[] {
-    const words = text.split(/\s+/).filter(Boolean);
-    let currentTime = 0;
-
-    return words.map((word) => {
-        const duration = Math.max(0.12, (word.length / 10) + 0.08);
-        const start = currentTime;
-        const end = currentTime + duration;
-        currentTime = end;
-
-        return { text: word, start, end };
-    });
-}
-
-function sanitizeNarrationText(text: string) {
-    return text.replace(/\s+/g, " ").trim().slice(0, 2000);
 }
 
 export async function ensureStoryPageAudio(input: EnsureStoryPageAudioInput): Promise<{
     success: boolean;
     audioUrl?: string;
-    words?: StoryPageAudioWord[];
+    words?: { text: string; start: number; end: number }[];
+    provider?: 'elevenlabs' | 'gemini';
     fromCache?: boolean;
+    code?: 'missing_key' | 'generation_failed';
     error?: string;
 }> {
-    const cleanText = sanitizeNarrationText(input.text);
-
-    if (!input.storyId || !cleanText) {
-        return { success: false, error: "Missing story audio input" };
+    const cleanText = input.text.replace(/\s+/g, " ").trim().slice(0, 1800);
+    if (!cleanText) {
+        return { success: false, code: 'generation_failed', error: "Missing story audio input" };
     }
 
-    const { data: storybook, error: storyError } = await supabaseAdmin
-        .from("storybooks")
-        .select("id, content_json")
-        .eq("id", input.storyId)
-        .single();
-
-    if (storyError || !storybook) {
-        return { success: false, error: "Story not found" };
+    const spoken = await synthesizeWarmNarration(cleanText);
+    if (!spoken.ok) {
+        return { success: false, code: spoken.code, error: spoken.error };
     }
 
-    const contentJson = (storybook.content_json && typeof storybook.content_json === "object")
-        ? storybook.content_json as Record<string, any>
-        : {};
-    const pages = Array.isArray(contentJson.pages) ? [...contentJson.pages] : [];
-    const page = (pages[input.pageIndex] && typeof pages[input.pageIndex] === "object")
-        ? { ...pages[input.pageIndex] }
-        : {};
+    const words = estimateNarrationTimings(cleanText);
+    const dataUrl = `data:${spoken.contentType};base64,${spoken.audio.toString('base64')}`;
 
-    const existingAudioUrl = page.audioUrl || page.audio_url;
-    const existingAudioWords = page.audioWords || page.audio_words;
-    const existingAudioCharacter = page.audioCharacter || page.audio_character;
+    if (input.storyId) {
+        try {
+            const { data: storybook } = await supabaseAdmin
+                .from("storybooks")
+                .select("id, content_json")
+                .eq("id", input.storyId)
+                .maybeSingle();
 
-    if (existingAudioUrl && (!existingAudioCharacter || existingAudioCharacter === input.voice)) {
-        return {
-            success: true,
-            audioUrl: existingAudioUrl,
-            words: Array.isArray(existingAudioWords) ? existingAudioWords : estimateWordTimings(cleanText),
-            fromCache: true,
-        };
+            if (storybook) {
+                const contentJson = (storybook.content_json && typeof storybook.content_json === "object")
+                    ? storybook.content_json as Record<string, any>
+                    : {};
+                const pages = Array.isArray(contentJson.pages) ? [...contentJson.pages] : [];
+                const page = (pages[input.pageIndex] && typeof pages[input.pageIndex] === "object")
+                    ? { ...pages[input.pageIndex] }
+                    : {};
+                const storagePath = `audio/${input.storyId}/page-${input.pageIndex + 1}-warm-narrator.${spoken.contentType === 'audio/wav' ? 'wav' : 'mp3'}`;
+                const upload = await supabaseAdmin.storage
+                    .from(BUCKETS.STORYBOOKS)
+                    .upload(storagePath, spoken.audio, {
+                        contentType: spoken.contentType,
+                        upsert: true,
+                    });
+                const publicUrl = upload.error
+                    ? dataUrl
+                    : supabaseAdmin.storage.from(BUCKETS.STORYBOOKS).getPublicUrl(storagePath).data.publicUrl;
+                pages[input.pageIndex] = {
+                    ...page,
+                    audioUrl: publicUrl,
+                    audio_url: publicUrl,
+                    audioWords: words,
+                    audio_words: words,
+                    audio_character: `warm_island_narrator_${spoken.provider}`,
+                    narrated_by: `warm_island_narrator_${spoken.provider}`,
+                };
+                await supabaseAdmin
+                    .from("storybooks")
+                    .update({
+                        content_json: {
+                            ...contentJson,
+                            narrated_by: `warm_island_narrator_${spoken.provider}`,
+                            pages,
+                        },
+                    })
+                    .eq("id", input.storyId);
+                return { success: true, audioUrl: publicUrl, words, provider: spoken.provider, fromCache: false };
+            }
+        } catch (error) {
+            console.warn("[story-audio] Cache skipped", error);
+        }
     }
 
-    const base64Audio = await synthesizeCharacterSpeech(cleanText, input.voice);
-    if (!base64Audio) {
-        return { success: false, error: "Failed to generate story narration" };
-    }
-
-    const buffer = Buffer.from(base64Audio, "base64");
-    const storagePath = `audio/${input.storyId}/page-${input.pageIndex + 1}-${input.voice}.mp3`;
-    const { error: uploadError } = await supabaseAdmin.storage
-        .from(BUCKETS.STORYBOOKS)
-        .upload(storagePath, buffer, {
-            contentType: "audio/mpeg",
-            upsert: true,
-        });
-
-    if (uploadError) {
-        console.error("[story-audio] Upload error:", uploadError);
-        return { success: false, error: "Failed to store story narration" };
-    }
-
-    const publicUrl = supabaseAdmin.storage.from(BUCKETS.STORYBOOKS).getPublicUrl(storagePath).data.publicUrl;
-    const words = estimateWordTimings(cleanText);
-
-    pages[input.pageIndex] = {
-        ...page,
-        audioUrl: publicUrl,
-        audio_url: publicUrl,
-        audioWords: words,
-        audio_words: words,
-        audioCharacter: input.voice,
-        audio_character: input.voice,
-    };
-
-    const { error: updateError } = await supabaseAdmin
-        .from("storybooks")
-        .update({
-            content_json: {
-                ...contentJson,
-                pages,
-            },
-        })
-        .eq("id", input.storyId);
-
-    if (updateError) {
-        console.error("[story-audio] Storybook update error:", updateError);
-    }
-
-    return {
-        success: true,
-        audioUrl: publicUrl,
-        words,
-        fromCache: false,
-    };
+    return { success: true, audioUrl: dataUrl, words, provider: spoken.provider, fromCache: false };
 }

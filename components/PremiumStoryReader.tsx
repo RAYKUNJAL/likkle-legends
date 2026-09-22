@@ -5,8 +5,8 @@
  *
  * Design rules:
  * 1. Page turns NEVER depend on audio. Buttons, swipe, and arrow keys always work.
- * 2. Audio is a 3-tier chain: cached page audio -> server TTS (Google/Gemini) -> browser speechSynthesis.
- *    The last tier always exists, so "Read to Me" can never hard-fail.
+ * 2. Audio is the warm island narrator only: a saved warm file, else ElevenLabs, else Gemini TTS.
+ *    If no voice key is set, playback fail-closes. Browser speech synthesis is not used.
  * 3. Auto-turn only happens when narration actually finishes (audio.onended / utterance.onend).
  *    No blind timers.
  * 4. All audio lifecycle lives in refs — React re-renders can never kill playback.
@@ -19,8 +19,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { ensureStoryPageAudio } from '@/app/actions/story-audio';
-import { useUser } from '@/components/UserContext';
+import { narrateWarmPage } from '@/app/actions/warm-narration';
+import { isWarmNarration, warmNarrationLabel } from '@/lib/story-narration-policy';
 
 interface StoryPage {
     pageNumber: number;
@@ -46,6 +46,8 @@ interface Story {
         glossary: { word: string; meaning: string }[];
     };
     reading_time_minutes: number;
+    slug?: string;
+    narrated_by?: string | null;
 }
 
 interface PremiumStoryReaderProps {
@@ -73,7 +75,13 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
     const pages = useMemo(() => story.content_json?.pages || [], [story]);
     const [currentPage, setCurrentPage] = useState(0);
     const [narration, setNarration] = useState<NarrationState>('idle');
-    const [readAloud, setReadAloud] = useState(true);
+    const hasWarmFiles = pages.some((page) => Boolean(page.audioUrl));
+    const [readAloud, setReadAloud] = useState(hasWarmFiles);
+    const [narrationNote, setNarrationNote] = useState(
+        isWarmNarration(story.narrated_by)
+            ? warmNarrationLabel(story.narrated_by?.includes('gemini') ? 'gemini' : story.narrated_by?.includes('elevenlabs') ? 'elevenlabs' : null)
+            : 'Warm island narrator'
+    );
     const [autoTurn, setAutoTurn] = useState(true);
     const [highlightIndex, setHighlightIndex] = useState<number | null>(null);
     const [showCompletion, setShowCompletion] = useState(false);
@@ -81,11 +89,11 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
     // ---- refs: audio lifecycle lives OUTSIDE the render cycle ----
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
     const playTokenRef = useRef(0);          // increments to invalidate stale async playback
+    const voiceBlockedRef = useRef(false);
     const currentPageRef = useRef(0);
     const autoTurnRef = useRef(true);
-    const readAloudRef = useRef(true);
+    const readAloudRef = useRef(hasWarmFiles);
     const completedRef = useRef(false);
 
     useEffect(() => { currentPageRef.current = currentPage; }, [currentPage]);
@@ -100,10 +108,6 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             audioRef.current.pause();
             audioRef.current = null;
         }
-        if (typeof window !== 'undefined' && window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-        }
-        utteranceRef.current = null;
         setHighlightIndex(null);
         setNarration('idle');
     }, []);
@@ -148,77 +152,56 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
         }
     }, [goToPage]);
 
-    /** Tier 3: browser speech synthesis — always available, free. */
-    const speakWithBrowser = useCallback((text: string, token: number) => {
-        if (typeof window === 'undefined' || !window.speechSynthesis) {
-            setNarration('idle');
-            return;
-        }
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 0.88;
-        utterance.pitch = 1.05;
-        const voices = window.speechSynthesis.getVoices();
-        const preferred = voices.find(v => /en-(GB|029|TT|JM)/i.test(v.lang) && /female|natural/i.test(v.name))
-            || voices.find(v => /^en/i.test(v.lang));
-        if (preferred) utterance.voice = preferred;
-
-        const words = text.split(/\s+/).filter(Boolean);
-        utterance.onboundary = (event) => {
-            if (playTokenRef.current !== token) return;
-            if (event.name === 'word' && typeof event.charIndex === 'number') {
-                const spoken = text.slice(0, event.charIndex).split(/\s+/).filter(Boolean).length;
-                setHighlightIndex(Math.min(spoken, words.length - 1));
-            }
-        };
-        utterance.onend = () => {
-            if (playTokenRef.current !== token) return;
-            handleNarrationEnd();
-        };
-        utterance.onerror = () => {
-            if (playTokenRef.current !== token) return;
-            setNarration('idle');
-            setHighlightIndex(null);
-        };
-        utteranceRef.current = utterance;
-        setNarration('playing');
-        window.speechSynthesis.speak(utterance);
-    }, [handleNarrationEnd]);
-
-    /** Tier 1+2: cached/server audio, falling back to browser TTS. */
+    /** Warm narrator only. Saved warm files play immediately; otherwise the server generates. */
     const playNarration = useCallback(async () => {
         const pageIndex = currentPageRef.current;
         const pageData = pages[pageIndex];
         const text = (pageData?.text || '').trim();
         if (!text) return;
 
+        if (voiceBlockedRef.current) {
+            setNarration('idle');
+            setNarrationNote('Warm narrator needs a voice key. Read this page together.');
+            return;
+        }
+
         stopNarration();
         const token = ++playTokenRef.current;
         setNarration('loading');
+        setNarrationNote('Warm island narrator');
 
-        // Tier 1: already-resolved audio for this page
         let resolved = pageAudio[pageIndex] || null;
-        if (!resolved && (pageData.audioUrl)) {
+        if (!resolved && pageData.audioUrl) {
             resolved = { audioUrl: pageData.audioUrl, words: pageData.audioWords || [] };
         }
 
-        // Tier 2: ask the server to generate/fetch narration (5s budget)
         if (!resolved) {
             try {
-                const result = await Promise.race([
-                    ensureStoryPageAudio({ storyId: story.id, pageIndex, text, voice: 'tanty' }),
-                    new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
-                ]);
-                if (result && (result as any).success && (result as any).audioUrl) {
-                    resolved = { audioUrl: (result as any).audioUrl, words: (result as any).words || [] };
+                const result = await narrateWarmPage({ text });
+                if (playTokenRef.current !== token) return;
+                if (result.success && result.audioUrl) {
+                    resolved = { audioUrl: result.audioUrl, words: result.words || [] };
                     setPageAudio(prev => ({ ...prev, [pageIndex]: resolved! }));
+                    setNarrationNote(warmNarrationLabel(result.provider));
+                } else if (result.code === 'missing_key') {
+                    voiceBlockedRef.current = true;
+                    setNarration('idle');
+                    setNarrationNote(result.error || 'Warm narrator needs a voice key.');
+                    return;
+                } else {
+                    setNarration('idle');
+                    setNarrationNote(result.error || 'Narration did not start.');
+                    return;
                 }
             } catch {
-                resolved = null;
+                if (playTokenRef.current !== token) return;
+                setNarration('idle');
+                setNarrationNote('Narration did not start. You can still read this page.');
+                return;
             }
         }
 
-        if (playTokenRef.current !== token) return; // user moved on while we were loading
+        if (playTokenRef.current !== token) return;
 
         if (resolved?.audioUrl) {
             const audio = new Audio(resolved.audioUrl);
@@ -243,32 +226,30 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                 if (playTokenRef.current === token) setNarration('playing');
                 return;
             } catch {
-                // Autoplay blocked or bad URL — fall through to browser TTS
                 audioRef.current = null;
+                if (playTokenRef.current === token) {
+                    setNarration('idle');
+                    setNarrationNote('Tap play again to hear the warm narrator.');
+                }
+                return;
             }
         }
 
-        // Tier 3: browser speech synthesis (never fails silently)
         if (playTokenRef.current === token) {
-            speakWithBrowser(text, token);
+            setNarration('idle');
+            setNarrationNote('Narration did not start. You can still read this page.');
         }
-    }, [pages, pageAudio, story.id, stopNarration, speakWithBrowser, handleNarrationEnd]);
+    }, [pages, pageAudio, stopNarration, handleNarrationEnd]);
 
     const toggleNarration = useCallback(() => {
         if (narration === 'playing') {
             if (audioRef.current) {
                 audioRef.current.pause();
                 setNarration('paused');
-            } else if (typeof window !== 'undefined' && window.speechSynthesis?.speaking) {
-                window.speechSynthesis.pause();
-                setNarration('paused');
             }
         } else if (narration === 'paused') {
             if (audioRef.current) {
                 void audioRef.current.play();
-                setNarration('playing');
-            } else if (typeof window !== 'undefined' && window.speechSynthesis?.paused) {
-                window.speechSynthesis.resume();
                 setNarration('playing');
             }
         } else if (narration === 'idle') {
@@ -313,7 +294,6 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
     useEffect(() => () => {
         playTokenRef.current += 1;
         if (audioRef.current) audioRef.current.pause();
-        if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
     }, []);
 
     const pageData = pages[currentPage] || { text: '', pageNumber: 1 };
@@ -475,19 +455,27 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                 <ChevronLeft size={24} /> <span className="hidden sm:inline">Back</span>
                             </button>
 
-                            <button
-                                onClick={toggleNarration}
-                                aria-label={narration === 'playing' ? 'Pause narration' : 'Play narration'}
-                                className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-orange-500/40 active:scale-90 transition-all"
-                            >
-                                {narration === 'loading' ? (
-                                    <Loader2 size={30} className="animate-spin" />
-                                ) : narration === 'playing' ? (
-                                    <Pause size={30} />
-                                ) : (
-                                    <Play size={30} className="ml-1" />
-                                )}
-                            </button>
+                            <div className="flex flex-col items-center gap-1 min-w-0 max-w-[220px] sm:max-w-xs">
+                                <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-amber-200">
+                                    Warm island narrator
+                                </span>
+                                <button
+                                    onClick={toggleNarration}
+                                    aria-label={narration === 'playing' ? 'Pause warm narration' : 'Play warm narration'}
+                                    className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-orange-500/40 active:scale-90 transition-all"
+                                >
+                                    {narration === 'loading' ? (
+                                        <Loader2 size={30} className="animate-spin" />
+                                    ) : narration === 'playing' ? (
+                                        <Pause size={30} />
+                                    ) : (
+                                        <Play size={30} className="ml-1" />
+                                    )}
+                                </button>
+                                <p className="text-[11px] sm:text-xs text-white/80 text-center leading-snug font-bold" role="status">
+                                    {narrationNote}
+                                </p>
+                            </div>
 
                             <button
                                 onClick={nextPage}

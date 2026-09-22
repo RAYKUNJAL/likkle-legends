@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { BookOpen, Volume2, Loader2, MapPin, Clock, Star } from 'lucide-react';
-import { useUser } from '@/components/UserContext';
+import { narrateWarmPage } from '@/app/actions/warm-narration';
+import { isWarmNarration, readerPageAudioUrl, warmNarrationLabel } from '@/lib/story-narration-policy';
 
 interface LibraryBookPage {
     text: string;
@@ -23,7 +24,8 @@ interface LibraryBook {
     character: string;
     xp_reward: number;
     estimated_reading_time_minutes: number;
-    content?: { pages?: LibraryBookPage[]; audio_urls?: string[] };
+    content?: { pages?: LibraryBookPage[]; audio_urls?: string[]; narrated_by?: string | null };
+    narrated_by?: string | null;
 }
 
 const TRADITION_LABELS: Record<string, string> = {
@@ -104,12 +106,13 @@ function estimateWordTimings(words: string[], duration: number): WordTiming[] {
 }
 
 export default function IslandStoriesPage() {
-    const { user, activeChild } = useUser();
     const [books, setBooks] = useState<LibraryBook[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedBook, setSelectedBook] = useState<LibraryBook | null>(null);
     const [currentPage, setCurrentPage] = useState(0);
     const [playing, setPlaying] = useState(false);
+    const [narrationNote, setNarrationNote] = useState('Warm island narrator');
+    const voiceBlockedRef = useRef(false);
     const [highlightedWord, setHighlightedWord] = useState(-1);
 
     // Refs for audio + word tracking (avoid stale closures in event handlers)
@@ -129,9 +132,6 @@ export default function IslandStoriesPage() {
                 audioRef.current.pause();
                 audioRef.current.src = '';
                 audioRef.current = null;
-            }
-            if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
             }
         };
     }, []);
@@ -179,10 +179,6 @@ export default function IslandStoriesPage() {
         highlightedRef.current = -1;
         setHighlightedWord(-1);
         setPlaying(false);
-        // Stop browser TTS fallback too
-        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-        }
     }, []);
 
     // Auto-scroll the highlighted word into view (works on touch + desktop)
@@ -257,16 +253,23 @@ export default function IslandStoriesPage() {
             });
 
             setPlaying(true);
-        } else {
-            // Fallback: browser TTS (no word highlighting available)
-            if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance(pageText);
-                utterance.rate = 0.9;
-                utterance.onend = () => setPlaying(false);
-                utterance.onerror = () => setPlaying(false);
-                window.speechSynthesis.speak(utterance);
-                setPlaying(true);
-            }
+        } else if (pageText && !voiceBlockedRef.current) {
+            setNarrationNote('Warm island narrator');
+            void narrateWarmPage({ text: pageText }).then((result) => {
+                if (result.success && result.audioUrl) {
+                    setNarrationNote(warmNarrationLabel(result.provider));
+                    playPageAudio(pageText, result.audioUrl);
+                    return;
+                }
+                if (result.code === 'missing_key') voiceBlockedRef.current = true;
+                setPlaying(false);
+                setNarrationNote(result.error || 'Warm narrator needs a voice key. Read this page together.');
+            }).catch(() => {
+                setPlaying(false);
+                setNarrationNote('Narration did not start. You can still read this page.');
+            });
+        } else if (voiceBlockedRef.current) {
+            setNarrationNote('Warm narrator needs a voice key. Read this page together.');
         }
     };
 
@@ -284,7 +287,13 @@ export default function IslandStoriesPage() {
         const pages = content?.pages || [];
         const audioUrls = content?.audio_urls || [];
         const page = pages[currentPage];
-        const currentAudioUrl = normalizeAudioUrl(audioUrls[currentPage]);
+        const narratedBy = content?.narrated_by || selectedBook.narrated_by;
+        const currentAudioUrl = normalizeAudioUrl(readerPageAudioUrl({
+            narratedBy,
+            catalogAudioUrl: audioUrls[currentPage],
+            pageAudioUrl: (page as any)?.audio_url || (page as any)?.audioUrl,
+            pageNarratedBy: (page as any)?.audio_character,
+        }));
         const hasAudio = !!currentAudioUrl;
         const words = page ? splitWords(page.text) : [];
 
@@ -343,7 +352,7 @@ export default function IslandStoriesPage() {
 
                         {/* Story text — word-by-word with karaoke highlighting */}
                         <p className="text-lg md:text-xl text-deep leading-relaxed font-bold text-center">
-                            {hasAudio && words.length > 0 ? (
+                            {(hasAudio || playing) && words.length > 0 ? (
                                 words.map((word, i) => (
                                     <span key={i}>
                                         <span
@@ -361,15 +370,17 @@ export default function IslandStoriesPage() {
                         </p>
 
                         {/* Audio button — shows "Hear Tanty Read" when audio_urls exist for this page */}
-                        <div className="flex justify-center gap-3">
+                        <div className="flex flex-col items-center gap-2">
+                            <p className="text-xs font-black uppercase tracking-widest text-primary">Warm island narrator</p>
                             <button
-                                onClick={() => playPageAudio(page.text, audioUrls[currentPage])}
+                                onClick={() => playPageAudio(page.text, currentAudioUrl)}
                                 disabled={playing}
                                 className="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-black hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
                             >
                                 <Volume2 size={20} />
-                                {playing ? 'Playing...' : hasAudio ? 'Hear Tanty Read' : 'Read Aloud'}
+                                {playing ? 'Playing...' : 'Play warm narrator'}
                             </button>
+                            <p className="text-sm text-deep/60 font-bold text-center max-w-sm" role="status">{narrationNote}</p>
                             {playing && (
                                 <button
                                     onClick={stopAudio}
@@ -406,7 +417,7 @@ export default function IslandStoriesPage() {
                 {/* Lesson at the end */}
                 {currentPage === pages.length - 1 && content?.audio_urls?.length > 0 && (
                     <div className="text-center bg-amber-50 rounded-2xl p-6">
-                        <p className="text-sm font-black text-amber-700 uppercase tracking-widest">🔊 Narrated by Tanty Spice</p>
+                        <p className="text-sm font-black text-amber-700 uppercase tracking-widest">Warm island narrator</p>
                     </div>
                 )}
             </div>
@@ -429,7 +440,8 @@ export default function IslandStoriesPage() {
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {books.map((book) => {
                         const content = book.content as any;
-                        const hasAudio = content?.audio_urls?.some((u: string) => normalizeAudioUrl(u));
+                        const hasAudio = isWarmNarration(content?.narrated_by || book.narrated_by)
+                            && content?.audio_urls?.some((u: string) => normalizeAudioUrl(u));
                         const coverImage = book.cover_image_url || content?.pages?.[0]?.image_url;
                         const hasIllustrations = !!(content?.pages?.some((p: any) => p.image_url));
                         return (

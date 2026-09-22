@@ -10,7 +10,8 @@ import {
     Loader2, Pause, VolumeX, Mic2, Star
 } from 'lucide-react';
 import { StoryBook } from '@/types/story';
-import { generateCharacterAudioWithMetadata } from '@/app/actions/voice';
+import { narrateWarmPage } from '@/app/actions/warm-narration';
+import { warmNarrationLabel } from '@/lib/story-narration-policy';
 import { generateImagesAction, saveStoryToLibraryAction } from '@/app/actions/story-actions';
 import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
@@ -31,6 +32,8 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
     const [currentWordIndex, setCurrentWordIndex] = useState<number | null>(null);
     const [autoPlay, setAutoPlay] = useState(true);
     const [hasSaved, setHasSaved] = useState(false);
+    const [narrationNote, setNarrationNote] = useState('Warm island narrator');
+    const voiceBlockedRef = useRef(false);
 
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const pages = story.structure.pages;
@@ -58,19 +61,37 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
             audioRef.current = null;
         }
 
+        if (voiceBlockedRef.current) {
+            setNarrationNote('Warm narrator needs a voice key. Read this page together.');
+            setAutoPlay(false);
+            return;
+        }
+
         setIsLoadingVoice(true);
         setActiveSpeaker(character);
         setIsPlaying(true);
         setCurrentWordIndex(null);
+        setNarrationNote('Warm island narrator');
 
         try {
             const cacheKey = getAudioCacheKey(text, character);
             const cached = typeof window !== 'undefined' ? window.sessionStorage.getItem(cacheKey) : null;
             const result = cached
-                ? JSON.parse(cached) as Awaited<ReturnType<typeof generateCharacterAudioWithMetadata>>
-                : await generateCharacterAudioWithMetadata(text, character);
+                ? JSON.parse(cached) as Awaited<ReturnType<typeof narrateWarmPage>>
+                : await narrateWarmPage({ text });
 
-            if (result.success && result.audio) {
+            if (!result.success && result.code === 'missing_key') {
+                voiceBlockedRef.current = true;
+                setAutoPlay(false);
+                setNarrationNote(result.error || 'Warm narrator needs a voice key.');
+                setIsPlaying(false);
+                setActiveSpeaker(null);
+                return;
+            }
+
+            if (result.success && result.audioUrl) {
+                setNarrationNote(warmNarrationLabel(result.provider));
+                const playback = { success: true, audio: result.audioUrl, words: result.words || [] };
                 if (!cached) {
                     try {
                         window.sessionStorage.setItem(cacheKey, JSON.stringify(result));
@@ -79,9 +100,9 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                     }
                 }
 
-                const audio = new Audio(result.audio);
+                const audio = new Audio(playback.audio);
                 audioRef.current = audio;
-                const wordTimings = result.words || [];
+                const wordTimings = playback.words;
 
                 audio.ontimeupdate = () => {
                     if (!wordTimings.length) return;
@@ -100,7 +121,9 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
 
                 await audio.play();
             } else {
-                throw new Error(result.error || "Failed to load voice");
+                setNarrationNote(result.error || 'Narration did not start. You can still read this page.');
+                setIsPlaying(false);
+                setActiveSpeaker(null);
             }
         } catch (err) {
             console.error("[Voice] Error:", err);
@@ -233,8 +256,10 @@ export default function StoryReader({ story, onClose }: StoryReaderProps) {
                 </div>
 
                 <div className="flex items-center gap-4">
+                    <p className="hidden md:block max-w-[220px] text-right text-[11px] font-bold text-white/80" role="status">{narrationNote}</p>
                     <button
                         onClick={() => setAutoPlay(!autoPlay)}
+                        aria-label="Toggle warm narrator"
                         className={`px-6 py-3 rounded-full font-black text-xs uppercase tracking-widest transition-all flex items-center gap-3 border ${autoPlay ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20' : 'bg-white/10 border-white/10 text-white hover:bg-white/20'}`}
                     >
                         <Sparkles size={16} /> {autoPlay ? 'Auto-Voice On' : 'Auto-Voice Off'}
