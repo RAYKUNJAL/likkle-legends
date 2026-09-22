@@ -242,8 +242,14 @@ export default function StoryStudioPage() {
                                     onClick={handleCreate}
                                     className="w-full bg-primary hover:bg-primary/90 text-white py-8 rounded-[3rem] font-black text-3xl shadow-2xl shadow-primary/30 active:scale-95 transition-all flex items-center justify-center gap-4 group"
                                 >
-                                    Make Magic <Sparkles className="group-hover:rotate-12 transition-transform" size={40} />
+                                    Open a real book <Sparkles className="group-hover:rotate-12 transition-transform" size={40} />
                                 </button>
+                                <p className="mt-4 text-center text-sm font-bold text-deep/50">
+                                    Story Studio only opens a matching library book. For a new story that uses your child&apos;s name, use Build Your Story.
+                                </p>
+                                <a href="/portal/build-your-story" className="mt-3 mx-auto flex w-fit items-center justify-center rounded-full bg-white px-5 py-3 font-black text-primary shadow-sm">
+                                    Build Your Story
+                                </a>
 
                                 <button onClick={() => setStep('reading-level')} className="mt-8 mx-auto flex items-center gap-2 text-deep/20 font-black uppercase tracking-widest text-xs hover:text-deep/50 transition-colors">
                                     <ArrowLeft size={14} /> Back to Reading Level

@@ -5,6 +5,7 @@
  */
 
 import liveLibraryStories from '@/lib/data/live-library-stories.json';
+import { readerPageAudioUrl } from '@/lib/story-narration-policy';
 
 export const STORY_COVER_BY_SLUG: Record<string, string> = {
     'the-river-mummas-gift': '/images/story-covers/the-river-mummas-gift.png',
@@ -106,6 +107,7 @@ export function extractStoryPages(story: any): LibraryStoryPage[] {
             ? content.structure.pages
             : [];
     const audioUrls = Array.isArray(content.audio_urls) ? content.audio_urls : [];
+    const narratedBy = content.narrated_by || story?.narrated_by;
 
     return rawPages
         .map((page: any, index: number) => {
@@ -118,7 +120,12 @@ export function extractStoryPages(story: any): LibraryStoryPage[] {
             ).trim();
             if (!text) return null;
             const imageUrl = page?.imageUrl || page?.image_url || page?.illustration_url || undefined;
-            const audioUrl = page?.audioUrl || page?.audio_url || audioUrls[index] || undefined;
+            const audioUrl = readerPageAudioUrl({
+                narratedBy,
+                pageNarratedBy: page?.audio_character || page?.narrated_by,
+                pageAudioUrl: page?.audioUrl || page?.audio_url,
+                catalogAudioUrl: audioUrls[index],
+            });
             return {
                 pageNumber: Number(page?.pageNumber || page?.page_number || index + 1),
                 text,
@@ -175,7 +182,7 @@ export function localCatalogStories(): any[] {
     return (liveLibraryStories as any[]).map((story) => attachPageIllustrations({
         ...story,
         is_active: true,
-        cover_image_url: STORY_COVER_BY_SLUG[story.slug] || null,
+        cover_image_url: STORY_COVER_BY_SLUG[story.slug] || story.cover_image_url || null,
         content: {
             pages: story.pages,
             audio_urls: story.audio_urls || [],
@@ -244,6 +251,8 @@ export function toReaderStory(story: any) {
         cover_image_url: kids.cover_image_url,
         tier_required: kids.tier_required,
         reading_time_minutes: kids.reading_time_minutes,
+        slug: kids.slug,
+        narrated_by: kids.content?.narrated_by || null,
         content_json: {
             pages: kids.pages.map((page) => ({
                 pageNumber: page.pageNumber,
