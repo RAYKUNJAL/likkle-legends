@@ -66,8 +66,12 @@ console.log('Kids-ready titles:', kids.map((s: any) => s.title));
 if (afterCounts.withCover !== 12 || afterCounts.fullyIllustrated !== 12 || afterCounts.kidsReady !== 12) {
     throw new Error(`Expected 12 fully illustrated books, got ${JSON.stringify(afterCounts)}`);
 }
-if (catalogCounts.fullyIllustrated !== 12) {
+if (catalogCounts.fullyIllustrated < 12 || catalogCounts.kidsReady < 12) {
     throw new Error(`Local catalog is not fully illustrated: ${JSON.stringify(catalogCounts)}`);
+}
+const catalogTitles = catalog.map((story) => story.title);
+for (const title of LIVE_TITLES) {
+    if (!catalogTitles.includes(title)) throw new Error(`Live catalog is missing ${title}`);
 }
 if (!catalog.every(isFullyIllustrated)) {
     throw new Error('A catalog book is missing page art');
@@ -117,8 +121,11 @@ if (unknownTitle) {
 
 const parentOfficial = parentOfficialStories();
 const parentShelf = mergeParentLibraryStories(parentOfficial, []);
-if (parentShelf.length !== 12 || parentShelf.some((s) => !s.is_official || !s.cover_image_url || !s.href.startsWith('/library/stories/'))) {
-    throw new Error(`Parent library must show the same 12 illustrated books, got ${parentShelf.length}`);
+if (parentShelf.length < 12 || parentShelf.some((s) => !s.is_official || !s.cover_image_url || !s.href.startsWith('/library/stories/'))) {
+    throw new Error(`Parent library must show the illustrated books, got ${parentShelf.length}`);
+}
+if (LIVE_TITLES.some((title) => !parentShelf.some((story) => story.title === title))) {
+    throw new Error('Parent library is missing one of the original 12 books');
 }
 if (parentShelf.some((s) => !LIVE_TITLES.includes(s.title))) {
     throw new Error('Parent library leaked an invented title');
@@ -132,8 +139,8 @@ if (emptyParent.length !== 0) {
 const parentWithPersonal = mergeParentLibraryStories(parentOfficial, [
     { id: 'mine', title: 'My Family Tale', summary: 'A personal story', user_id: 'parent-1', cover_image_url: '/images/x.png' },
 ]);
-if (parentWithPersonal.length !== 13 || parentWithPersonal.filter((s) => s.is_official).length !== 12) {
-    throw new Error('Personal storybooks should sit beside the official 12, not replace them');
+if (parentWithPersonal.length !== parentShelf.length + 1 || parentWithPersonal.filter((s) => s.is_official).length !== parentShelf.length) {
+    throw new Error('Personal storybooks should sit beside the official illustrated books, not replace them');
 }
 
 console.log('verify-kids-library: PASS');

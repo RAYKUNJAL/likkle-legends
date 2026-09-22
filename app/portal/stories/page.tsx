@@ -180,16 +180,21 @@ export default function StoriesLibraryPage() {
 
                         <div className="flex items-center gap-3 mb-4">
                             <span className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-lg flex items-center gap-1">
-                                <Sparkles size={14} /> New books every week
+                                <Sparkles size={14} /> Fully illustrated books
                             </span>
                         </div>
 
                         <h1 className="text-4xl md:text-6xl font-black mb-4 tracking-tight">Island Stories Library</h1>
                         <p className="text-xl md:text-2xl text-blue-100 max-w-2xl font-medium mb-8">Tales from across the Caribbean featuring magical characters, rich history, and brilliant adventures.</p>
 
-                        <button className="bg-white text-indigo-900 px-8 py-4 rounded-full font-black text-lg hover:scale-105 transition-transform flex items-center gap-2 shadow-xl">
-                            <BookOpen size={20} /> Start Reading
-                        </button>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <Link href="/portal/build-your-story" className="bg-white text-indigo-900 px-8 py-4 rounded-full font-black text-lg hover:scale-105 transition-transform flex items-center gap-2 shadow-xl">
+                                <Sparkles size={20} /> Build your story
+                            </Link>
+                            <Link href="/library/weekly-books" className="bg-white/10 text-white px-8 py-4 rounded-full font-black text-lg flex items-center gap-2">
+                                <BookOpen size={20} /> How new books arrive
+                            </Link>
+                        </div>
                     </div>
 
                     {/* Quick Search */}

@@ -18,6 +18,8 @@ export interface TantyStoryRequest {
     theme?: string;        // e.g. "sharing", "bravery", "kindness"
     character?: string;    // which Likkle Legend character to feature
     narrator?: string;     // default: tanty_spice
+    pageCount?: number;
+    originalFiction?: boolean;
 }
 
 export interface TantyStoryPage {
@@ -139,15 +141,22 @@ export async function generateTantyStory(req: TantyStoryRequest): Promise<TantyS
     };
     const charName = characterMap[character] || 'Tanty Spice';
 
+    const pageCount = Math.min(10, Math.max(4, req.pageCount || 8));
+    const honesty = req.originalFiction
+        ? `This must be ORIGINAL fiction for Likkle Legends. Do not claim it is a traditional folktale, myth, sacred story, or historical event. Do not invent folklore and present it as cultural fact. Write a new everyday island adventure. If an earlier rule says to feature folklore, ignore that and write original fiction instead.`
+        : '';
+
     const userPrompt = `Tell a new story for ${req.childName}, age ${req.childAge}.
 
 Setting: ${islandName}
 Theme: ${theme}
 Main character: ${charName}
 Narrator: Tanty Spice (you)
+Length: exactly ${pageCount} short pages. Ignore any earlier request for 8-10 pages.
 
 Use ${ageTrack} for the reading level.
-Make it personal — use the child's name ${req.childName} as a character in the story or as the listener Tanty is telling the story to.
+Make it personal — use the child's name ${req.childName} as a character in the story.
+${honesty}
 
 Remember: Return ONLY valid JSON in the format specified.`;
 
