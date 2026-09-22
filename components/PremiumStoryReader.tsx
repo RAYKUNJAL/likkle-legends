@@ -26,6 +26,7 @@ import { loadPrefs } from '@/lib/island-helpers/prefs';
 import { CalmModeProvider } from '@/components/island-helpers/CalmModeProvider';
 import { useCalmMode } from '@/components/island-helpers/useCalmMode';
 import { JourneyToolsDrawer } from '@/components/island-helpers/JourneyToolsDrawer';
+import { InStoryAacOverlay } from '@/components/island-helpers/InStoryAacOverlay';
 import { speakPhrase } from '@/lib/island-helpers/speak';
 
 interface StoryPage {
@@ -665,6 +666,7 @@ function PremiumStoryReaderInner({ story, onClose, onComplete }: PremiumStoryRea
                     </motion.div>
                 )}
             </AnimatePresence>
+            <InStoryAacOverlay />
         </div>
     );
 }
