@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { createClient as createCookieClient } from '@/lib/supabase/server';
+import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE } from '@/lib/email';
+import { checkRateLimit } from '@/lib/api/rate-limit';
 
 async function createInitialChild(
   supabase: SupabaseClient,
@@ -44,12 +47,13 @@ async function createInitialChild(
 
 /**
  * POST /api/auth/free-trial
- *
- * Creates a free account from the /free-trial landing page.
- * Fires the Meta Conversions API Lead event server-side.
- * Triggers the nurture email sequence.
+ * Creates a free explorer account. Never returns a magic-link action_link.
  */
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'global';
+  const limited = checkRateLimit(`free-trial:${ip}`, 5, 15 * 60 * 1000);
+  if (limited) return limited;
+
   try {
     const { email, parentName, childName, island, source, adCharacter } = await req.json();
 
@@ -68,10 +72,9 @@ export async function POST(req: NextRequest) {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // ── 1. Create auth user ────────────────────────────────────────────────
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
-      email_confirm: true,   // Auto-confirm — skip email verification friction
+      email_confirm: true,
       user_metadata: {
         full_name: parentName || '',
         source: source || 'free_trial_page',
@@ -80,10 +83,9 @@ export async function POST(req: NextRequest) {
     });
 
     if (authError) {
-      // User already exists — let them know to log in
       if (authError.message?.includes('already') || authError.status === 422) {
         return NextResponse.json(
-          { error: 'An account with this email already exists. Please log in.' },
+          { error: 'An account with this email already exists. Please log in.', loginRequired: true },
           { status: 409 }
         );
       }
@@ -93,7 +95,6 @@ export async function POST(req: NextRequest) {
     const userId = authData.user?.id;
     if (!userId) throw new Error('User creation failed — no ID returned');
 
-    // ── 2. Create profile row ──────────────────────────────────────────────
     await supabase.from('profiles').upsert({
       id: userId,
       email,
@@ -105,12 +106,22 @@ export async function POST(req: NextRequest) {
       created_at: new Date().toISOString(),
     }, { onConflict: 'id' });
 
-    // ── 3. Create first child profile ─────────────────────────────────────
+    try {
+      await supabase.from('subscriptions').upsert({
+        user_id: userId,
+        plan_id: 'plan_free_forever',
+        status: 'active',
+        provider: 'none',
+        provider_subscription_id: `free:${userId}`,
+      }, { onConflict: 'provider_subscription_id' });
+    } catch (_e) {
+      console.warn('[Free Trial API] subscriptions upsert skipped');
+    }
+
     if (childName) {
       await createInitialChild(supabase, userId, childName, island);
     }
 
-    // ── 4. Record lead in leads table ──────────────────────────────────────
     await supabase.from('leads').insert({
       email,
       name: parentName || '',
@@ -118,9 +129,8 @@ export async function POST(req: NextRequest) {
       status: 'free_signup',
       island: island || '',
       created_at: new Date().toISOString(),
-    }).select().single();   // Best effort — ignore if table doesn't exist
+    }).select().single();
 
-    // ── 5. Fire Meta Conversions API (server-side Lead event) ─────────────
     const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
     const accessToken = process.env.META_ADS_ACCESS_TOKEN;
     if (pixelId && accessToken) {
@@ -146,10 +156,9 @@ export async function POST(req: NextRequest) {
           }],
           access_token: accessToken,
         }),
-      }).catch(() => {}); // Fire and forget — don't block response
+      }).catch(() => {});
     }
 
-    // ── 6. Trigger nurture welcome sequence ────────────────────────────────
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.likklelegends.com';
     fetch(`${siteUrl}/api/cron/nurture`, {
       method: 'POST',
@@ -166,21 +175,50 @@ export async function POST(req: NextRequest) {
         trigger: 'free_trial_signup',
         source: source || 'free_trial_page',
       }),
-    }).catch(() => {}); // Fire and forget
+    }).catch(() => {});
 
-    // ── 7. Sign in the user ────────────────────────────────────────────────
-    // Generate a magic link so they land on the portal without needing a password
+    let sessionEstablished = false;
+    let emailSent = false;
     const { data: linkData } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email,
       options: { redirectTo: `${siteUrl}/api/auth/callback?next=/portal` },
     });
+    const hashedToken = linkData?.properties?.hashed_token;
+    const actionLink = linkData?.properties?.action_link;
+
+    if (hashedToken) {
+      try {
+        const cookieClient = createCookieClient();
+        const { error: otpError } = await cookieClient.auth.verifyOtp({
+          token_hash: hashedToken,
+          type: 'email',
+        });
+        sessionEstablished = !otpError;
+      } catch (err) {
+        console.warn('[Free Trial API] Server session establish failed:', err);
+      }
+    }
+
+    if (!sessionEstablished && actionLink) {
+      const mailed = await sendEmail({
+        to: email,
+        subject: 'Enter Likkle Legends',
+        html: CONFIRMATION_EMAIL_TEMPLATE(parentName || 'Legend Parent', actionLink),
+      });
+      emailSent = Boolean(mailed?.success);
+    }
 
     return NextResponse.json({
       success: true,
-      userId,
-      magicLink: linkData?.properties?.action_link || null,
-      message: 'Account created! Welcome to Likkle Legends.',
+      sessionEstablished,
+      emailSent,
+      checkEmail: !sessionEstablished,
+      message: sessionEstablished
+        ? 'Account created! Welcome to Likkle Legends.'
+        : emailSent
+          ? 'Account created. Check your email to enter the islands.'
+          : 'Account created. Please log in to continue.',
     });
 
   } catch (err) {

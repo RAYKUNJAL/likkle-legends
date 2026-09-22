@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     Music, Play, Pause, ChevronLeft, ChevronRight,
     Heart, Sparkles, Gift, Crown, Star, CheckCircle2, Zap, Download
@@ -69,6 +69,14 @@ export default function MusicHub() {
 
     const audioRef = useRef<HTMLAudioElement>(null);
 
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const hash = window.location.hash.replace('#', '');
+        if (hash === 'custom' || hash === 'upgrade' || hash === 'music') {
+            setActiveTab(hash);
+        }
+    }, []);
+
     const handlePlay = (trackId: string, url: string) => {
         const audio = audioRef.current;
         if (!audio) return;
@@ -125,7 +133,7 @@ export default function MusicHub() {
                             <span className="italic underline decoration-wavy decoration-yellow-300">Music Hub</span>
                         </h1>
                         <p className="text-white/85 text-lg font-medium mb-10 leading-relaxed max-w-2xl">
-                            Play all 9 island tracks right now — or order a personalised song made just for your child, delivered in 24 hours.
+                            Play the island songs we can actually stream — or order a personalised song made just for your child.
                         </p>
                         <div className="flex flex-wrap gap-4">
                             <button
@@ -210,7 +218,7 @@ export default function MusicHub() {
 
                         {/* Channel filter */}
                         <div className="flex flex-wrap gap-2">
-                            {[{ id: 'all', label: 'All Tracks', emoji: '🎶' }, ...RADIO_CHANNELS.map(ch => ({ id: ch.id, label: ch.label, emoji: CHANNEL_META[ch.id]?.emoji || '🎵' }))].map(ch => (
+                            {[{ id: 'all', label: 'All Tracks', emoji: '🎶' }, ...RADIO_CHANNELS.filter((channel) => RADIO_TRACKS.some((track) => track.channel === channel.id)).map(ch => ({ id: ch.id, label: ch.label, emoji: CHANNEL_META[ch.id]?.emoji || '🎵' }))].map(ch => (
                                 <button
                                     key={ch.id}
                                     onClick={() => setActiveChannel(ch.id)}
@@ -335,14 +343,14 @@ export default function MusicHub() {
                                         ))}
                                     </ul>
                                     <Link
-                                        href={`/checkout?plan=${plan.id}`}
+                                        href="/signup?plan=free"
                                         className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-center transition-all hover:scale-105 shadow-lg ${
                                             plan.badge
                                                 ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-orange-200'
                                                 : 'bg-zinc-900 text-white'
                                         }`}
                                     >
-                                        Get {plan.name}
+                                        Start free — paid checkout not open
                                     </Link>
                                 </div>
                             ))}
@@ -352,7 +360,7 @@ export default function MusicHub() {
                             <p className="text-zinc-400 text-sm font-bold">
                                 Already subscribed? <Link href="/portal" className="text-orange-500 underline hover:text-orange-600">Go to your portal</Link> to access all your content.
                             </p>
-                            <p className="text-zinc-300 text-xs font-medium mt-2">Cancel anytime. No hidden fees. 100% Caribbean-made content.</p>
+                            <p className="text-zinc-300 text-xs font-medium mt-2">Free explorer works today. Subscription checkout is listed here as planned pricing, not an open paid cart.</p>
                         </div>
                     </div>
                 )}

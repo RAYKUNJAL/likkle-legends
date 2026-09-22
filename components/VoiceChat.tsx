@@ -219,6 +219,10 @@ export default function VoiceChat() {
                 )
             );
 
+            if (data.voiceUnavailable) {
+                setError(data.error || 'Voice audio is not configured. You can still read the reply.');
+            }
+
             // Play audio if present.
             if (data.audioBase64) {
                 const byteString = atob(data.audioBase64);

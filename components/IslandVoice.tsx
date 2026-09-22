@@ -35,6 +35,7 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
         characterConfig.persona.welcomeMessage(child.first_name, child.current_streak || 0)
     );
     const [error, setError] = useState<string | null>(null);
+    const [voiceAvailable, setVoiceAvailable] = useState<boolean | null>(null);
 
     const recognitionRef = useRef<any | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -46,6 +47,26 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
                 ? window.SpeechRecognition || window.webkitSpeechRecognition
                 : null;
         setSpeechSupported(Boolean(SpeechRecognitionAPI));
+
+        let cancelled = false;
+        fetch("/api/voice/generate", { method: "GET" })
+            .then(async (res) => {
+                if (cancelled) return;
+                setVoiceAvailable(res.ok);
+                if (!res.ok) {
+                    setError("Voice mode is unavailable right now. Typed chat still works.");
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setVoiceAvailable(false);
+                    setError("Voice mode is unavailable right now. Typed chat still works.");
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     useEffect(() => {
@@ -155,7 +176,17 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
             }
 
             setLastReply(reply);
-            await speakReply(reply);
+            if (voiceAvailable === false) {
+                return;
+            }
+            try {
+                await speakReply(reply);
+                if (speechSupported) {
+                    startListening();
+                }
+            } catch (speakError: any) {
+                setError(speakError?.message || "Spoken reply failed. You can still read the answer.");
+            }
         } catch (err: any) {
             setError(err?.message || "Voice chat failed");
         } finally {
@@ -264,10 +295,10 @@ const IslandVoice: React.FC<IslandVoiceProps> = ({ onClose, characterConfig, chi
                         <button
                             type="button"
                             onClick={isListening ? stopListening : startListening}
-                            disabled={isThinking}
+                            disabled={isThinking || voiceAvailable === false}
                             className={`flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg transition-all ${isListening ? "bg-rose-500" : `bg-gradient-to-r ${visual.gradient}`
                                 } disabled:opacity-50`}
-                            title={isListening ? "Stop listening" : "Start listening"}
+                            title={voiceAvailable === false ? "Voice unavailable" : isListening ? "Stop listening" : "Start listening"}
                             aria-label={isListening ? "Stop listening" : "Start listening"}
                         >
                             {isListening ? <Loader2 size={22} className="animate-spin" /> : <Mic size={22} />}

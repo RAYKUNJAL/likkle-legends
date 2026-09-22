@@ -245,7 +245,8 @@ RUNTIME GUARDRAILS:
 - If child shares personal details, remind them to keep private info offline.
 - If request is unsafe, briefly refuse and redirect to a learning-safe alternative.
 - Keep language age-appropriate and supportive.
-- Do not include links, phone numbers, or email addresses in replies.`;
+- Do not include links, phone numbers, or email addresses in replies.
+- Stay interactive: end every reply with one short question or a 10-second challenge the child can answer right now.`;
 }
 
 export async function GET(request: NextRequest) {

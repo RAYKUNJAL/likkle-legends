@@ -100,12 +100,24 @@ export function MeetTheLegends({ onOpenWaitlist }: MeetTheLegendsProps) {
                                         {char.personality}
                                     </p>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-4">Teaches: {char.teaches.split(',')[0]}</p>
-                                    <Button
-                                        onClick={() => window.location.href = `/characters/${char.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')}`}
+                                        <Button
+                                        onClick={() => {
+                                            const characterHrefs: Record<string, string> = {
+                                                'Dilly Doubles': '/games/doubles-dash',
+                                                'R.O.T.I.': '/radio?station=roti',
+                                                'Tanty Spice': '/radio?station=tanty_spice',
+                                                'Mango Moko': '/games/island-hop.html',
+                                            };
+                                            window.location.href = characterHrefs[char.name] || '/radio';
+                                        }}
                                         variant="outline"
                                         className="w-full h-11 rounded-xl border-2 font-bold group-hover:bg-slate-50 transition-colors text-slate-700 border-slate-300"
                                     >
-                                        Learn More
+                                        {char.name === 'Mango Moko' ? 'Play Island Hop'
+                                            : char.name === 'Dilly Doubles' ? 'Play Doubles Dash'
+                                            : char.name === 'Tanty Spice' ? "Hear Tanty's song"
+                                            : char.name === 'R.O.T.I.' ? "Hear R.O.T.I.'s song"
+                                            : 'Listen to island radio'}
                                     </Button>
                                 </CardContent>
                             </Card>
@@ -124,8 +136,8 @@ export function MeetTheLegends({ onOpenWaitlist }: MeetTheLegendsProps) {
                             <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center mb-6 text-slate-400 group-hover:scale-110 group-hover:bg-[var(--caribbean-sun)] group-hover:text-white transition-all">
                                 <Heart className="w-8 h-8" />
                             </div>
-                            <h3 className="text-xl font-black text-slate-600 mb-2">More Friends Coming!</h3>
-                            <p className="text-sm font-bold text-slate-400 mb-6">Our universe is growing with new characters from every island.</p>
+                            <h3 className="text-xl font-black text-slate-600 mb-2">Meet the rest of the village</h3>
+                            <p className="text-sm font-bold text-slate-400 mb-6">See every guide that already has a real page — no placeholder characters.</p>
                             <Button
                                 variant="ghost"
                                 className="font-black text-[var(--caribbean-ocean)] uppercase tracking-widest text-xs"

@@ -81,17 +81,22 @@ export async function POST(request: NextRequest) {
                         (productId && (MUSIC_STORE_PRODUCTS as any)[productId]) ||
                         (productId && (GAMIFICATION_PRODUCTS as any)[productId]) ||
                         null;
-                    if (catalog && Number.isFinite(Number(catalog.price))) {
-                        const expected = Number(catalog.price);
-                        if (!Number.isFinite(capturedAmount) || Math.abs(capturedAmount - expected) > 0.05) {
-                            console.error(
-                                `[SECURITY] Capture amount mismatch order=${orderID} product=${productId} captured=${capturedAmount} expected=${expected}`
-                            );
-                            return NextResponse.json(
-                                { error: 'Payment amount does not match product price' },
-                                { status: 400 }
-                            );
-                        }
+                    if (!catalog || !Number.isFinite(Number(catalog.price))) {
+                        console.error(`[SECURITY] Capture rejected unknown product order=${orderID} product=${productId}`);
+                        return NextResponse.json(
+                            { error: 'Unknown product — cannot verify payment amount' },
+                            { status: 400 }
+                        );
+                    }
+                    const expected = Number(catalog.price);
+                    if (!Number.isFinite(capturedAmount) || Math.abs(capturedAmount - expected) > 0.05) {
+                        console.error(
+                            `[SECURITY] Capture amount mismatch order=${orderID} product=${productId} captured=${capturedAmount} expected=${expected}`
+                        );
+                        return NextResponse.json(
+                            { error: 'Payment amount does not match product price' },
+                            { status: 400 }
+                        );
                     }
 
                     if (productId === 'streak_freeze') {

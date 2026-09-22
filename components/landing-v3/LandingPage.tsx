@@ -46,7 +46,7 @@ const faqItems = [
     },
     {
         q: "Can I cancel anytime?",
-        a: "Absolutely. The $10 Intro is a one-time purchase with no commitment. If you upgrade to Legends Member, you can cancel your monthly subscription at any time with zero fees.",
+        a: "Yes. Start a free explorer account with no credit card. Paid mail kits and Plus plans are listed as planned prices — that checkout is not open yet.",
     },
     {
         q: "What is the 'Legend Key Code'?",
@@ -58,7 +58,7 @@ const faqItems = [
     },
     {
         q: "What's the Triple Promise Guarantee?",
-        a: "Three promises: (1) Instant portal access after purchase, (2) If your US envelope is delayed or lost, we reissue your Key Code, (3) If you don't love it within 30 days, we refund your $10. One refund per household.",
+        a: "Free explorer access is instant after signup. When paid mail checkout opens, US envelopes include a Key Code and a 30-day refund on that paid order.",
     },
 ];
 

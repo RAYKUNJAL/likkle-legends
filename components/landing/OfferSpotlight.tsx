@@ -137,7 +137,7 @@ export default function OfferSpotlight() {
                     {/* CTA */}
                     <div className="text-center mb-12">
                         <Link
-                            href="/get-started"
+                            href="/free-trial"
                             className="inline-flex items-center gap-2 btn btn-primary btn-lg px-10 py-5 text-lg shadow-xl shadow-primary/20 hover:shadow-2xl hover:scale-[1.02] transition-all group"
                         >
                             Try the $10 Intro Experience

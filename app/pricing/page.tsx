@@ -125,7 +125,7 @@ export default function PricingPage() {
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Link
-                                href="/get-started"
+                                href="/free-trial"
                                 className="px-12 py-6 bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-500/20"
                             >
                                 Get Started Now

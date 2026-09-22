@@ -42,7 +42,7 @@ function cleanParam(searchParams: ReturnType<typeof useSearchParams>, key: strin
 function SignupForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const plan = cleanParam(searchParams, 'plan', 'mail_club');
+    const plan = cleanParam(searchParams, 'plan', 'free');
     const referral = cleanParam(searchParams, 'ref') || cleanParam(searchParams, 'referral', 'direct');
     const rawInitialIsland = cleanParam(searchParams, 'island', 'mixed');
     const initialIsland = ISLAND_ALIASES[rawInitialIsland] || rawInitialIsland;
