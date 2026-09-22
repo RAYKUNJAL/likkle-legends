@@ -5,10 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { BookOpen, Star, Loader2 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
-import { supabase } from '@/lib/storage';
 import { logActivity } from '@/lib/database';
 import PremiumStoryReader from '@/components/PremiumStoryReader';
-import { STARTER_STORIES } from '@/lib/story-starter-pack';
+import { fetchKidsLibraryStory, toReaderStory } from '@/lib/library-stories';
 
 interface StoryPage {
     pageNumber: number;
@@ -92,26 +91,16 @@ export default function StoryReaderPage() {
     const loadStory = useCallback(async () => {
         setIsLoading(true);
         try {
-            const { data, error } = await supabase
-                .from('storybooks')
-                .select('id, title, summary, cover_image_url, content_json, character_id, tier_required, reading_time_minutes')
-                .eq('id', storyId)
-                .single();
-
-            if (error) throw error;
-            const normalized = normalizeStory(data);
-            if (!normalized?.content_json?.pages?.length) {
-                const fallback = STARTER_STORIES.find(s => s.id === storyId) || STARTER_STORIES[0];
-                setStory(normalizeStory(fallback));
+            const libraryStory = await fetchKidsLibraryStory(storyId);
+            const fromLibrary = libraryStory ? toReaderStory(libraryStory) : null;
+            if (fromLibrary?.content_json?.pages?.length) {
+                setStory(normalizeStory(fromLibrary));
                 return;
             }
-            setStory(normalized);
+            setStory(null);
         } catch (error) {
             console.error('Failed to load story:', error);
-            const fallback = STARTER_STORIES.find(s => s.id === storyId) || STARTER_STORIES[0];
-            if (fallback) {
-                setStory(normalizeStory(fallback));
-            }
+            setStory(null);
         } finally {
             setIsLoading(false);
         }

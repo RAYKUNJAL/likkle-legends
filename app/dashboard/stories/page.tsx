@@ -8,49 +8,55 @@ import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { BookOpen, Star, ArrowRight, Lock, Sparkles, RefreshCw, Trash2, Library } from 'lucide-react';
 import { deleteStorybookAction } from '@/app/actions/story-actions';
+import { fetchKidsLibraryStories, parentOfficialStories } from '@/lib/library-stories';
 
 export default function StorybooksPage() {
-    const [stories, setStories] = useState<any[]>([]);
+    const [stories, setStories] = useState<any[]>(() => parentOfficialStories());
     const [myStories, setMyStories] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
 
     useEffect(() => {
         const loadInitialData = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) setUserId(user.id);
-            await fetchStories(user?.id);
+            let currentUserId: string | null = null;
+            try {
+                const { data } = await supabase.auth.getUser();
+                currentUserId = data?.user?.id || null;
+                if (currentUserId) setUserId(currentUserId);
+            } catch (err) {
+                console.warn('Dashboard auth lookup skipped:', err);
+            }
+            await fetchStories(currentUserId);
         };
-        loadInitialData();
+        void loadInitialData();
     }, []);
 
     const fetchStories = async (currentUserId?: string | null) => {
         setIsLoading(true);
         try {
-            // 1. Fetch Featured (Active) Stories
-            const { data: activeData, error: activeError } = await supabase
-                .from('storybooks')
-                .select('*')
-                .eq('is_active', true)
-                .order('created_at', { ascending: false });
+            // Featured legends come from the live stories_library API — not storybooks.
+            const libraryStories = await fetchKidsLibraryStories();
+            setStories(libraryStories.length ? libraryStories : parentOfficialStories());
 
-            if (activeError) throw activeError;
-            setStories(activeData || []);
-
-            // 2. Fetch User's Own (Personal) Stories
+            // Personal creations stay on storybooks; a failure must not empty the featured grid.
             if (currentUserId) {
                 const { data: userData, error: userError } = await supabase
                     .from('storybooks')
                     .select('*')
                     .eq('user_id', currentUserId)
-                    .eq('is_active', false) // Only private ones to avoid duplicates
+                    .eq('is_active', false)
                     .order('created_at', { ascending: false });
 
-                if (userError) throw userError;
-                setMyStories(userData || []);
+                if (userError) {
+                    console.warn('Personal storybooks unavailable:', userError.message);
+                    setMyStories([]);
+                } else {
+                    setMyStories(userData || []);
+                }
             }
         } catch (error) {
             console.error('Error fetching stories:', error);
+            setStories(parentOfficialStories());
         } finally {
             setIsLoading(false);
         }
@@ -127,11 +133,8 @@ export default function StorybooksPage() {
                             </div>
                         ) : stories.length === 0 && myStories.length === 0 ? (
                             <div className="col-span-2 text-center py-20 bg-white rounded-[4rem] border-2 border-dashed border-zinc-200">
-                                <p className="text-deep/30 font-black text-2xl uppercase tracking-widest">Your bookshelf is empty</p>
-                                <p className="text-deep/20 mt-2">Start a new adventure in the Studio to see it here!</p>
-                                <Link href="/portal/story-studio" className="mt-8 inline-flex items-center gap-2 text-primary font-black uppercase tracking-widest hover:gap-4 transition-all">
-                                    Go to Studio <ArrowRight size={20} />
-                                </Link>
+                                <p className="text-deep/30 font-black text-2xl uppercase tracking-widest">No ready books yet</p>
+                                <p className="text-deep/20 mt-2">Only real Caribbean stories with covers and pages appear here.</p>
                             </div>
                         ) : stories.map((story, i) => (
                             <StoryCard key={story.id} story={story} />
@@ -172,7 +175,7 @@ export default function StorybooksPage() {
 }
 
 function StoryCard({ story, isPersonal = false, onDelete }: { story: any, isPersonal?: boolean, onDelete?: () => void }) {
-    const isLocked = !story.is_active && !isPersonal;
+    const isLocked = story.is_active === false && !isPersonal;
 
     return (
         <div className={`relative p-8 rounded-[4rem] border-2 transition-all duration-500 overflow-hidden group ${isLocked

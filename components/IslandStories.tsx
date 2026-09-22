@@ -148,7 +148,14 @@ export default function IslandStoriesPage() {
         try {
             const res = await fetch('/api/library/stories');
             const data = await res.json();
-            setBooks(data.stories || []);
+            const rows = Array.isArray(data.stories) ? data.stories : [];
+            setBooks(rows.filter((book: LibraryBook) => {
+                const pages = (book.content as any)?.pages || [];
+                const illustrated = pages.filter((page: LibraryBookPage) =>
+                    String(page?.text || '').trim() && String((page as any)?.image_url || page?.image_url || '').trim()
+                );
+                return Boolean(book.cover_image_url) && pages.length > 0 && illustrated.length === pages.length;
+            }));
         } catch (err) {
             console.error('Failed to load stories', err);
         } finally {
@@ -320,9 +327,9 @@ export default function IslandStoriesPage() {
 
                         {/* Illustration — FLUX artwork if available, otherwise description placeholder */}
                         <div className="aspect-video bg-gradient-to-br from-sky-100 via-purple-50 to-pink-100 rounded-3xl flex items-center justify-center p-8 overflow-hidden">
-                            {page.image_url ? (
+                            {(page.image_url || selectedBook.cover_image_url) ? (
                                 <img
-                                    src={page.image_url}
+                                    src={page.image_url || selectedBook.cover_image_url || ''}
                                     alt={page.illustration || `Illustration for page ${currentPage + 1}`}
                                     className="w-full h-full object-contain rounded-3xl"
                                     loading="lazy"
@@ -416,14 +423,14 @@ export default function IslandStoriesPage() {
 
             {books.length === 0 ? (
                 <div className="text-center py-20">
-                    <p className="text-deep/40 text-lg font-bold">No stories yet — check back soon!</p>
+                    <p className="text-deep/40 text-lg font-bold">No fully illustrated picture books yet. We only show stories with art on every page.</p>
                 </div>
             ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {books.map((book) => {
                         const content = book.content as any;
                         const hasAudio = content?.audio_urls?.some((u: string) => normalizeAudioUrl(u));
-                        const coverImage = content?.pages?.[0]?.image_url;
+                        const coverImage = book.cover_image_url || content?.pages?.[0]?.image_url;
                         const hasIllustrations = !!(content?.pages?.some((p: any) => p.image_url));
                         return (
                             <button

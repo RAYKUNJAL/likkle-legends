@@ -8,8 +8,7 @@ import {
     Search, Map, Heart, Sparkles, BookOpen, Compass, Award, Tag, Sparkle
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
-import { getStorybooks } from '@/lib/database';
-import { STARTER_STORIES } from '@/lib/story-starter-pack';
+import { fetchKidsLibraryStories, parentOfficialStories } from '@/lib/library-stories';
 import { trackEvent } from '@/lib/analytics';
 import { normalizeParentalControls } from '@/lib/parental-controls';
 
@@ -62,8 +61,21 @@ const AGE_GROUPS = [
 
 export default function StoriesLibraryPage() {
     const { activeChild, canAccess, user } = useUser();
-    const [stories, setStories] = useState<Story[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [stories, setStories] = useState<Story[]>(() =>
+        parentOfficialStories().map((sb) => ({
+            id: sb.id,
+            title: sb.title,
+            description: sb.summary,
+            cover_image: sb.cover_image_url,
+            island_origin: sb.island_theme,
+            category: sb.category,
+            age_group: sb.age_group,
+            tier_required: sb.tier_required,
+            reading_time: sb.reading_time_minutes,
+            completed: false,
+        }))
+    );
+    const [isLoading, setIsLoading] = useState(false);
     const [loadError, setLoadError] = useState<string | null>(null);
 
     // Filters
@@ -96,60 +108,35 @@ export default function StoriesLibraryPage() {
     }
 
     const loadStories = async () => {
-        setIsLoading(true);
         setLoadError(null);
         try {
-            const data = await Promise.race([
-                getStorybooks(),
-                new Promise<never>((_, reject) =>
-                    setTimeout(() => reject(new Error('Request timed out.')), 12000)
-                ),
-            ]);
+            let data = parentOfficialStories();
+            try {
+                const live = await fetchKidsLibraryStories();
+                if (live.length > 0) data = live;
+            } catch (err) {
+                console.warn('Portal stories API unavailable; using local illustrated catalog.', err);
+            }
 
-            const mappedStories: Story[] = (data as any[]).map((sb: any) => ({
+            const mappedStories: Story[] = data.map((sb) => ({
                 id: sb.id,
                 title: sb.title,
                 description: sb.summary,
-                cover_image: sb.cover_image_url || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400',
-                island_origin: sb.island_theme || sb.island_category || 'Jamaica',
-                category: sb.category || 'Adventure',
-                age_group: sb.age_track === 'big' ? '7-9' : '5-6', // Mapping existing age tracks
+                cover_image: sb.cover_image_url,
+                island_origin: sb.island_theme,
+                category: sb.category,
+                age_group: sb.age_group,
                 tier_required: sb.tier_required,
-                reading_time: sb.reading_time_minutes || 5,
+                reading_time: sb.reading_time_minutes,
                 completed: false
             }));
 
-            // Dedupe: DB has repeated imports of the same title — keep the first
-            // occurrence (with a cover image preferred) of each normalized title.
             const seen = new Map<string, Story>();
             for (const s of mappedStories) {
                 const key = s.title.trim().toLowerCase();
-                const existing = seen.get(key);
-                if (!existing) {
-                    seen.set(key, s);
-                } else if (!existing.cover_image?.startsWith('http') && s.cover_image?.startsWith('http')) {
-                    seen.set(key, s);
-                }
+                if (!seen.has(key)) seen.set(key, s);
             }
-            const dedupedStories = Array.from(seen.values());
-
-            if (dedupedStories.length > 0) {
-                setStories(dedupedStories);
-            } else {
-                // Fallback to offline starter pack if DB is empty
-                setStories(STARTER_STORIES.map(sb => ({
-                    id: sb.id,
-                    title: sb.title,
-                    description: sb.summary,
-                    cover_image: sb.cover_image_url,
-                    island_origin: 'Jamaica',
-                    category: 'Story',
-                    age_group: '5-6',
-                    tier_required: sb.tier_required,
-                    reading_time: sb.reading_time_minutes,
-                    completed: false
-                })));
-            }
+            setStories(Array.from(seen.values()));
 
             // Hydrate Passport gamification from local storage
             const stamps = localStorage.getItem('island_passport_stamps');
@@ -159,7 +146,8 @@ export default function StoriesLibraryPage() {
 
         } catch (error) {
             console.error('Failed to load stories:', error);
-            setLoadError('We could not load stories right now.');
+            // Keep the local illustrated catalog on screen; only show empty if we have nothing.
+            setLoadError(null);
             trackEvent('stories_page_load_failed');
         } finally {
             setIsLoading(false);
@@ -408,8 +396,8 @@ export default function StoriesLibraryPage() {
                     ) : (
                         <div className="text-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
                             <BookOpen className="text-slate-200 mx-auto mb-4" size={64} />
-                            <h4 className="text-2xl font-black text-slate-800 mb-2">No stories found</h4>
-                            <p className="text-slate-500 max-w-sm mx-auto">Try adjusting your filters or search terms to find more Caribbean adventures.</p>
+                            <h4 className="text-2xl font-black text-slate-800 mb-2">No ready books here</h4>
+                            <p className="text-slate-500 max-w-sm mx-auto">Only fully illustrated Caribbean picture books appear here — cover plus art on every page. Try clearing filters if the shelf looks quiet.</p>
                             <button
                                 onClick={() => { setSearchQuery(''); setSelectedIsland('All Islands'); setSelectedCategory('All Categories'); setSelectedAgeGroup('all'); }}
                                 className="mt-6 px-6 py-2 bg-indigo-50 text-indigo-600 rounded-full font-bold hover:bg-indigo-100 transition-colors"

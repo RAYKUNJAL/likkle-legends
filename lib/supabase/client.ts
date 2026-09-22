@@ -8,6 +8,33 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 // that server actions write to, keeping user sessions in sync.
 let browserClient: SupabaseClient | null = null;
 
+function missingConfigClient(): SupabaseClient {
+    const noopUnsubscribe = { unsubscribe: () => {} };
+    return {
+        auth: {
+            onAuthStateChange: () => ({ data: { subscription: noopUnsubscribe } }),
+            getUser: async () => ({ data: { user: null }, error: null }),
+            getSession: async () => ({ data: { session: null }, error: null }),
+            signOut: async () => ({ error: null }),
+        },
+        from: () => ({
+            select: () => ({
+                eq: () => ({
+                    single: async () => ({ data: null, error: null }),
+                    maybeSingle: async () => ({ data: null, error: null }),
+                    order: () => ({
+                        limit: async () => ({ data: null, error: null }),
+                    }),
+                }),
+                in: () => ({
+                    order: async () => ({ data: null, error: null }),
+                }),
+                order: async () => ({ data: null, error: null }),
+            }),
+        }),
+    } as unknown as SupabaseClient;
+}
+
 export const createClient = (): SupabaseClient => {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
@@ -17,11 +44,11 @@ export const createClient = (): SupabaseClient => {
         // proxies /supabase/* to Kong with the /supabase prefix stripped.
         if (!url || !url.startsWith('https://') || url.length < 16) {
             console.error('❌ [supabase/client] NEXT_PUBLIC_SUPABASE_URL is missing or invalid.');
-            return {} as any;
+            return missingConfigClient();
         }
     if (!key || key.length < 20) {
         console.error('❌ [supabase/client] NEXT_PUBLIC_SUPABASE_ANON_KEY is missing or invalid.');
-        return {} as any;
+        return missingConfigClient();
     }
 
     // Reuse the singleton on the browser — avoids duplicate subscriptions
