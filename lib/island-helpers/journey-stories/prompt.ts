@@ -1,5 +1,5 @@
 /**
- * Journey Stories — Gemini prompt pack (descriptive > coaching).
+ * Journey Stories — OpenRouter prompt pack (descriptive > coaching).
  * Public feature name: Journey Stories. Do not emit Social Stories™.
  */
 import type { getScenario } from './seed-scenarios';

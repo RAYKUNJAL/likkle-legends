@@ -1,8 +1,7 @@
 /**
- * Journey Stories — Gemini 5-page generator (server).
- * Fail closed if GEMINI_API_KEY / GOOGLE_GENERATIVE_AI_API_KEY missing.
+ * Journey Stories — OpenRouter 5-page generator (server).
+ * Fail closed if OPENROUTER_API_KEY / LLM_API_KEY missing (seed offline path kept).
  */
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { sanitizeChildName } from '@/lib/build-your-story';
 import type { IslandHelpersCharacterId } from '../types';
 import { ISLAND_HELPERS_CHARACTER_IDS } from '../types';
@@ -37,6 +36,8 @@ function sanitizeModelError(message: string): string {
   m = m.replace(/api_key:[A-Za-z0-9_-]+/gi, 'api_key:[redacted]');
   m = m.replace(/AIza[0-9A-Za-z_-]{10,}/g, '[redacted]');
   m = m.replace(/Key [A-Za-z0-9_-]{8,}/g, 'Key [redacted]');
+  m = m.replace(/sk-or-v1-[A-Za-z0-9_-]+/gi, '[redacted]');
+  m = m.replace(/Bearer\s+[A-Za-z0-9._-]+/gi, 'Bearer [redacted]');
   if (/403|suspended|permission denied|CONSUMER_SUSPENDED/i.test(m)) {
     return 'Story writing is unavailable right now (AI provider blocked). Try again later.';
   }
@@ -49,10 +50,68 @@ function sanitizeModelError(message: string): string {
 
 function getApiKey(): string | null {
   const key =
-    process.env.GEMINI_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    process.env.OPENROUTER_API_KEY ||
+    process.env.LLM_API_KEY ||
     '';
   return key.trim() || null;
+}
+
+function getOpenRouterUrl(): string {
+  const explicit = (process.env.LLM_API_URL || '').trim();
+  if (explicit) return explicit;
+  const base = (process.env.OPENROUTER_BASE || 'https://openrouter.ai/api/v1').trim().replace(/\/$/, '');
+  return `${base}/chat/completions`;
+}
+
+function getOpenRouterModel(): string {
+  return (
+    process.env.OPENROUTER_MODEL ||
+    process.env.LLM_MODEL ||
+    'openai/gpt-4o-mini'
+  ).trim();
+}
+
+async function callOpenRouterChat(prompt: string, apiKey: string): Promise<string> {
+  const url = getOpenRouterUrl();
+  const model = getOpenRouterModel();
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://www.likklelegends.com',
+      'X-Title': 'Likkle Legends Journey Stories',
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.7,
+      response_format: { type: 'json_object' },
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are a children\'s story writer. Reply with ONLY valid JSON matching the requested schema. No markdown fences.',
+        },
+        { role: 'user', content: prompt },
+      ],
+    }),
+  });
+  const raw = await res.text();
+  if (!res.ok) {
+    // Never include response body that might echo keys; keep short status-based error
+    throw new Error(`OpenRouter HTTP ${res.status}`);
+  }
+  let data: any;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    throw new Error('OpenRouter returned non-JSON');
+  }
+  const content = data?.choices?.[0]?.message?.content;
+  if (typeof content !== 'string' || !content.trim()) {
+    throw new Error('OpenRouter returned empty content');
+  }
+  return content;
 }
 
 function newId(): string {
@@ -193,13 +252,7 @@ export async function generateJourneyStory(
   });
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: { responseMimeType: 'application/json', temperature: 0.7 },
-    });
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = await callOpenRouterChat(prompt, apiKey);
     return generateJourneyPagesFromModelText(text, {
       ...req,
       childName,
@@ -216,7 +269,7 @@ export async function generateJourneyStory(
 }
 
 
-/** Deterministic offline pages for seed scenarios when Gemini is unavailable. */
+/** Deterministic offline pages for seed scenarios when OpenRouter is unavailable. */
 export function offlineSeedPages(scenarioId: string): JourneyPage[] | null {
   const packs: Record<string, { title: string; pages: string[] }> = {
     dentist: {
