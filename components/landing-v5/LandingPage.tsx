@@ -77,6 +77,34 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section id="parents" className={styles.parentsStrip} aria-labelledby="parents-helpers-heading">
+          <div className={styles.container}>
+            <article className={styles.parentsCard}>
+              <div className={styles.parentsCopy}>
+                <p className={styles.eyebrow}>For parents &amp; guardians</p>
+                <h2 id="parents-helpers-heading">Island Helpers — calm tools beside the adventure</h2>
+                <p>
+                  Built for kids who read early, speak rarely, or need a quieter screen. Soft supports for autistic kids and early readers who speak in their own way — including children who love whole phrases and big words (sometimes called hyperlexia).
+                </p>
+                <p className={styles.parentsNote}>
+                  Tap-to-speak talk cards with island friends, First → Then plans, Calm Mode, and parent-made Journey Stories. Play and reading support — not therapy, not a clinic, and not a scoreboard.
+                </p>
+                <Link className={styles.primaryButton} href="/island-helpers">
+                  Explore Island Helpers <ArrowRight size={18} />
+                </Link>
+              </div>
+              <div className={styles.parentsAside} aria-hidden="true">
+                <Heart size={48} strokeWidth={1.5} />
+                <ul>
+                  <li>Talk cards kids can tap</li>
+                  <li>Calm Mode for busy days</li>
+                  <li>You stay in charge</li>
+                </ul>
+              </div>
+            </article>
+          </div>
+        </section>
+
         <section className={styles.explore} aria-labelledby="explore-heading"><div className={styles.container}><div className={styles.sectionHeading}><p className={styles.eyebrow}>Explore. Learn. Belong.</p><h2 id="explore-heading">More ways to feel close to home.</h2><p>From a song in the car to a story at bedtime, make Caribbean culture part of their everyday.</p></div><div className={styles.experienceGrid}>{experiences.map(item => <article className={styles.experienceCard} key={item.title}><div className={styles.experienceArt}><Image src={item.image} alt="" fill sizes="(max-width: 760px) 90vw, 30vw" className={styles.containedImage} /></div><div className={styles.experienceCopy}><item.icon size={25} /><h3>{item.title}</h3><p>{item.description}</p><Link href={item.href}>{item.label} <ArrowRight size={18} /></Link></div></article>)}</div></div></section>
 
         <section className={styles.sampleSection}><div className={styles.sampleInner}><div><p className={styles.eyebrow}>Small moments. Lasting connections.</p><h2>What could their first week feel like?</h2><p>A story to share. A song to sing. Something to make. Something new to discover together.</p></div><div className={styles.sampleCard}><p className={styles.sampleLabel}>A sample island week</p><h3>One little adventure each day</h3><ul><li><BookOpen /><span><strong>Read together</strong>A Caribbean story with a familiar guide</span></li><li><Music2 /><span><strong>Sing & move</strong>Drinking Water on Likkle Legends Radio</span><a href="#radio" aria-label="Listen to island radio"><ArrowRight /></a></li><li><Gamepad2 /><span><strong>Play & discover</strong>A quick visit to the island arcade</span><Link href="/games" aria-label="Visit the island arcade"><ArrowRight /></Link></li><li><Printer /><span><strong>Make it your own</strong>A colorful activity away from the screen</span></li></ul><Link className={styles.primaryButton} href="/signup">Build their free journey <ArrowRight size={18} /></Link></div></div></section>
@@ -85,7 +113,7 @@ export default function LandingPage() {
 
         <section className={styles.finalCta}><p className={styles.eyebrow}>For little legends, everywhere</p><h2>Their roots travel with them.</h2><p>Let’s help them discover just how much there is to love.</p><Link className={styles.primaryButton} href="/signup">Start your family’s adventure <ArrowRight size={20} /></Link><Link className={styles.textLink} href="/games">Or play a free game first <ArrowRight size={16} /></Link></section>
       </main>
-      <footer className={styles.footer}><div className={styles.container}><div><strong>Likkle Legends</strong><p>Little people. Big heritage.</p></div><nav aria-label="Footer navigation"><a href="#radio">Island radio</a><a href="#characters">Our characters</a><Link href="/games">Games</Link><Link href="/schools">Schools</Link><Link href="/safety">Child safety</Link><Link href="/privacy">Privacy</Link><Link href="/contact">Contact</Link></nav><p className={styles.copyright}>© {new Date().getFullYear()} Likkle Legends.</p></div></footer>
+      <footer className={styles.footer}><div className={styles.container}><div><strong>Likkle Legends</strong><p>Little people. Big heritage.</p></div><nav aria-label="Footer navigation"><a href="#radio">Island radio</a><a href="#characters">Our characters</a><Link href="/games">Games</Link><Link href="/schools">Schools</Link><Link href="/island-helpers">Island Helpers</Link><Link href="/safety">Child safety</Link><Link href="/privacy">Privacy</Link><Link href="/contact">Contact</Link></nav><p className={styles.copyright}>© {new Date().getFullYear()} Likkle Legends.</p></div></footer>
     </div>
   );
 }
