@@ -1,26 +1,35 @@
 /**
- * Proves Island Helpers POST /speak selects four distinct Ray-supplied voice IDs.
- * Uses a mocked ElevenLabs response; no real audio or API request is made.
- * Logs voice IDs only — never an API key.
+ * Proves Island Helpers speak + locked character voice map.
+ * Mocked ElevenLabs only — logs voice IDs, never an API key.
  */
 import { NextRequest } from 'next/server';
 import { POST } from '../app/api/island-helpers/speak/route';
 import {
+  LOCKED_CHARACTER_VOICE_IDS,
+  lockedCharacterVoiceId,
+  DEFAULT_DILLY_DOUBLES_VOICE_ID,
   DEFAULT_MANGO_MOKO_VOICE_ID,
   DEFAULT_ROTI_VOICE_ID,
   DEFAULT_STEELPAN_SAM_VOICE_ID,
+  DEFAULT_TANTY_VOICE_ID,
 } from '../lib/island-helpers/voice-policy';
+import { VOICES } from '../lib/elevenlabs';
 
 const originalFetch = globalThis.fetch;
 const originalApiKey = process.env.ELEVENLABS_API_KEY;
-const originalRotiOverride = process.env.ELEVENLABS_ROTI_VOICE_ID;
-const originalSamOverride = process.env.ELEVENLABS_STEELPAN_SAM_VOICE_ID;
-const originalMangoOverride = process.env.ELEVENLABS_MANGO_MOKO_VOICE_ID;
-const requestedUrls: string[] = [];
+const envKeys = [
+  'ELEVENLABS_ROTI_VOICE_ID',
+  'ELEVENLABS_STEELPAN_SAM_VOICE_ID',
+  'ELEVENLABS_MANGO_MOKO_VOICE_ID',
+  'ELEVENLABS_DILLY_VOICE_ID',
+  'ELEVENLABS_TANTY_VOICE_ID',
+  'ELEVENLABS_STORY_VOICE_ID',
+] as const;
+const originalEnv: Record<string, string | undefined> = {};
 
-const EXPECTED: Record<string, string> = {
+const BOARD_EXPECTED: Record<string, string> = {
   roti: DEFAULT_ROTI_VOICE_ID,
-  tanty_spice: 'RdKVaQgg8n1rUzICELn1',
+  tanty_spice: DEFAULT_TANTY_VOICE_ID,
   steelpan_sam: DEFAULT_STEELPAN_SAM_VOICE_ID,
   mango_moko: DEFAULT_MANGO_MOKO_VOICE_ID,
 };
@@ -35,9 +44,12 @@ function request(characterId: string) {
 
 async function main() {
   process.env.ELEVENLABS_API_KEY = 'routing-proof-only';
-  delete process.env.ELEVENLABS_ROTI_VOICE_ID;
-  delete process.env.ELEVENLABS_STEELPAN_SAM_VOICE_ID;
-  delete process.env.ELEVENLABS_MANGO_MOKO_VOICE_ID;
+  for (const k of envKeys) {
+    originalEnv[k] = process.env[k];
+    delete process.env[k];
+  }
+
+  const requestedUrls: string[] = [];
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     requestedUrls.push(String(input));
     return new Response(new Uint8Array([1, 2, 3]), {
@@ -47,48 +59,63 @@ async function main() {
   }) as typeof fetch;
 
   try {
-    const seen = new Map<string, string>();
+    // 1) Full lock map: five distinct Ray-supplied IDs
+    const locked = Object.entries(LOCKED_CHARACTER_VOICE_IDS);
+    if (locked.length !== 5) throw new Error(`lock map size ${locked.length}`);
+    const distinctLocked = new Set(Object.values(LOCKED_CHARACTER_VOICE_IDS));
+    if (distinctLocked.size !== 5) {
+      throw new Error(`lock map must have 5 distinct IDs, got ${distinctLocked.size}`);
+    }
+    for (const [id, expected] of locked) {
+      const resolved = lockedCharacterVoiceId(id as keyof typeof LOCKED_CHARACTER_VOICE_IDS);
+      if (resolved !== expected) throw new Error(`${id} lock resolve ${resolved} != ${expected}`);
+      console.log(`[voice-lock] characterId=${id} voiceId=${resolved}`);
+    }
+    if (DEFAULT_DILLY_DOUBLES_VOICE_ID !== 'JtTKpzbNe4HudVAZtxZp') {
+      throw new Error('Dilly default mismatch');
+    }
+    if (VOICES.dilly_doubles !== DEFAULT_DILLY_DOUBLES_VOICE_ID) {
+      throw new Error(`elevenlabs VOICES.dilly_doubles=${VOICES.dilly_doubles} not locked`);
+    }
+    if (VOICES.dilly_doubles === VOICES.roti || VOICES.dilly_doubles === VOICES.tanty_spice) {
+      throw new Error('Dilly must not alias ROTI/Tanty');
+    }
 
-    for (const [characterId, expectedVoiceId] of Object.entries(EXPECTED)) {
+    // 2) Board speak (4 characters currently on Island Helpers soundboard)
+    const seen = new Map<string, string>();
+    for (const [characterId, expectedVoiceId] of Object.entries(BOARD_EXPECTED)) {
       const res = await POST(request(characterId));
-      if (res.status !== 200) {
-        throw new Error(`${characterId} expected 200, got ${res.status}`);
-      }
+      if (res.status !== 200) throw new Error(`${characterId} expected 200, got ${res.status}`);
       const voiceId = res.headers.get('X-Island-Helpers-Voice-Id');
       if (voiceId !== expectedVoiceId) {
-        throw new Error(`${characterId} expected voice ${expectedVoiceId}, got ${voiceId}`);
+        throw new Error(`${characterId} expected ${expectedVoiceId}, got ${voiceId}`);
       }
       if (!requestedUrls.some((url) => url.endsWith(`/text-to-speech/${expectedVoiceId}`))) {
-        throw new Error(`${characterId} ElevenLabs URL missing voice ${expectedVoiceId}`);
+        throw new Error(`${characterId} ElevenLabs URL missing ${expectedVoiceId}`);
       }
       seen.set(characterId, voiceId!);
       console.log(`[voice-routing] characterId=${characterId} voiceId=${voiceId}`);
     }
-
-    const distinct = new Set(seen.values());
-    if (distinct.size !== 4) {
-      throw new Error(`expected 4 distinct voice IDs, got ${distinct.size}: ${[...distinct].join(',')}`);
+    if (new Set(seen.values()).size !== 4) {
+      throw new Error('board speak must use 4 distinct voice IDs');
     }
 
-    // Unknown character must fail closed (400) — never Tanty fallback.
-    const unknown = await POST(request('not_a_helper'));
+    const unknown = await POST(request('dilly_doubles'));
     if (unknown.status !== 400) {
-      throw new Error(`unknown character expected 400, got ${unknown.status}`);
+      throw new Error(`dilly_doubles is not on Island Helpers board; expected 400, got ${unknown.status}`);
     }
 
     console.log(
-      `verify-island-helpers-voice-routing: PASS (4 distinct voices: ${[...distinct].join(', ')})`,
+      `verify-island-helpers-voice-routing: PASS (lock map 5 distinct; board speak 4; dilly locked=${DEFAULT_DILLY_DOUBLES_VOICE_ID})`,
     );
   } finally {
     globalThis.fetch = originalFetch;
     if (originalApiKey === undefined) delete process.env.ELEVENLABS_API_KEY;
     else process.env.ELEVENLABS_API_KEY = originalApiKey;
-    if (originalRotiOverride === undefined) delete process.env.ELEVENLABS_ROTI_VOICE_ID;
-    else process.env.ELEVENLABS_ROTI_VOICE_ID = originalRotiOverride;
-    if (originalSamOverride === undefined) delete process.env.ELEVENLABS_STEELPAN_SAM_VOICE_ID;
-    else process.env.ELEVENLABS_STEELPAN_SAM_VOICE_ID = originalSamOverride;
-    if (originalMangoOverride === undefined) delete process.env.ELEVENLABS_MANGO_MOKO_VOICE_ID;
-    else process.env.ELEVENLABS_MANGO_MOKO_VOICE_ID = originalMangoOverride;
+    for (const k of envKeys) {
+      if (originalEnv[k] === undefined) delete process.env[k];
+      else process.env[k] = originalEnv[k];
+    }
   }
 }
 

@@ -9,8 +9,8 @@ const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 export const VOICES = {
     tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || process.env.ELEVENLABS_STORY_VOICE_ID || 'RdKVaQgg8n1rUzICELn1',
     roti: process.env.ELEVENLABS_ROTI_VOICE_ID || 'fBD19tfE58bkETeiwUoC',
-    dilly_doubles: process.env.ELEVENLABS_DILLY_VOICE_ID || process.env.ELEVENLABS_ROTI_VOICE_ID || 'fBD19tfE58bkETeiwUoC',
-    // Island Helpers — Ray-supplied voices (not ROTI aliases)
+    // Ray-supplied — never fall back to ROTI/Tanty
+    dilly_doubles: process.env.ELEVENLABS_DILLY_VOICE_ID || 'JtTKpzbNe4HudVAZtxZp',
     steelpan_sam: process.env.ELEVENLABS_STEELPAN_SAM_VOICE_ID || 'e9TfM9r08DRqEMm6E3rZ',
     mango_moko: process.env.ELEVENLABS_MANGO_MOKO_VOICE_ID || 'U2cXNcAbNVx97nQxgc8l',
     tanty: process.env.ELEVENLABS_TANTY_VOICE_ID || process.env.ELEVENLABS_STORY_VOICE_ID || 'RdKVaQgg8n1rUzICELn1',
