@@ -26,6 +26,11 @@ import {
     musicCatalogScoreboard,
     streamPathIsUngated,
 } from '../lib/song-catalog';
+import {
+    customSongStateAfterPayment,
+    decideCustomSongAdvance,
+    nextCommerceOrderState,
+} from '../lib/music-orders';
 
 function assert(condition: unknown, message: string) {
     if (!condition) throw new Error(message);
@@ -148,6 +153,27 @@ assert(isChildRoute('/portal/music'), 'kid music hub is a child route');
 assert(isChildRoute('/portal/songs'), 'kid songs page is a child route');
 assert(!isChildRoute('/parent/music'), 'music store is a parent route');
 assert(!isChildRoute('/parent/music/custom'), 'custom songs are a parent route');
+
+assert(nextCommerceOrderState('created', 'paypal_created') === 'paypal_pending', 'created moves to paypal pending');
+assert(nextCommerceOrderState('paypal_pending', 'capture_verified') === 'captured', 'pending capture becomes captured');
+assert(nextCommerceOrderState('captured', 'entitlement_written') === 'entitled', 'captured becomes entitled');
+assert(nextCommerceOrderState('entitled', 'capture_verified') === 'entitled', 'a second capture stays entitled');
+assert(nextCommerceOrderState('entitled', 'entitlement_written') === 'entitled', 'entitlement write is idempotent');
+assert(nextCommerceOrderState('failed', 'capture_verified') === null, 'failed orders do not capture');
+assert(customSongStateAfterPayment('paypal_pending') === 'queued', 'verified custom song is queued');
+assert(customSongStateAfterPayment('queued') === 'queued', 'queued custom song stays queued');
+assert(decideCustomSongAdvance('queued', 'in_progress'), 'admin can start a queued song');
+assert(!decideCustomSongAdvance('queued', 'delivered'), 'delivery cannot skip in progress');
+assert(decideCustomSongAdvance('in_progress', 'delivered'), 'admin can mark delivery');
+assert(!decideCustomSongAdvance('created', 'in_progress'), 'unpaid requests cannot advance');
+
+const landingSongs = fs.readFileSync(path.join(process.cwd(), 'components/landing-v5/OriginalSongs.tsx'), 'utf8');
+assert(landingSongs.includes('id="songs"'), 'landing songs section exists');
+assert(!landingSongs.includes('PayPal') && !landingSongs.includes('create-order'), 'landing songs do not start checkout');
+assert(landingSongs.includes('Download for $1') && landingSongs.includes('heard'), 'download line follows a play');
+const landingPage = fs.readFileSync(path.join(process.cwd(), 'components/landing-v5/LandingPage.tsx'), 'utf8');
+assert(landingPage.includes('<OriginalSongs />'), 'landing page mounts the songs section');
+assert(!landingPage.includes('Custom song <ArrowRight'), 'plans section has one music-free primary path');
 
 const kidMusic = fs.readFileSync(path.join(process.cwd(), 'app/portal/music/page.tsx'), 'utf8');
 const kidSongs = fs.readFileSync(path.join(process.cwd(), 'app/portal/songs/SongsClient.tsx'), 'utf8');

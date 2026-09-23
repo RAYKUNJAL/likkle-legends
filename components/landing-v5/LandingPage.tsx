@@ -6,6 +6,7 @@ import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { ArrowRight, BookOpen, Check, ChevronRight, Gamepad2, Headphones, Heart, Map, Menu, Music2, Printer, ShieldCheck, Sparkles, X } from 'lucide-react';
 import { LANDING_CAST } from '@/lib/landing-cast';
+import OriginalSongs from './OriginalSongs';
 import RadioShowcase from './RadioShowcase';
 import styles from './landing.module.css';
 
@@ -32,11 +33,11 @@ export default function LandingPage() {
             <span>Likkle Legends<small>Little people. Big heritage.</small></span>
           </Link>
           <nav className={styles.desktopNav} aria-label="Main navigation">
-            <a href="#journey">How it works</a><a href="#radio">Island radio</a><a href="#characters">Our characters</a><Link href="/games">Games</Link><Link href="/schools">Schools</Link><Link className={styles.login} href="/login">Log in</Link>
+            <a href="#journey">How it works</a><a href="#radio">Island radio</a><a href="#songs">Songs</a><a href="#characters">Our characters</a><Link href="/games">Games</Link><Link href="/schools">Schools</Link><Link className={styles.login} href="/login">Log in</Link>
           </nav>
           <button className={styles.menuButton} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X /> : <Menu />}</button>
         </div>
-        {menuOpen && <nav id="mobile-navigation" className={styles.mobileNav} aria-label="Mobile navigation" onClick={() => setMenuOpen(false)}><a href="#journey">How it works</a><a href="#radio">Island radio</a><a href="#characters">Our characters</a><Link href="/games">Games</Link><Link href="/schools">Schools</Link><Link href="/login">Log in</Link></nav>}
+        {menuOpen && <nav id="mobile-navigation" className={styles.mobileNav} aria-label="Mobile navigation" onClick={() => setMenuOpen(false)}><a href="#journey">How it works</a><a href="#radio">Island radio</a><a href="#songs">Songs</a><a href="#characters">Our characters</a><Link href="/games">Games</Link><Link href="/schools">Schools</Link><Link href="/login">Log in</Link></nav>}
       </header>
       <main id="main-content">
         <section className={styles.hero} aria-labelledby="hero-heading">
@@ -62,6 +63,7 @@ export default function LandingPage() {
         </section>
 
         <RadioShowcase />
+        <OriginalSongs />
 
         <section id="characters" className={styles.characters} aria-labelledby="characters-heading">
           <div className={styles.container}>
@@ -109,11 +111,11 @@ export default function LandingPage() {
 
         <section className={styles.sampleSection}><div className={styles.sampleInner}><div><p className={styles.eyebrow}>Small moments. Lasting connections.</p><h2>What could their first week feel like?</h2><p>A story to share. A song to sing. Something to make. Something new to discover together.</p></div><div className={styles.sampleCard}><p className={styles.sampleLabel}>A sample island week</p><h3>One little adventure each day</h3><ul><li><BookOpen /><span><strong>Read together</strong>A Caribbean story with a familiar guide</span></li><li><Music2 /><span><strong>Sing & move</strong>Drinking Water on Likkle Legends Radio</span><a href="#radio" aria-label="Listen to island radio"><ArrowRight /></a></li><li><Gamepad2 /><span><strong>Play & discover</strong>A quick visit to the island arcade</span><Link href="/games" aria-label="Visit the island arcade"><ArrowRight /></Link></li><li><Printer /><span><strong>Make it your own</strong>A colorful activity away from the screen</span></li></ul><Link className={styles.primaryButton} href="/signup">Build their free journey <ArrowRight size={18} /></Link></div></div></section>
 
-        <section id="plans" className={styles.plans}><div className={styles.container}><div className={styles.sectionHeading}><p className={styles.eyebrow}>Start free. Grow together.</p><h2>A little more island magic.</h2><p>Parents can buy an Island Pack or an optional annual plan. Checkout stays on the parent account.</p></div><div className={styles.planGrid}>{plans.map((plan, i) => <article key={plan.name} className={`${styles.planCard} ${i === 1 ? styles.featuredPlan : ''}`}><p className={styles.eyebrow}>{plan.note}</p><h3>{plan.name}</h3><div className={styles.price}>{plan.price}<span>{plan.cadence}</span></div><ul>{plan.features.map(feature => <li key={feature}><Check size={18} />{feature}</li>)}</ul><Link className={i === 1 ? styles.primaryButton : styles.secondaryButton} href={plan.href}>Parent checkout <ArrowRight size={18} /></Link></article>)}</div><div style={{ marginTop: 28, textAlign: 'center' }}><Link className={styles.secondaryButton} href="/checkout?offer=family_plan_annual">Optional Family Plan — $349/year <ArrowRight size={18} /></Link></div><div style={{ marginTop: 28 }} className={styles.planCard}><p className={styles.eyebrow}>Music Store</p><h3>Listen free · Download $1</h3><p>Every account can play the songs we host. A parent can buy a $1 download license, five licenses for $4, or a $24.99 custom Caribbean kids song. Listening is not part of the pack.</p><div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 16 }}><Link className={styles.primaryButton} href="/parent/music">Music Store <ArrowRight size={18} /></Link><Link className={styles.secondaryButton} href="/parent/music/custom">Custom song <ArrowRight size={18} /></Link></div></div></div></section>
+        <section id="plans" className={styles.plans}><div className={styles.container}><div className={styles.sectionHeading}><p className={styles.eyebrow}>Start free. Grow together.</p><h2>A little more island magic.</h2><p>Parents can buy an Island Pack or an optional annual plan. Checkout stays on the parent account.</p></div><div className={styles.planGrid}>{plans.map((plan, i) => <article key={plan.name} className={`${styles.planCard} ${i === 1 ? styles.featuredPlan : ''}`}><p className={styles.eyebrow}>{plan.note}</p><h3>{plan.name}</h3><div className={styles.price}>{plan.price}<span>{plan.cadence}</span></div><ul>{plan.features.map(feature => <li key={feature}><Check size={18} />{feature}</li>)}</ul><Link className={i === 1 ? styles.primaryButton : styles.textLink} href={plan.href}>Parent checkout <ArrowRight size={18} /></Link></article>)}</div><div style={{ marginTop: 28, textAlign: 'center' }}><Link className={styles.textLink} href="/checkout?offer=family_plan_annual">Optional Family Plan — $349/year <ArrowRight size={16} /></Link></div></div></section>
 
         <section className={styles.finalCta}><p className={styles.eyebrow}>For little legends, everywhere</p><h2>Their roots travel with them.</h2><p>Let’s help them discover just how much there is to love.</p><Link className={styles.primaryButton} href="/signup">Start your family’s adventure <ArrowRight size={20} /></Link><Link className={styles.textLink} href="/games">Or play a free game first <ArrowRight size={16} /></Link></section>
       </main>
-      <footer className={styles.footer}><div className={styles.container}><div><strong>Likkle Legends</strong><p>Little people. Big heritage.</p></div><nav aria-label="Footer navigation"><a href="#radio">Island radio</a><a href="#characters">Our characters</a><Link href="/games">Games</Link><Link href="/schools">Schools</Link><Link href="/island-helpers">Island Helpers</Link><Link href="/safety">Child safety</Link><Link href="/privacy">Privacy</Link><Link href="/contact">Contact</Link></nav><p className={styles.copyright}>© {new Date().getFullYear()} Likkle Legends.</p></div></footer>
+      <footer className={styles.footer}><div className={styles.container}><div><strong>Likkle Legends</strong><p>Little people. Big heritage.</p></div><nav aria-label="Footer navigation"><a href="#radio">Island radio</a><a href="#songs">Songs</a><a href="#characters">Our characters</a><Link href="/games">Games</Link><Link href="/schools">Schools</Link><Link href="/island-helpers">Island Helpers</Link><Link href="/safety">Child safety</Link><Link href="/privacy">Privacy</Link><Link href="/contact">Contact</Link></nav><p className={styles.copyright}>© {new Date().getFullYear()} Likkle Legends.</p></div></footer>
     </div>
   );
 }

@@ -38,6 +38,8 @@ export default function ParentMusicStorePage() {
     const [tracks, setTracks] = useState<LibraryTrack[]>(catalogTracks);
     const [credits, setCredits] = useState(0);
     const [playing, setPlaying] = useState<string | null>(null);
+    const [played, setPlayed] = useState<Record<string, boolean>>({});
+    const [receipts, setReceipts] = useState<Array<{ id: string; sku: string; amount: number; currency: string; label: string; paypalOrderId: string | null; createdAt: string | null }>>([]);
     const [message, setMessage] = useState<string | null>(null);
     const [buying, setBuying] = useState<string | null>(null);
     const scoreboard = musicCatalogScoreboard();
@@ -50,6 +52,7 @@ export default function ParentMusicStorePage() {
         if (!response.ok || !Array.isArray(body.tracks)) return;
         setTracks(body.tracks);
         setCredits(Number(body.creditsRemaining || 0));
+        if (Array.isArray(body.receipts)) setReceipts(body.receipts);
     };
 
     useEffect(() => {
@@ -72,8 +75,10 @@ export default function ParentMusicStorePage() {
             return;
         }
         audio.src = track.streamUrl;
-        audio.play().catch(() => setPlaying(null));
-        setPlaying(track.id);
+        audio.play().then(() => {
+            setPlaying(track.id);
+            setPlayed((prev) => ({ ...prev, [track.id]: true }));
+        }).catch(() => setPlaying(null));
     };
 
     const redeem = async (trackId: string) => {
@@ -98,19 +103,20 @@ export default function ParentMusicStorePage() {
             <div className="mx-auto max-w-3xl">
                 <Link href="/parent" className="text-sm font-bold text-slate-500">Parent dashboard</Link>
                 <p className="mt-6 text-xs font-black uppercase tracking-[0.2em] text-primary">Music Store</p>
-                <h1 className="mt-2 text-4xl font-black text-slate-900">Listen free · Download ${formatUsd(MUSIC_DOWNLOAD_PRICE)}</h1>
+                <h1 className="mt-2 text-4xl font-black text-slate-900">Hear the songs</h1>
                 <p className="mt-3 text-slate-600">
-                    {scoreboard.playable} song{scoreboard.playable === 1 ? '' : 's'} can be played today. {scoreboard.inventoryMissing} older titles are not listed because the audio file is not in this project. Streaming is free. A download license stays on this parent account after PayPal verifies it.
+                    {scoreboard.playable} kids Caribbean song{scoreboard.playable === 1 ? '' : 's'} can be played today. The library is growing. {scoreboard.inventoryMissing} older titles stay off this page because the audio file is not in this project. Listening is free.
                 </p>
-                <Link href="/parent/music/custom" className="mt-4 inline-flex text-sm font-black text-primary">Order a custom song</Link>
+                <Link href="/parent/music/custom" className="mt-4 inline-flex text-sm font-bold text-slate-600 underline">Birthday / event song for your likkle one</Link>
 
                 <audio id="parent-music-player" className="hidden" onEnded={() => setPlaying(null)} />
 
                 {!ready && <p className="mt-8 text-sm font-bold text-slate-500">Checking parent session…</p>}
                 {ready && !token && (
-                    <Link href="/login?redirect=/parent/music" className="mt-8 inline-flex rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white">
-                        Parent sign in
-                    </Link>
+                    <p className="mt-6 text-sm text-slate-600">
+                        <Link href="/login?redirect=/parent/music" className="font-bold underline">Parent sign in</Link>
+                        {' '}to keep a download or request a custom song. Playback does not need an account.
+                    </p>
                 )}
 
                 <div className="mt-8 space-y-4">
@@ -121,8 +127,8 @@ export default function ParentMusicStorePage() {
                                     <h2 className="text-xl font-black text-slate-900">{track.title}</h2>
                                     <p className="text-sm text-slate-500">{track.artist}</p>
                                 </div>
-                                <button type="button" onClick={() => play(track)} className="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-black text-slate-900">
-                                    {playing === track.id ? 'Pause' : 'Play free'}
+                                <button type="button" onClick={() => play(track)} className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-black text-white">
+                                    {playing === track.id ? 'Pause' : 'Play'}
                                 </button>
                             </div>
                             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -131,18 +137,24 @@ export default function ParentMusicStorePage() {
                                         <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black uppercase tracking-widest text-emerald-700">Owned</span>
                                         <a href={`/api/music/download/${track.id}`} className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-black text-white">Download</a>
                                     </>
-                                ) : (
-                                    <>
-                                        <button type="button" onClick={() => setBuying(buying === track.id ? null : track.id)} className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-black text-white">
-                                            Buy download ${formatUsd(MUSIC_DOWNLOAD_PRICE)}
-                                        </button>
-                                        {credits > 0 && token && (
-                                            <button type="button" onClick={() => redeem(track.id)} className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-black text-slate-900">
-                                                Use 1 license ({credits} left)
+                                ) : played[track.id] ? (
+                                    token ? (
+                                        <>
+                                            <button type="button" onClick={() => setBuying(buying === track.id ? null : track.id)} className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-black text-slate-900">
+                                                Download for ${formatUsd(MUSIC_DOWNLOAD_PRICE)}
                                             </button>
-                                        )}
-                                    </>
-                                )}
+                                            {credits > 0 && (
+                                                <button type="button" onClick={() => redeem(track.id)} className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-black text-slate-900">
+                                                    Use 1 license ({credits} left)
+                                                </button>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <Link href="/login?redirect=/parent/music" className="text-sm font-bold text-slate-600 underline">
+                                            Download for ${formatUsd(MUSIC_DOWNLOAD_PRICE)} after parent sign in
+                                        </Link>
+                                    )
+                                ) : null}
                             </div>
                             {buying === track.id && !track.owned && token && PAYPAL_CLIENT_ID && (
                                 <div className="mt-4">
@@ -167,9 +179,9 @@ export default function ParentMusicStorePage() {
 
                 {token && (
                     <section className="mt-8 rounded-3xl bg-white p-6 shadow-sm">
-                        <h2 className="text-2xl font-black text-slate-900">5 download licenses</h2>
+                        <h2 className="text-xl font-black text-slate-900">A few download licenses</h2>
                         <p className="mt-2 text-sm text-slate-600">
-                            Five download licenses for ${formatUsd(MUSIC_DOWNLOAD_BUNDLE_PRICE)}. They apply only to songs in this library. Unused licenses stay on the parent account. You have {credits} left.
+                            Optional. Five download licenses for ${formatUsd(MUSIC_DOWNLOAD_BUNDLE_PRICE)}, only for songs in this library. Unused licenses stay on the parent account. You have {credits} left.
                         </p>
                         {PAYPAL_CLIENT_ID ? (
                             <div className="mt-4">
@@ -185,6 +197,22 @@ export default function ParentMusicStorePage() {
                         ) : (
                             <p className="mt-3 text-sm font-bold text-red-700">PayPal checkout is unavailable.</p>
                         )}
+                    </section>
+                )}
+
+                {receipts.length > 0 && (
+                    <section className="mt-8">
+                        <h2 className="text-xl font-black text-slate-900">Receipts</h2>
+                        <ul className="mt-3 space-y-3">
+                            {receipts.map((receipt) => (
+                                <li key={receipt.id} className="rounded-3xl bg-white p-4 text-sm text-slate-600 shadow-sm">
+                                    <p className="font-black text-slate-900">{receipt.label}</p>
+                                    <p className="mt-1">{receipt.sku} · ${formatUsd(receipt.amount)} {receipt.currency}</p>
+                                    <p className="mt-1">{receipt.createdAt ? new Date(receipt.createdAt).toLocaleString() : ''}</p>
+                                    {receipt.paypalOrderId && <p className="mt-1 break-all text-xs text-slate-400">PayPal {receipt.paypalOrderId}</p>}
+                                </li>
+                            ))}
+                        </ul>
                     </section>
                 )}
 

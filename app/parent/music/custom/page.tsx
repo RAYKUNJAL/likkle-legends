@@ -15,16 +15,10 @@ type SongRequest = {
     childFirstName: string | null;
     occasion: string | null;
     notes: string | null;
-    status: 'awaiting_payment' | 'paid' | 'in_progress' | 'delivered';
+    status: string;
+    label?: string;
     audioUrl: string | null;
     createdAt: string | null;
-};
-
-const STATUS_LABEL: Record<SongRequest['status'], string> = {
-    awaiting_payment: 'Awaiting payment',
-    paid: 'Paid',
-    in_progress: 'In progress',
-    delivered: 'Delivered',
 };
 
 export default function ParentCustomSongPage() {
@@ -122,7 +116,7 @@ export default function ParentCustomSongPage() {
                                     requestId={draftId}
                                     onVerified={() => {
                                         setVerified(true);
-                                        setMessage('PayPal verified the payment. The request is paid and waiting for the team.');
+                                        setMessage('PayPal verified the payment. The request is queued for the team.');
                                         load(token);
                                     }}
                                 />
@@ -148,14 +142,14 @@ export default function ParentCustomSongPage() {
                                 <li key={item.id} className="rounded-3xl bg-white p-5 shadow-sm">
                                     <div className="flex items-center justify-between gap-3">
                                         <p className="font-black text-slate-900">{item.childFirstName || 'Child'}</p>
-                                        <span className="text-xs font-black uppercase tracking-widest text-slate-500">{STATUS_LABEL[item.status] || item.status}</span>
+                                        <span className="text-xs font-black uppercase tracking-widest text-slate-500">{item.label || item.status}</span>
                                     </div>
                                     <p className="mt-1 text-sm text-slate-500 capitalize">{item.occasion} · {CUSTOM_SONG_STYLE}</p>
                                     {item.notes && <p className="mt-2 text-sm text-slate-600">{item.notes}</p>}
                                     {item.status === 'delivered' && item.audioUrl && (
                                         <a href={item.audioUrl} className="mt-3 inline-flex text-sm font-black text-primary">Listen to the delivered file</a>
                                     )}
-                                    {item.status !== 'awaiting_payment' && !item.audioUrl && (
+                                    {['queued', 'paid', 'in_progress'].includes(item.status) && !item.audioUrl && (
                                         <p className="mt-3 text-sm text-slate-500">No audio file yet. Delivery is manual.</p>
                                     )}
                                 </li>

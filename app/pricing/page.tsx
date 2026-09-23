@@ -56,11 +56,17 @@ export default function PricingPage() {
                                     <p className="text-xs font-black uppercase tracking-widest text-slate-400">{offer.kind === 'one_time' ? 'Island Pack' : 'Optional annual'}</p>
                                     <h2 className="mt-2 text-2xl font-black text-slate-900">{offer.name}</h2>
                                     <p className="mt-2 text-3xl font-black text-slate-900">${formatUsd(offer.price)}<span className="ml-1 text-sm font-bold text-slate-400">{offer.interval === 'year' ? '/year' : 'once'}</span></p>
-                                    <p className="mt-2 text-sm text-slate-500">{offer.description}</p>
-                                    <Link href={`/checkout?offer=${offer.sku}`} className="mt-4 inline-flex text-sm font-black text-primary">Parent checkout</Link>
+                                    <ul className="mt-4 space-y-2 text-sm text-slate-600">
+                                        {offer.features.map((feature) => (
+                                            <li key={feature}>{feature}</li>
+                                        ))}
+                                    </ul>
                                 </article>
                             ))}
                         </div>
+                        <Link href="/checkout?offer=catalog" className="inline-flex rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white">
+                            Review parent plans
+                        </Link>
                         <MusicStoreUpsell />
                     </div>
                 </section>

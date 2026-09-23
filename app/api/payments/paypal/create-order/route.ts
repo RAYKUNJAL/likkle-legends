@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GAMIFICATION_PRODUCTS, MUSIC_STORE_PRODUCTS } from '@/lib/paypal';
 import { KID_IAP_PRODUCT_IDS, getParentOffer } from '@/lib/paypal-offers';
-import { assertUnpaidCustomDraft } from '@/lib/music-fulfillment';
+import { assertUnpaidCustomDraft, markMusicCheckoutPending, openMusicCheckout } from '@/lib/music-fulfillment';
 import { createMusicOrder, createOneTimeOrder, getPayPalAccessToken, paymentErrorResponse, paypalApiBase, requireParentPayer } from '@/lib/paypal-checkout';
 import {
     CUSTOM_SONG_SKU,
@@ -73,7 +73,23 @@ export async function POST(request: NextRequest) {
                 extra = id;
             }
 
+            const opened = await openMusicCheckout({
+                userId: user.id,
+                sku: requestedSku,
+                trackId: requestedSku === MUSIC_DOWNLOAD_SKU ? extra : undefined,
+                requestId: requestedSku === CUSTOM_SONG_SKU ? extra : undefined,
+            });
+            if (!opened.ok) {
+                return NextResponse.json({ error: opened.error, entitled: false }, { status: 503 });
+            }
+
             const order = await createMusicOrder(user.id, requestedSku, extra);
+            await markMusicCheckoutPending({
+                orderId: opened.orderId,
+                userId: user.id,
+                paypalOrderId: order.id,
+                requestId: requestedSku === CUSTOM_SONG_SKU ? extra : undefined,
+            });
             return NextResponse.json({ id: order.id, status: order.status, entitled: false });
         }
 
