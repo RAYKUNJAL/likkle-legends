@@ -1,49 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase-client';
 import { MUSIC_STORE_PRODUCTS, GAMIFICATION_PRODUCTS } from '@/lib/paypal';
+import { KID_IAP_PRODUCT_IDS, getParentOffer } from '@/lib/paypal-offers';
+import { createOneTimeOrder, getPayPalAccessToken, paymentErrorResponse, paypalApiBase, requireParentPayer } from '@/lib/paypal-checkout';
 
-const PAYPAL_API = process.env.NODE_ENV === 'production'
-    ? 'https://api-m.paypal.com'
-    : 'https://api-m.sandbox.paypal.com';
-
-async function getPayPalAccessToken() {
-    const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-
-    if (!clientId || !clientSecret) throw new Error("Missing PayPal credentials");
-
-    const auth = Buffer.from(clientId + ":" + clientSecret).toString("base64");
-    const response = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
-        method: "POST",
-        body: "grant_type=client_credentials",
-        headers: {
-            Authorization: `Basic ${auth}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-    });
-
-    const data = await response.json();
-    return data.access_token;
-}
+const PAYPAL_API = paypalApiBase();
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { productId, contentId, metadata } = body; // productId matches MUSIC_STORE_PRODUCTS key
+        const { productId, contentId, metadata, sku } = body;
+        const requestedSku = sku || productId;
 
-        // 1. Verify Auth
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const payer = await requireParentPayer(request);
+        if (!payer.ok) return payer.response;
+        const user = payer.user;
 
-        const token = authHeader.replace('Bearer ', '');
-        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+        if (KID_IAP_PRODUCT_IDS.has(requestedSku)) {
+            return NextResponse.json(
+                { error: 'That purchase is not available.', entitled: false },
+                { status: 403 }
+            );
+        }
 
-        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const islandOffer = getParentOffer(requestedSku);
+        if (islandOffer) {
+            if (islandOffer.kind !== 'one_time') {
+                return NextResponse.json(
+                    { error: 'This plan uses subscription checkout.', entitled: false },
+                    { status: 400 }
+                );
+            }
+            const order = await createOneTimeOrder(islandOffer, user.id);
+            return NextResponse.json({ id: order.id, status: order.status, entitled: false });
+        }
 
         // 2. Lookup Price (from music store or gamification products)
         // @ts-ignore
         let product = MUSIC_STORE_PRODUCTS[productId] || GAMIFICATION_PRODUCTS[productId];
-        if (!product) return NextResponse.json({ error: 'Invalid Product' }, { status: 400 });
+        if (!product) return NextResponse.json({ error: 'Invalid Product', entitled: false }, { status: 400 });
 
         // 3. Create Order
         const accessToken = await getPayPalAccessToken();
@@ -85,11 +79,12 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             id: order.id,
-            status: order.status
+            status: order.status,
+            entitled: false,
         });
 
-    } catch (e: any) {
+    } catch (e: unknown) {
         console.error("Create Order Error:", e);
-        return NextResponse.json({ error: e.message }, { status: 500 });
+        return paymentErrorResponse(e);
     }
 }

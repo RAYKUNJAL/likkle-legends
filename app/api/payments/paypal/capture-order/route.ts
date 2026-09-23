@@ -1,45 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
+import { KID_IAP_PRODUCT_IDS, getParentOffer } from '@/lib/paypal-offers';
+import { captureOneTimeOrder, getPayPalAccessToken, paymentErrorResponse, paypalApiBase, requireParentPayer } from '@/lib/paypal-checkout';
 
-const PAYPAL_API = process.env.NODE_ENV === 'production'
-    ? 'https://api-m.paypal.com'
-    : 'https://api-m.sandbox.paypal.com';
-
-// Reuse from create-order or make shared util
-const getPayPalToken = async () => {
-    const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-
-    if (!clientId || !clientSecret) throw new Error("Missing PayPal credentials");
-
-    const auth = Buffer.from(clientId + ":" + clientSecret).toString("base64");
-    const response = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
-        method: "POST",
-        body: "grant_type=client_credentials",
-        headers: {
-            Authorization: `Basic ${auth}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-    });
-
-    const data = await response.json();
-    return data.access_token;
-};
+const PAYPAL_API = paypalApiBase();
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { orderID } = body;
+        const { orderID, sku, productId } = body;
 
-        // 1. Verify User
-        const authHeader = request.headers.get('Authorization');
-        if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        const token = authHeader.replace('Bearer ', '');
-        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-        if (authError || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const payer = await requireParentPayer(request);
+        if (!payer.ok) return payer.response;
+        const user = payer.user;
+
+        const requestedSku = sku || productId;
+        if (KID_IAP_PRODUCT_IDS.has(requestedSku)) {
+            return NextResponse.json({ error: 'That purchase is not available.', entitled: false }, { status: 403 });
+        }
+
+        const islandOffer = getParentOffer(requestedSku);
+        if (islandOffer?.kind === 'one_time') {
+            const result = await captureOneTimeOrder(orderID, user, islandOffer.sku);
+            return NextResponse.json(
+                { entitled: result.entitled, error: 'error' in result ? result.error : undefined, sku: 'sku' in result ? result.sku : undefined, tier: 'tier' in result ? result.tier : undefined, orderId: orderID },
+                { status: result.status }
+            );
+        }
 
         // 2. Capture Order
-        const accessToken = await getPayPalToken();
+        const accessToken = await getPayPalAccessToken();
         const response = await fetch(`${PAYPAL_API}/v2/checkout/orders/${orderID}/capture`, {
             method: "POST",
             headers: {
@@ -70,7 +60,20 @@ export async function POST(request: NextRequest) {
                 }
 
                 // 3. Fulfill Order (DB Insert) — only after capture COMPLETED + amount matches catalog
-                if (transaction.status === 'COMPLETED') {
+                if (transaction.status !== 'COMPLETED') {
+                    return NextResponse.json({ error: 'Payment was not completed', entitled: false }, { status: 402 });
+                }
+
+                if (KID_IAP_PRODUCT_IDS.has(String(customId.productId || ''))) {
+                    return NextResponse.json({ error: 'That purchase is not available.', entitled: false }, { status: 403 });
+                }
+
+                const packedOffer = getParentOffer(String(customId.productId || ''));
+                if (packedOffer) {
+                    return NextResponse.json({ error: 'Payment was not verified', entitled: false }, { status: 402 });
+                }
+
+                {
                     const productId = customId.productId as string | undefined; // e.g. single_track, streak_freeze
                     const contentId = customId.contentId as string | undefined; // song uuid
                     const childId = customId.childId as string | undefined; // for gamification products
@@ -211,7 +214,7 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        return NextResponse.json(captureData);
+        return NextResponse.json({ ...captureData, entitled: false, fulfilled: true });
     } catch (e: any) {
         console.error("Capture Order Error:", e);
         return NextResponse.json({ error: e.message }, { status: 500 });

@@ -266,7 +266,7 @@ export default function AccountSettingsPage() {
                                                     </div>
                                                     <p className="text-gray-500 text-sm mb-4">{tierData.description}</p>
                                                     <div className="flex gap-3">
-                                                        <Link href="/checkout" className="px-4 py-2 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90">
+                                                        <Link href="/checkout?offer=catalog" className="px-4 py-2 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary/90">
                                                             {price ? 'Change Plan' : 'Upgrade Plan'}
                                                         </Link>
                                                     </div>

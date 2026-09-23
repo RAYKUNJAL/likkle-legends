@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { X, Sparkles, Clock, Crown } from 'lucide-react';
+import { X, Sparkles, Clock } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
-import { fireConversionEvent } from '@/lib/analytics';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 /**
  * FreeTierBanner — CRO banner shown inside the portal for:
@@ -42,22 +41,17 @@ export function FreeTierBanner() {
     const urgency = isExpired || (isTrialing && trialDaysLeft !== null && trialDaysLeft <= 3);
 
     let message: string;
-    let ctaLabel: string;
-    const ctaPlan = 'legends_plus';
 
     if (isExpired) {
-        message = 'Your subscription ended — your child is missing their island adventures.';
-        ctaLabel = 'Renew Now';
+        message = 'Your subscription ended — a parent can renew from their account.';
     } else if (isTrialing) {
         if (trialDaysLeft !== null && trialDaysLeft <= 3) {
-            message = `Trial ends in ${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''}! Keep the legends going.`;
+            message = `Trial ends in ${trialDaysLeft} day${trialDaysLeft !== 1 ? 's' : ''}. A parent can keep the plan going.`;
         } else {
-            message = `Free trial active${trialDaysLeft ? ` · ${trialDaysLeft} days left` : ''}. Upgrade for unlimited access.`;
+            message = `Free trial active${trialDaysLeft ? ` · ${trialDaysLeft} days left` : ''}.`;
         }
-        ctaLabel = 'Choose a Plan';
     } else {
-        message = 'Free Plan · Unlock unlimited stories, songs & AI adventures.';
-        ctaLabel = 'Upgrade';
+        message = 'Free plan. A parent can add an Island Pack from their account.';
     }
 
     return (
@@ -75,22 +69,7 @@ export function FreeTierBanner() {
             </div>
 
             <div className="flex items-center gap-2 flex-shrink-0">
-                <Link
-                    href={`/checkout?plan=${ctaPlan}`}
-                    onClick={() =>
-                        fireConversionEvent('begin_checkout', {
-                            tier: ctaPlan,
-                            source: 'portal_banner',
-                            trigger: isExpired ? 'expired' : isTrialing ? 'trial' : 'free',
-                        })
-                    }
-                    className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black transition-all hover:scale-105 active:scale-95 ${
-                        urgency ? 'bg-white text-amber-700' : 'bg-primary text-white'
-                    }`}
-                >
-                    <Crown size={12} />
-                    {ctaLabel}
-                </Link>
+                <AskAParentNotice className={urgency ? 'text-white' : 'text-white'} />
 
                 <button
                     onClick={() => setDismissed(true)}

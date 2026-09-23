@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
-import { X, Crown, Sparkles, Zap, Star } from 'lucide-react';
+import { X, Star } from 'lucide-react';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 import { useEffect } from 'react';
 
 interface UpgradeModalProps {
@@ -46,7 +46,6 @@ const TIER_INFO: Record<string, {
 };
 
 export default function UpgradeModal({ isOpen, onClose, requiredTier = 'legends_plus', featureName }: UpgradeModalProps) {
-    const router = useRouter();
 
     // Close on Escape
     useEffect(() => {
@@ -59,11 +58,6 @@ export default function UpgradeModal({ isOpen, onClose, requiredTier = 'legends_
     if (!isOpen) return null;
 
     const tier = TIER_INFO[requiredTier] || TIER_INFO['legends_plus'];
-
-    const handleUpgrade = () => {
-        onClose();
-        router.push(`/checkout?plan=${tier.plan}&cycle=month`);
-    };
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" role="dialog" aria-modal="true">
@@ -113,19 +107,7 @@ export default function UpgradeModal({ isOpen, onClose, requiredTier = 'legends_
                     </div>
 
                     {/* Price + CTA */}
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Starting at</p>
-                            <p className="text-3xl font-black text-gray-900">{tier.price}</p>
-                        </div>
-                        <button
-                            onClick={handleUpgrade}
-                            className={`flex items-center gap-2 px-8 py-4 bg-gradient-to-r ${tier.color} text-white rounded-2xl font-black text-sm shadow-xl hover:scale-105 active:scale-95 transition-all`}
-                        >
-                            <Crown size={18} />
-                            Upgrade Now
-                        </button>
-                    </div>
+                    <AskAParentNotice className="mb-4 text-slate-700" />
 
                     <button
                         onClick={onClose}

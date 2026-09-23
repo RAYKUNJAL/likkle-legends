@@ -12,6 +12,7 @@ import { CHARACTER_CONFIGS, CHARACTER_ORDER } from '@/lib/characterConfig';
 import { getGames, getRecentActivities } from '@/lib/database';
 import { getGameProgressMap, type GameProgressEntry } from '@/lib/game-progress';
 import { normalizeParentalControls } from '@/lib/parental-controls';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 interface Game {
     id: string;
@@ -785,13 +786,7 @@ export default function GamesHubPage() {
                                     {isLocked && (
                                         <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex flex-col items-center justify-center z-30 text-white">
                                             <Lock size={36} className="mb-2" />
-                                            <p className="font-black mb-2">Upgrade to Play</p>
-                                            <Link
-                                                href="/#pricing"
-                                                className="px-4 py-2 bg-white text-slate-800 rounded-full text-sm font-black hover:scale-105 transition-transform"
-                                            >
-                                                See Plans
-                                            </Link>
+                                            <AskAParentNotice className="text-white text-center" />
                                         </div>
                                     )}
 

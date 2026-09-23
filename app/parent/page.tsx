@@ -151,6 +151,15 @@ export default function ParentDashboard() {
                     </div>
                 </header>
 
+                <Link href="/checkout?offer=catalog" className="mb-10 flex items-center justify-between gap-4 rounded-3xl bg-white p-6 shadow-lg border border-slate-100">
+                    <div>
+                        <p className="text-xs font-black uppercase tracking-widest text-primary">Parent checkout</p>
+                        <h2 className="mt-1 text-2xl font-black text-slate-900">Island Packs and Family Plan</h2>
+                        <p className="mt-1 text-sm font-medium text-slate-500">$10 and $25 packs, plus optional annual Island Pass or Family Plan. PayPal confirms the payment before access turns on.</p>
+                    </div>
+                    <ArrowRight className="shrink-0 text-primary" />
+                </Link>
+
                 {/* Tab Selection */}
                 <div className="flex gap-8 mb-12 border-b-2 border-slate-100">
                     <button

@@ -2,12 +2,12 @@
 
 import React, { useState, useRef } from 'react';
 import {
-    Music, Play, Pause, ChevronLeft, ChevronRight,
-    Heart, Sparkles, Gift, Crown, Star, CheckCircle2, Zap, Download
+    Music, Play, Pause, ChevronLeft,
+    Heart, Sparkles, Gift, Crown, Star
 } from 'lucide-react';
 import Link from 'next/link';
-import PurchaseModal from '@/components/MusicStore/PurchaseModal';
 import { RADIO_TRACKS, RADIO_CHANNELS } from '@/lib/constants';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 // ── Channel metadata ──────────────────────────────────────────────────────────
 const CHANNEL_META: Record<string, { emoji: string; color: string; bg: string }> = {
@@ -24,37 +24,6 @@ function formatDuration(seconds?: number): string {
     return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-const PLANS = [
-    {
-        id: 'plan_digital_legends',
-        name: 'Legends',
-        price: '$4.99',
-        period: '/mo',
-        color: 'from-blue-500 to-cyan-500',
-        icon: '🌟',
-        features: ['All radio channels', 'Stories & lullabies', '20 printables', 'Ad-free listening'],
-    },
-    {
-        id: 'plan_legends_plus',
-        name: 'Legends Plus',
-        price: '$19.99',
-        period: '/mo',
-        color: 'from-orange-500 to-red-500',
-        icon: '👑',
-        badge: 'Most Popular',
-        features: ['Everything in Legends', 'Games & quizzes', 'AI story creator', 'Unlimited printables', '2 child profiles'],
-    },
-    {
-        id: 'plan_family_legacy',
-        name: 'Family Legacy',
-        price: '$34.99',
-        period: '/mo',
-        color: 'from-purple-500 to-pink-500',
-        icon: '🏆',
-        features: ['Everything in Legends+', '5 child profiles', 'Family challenges', 'Priority support', 'Custom song credit'],
-    },
-];
-
 export default function MusicHub() {
     const [activeTab, setActiveTab] = useState<'music' | 'upgrade' | 'custom'>('music');
     const [isPlaying, setIsPlaying] = useState<string | null>(null);
@@ -64,8 +33,7 @@ export default function MusicHub() {
     const [customChildName, setCustomChildName] = useState('');
     const [customEventType, setCustomEventType] = useState('birthday');
     const [customInstructions, setCustomInstructions] = useState('');
-    const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
-    const [customMetadata, setCustomMetadata] = useState<any>(null);
+    const [customNote, setCustomNote] = useState<string | null>(null);
 
     const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -88,12 +56,7 @@ export default function MusicHub() {
 
     const handleCustomSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setCustomMetadata({
-            child_name: customChildName,
-            event_type: customEventType,
-            special_instructions: customInstructions,
-        });
-        setIsPurchaseModalOpen(true);
+        setCustomNote('A parent orders custom songs from their account. This page cannot take payment.');
     };
 
     return (
@@ -138,7 +101,7 @@ export default function MusicHub() {
                                 onClick={() => setActiveTab('custom')}
                                 className="px-8 py-4 bg-black/20 backdrop-blur-md text-white border border-white/30 rounded-2xl font-black uppercase tracking-widest flex items-center gap-3 hover:bg-black/30 transition-all text-sm"
                             >
-                                <Gift size={18} /> Custom Song — $24.99
+                                <Gift size={18} /> Custom Song
                             </button>
                         </div>
                     </div>
@@ -285,75 +248,20 @@ export default function MusicHub() {
                                     <Heart size={28} className="text-orange-400" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black text-white leading-tight">Unlock the Full Legends Experience</h3>
-                                    <p className="text-zinc-400 text-sm font-medium mt-1">Stories, games, printables & more — from $4.99/mo</p>
+                                    <h3 className="text-xl font-black text-white leading-tight">More island music lives with a parent plan</h3>
+                                    <p className="text-zinc-400 text-sm font-medium mt-1">Kids listen here. A parent unlocks more from their account.</p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setActiveTab('upgrade')}
-                                className="flex-shrink-0 px-8 py-4 bg-orange-500 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-xl shadow-orange-500/30 flex items-center gap-3 whitespace-nowrap"
-                            >
-                                See Plans <ChevronRight size={18} />
-                            </button>
+                            <AskAParentNotice className="text-white" />
                         </div>
                     </div>
                 )}
 
                 {/* ── UPGRADE TAB ── */}
                 {activeTab === 'upgrade' && (
-                    <div className="max-w-5xl mx-auto animate-fade-in space-y-10">
-                        <div className="text-center">
-                            <h2 className="text-4xl font-black text-zinc-900 mb-3 tracking-tight">Choose Your Plan</h2>
-                            <p className="text-zinc-400 font-medium text-lg">Everything your Likkle Legend needs to thrive — pick the plan that fits.</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {PLANS.map((plan) => (
-                                <div
-                                    key={plan.id}
-                                    className={`relative bg-white rounded-[2.5rem] p-8 shadow-xl border-2 flex flex-col ${plan.badge ? 'border-orange-400 shadow-orange-100' : 'border-zinc-100'}`}
-                                >
-                                    {plan.badge && (
-                                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-[10px] font-black uppercase tracking-widest px-5 py-1.5 rounded-full shadow-lg whitespace-nowrap">
-                                            {plan.badge}
-                                        </div>
-                                    )}
-                                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${plan.color} flex items-center justify-center text-3xl shadow-lg mb-6`}>
-                                        {plan.icon}
-                                    </div>
-                                    <h3 className="text-2xl font-black text-zinc-900 mb-1">{plan.name}</h3>
-                                    <div className="flex items-end gap-1 mb-6">
-                                        <span className="text-4xl font-black text-zinc-900">{plan.price}</span>
-                                        <span className="text-zinc-400 font-bold mb-1">{plan.period}</span>
-                                    </div>
-                                    <ul className="space-y-3 flex-1 mb-8">
-                                        {plan.features.map(f => (
-                                            <li key={f} className="flex items-start gap-3">
-                                                <CheckCircle2 size={18} className="text-green-500 flex-shrink-0 mt-0.5" />
-                                                <span className="text-sm font-bold text-zinc-600">{f}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <Link
-                                        href={`/checkout?plan=${plan.id}`}
-                                        className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-widest text-center transition-all hover:scale-105 shadow-lg ${
-                                            plan.badge
-                                                ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-orange-200'
-                                                : 'bg-zinc-900 text-white'
-                                        }`}
-                                    >
-                                        Get {plan.name}
-                                    </Link>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="bg-zinc-50 border border-zinc-100 rounded-[2rem] p-8 text-center">
-                            <p className="text-zinc-400 text-sm font-bold">
-                                Already subscribed? <Link href="/portal" className="text-orange-500 underline hover:text-orange-600">Go to your portal</Link> to access all your content.
-                            </p>
-                            <p className="text-zinc-300 text-xs font-medium mt-2">Cancel anytime. No hidden fees. 100% Caribbean-made content.</p>
-                        </div>
+                    <div className="max-w-xl mx-auto rounded-[2rem] bg-white p-8 text-center shadow-xl">
+                        <h2 className="text-3xl font-black text-zinc-900">Parents choose the plan</h2>
+                        <AskAParentNotice className="mt-4 text-zinc-600" />
                     </div>
                 )}
 
@@ -424,13 +332,11 @@ export default function MusicHub() {
                                 <div className="md:col-span-2 pt-4">
                                     <button
                                         type="submit"
-                                        className="w-full py-6 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-[2rem] font-black uppercase tracking-widest shadow-2xl shadow-orange-300 hover:scale-[1.02] transition-all flex items-center justify-center gap-4 text-lg"
+                                        className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-4 text-lg"
                                     >
-                                        <Gift size={24} /> Order Custom Song — $24.99
+                                        <Gift size={24} /> Ask a parent
                                     </button>
-                                    <p className="text-center text-[10px] font-black text-zinc-300 uppercase tracking-widest mt-5">
-                                        Secure Payment via PayPal · Delivered in 24–48 hrs · 100% Satisfaction Guaranteed
-                                    </p>
+                                    {customNote && <AskAParentNotice className="mt-4 text-center text-zinc-600" />}
                                 </div>
                             </form>
 
@@ -456,15 +362,6 @@ export default function MusicHub() {
                 )}
             </div>
 
-            {/* Custom Song Purchase Modal */}
-            <PurchaseModal
-                isOpen={isPurchaseModalOpen}
-                onClose={() => setIsPurchaseModalOpen(false)}
-                productKey="custom_song_request"
-                contentTitle={customChildName ? `Custom Song for ${customChildName}` : 'Custom Song Request'}
-                onSuccess={() => setIsPurchaseModalOpen(false)}
-                metadata={customMetadata}
-            />
         </div>
     );
 }

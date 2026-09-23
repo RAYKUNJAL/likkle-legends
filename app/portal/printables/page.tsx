@@ -11,6 +11,7 @@ import { getPrintables } from '@/lib/database';
 import { useUser } from '@/components/UserContext';
 import { EmptyState } from '@/components/EmptyState';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 interface Printable {
     id: string;
@@ -199,9 +200,7 @@ function PrintableCard({ item, isLocked, view }: { item: Printable, isLocked: bo
                 </div>
                 <div className="flex items-center gap-4">
                     {isLocked ? (
-                        <Link href="/parent/billing" className="px-6 py-3 bg-slate-100 text-slate-400 rounded-xl font-black text-sm">
-                            🔒 Upgrade
-                        </Link>
+                        <AskAParentNotice className="text-slate-500" />
                     ) : (
                         <a
                             href={item.pdf_url}
@@ -255,9 +254,7 @@ function PrintableCard({ item, isLocked, view }: { item: Printable, isLocked: bo
                         </div>
                         <p className="font-black text-lg">Subscribers Only</p>
                         <p className="text-white/80 text-xs font-bold mt-2">Join Likkle Legends for unlimited printables!</p>
-                        <Link href="/parent/billing" className="mt-6 px-6 py-3 bg-white text-slate-900 rounded-xl font-black text-sm shadow-xl">
-                            Upgrade Now
-                        </Link>
+                        <AskAParentNotice className="mt-6 text-white" />
                     </div>
                 )}
 

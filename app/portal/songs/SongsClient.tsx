@@ -450,7 +450,7 @@ function SongCard({
                     <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
                         <div className="text-center text-white">
                             <Lock size={24} className="mx-auto mb-2" />
-                            <p className="text-xs">Upgrade to unlock</p>
+                            <p className="text-xs">Ask a parent</p>
                         </div>
                     </div>
                 )}

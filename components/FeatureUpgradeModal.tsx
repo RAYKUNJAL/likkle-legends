@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect } from 'react';
-import Link from 'next/link';
-import { X, Lock, Sparkles, ArrowRight, Check } from 'lucide-react';
+import { X, Lock, Sparkles, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { TIER_INFO, SubscriptionTier, getUpgradeTier } from '@/lib/feature-access';
-import { fireConversionEvent } from '@/lib/analytics';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 interface FeatureUpgradeModalProps {
     isOpen: boolean;
@@ -114,19 +113,6 @@ export default function FeatureUpgradeModal({
                             <Sparkles className="text-primary flex-shrink-0" size={24} />
                         </div>
 
-                        {/* Price */}
-                        <div className="flex items-baseline gap-1 mb-6">
-                            <span className="text-3xl font-black text-deep">
-                                ${tierInfo.price_monthly}
-                            </span>
-                            <span className="text-deep/60 font-bold">/month</span>
-                            {tierInfo.price_yearly && (
-                                <span className="text-xs font-bold text-green-600 ml-auto">
-                                    or ${tierInfo.price_yearly}/year
-                                </span>
-                            )}
-                        </div>
-
                         {/* Features List */}
                         <div className="space-y-3">
                             {tierInfo.features.slice(0, 4).map((feature, i) => (
@@ -140,18 +126,7 @@ export default function FeatureUpgradeModal({
 
                     {/* CTA Buttons */}
                     <div className="space-y-3">
-                        <Link
-                            href={`/checkout?plan=${upgradeTier}`}
-                            onClick={() => fireConversionEvent('begin_checkout', {
-                                tier: upgradeTier,
-                                feature: featureName,
-                                source: 'feature_upgrade_modal',
-                            })}
-                            className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-2xl font-black text-center transition-colors flex items-center justify-center gap-2 group"
-                        >
-                            Upgrade to {tierInfo.name}
-                            <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
-                        </Link>
+                        <AskAParentNotice className="text-center text-slate-700" />
                         <button
                             type="button"
                             onClick={onClose}
@@ -161,12 +136,6 @@ export default function FeatureUpgradeModal({
                         </button>
                     </div>
 
-                    {/* Trust Badge */}
-                    <div className="text-center">
-                        <p className="text-xs text-gray-500 font-bold">
-                            ✓ 7-day free trial • $0 today • cancel anytime
-                        </p>
-                    </div>
                 </div>
             </motion.div>
         </div>
