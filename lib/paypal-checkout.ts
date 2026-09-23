@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import {
     ParentOffer,
     decideOneTimeGrant,
+    decideSaleGrant,
     decideSubscriptionGrant,
     formatUsd,
     getParentOffer,
@@ -24,12 +25,10 @@ export type PayerUser = {
     role: string;
 };
 
+/** Sandbox only when PAYPAL_ENV=sandbox. Unset or live uses the live API. */
 export function paypalApiBase(): string {
     if (process.env.PAYPAL_ENV === 'sandbox') return 'https://api-m.sandbox.paypal.com';
-    if (process.env.PAYPAL_ENV === 'live') return 'https://api-m.paypal.com';
-    return process.env.NODE_ENV === 'production'
-        ? 'https://api-m.paypal.com'
-        : 'https://api-m.sandbox.paypal.com';
+    return 'https://api-m.paypal.com';
 }
 
 export async function getPayPalAccessToken(): Promise<string> {
@@ -324,6 +323,141 @@ export async function confirmSubscription(subscriptionId: string, buyer: PayerUs
         tier: offer.entitlementTier,
         subscriptionId,
     };
+}
+
+async function loadParentPayer(userId: string): Promise<{ id: string; email: string | null; role: string } | null> {
+    const { data } = await supabaseAdmin
+        .from('users')
+        .select('id, role, email')
+        .eq('id', userId)
+        .maybeSingle();
+    if (!data) return null;
+    const role = (data.role && String(data.role).trim()) || 'parent';
+    if (!isParentPayerRole(role)) return null;
+    return { id: data.id, email: data.email || null, role };
+}
+
+/**
+ * Reload a PayPal order and grant a one-time Island Pack only when the
+ * captured amount, currency, custom id, and parent role all match.
+ * Webhook bodies are never trusted on their own.
+ */
+export async function grantVerifiedOrderById(orderId: string): Promise<{ granted: boolean; reason: string }> {
+    if (!orderId || !/^[A-Z0-9]+$/i.test(orderId)) {
+        return { granted: false, reason: 'invalid_order' };
+    }
+
+    const result = await paypalFetch(`/v2/checkout/orders/${encodeURIComponent(orderId)}`);
+    if (!result.ok) {
+        return { granted: false, reason: 'order_reload_failed' };
+    }
+
+    const unit = result.data?.purchase_units?.[0];
+    const capture = unit?.payments?.captures?.find((item: { status?: string }) =>
+        String(item.status || '').toUpperCase() === 'COMPLETED'
+    ) || unit?.payments?.captures?.[0];
+    const customId = unit?.custom_id || capture?.custom_id || result.data?.custom_id;
+    const parsed = parsePackCustomId(customId);
+    const offer = parsed ? getParentOffer(parsed.sku) : null;
+    if (!parsed || !offer || offer.kind !== 'one_time') {
+        return { granted: false, reason: 'not_one_time_pack' };
+    }
+
+    const payer = await loadParentPayer(parsed.userId);
+    if (!payer) {
+        return { granted: false, reason: 'non_parent' };
+    }
+
+    const decision = decideOneTimeGrant({
+        offer,
+        captureStatus: capture?.status || result.data?.status,
+        capturedAmount: parseFloat(capture?.amount?.value || 'NaN'),
+        currency: capture?.amount?.currency_code || unit?.amount?.currency_code,
+        customId,
+        buyerUserId: parsed.userId,
+    });
+    if (!decision.ok) {
+        return { granted: false, reason: decision.reason };
+    }
+
+    const granted = await grantParentEntitlement({
+        userId: parsed.userId,
+        offer,
+        providerRef: orderId,
+        paypalOrderId: orderId,
+        amount: offer.price,
+        payerEmail: payer.email,
+    });
+    return granted.ok
+        ? { granted: true, reason: 'granted' }
+        : { granted: false, reason: 'write_failed' };
+}
+
+/**
+ * Reload a v1 sale. Subscription sales (billing agreement) are ignored.
+ * One-time packs grant only from the re-fetched sale, never the webhook payload.
+ */
+export async function grantVerifiedSaleById(saleId: string): Promise<{ granted: boolean; reason: string }> {
+    if (!saleId || !/^[A-Za-z0-9_-]+$/.test(saleId)) {
+        return { granted: false, reason: 'invalid_sale' };
+    }
+
+    const result = await paypalFetch(`/v1/payments/sale/${encodeURIComponent(saleId)}`);
+    if (!result.ok) {
+        return { granted: false, reason: 'sale_reload_failed' };
+    }
+
+    const sale = result.data || {};
+    if (sale.billing_agreement_id) {
+        return { granted: false, reason: 'subscription_sale' };
+    }
+
+    const linkedOrderId = sale.supplementary_data?.related_ids?.order_id as string | undefined;
+    if (linkedOrderId) {
+        return grantVerifiedOrderById(linkedOrderId);
+    }
+
+    const customId = sale.custom || sale.custom_id;
+    const parsed = parsePackCustomId(customId);
+    if (!parsed) {
+        return { granted: false, reason: 'missing_custom' };
+    }
+
+    const offer = getParentOffer(parsed.sku);
+    const amountRaw = sale.amount?.total ?? sale.amount?.value;
+    const currency = sale.amount?.currency ?? sale.amount?.currency_code;
+    const decision = decideSaleGrant({
+        offer,
+        saleState: sale.state || sale.status,
+        amount: parseFloat(String(amountRaw ?? 'NaN')),
+        currency,
+        customId,
+        buyerUserId: parsed.userId,
+        billingAgreementId: sale.billing_agreement_id,
+    });
+    if (!decision.ok) {
+        return { granted: false, reason: decision.reason };
+    }
+    if (!offer) {
+        return { granted: false, reason: 'unknown_offer' };
+    }
+
+    const payer = await loadParentPayer(parsed.userId);
+    if (!payer) {
+        return { granted: false, reason: 'non_parent' };
+    }
+
+    const granted = await grantParentEntitlement({
+        userId: parsed.userId,
+        offer,
+        providerRef: saleId,
+        paypalOrderId: saleId,
+        amount: offer.price,
+        payerEmail: payer.email,
+    });
+    return granted.ok
+        ? { granted: true, reason: 'granted' }
+        : { granted: false, reason: 'write_failed' };
 }
 
 export async function grantParentEntitlement(input: {

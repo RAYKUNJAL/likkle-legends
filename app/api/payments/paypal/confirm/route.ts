@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { SUBSCRIPTION_PLANS, SubscriptionTier } from '@/lib/paypal';
 import { getParentOffer } from '@/lib/paypal-offers';
-import { captureOneTimeOrder, confirmSubscription, requireParentPayer } from '@/lib/paypal-checkout';
+import { captureOneTimeOrder, confirmSubscription, paypalApiBase, requireParentPayer } from '@/lib/paypal-checkout';
 import { getFulfillmentHub } from '@/lib/geo-routing';
 import { sendEmail, ADMIN_NEW_ORDER_TEMPLATE } from '@/lib/email';
 import { queueSubscriptionConfirmation, cancelAbandonedCheckout } from '@/lib/services/email-triggers';
@@ -12,10 +12,7 @@ import { cookies } from 'next/headers';
 const supabase = supabaseAdmin;
 
 // ── PayPal base URL ───────────────────────────────────────────────────────────
-const PAYPAL_BASE =
-    process.env.PAYPAL_ENV === 'sandbox' || process.env.NODE_ENV !== 'production'
-        ? 'https://api-m.sandbox.paypal.com'
-        : 'https://api-m.paypal.com';
+const PAYPAL_BASE = paypalApiBase();
 
 // ── Get PayPal access token ───────────────────────────────────────────────────
 async function getPayPalAccessToken(): Promise<string> {

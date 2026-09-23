@@ -224,6 +224,35 @@ export function decideOneTimeGrant(input: {
     return { ok: true };
 }
 
+/**
+ * v1 sale events (PAYMENT.SALE.COMPLETED). Subscription sales carry a billing
+ * agreement and stay on the subscription webhook. One-time packs grant only
+ * when the re-fetched sale is completed at the catalog price for that buyer.
+ */
+export function decideSaleGrant(input: {
+    offer: ParentOffer | null;
+    saleState: string | null | undefined;
+    amount: number;
+    currency: string | null | undefined;
+    customId: string | null | undefined;
+    buyerUserId: string;
+    billingAgreementId?: string | null;
+}): GrantDecision {
+    if (input.billingAgreementId) {
+        return { ok: false, reason: 'subscription_sale' };
+    }
+    const state = String(input.saleState || '').toUpperCase();
+    const captureStatus = state === 'COMPLETED' || state === 'COMPLETE' ? 'COMPLETED' : state;
+    return decideOneTimeGrant({
+        offer: input.offer,
+        captureStatus,
+        capturedAmount: input.amount,
+        currency: input.currency,
+        customId: input.customId,
+        buyerUserId: input.buyerUserId,
+    });
+}
+
 export function decideSubscriptionGrant(input: {
     offer: ParentOffer | null;
     status: string | null | undefined;

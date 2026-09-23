@@ -10,6 +10,7 @@ import {
     KID_IAP_PRODUCT_IDS,
     PARENT_OFFERS,
     decideOneTimeGrant,
+    decideSaleGrant,
     decideSubscriptionGrant,
     isChildRoute,
     isParentPayerRole,
@@ -111,5 +112,43 @@ assert(decideSubscriptionGrant({
     customId: `${buyer}:${ISLAND_PASS_ANNUAL}`,
     buyerUserId: buyer,
 }).ok, 'active matching plan grants');
+
+assert(decideSaleGrant({
+    offer: pack25,
+    saleState: 'completed',
+    amount: 25,
+    currency: 'USD',
+    customId: `${buyer}:${ISLAND_PACK_25}`,
+    buyerUserId: buyer,
+    billingAgreementId: null,
+}).ok, 'completed $25 sale grants');
+
+assert(!decideSaleGrant({
+    offer: pack10,
+    saleState: 'completed',
+    amount: 10,
+    currency: 'USD',
+    customId,
+    buyerUserId: buyer,
+    billingAgreementId: 'I-SUBSCRIPTION',
+}).ok, 'subscription sale does not grant a pack');
+
+assert(!decideSaleGrant({
+    offer: pack25,
+    saleState: 'completed',
+    amount: 9.99,
+    currency: 'USD',
+    customId: `${buyer}:${ISLAND_PACK_25}`,
+    buyerUserId: buyer,
+}).ok, 'sale amount mismatch does not grant');
+
+assert(!decideSaleGrant({
+    offer: pack10,
+    saleState: 'pending',
+    amount: 10,
+    currency: 'USD',
+    customId,
+    buyerUserId: buyer,
+}).ok, 'pending sale does not grant');
 
 console.log('Island checkout fail-closed checks passed.');

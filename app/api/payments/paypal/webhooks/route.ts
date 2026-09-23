@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { sendEmail, SUBSCRIPTION_CONFIRMATION_TEMPLATE, TRIAL_REMINDER_TEMPLATE } from '@/lib/email';
-import { decideOneTimeGrant, getParentOffer, isParentPayerRole, parsePackCustomId, tierForPaypalPlanId } from '@/lib/paypal-offers';
-import { getPayPalAccessToken, grantParentEntitlement, paypalApiBase } from '@/lib/paypal-checkout';
+import { getParentOffer, parsePackCustomId, tierForPaypalPlanId } from '@/lib/paypal-offers';
+import { getPayPalAccessToken, grantVerifiedOrderById, grantVerifiedSaleById, paypalApiBase } from '@/lib/paypal-checkout';
 
 // ── Env validation ────────────────────────────────────────────────────────────
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -320,11 +320,21 @@ export async function POST(request: NextRequest) {
             }
 
             case 'PAYMENT.SALE.COMPLETED': {
-                const payerId = resource.payer_id;
-                const amount = resource.amount?.total;
-                const currency = resource.amount?.currency;
+                const relatedOrderId = resource?.supplementary_data?.related_ids?.order_id as string | undefined;
+                if (relatedOrderId) {
+                    const outcome = await grantVerifiedOrderById(relatedOrderId);
+                    if (!outcome.granted && outcome.reason !== 'not_one_time_pack') {
+                        console.error(`[SECURITY] Sale webhook refused order=${relatedOrderId} reason=${outcome.reason}`);
+                    }
+                    break;
+                }
 
-                console.log(`Payment completed: ${amount} ${currency} from ${payerId}`);
+                const saleId = typeof resource?.id === 'string' ? resource.id : '';
+                if (!saleId) break;
+                const outcome = await grantVerifiedSaleById(saleId);
+                if (!outcome.granted && outcome.reason !== 'subscription_sale' && outcome.reason !== 'not_one_time_pack') {
+                    console.error(`[SECURITY] Sale webhook refused sale=${saleId} reason=${outcome.reason}`);
+                }
                 break;
             }
 
@@ -332,60 +342,9 @@ export async function POST(request: NextRequest) {
                 const orderId = resource?.supplementary_data?.related_ids?.order_id as string | undefined;
                 if (!orderId) break;
 
-                const accessToken = await getPayPalAccessToken();
-                const orderRes = await fetch(`${PAYPAL_BASE}/v2/checkout/orders/${encodeURIComponent(orderId)}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                });
-                if (!orderRes.ok) {
-                    console.error(`[SECURITY] Webhook capture could not reload order ${orderId}`);
-                    break;
-                }
-
-                const order = await orderRes.json();
-                const unit = order?.purchase_units?.[0];
-                const capture = unit?.payments?.captures?.find((item: { status?: string }) => item.status === 'COMPLETED');
-                const customId = unit?.custom_id as string | undefined;
-                const parsed = parsePackCustomId(customId);
-                const offer = parsed ? getParentOffer(parsed.sku) : null;
-                if (!offer || !parsed || offer.kind !== 'one_time' || !capture) break;
-
-                const { data: payer } = await supabase
-                    .from('users')
-                    .select('id, role, email')
-                    .eq('id', parsed.userId)
-                    .maybeSingle();
-
-                const payerRole = (payer?.role && String(payer.role).trim()) || 'parent';
-                if (!payer || !isParentPayerRole(payerRole)) {
-                    console.error(`[SECURITY] Webhook capture refused non-parent user ${parsed.userId}`);
-                    break;
-                }
-
-                const decision = decideOneTimeGrant({
-                    offer,
-                    captureStatus: capture.status,
-                    capturedAmount: parseFloat(capture.amount?.value || 'NaN'),
-                    currency: capture.amount?.currency_code,
-                    customId,
-                    buyerUserId: parsed.userId,
-                });
-
-                if (!decision.ok) {
-                    console.error(`[SECURITY] Webhook capture refused order=${orderId} reason=${decision.reason}`);
-                    break;
-                }
-
-                const granted = await grantParentEntitlement({
-                    userId: parsed.userId,
-                    offer,
-                    providerRef: orderId,
-                    paypalOrderId: orderId,
-                    amount: offer.price,
-                    payerEmail: payer.email,
-                });
-
-                if (!granted.ok) {
-                    console.error(`[SECURITY] Webhook capture verified but entitlement write failed order=${orderId}`);
+                const outcome = await grantVerifiedOrderById(orderId);
+                if (!outcome.granted) {
+                    console.error(`[SECURITY] Webhook capture refused order=${orderId} reason=${outcome.reason}`);
                 }
                 break;
             }
