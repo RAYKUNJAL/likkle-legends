@@ -7,12 +7,13 @@ const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 
 // Voice IDs - Custom Caribbean voice models
 export const VOICES = {
-    tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS',
-    roti: process.env.ELEVENLABS_ROTI_VOICE_ID || 'eppqEXVumQ3CfdndcIBd',
-    dilly_doubles: process.env.ELEVENLABS_DILLY_VOICE_ID || process.env.ELEVENLABS_ROTI_VOICE_ID || 'eppqEXVumQ3CfdndcIBd',
-    // Aliases
-    steelpan_sam: process.env.ELEVENLABS_ROTI_VOICE_ID || 'eppqEXVumQ3CfdndcIBd',
-    tanty: process.env.ELEVENLABS_TANTY_VOICE_ID || 'JfiM1myzVx7xU2MZOAJS',
+    tanty_spice: process.env.ELEVENLABS_TANTY_VOICE_ID || process.env.ELEVENLABS_STORY_VOICE_ID || 'RdKVaQgg8n1rUzICELn1',
+    roti: process.env.ELEVENLABS_ROTI_VOICE_ID || 'fBD19tfE58bkETeiwUoC',
+    dilly_doubles: process.env.ELEVENLABS_DILLY_VOICE_ID || process.env.ELEVENLABS_ROTI_VOICE_ID || 'fBD19tfE58bkETeiwUoC',
+    // Island Helpers — Ray-supplied voices (not ROTI aliases)
+    steelpan_sam: process.env.ELEVENLABS_STEELPAN_SAM_VOICE_ID || 'e9TfM9r08DRqEMm6E3rZ',
+    mango_moko: process.env.ELEVENLABS_MANGO_MOKO_VOICE_ID || 'U2cXNcAbNVx97nQxgc8l',
+    tanty: process.env.ELEVENLABS_TANTY_VOICE_ID || process.env.ELEVENLABS_STORY_VOICE_ID || 'RdKVaQgg8n1rUzICELn1',
 };
 
 // Character-specific Voice Settings (as per Registry v3.0.0)
@@ -39,6 +40,12 @@ export const CHARACTER_SETTINGS = {
         stability: 0.32,
         similarity_boost: 0.60,
         style: 0.16,
+        use_speaker_boost: true
+    },
+    mango_moko: {
+        stability: 0.34,
+        similarity_boost: 0.62,
+        style: 0.14,
         use_speaker_boost: true
     },
     tanty: {

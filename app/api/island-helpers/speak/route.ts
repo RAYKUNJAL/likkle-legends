@@ -1,7 +1,8 @@
 /**
  * Island Helpers tap→speak API.
- * Uses the character voice policy: R.O.T.I. is Ray's supplied ElevenLabs voice,
- * Tanty stays on the warm story voice, and Sam/Mango fail closed while pending.
+ * Uses the character voice policy: each helper maps to Ray's supplied ElevenLabs
+ * voice ID (Sam/Mango/ROTI locked; Tanty stays on warm story voice). Unknown
+ * characters fail closed — never fall back to Tanty.
  * Returns audio/mpeg. In-memory cache avoids hammering ElevenLabs on repeat taps.
  */
 import { NextRequest, NextResponse } from 'next/server';

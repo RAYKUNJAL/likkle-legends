@@ -121,9 +121,9 @@ export const CHARACTER_VOICE_PROFILES: Record<VoiceProviderCharacter, CharacterV
 };
 
 export function normalizeCharacterVoiceId(voice?: string): VoiceProviderCharacter {
-  switch ((voice || '').toLowerCase()) {
+  const key = (voice || '').toLowerCase().trim();
+  switch (key) {
     case 'roti':
-    case 'steelpan_sam':
       return 'roti';
     case 'dilly':
     case 'dilly_doubles':
@@ -134,10 +134,16 @@ export function normalizeCharacterVoiceId(voice?: string): VoiceProviderCharacte
     case 'scorcha':
     case 'scorcha_pepper':
       return 'scorcha';
+    case '':
     case 'tanty':
     case 'tanty_spice':
-    default:
       return 'tanty';
+    // steelpan_sam is NOT an alias of roti and must never fall back to Tanty.
+    // Island Helpers speak uses lib/island-helpers/voice-policy.ts instead.
+    case 'steelpan_sam':
+      throw new Error('steelpan_sam is not a Google/Gemini voice-profile alias; use Island Helpers voice policy');
+    default:
+      throw new Error(`Unknown character voice id: ${voice}`);
   }
 }
 

@@ -27,8 +27,14 @@ function resolveVoiceCharacter(voice: string): VoiceCharacter {
     return 'tanty_spice';
 }
 
-function resolveGoogleVoiceCharacter(voice: string): GoogleVoiceCharacter {
-    return normalizeCharacterVoiceId(voice);
+function resolveGoogleVoiceCharacter(voice: string): GoogleVoiceCharacter | null {
+    // steelpan_sam is not a Google voice-profile alias (and must not map to roti/tanty).
+    if (voice === 'steelpan_sam') return null;
+    try {
+        return normalizeCharacterVoiceId(voice);
+    } catch {
+        return null;
+    }
 }
 
 export async function POST(request: NextRequest) {
@@ -76,7 +82,7 @@ export async function POST(request: NextRequest) {
             audioBuffer = await generateSpeech(safeText, { voice: elevenVoice });
         }
 
-        if (!audioBuffer) {
+        if (!audioBuffer && googleVoice) {
             console.log(`Voice API: Falling back to Google Cloud TTS (${googleVoice})`);
             const googleAudio = await synthesizeCharacterSpeechData(safeText, googleVoice, voiceName);
             if (googleAudio) {
