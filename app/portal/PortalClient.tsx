@@ -1005,23 +1005,98 @@ export default function ChildPortalPage() {
                                 </div>
                             </div>
 
+                            <nav
+                                aria-label="Island Week"
+                                className="flex flex-col gap-2 sm:flex-row sm:items-center"
+                            >
+                                <p className="text-xs font-black uppercase tracking-widest text-slate-500 shrink-0">
+                                    Island Week
+                                </p>
+                                <ol className="flex flex-wrap items-center gap-2 text-sm font-black">
+                                    <li>
+                                        <Link
+                                            href="/portal/stories"
+                                            className="inline-flex items-center gap-1 rounded-full bg-lime-100 px-3 py-1.5 text-lime-900 hover:bg-lime-200"
+                                        >
+                                            1 · Read
+                                        </Link>
+                                    </li>
+                                    <li aria-hidden className="text-slate-300">→</li>
+                                    <li className="inline-flex items-center gap-1 rounded-full bg-pink-100 px-3 py-1.5 text-pink-900">
+                                        <span className="text-pink-700/70">2 ·</span>
+                                        <Link href="/portal/music" className="hover:underline">Song</Link>
+                                        <span aria-hidden>/</span>
+                                        <Link href="/portal/games" className="hover:underline">Play</Link>
+                                    </li>
+                                    <li aria-hidden className="text-slate-300">→</li>
+                                    <li>
+                                        <Link
+                                            href="/island-helpers"
+                                            className="inline-flex items-center gap-1 rounded-full bg-teal-100 px-3 py-1.5 text-teal-900 hover:bg-teal-200"
+                                        >
+                                            3 · Calm
+                                        </Link>
+                                    </li>
+                                </ol>
+                            </nav>
+
                             <div className="w-full">
                                 {isPortalIdleReady ? (
                                     <IslandTileGrid
                                         onNavigate={(section) => {
-                                            if (section === 'story-studio') {
-                                                // Restricted feature - check COPPA
+                                            const blockSection = (lockedCopy: string) => {
+                                                setBlockedMessage(screenTimeExceeded
+                                                    ? "Today's screen time is used up! A parent can add more minutes in Parent Controls."
+                                                    : lockedCopy);
+                                            };
+                                            const ageVerifiedForStudio = () => {
                                                 let locallyVerified = false;
                                                 try {
                                                     locallyVerified = Boolean(typeof window !== 'undefined' && localStorage.getItem('ll_age_verified_at'));
                                                 } catch {}
-                                                if (user?.age_verified_at || activeChild?.age_verified || locallyVerified) {
+                                                return Boolean(user?.age_verified_at || activeChild?.age_verified || locallyVerified);
+                                            };
+                                            const openStoryStudio = () => {
+                                                if (ageVerifiedForStudio()) {
                                                     router.push('/portal/story-studio');
                                                 } else {
                                                     setPendingRoute('/portal/story-studio');
                                                     setIsCoppaModalOpen(true);
                                                 }
-                                            } else if (section === 'games') {
+                                            };
+
+                                            if (section === 'songs' || section === 'music') {
+                                                if (screenTimeExceeded) {
+                                                    blockSection('This channel is currently locked by parent controls.');
+                                                    return;
+                                                }
+                                                router.push('/portal/music');
+                                                return;
+                                            }
+                                            if (section === 'buddy') {
+                                                if (!sectionAllowed('buddy') || screenTimeExceeded) {
+                                                    blockSection('Buddy chat is currently locked by parent controls.');
+                                                    return;
+                                                }
+                                                router.push('/portal/buddy');
+                                                return;
+                                            }
+                                            if (section === 'story-studio') {
+                                                void fetch('/api/portal/capabilities')
+                                                    .then((res) => (res.ok ? res.json() : null))
+                                                    .then((data) => {
+                                                        if (data?.storyStudio && data.storyStudio.available === false) {
+                                                            setBlockedMessage(data.storyStudio.reason || 'Story Studio is coming soon — the story service is not connected yet.');
+                                                            return;
+                                                        }
+                                                        openStoryStudio();
+                                                    })
+                                                    .catch(() => {
+                                                        openStoryStudio();
+                                                    });
+                                                return;
+                                            }
+                                            if (section === 'games') {
                                                 if (!sectionAllowed('games') || screenTimeExceeded) {
                                                     setBlockedMessage(screenTimeExceeded
                                                         ? "Today's screen time is used up! A parent can add more minutes in Parent Controls."

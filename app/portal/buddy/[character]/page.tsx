@@ -22,6 +22,7 @@ import { useUser } from '@/components/UserContext';
 import { getCharacterConfig, CHARACTER_ORDER, CharacterId, CharacterChild } from '@/lib/characterConfig';
 import IslandVoice from '@/components/IslandVoice';
 import { normalizeParentalControls } from '@/lib/parental-controls';
+import type { BuddyFollowUp } from '@/lib/buddy-followups';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -124,6 +125,38 @@ const DAILY_PROMPTS: Record<CharacterId, QuickPrompt[][]> = {
             { label: 'Riddle', text: 'Give me a riddle.' },
         ],
     ],
+    mango_moko: [
+        [
+            { label: 'Garden', text: 'What can I grow on an island?' },
+            { label: 'Kindness', text: 'How do I help a friend today?' },
+            { label: 'Animals', text: 'Tell me about a Caribbean animal.' },
+            { label: 'Outside', text: 'Give me a safe outdoor activity.' },
+            { label: 'Fruit', text: 'Tell me about mangoes.' },
+        ],
+        [
+            { label: 'Trees', text: 'Why do trees matter?' },
+            { label: 'Rain', text: 'What does rain do for gardens?' },
+            { label: 'Share', text: 'Why should we share food?' },
+            { label: 'Birds', text: 'What birds live in the Caribbean?' },
+            { label: 'Quiz', text: 'Quiz me on island plants.' },
+        ],
+    ],
+    scorcha_pepper: [
+        [
+            { label: 'Spell it', text: 'Quiz me on a Caribbean word.' },
+            { label: 'Brave', text: 'Tell me a short brave story.' },
+            { label: 'Hot fact', text: 'Give me a fiery island fact.' },
+            { label: 'Stand up', text: 'How do I stand up for a friend?' },
+            { label: 'Race', text: 'Give me a 10-second word race.' },
+        ],
+        [
+            { label: 'Pepper', text: 'Tell me about hot peppers.' },
+            { label: 'Courage', text: 'What does being brave look like?' },
+            { label: 'Spelling', text: 'Help me spell a hard word.' },
+            { label: 'Fire safety', text: 'How do we stay safe around fire?' },
+            { label: 'Cheer', text: 'Cheer me on for trying hard.' },
+        ],
+    ],
 };
 
 function getDailyPrompts(characterId: CharacterId): QuickPrompt[] {
@@ -173,6 +206,8 @@ export default function CharacterChatPage() {
     const [limits, setLimits] = useState<Limits | null>(null);
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [followUps, setFollowUps] = useState<BuddyFollowUp[]>([]);
+    const [voiceReady, setVoiceReady] = useState<boolean | null>(null);
 
     const chatEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -195,6 +230,22 @@ export default function CharacterChatPage() {
         if (typeof window === 'undefined') return;
         const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
         setSpeechSupported(Boolean(SpeechRecognitionAPI));
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetch('/api/portal/capabilities')
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (cancelled || !data) return;
+                setVoiceReady(data.voice?.available === true);
+            })
+            .catch(() => {
+                if (!cancelled) setVoiceReady(false);
+            });
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     useEffect(() => {
@@ -235,6 +286,17 @@ export default function CharacterChatPage() {
                 const history: { id: string; role: string; content: string }[] = data.history || [];
 
                 if (cancelled) return;
+
+                if (data.trial) {
+                    setLimits((prev) => ({
+                        dailyUsed: prev?.dailyUsed || 0,
+                        dailyLimit: prev?.dailyLimit || 25,
+                        burstUsed: prev?.burstUsed || 0,
+                        burstLimit: prev?.burstLimit || 8,
+                        trialLabel: prev?.trialLabel,
+                        trial: data.trial,
+                    }));
+                }
 
                 if (history.length > 0) {
                     setUserHasSent(true);
@@ -340,12 +402,19 @@ export default function CharacterChatPage() {
 
             const assistantMsg: Message = { role: 'assistant', content: data.response, id: `a-${Date.now()}` };
             setMessages((prev) => [...prev, assistantMsg]);
+            setFollowUps(Array.isArray(data?.followUps) ? data.followUps : []);
 
             if (data?.blocked) {
                 setStatusMessage('Safety mode is on. Your buddy will guide the chat back to safe learning topics.');
             }
 
-            if (voiceEnabled) speakText(data.response);
+            if (voiceEnabled) {
+                if (voiceReady === false) {
+                    setStatusMessage('Spoken replies are off until voice keys are configured.');
+                } else {
+                    speakText(data.response);
+                }
+            }
         } catch (_e) {
             setErrorMessage('Connection issue. Try again in a moment.');
             setMessages((prev) => [...prev, {
@@ -357,7 +426,7 @@ export default function CharacterChatPage() {
             setIsSending(false);
             inputRef.current?.focus();
         }
-    }, [activeChild, characterId, config, isSending, voiceEnabled, speakText]);
+    }, [activeChild, characterId, config, isSending, voiceEnabled, voiceReady, speakText]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -500,10 +569,16 @@ export default function CharacterChatPage() {
                 )}
 
                 <button
-                    onClick={() => setIsVoiceMode(true)}
+                    onClick={() => {
+                        if (voiceReady === false) {
+                            setErrorMessage('Island Voice is off until Gemini plus ElevenLabs or Google TTS keys are set. This is turn-based speak → think → reply, not live calling.');
+                            return;
+                        }
+                        setIsVoiceMode(true);
+                    }}
                     className="w-9 h-9 bg-white text-slate-700 rounded-xl flex items-center justify-center transition-all flex-shrink-0 hover:scale-110 shadow-md"
-                    title="Open voice mode"
-                    aria-label="Open voice mode"
+                    title={voiceReady === false ? 'Island Voice not configured' : 'Open turn-based Island Voice'}
+                    aria-label={voiceReady === false ? 'Island Voice not configured' : 'Open turn-based Island Voice'}
                 >
                     <Mic size={16} />
                 </button>
@@ -729,6 +804,22 @@ export default function CharacterChatPage() {
                                 </div>
                             </div>
                         ))}
+
+                        {!isSending && followUps.length > 0 && (
+                            <div className="flex flex-wrap gap-2 pl-14">
+                                {followUps.map((prompt) => (
+                                    <button
+                                        key={prompt.text}
+                                        type="button"
+                                        onClick={() => sendMessage(prompt.text)}
+                                        disabled={isSending}
+                                        className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"
+                                    >
+                                        {prompt.label}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
 
                         {isSending && (
                             <div className="flex gap-3">

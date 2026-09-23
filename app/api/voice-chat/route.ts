@@ -164,6 +164,19 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const ttsKey = process.env.ELEVENLABS_API_KEY || process.env.VITE_ELEVENLABS_API_KEY
+            || process.env.GOOGLE_CLOUD_TTS_API_KEY || process.env.GOOGLE_API_KEY;
+        if (!ttsKey) {
+            return NextResponse.json(
+                {
+                    error: 'Voice chat is not configured (missing ElevenLabs or Google TTS keys).',
+                    code: 'VOICE_NOT_CONFIGURED',
+                    mode: 'turn-based',
+                },
+                { status: 503 }
+            );
+        }
+
         const body = await request.json();
         const { characterId, text, childId } = body as {
             characterId: CharacterId;
@@ -307,12 +320,21 @@ export async function POST(request: NextRequest) {
             'JfiM1myzVx7xU2MZOAJS'; // default to Tanty Spice
 
         const audioBuffer = await synthesizeElevenLabs(safeResponse, voiceId);
-        const audioBase64 = audioBuffer ? audioBuffer.toString('base64') : '';
+        if (!audioBuffer) {
+            return NextResponse.json({
+                text: safeResponse,
+                audioBase64: '',
+                voiceUnavailable: true,
+                mode: 'turn-based',
+                error: 'Buddy replied in text, but spoken audio is unavailable.',
+            }, { status: 503 });
+        }
 
         return NextResponse.json({
             text: safeResponse,
-            audioBase64,
+            audioBase64: audioBuffer.toString('base64'),
             voiceId,
+            mode: 'turn-based',
         });
     } catch (e: any) {
         console.error('[voice-chat] error:', e);

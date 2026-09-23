@@ -37,7 +37,8 @@
     "verify:journey-stories-generate": "tsx scripts/verify-journey-stories-generate.ts",
     "verify:journey-stories-publish": "tsx scripts/verify-journey-stories-publish.ts",
     "verify:island-helpers-slots": "tsx scripts/verify-island-helpers-slots.ts",
-    "verify:island-helpers-schedule": "tsx scripts/verify-island-helpers-schedule.ts"
+    "verify:island-helpers-schedule": "tsx scripts/verify-island-helpers-schedule.ts",
+    "test:webapp-honesty": "tsx scripts/test-webapp-honesty.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.9",
