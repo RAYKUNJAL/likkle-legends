@@ -5,11 +5,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
     ArrowLeft, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
-    Heart, Shuffle, Repeat, Clock, Lock, Radio, Check
+    Heart, Shuffle, Repeat, Clock, Radio
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useUser } from '@/components/UserContext';
 import { EmptyState } from '@/components/EmptyState';
+import { getPlayableCatalogSongs } from '@/lib/song-catalog';
 
 interface Song {
     id: string;
@@ -26,9 +26,22 @@ interface Song {
     is_favorite?: boolean;
 }
 
+function ownedSongs(): Song[] {
+    return getPlayableCatalogSongs().map((song) => ({
+        id: song.id,
+        title: song.title,
+        artist: song.artist,
+        duration_seconds: 0,
+        audio_url: song.url,
+        cover_image_url: song.cover_image_url || '/images/music-placeholder.svg',
+        island_origin: song.island_origin || 'Caribbean',
+        tier_required: 'free',
+        play_count: 0,
+    }));
+}
+
 export default function SongsClient() {
-    const { canAccess } = useUser();
-    const [songs, setSongs] = useState<Song[]>([]);
+    const [songs, setSongs] = useState<Song[]>(ownedSongs());
     const [currentSong, setCurrentSong] = useState<Song | null>(null);
 
     const searchParams = useSearchParams();
@@ -54,9 +67,11 @@ export default function SongsClient() {
                     play_count: 0
                 }));
 
-                setSongs(mappedSongs);
+                const extras = ownedSongs().filter((owned) => !mappedSongs.some((song) => song.audio_url === owned.audio_url || song.title === owned.title));
+                setSongs([...extras, ...mappedSongs.map((song) => ({ ...song, tier_required: 'free' }))]);
             } catch (error) {
                 console.error('Failed to load songs:', error);
+                setSongs(ownedSongs());
             }
         }
 
@@ -91,7 +106,7 @@ export default function SongsClient() {
     };
 
     const playSong = (song: Song) => {
-        if (!canAccess(song.tier_required)) return;
+        if (!song.audio_url) return;
         if (currentSong?.id === song.id) {
             if (audioRef.current?.paused) {
                 audioRef.current.play();
@@ -166,12 +181,9 @@ export default function SongsClient() {
         });
     };
 
-    const [showOnlyAccessible, setShowOnlyAccessible] = useState(false);
-
-    const filteredSongs = (activeTab === 'favorites'
+    const filteredSongs = activeTab === 'favorites'
         ? songs.filter(s => favorites.has(s.id))
-        : songs
-    ).filter(song => !showOnlyAccessible || canAccess(song.tier_required));
+        : songs;
 
     const groupedByIsland = songs.reduce((acc, song) => {
         if (!acc[song.island_origin]) acc[song.island_origin] = [];
@@ -195,16 +207,6 @@ export default function SongsClient() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setShowOnlyAccessible(!showOnlyAccessible)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border transition-all ${showOnlyAccessible
-                                ? 'bg-purple-100 border-purple-200 text-purple-700'
-                                : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-100'}`}
-                        >
-                            {showOnlyAccessible ? <Check size={16} /> : <Lock size={16} />}
-                            <span className="hidden sm:inline">My Plan Only</span>
-                        </button>
-
                         {['all', 'favorites', 'islands'].map((tab) => (
                             <button
                                 key={tab}
@@ -231,7 +233,7 @@ export default function SongsClient() {
                             <span className="font-black uppercase tracking-widest text-xs opacity-80">Live Now</span>
                         </div>
                         <h2 className="text-3xl font-black mb-2">Tanty's Island Radio</h2>
-                        <p className="text-white/80 max-w-md">Listen to non-stop Calypso, Reggae, and Folklore. Tanty's currently spinning "Steelpan Serenade"!</p>
+                        <p className="text-white/80 max-w-md">Listening is free. Play the songs that are on file.</p>
                     </div>
                     <Link
                         href="/portal/radio"
@@ -258,7 +260,7 @@ export default function SongsClient() {
                                             song={song}
                                             isPlaying={currentSong?.id === song.id && isPlaying}
                                             isFavorite={favorites.has(song.id)}
-                                            canPlay={canAccess(song.tier_required)}
+                                            canPlay={Boolean(song.audio_url)}
                                             onPlay={() => playSong(song)}
                                             onFavorite={() => toggleFavorite(song.id)}
                                         />
@@ -275,7 +277,7 @@ export default function SongsClient() {
                                 song={song}
                                 isPlaying={currentSong?.id === song.id && isPlaying}
                                 isFavorite={favorites.has(song.id)}
-                                canPlay={canAccess(song.tier_required)}
+                                canPlay={Boolean(song.audio_url)}
                                 onPlay={() => playSong(song)}
                                 onFavorite={() => toggleFavorite(song.id)}
                             />
@@ -449,8 +451,7 @@ function SongCard({
                 {!canPlay && (
                     <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center">
                         <div className="text-center text-white">
-                            <Lock size={24} className="mx-auto mb-2" />
-                            <p className="text-xs">Ask a parent</p>
+                            <p className="text-xs">Audio not available</p>
                         </div>
                     </div>
                 )}

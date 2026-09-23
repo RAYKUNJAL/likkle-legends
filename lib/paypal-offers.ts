@@ -161,13 +161,18 @@ export function packCustomId(userId: string, sku: string): string {
     return `${userId}:${sku}`.slice(0, 127);
 }
 
-export function parsePackCustomId(value: string | null | undefined): { userId: string; sku: string } | null {
+export function parsePackCustomId(value: string | null | undefined): { userId: string; sku: string; extra?: string } | null {
     if (!value || !value.includes(':')) return null;
-    const idx = value.indexOf(':');
-    const userId = value.slice(0, idx).trim();
-    const sku = value.slice(idx + 1).trim();
-    if (!userId || !sku) return null;
-    return { userId, sku };
+    const parts = value.split(':');
+    if (parts.length !== 2 && parts.length !== 3) return null;
+    const [userId, sku, extra] = parts;
+    if (!userId?.trim() || !sku?.trim()) return null;
+    if (parts.length === 3 && !extra?.trim()) return null;
+    return {
+        userId: userId.trim(),
+        sku: sku.trim(),
+        extra: extra?.trim() || undefined,
+    };
 }
 
 export function resolveSubscriptionPlanId(

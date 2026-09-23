@@ -1,8 +1,10 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { Gift, Calendar, ArrowRight } from 'lucide-react';
+import { Gift } from 'lucide-react';
 import Pricing from '@/components/Pricing';
+import MusicStoreUpsell from '@/components/parent/MusicStoreUpsell';
+import { formatUsd, listParentOffers } from '@/lib/paypal-offers';
 
 export const metadata = {
     title: 'Pricing | Likkle Legends',
@@ -41,7 +43,27 @@ export default function PricingPage() {
             <Navbar />
 
             <main className="flex-grow">
-                {/* Shared Pricing Component */}
+                <section className="bg-[#FFFDF7] py-20">
+                    <div className="container space-y-8">
+                        <div className="max-w-3xl">
+                            <p className="text-xs font-black uppercase tracking-[0.2em] text-primary">Parent plans</p>
+                            <h1 className="mt-3 text-4xl font-black text-slate-900">Island Packs and annual plans</h1>
+                            <p className="mt-3 text-slate-600">Parents check out. Children do not buy from the portal. Access for a pack or annual plan turns on only after PayPal verifies it.</p>
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-2">
+                            {listParentOffers().map((offer) => (
+                                <article key={offer.sku} className="rounded-3xl border border-slate-200 bg-white p-6">
+                                    <p className="text-xs font-black uppercase tracking-widest text-slate-400">{offer.kind === 'one_time' ? 'Island Pack' : 'Optional annual'}</p>
+                                    <h2 className="mt-2 text-2xl font-black text-slate-900">{offer.name}</h2>
+                                    <p className="mt-2 text-3xl font-black text-slate-900">${formatUsd(offer.price)}<span className="ml-1 text-sm font-bold text-slate-400">{offer.interval === 'year' ? '/year' : 'once'}</span></p>
+                                    <p className="mt-2 text-sm text-slate-500">{offer.description}</p>
+                                    <Link href={`/checkout?offer=${offer.sku}`} className="mt-4 inline-flex text-sm font-black text-primary">Parent checkout</Link>
+                                </article>
+                            ))}
+                        </div>
+                        <MusicStoreUpsell />
+                    </div>
+                </section>
                 <Pricing />
 
                 {/* Add-ons */}

@@ -1,0 +1,176 @@
+'use client';
+
+import { FormEvent, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
+import { supabase } from '@/lib/supabase-client';
+import MusicPayPalButton from '@/components/parent/MusicPayPalButton';
+import { formatUsd } from '@/lib/paypal-offers';
+import { CUSTOM_SONG_PRICE, CUSTOM_SONG_SKU, CUSTOM_SONG_STYLE } from '@/lib/music-store';
+
+const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.trim() || '';
+
+type SongRequest = {
+    id: string;
+    childFirstName: string | null;
+    occasion: string | null;
+    notes: string | null;
+    status: 'awaiting_payment' | 'paid' | 'in_progress' | 'delivered';
+    audioUrl: string | null;
+    createdAt: string | null;
+};
+
+const STATUS_LABEL: Record<SongRequest['status'], string> = {
+    awaiting_payment: 'Awaiting payment',
+    paid: 'Paid',
+    in_progress: 'In progress',
+    delivered: 'Delivered',
+};
+
+export default function ParentCustomSongPage() {
+    const [token, setToken] = useState<string | null>(null);
+    const [ready, setReady] = useState(false);
+    const [requests, setRequests] = useState<SongRequest[]>([]);
+    const [childFirstName, setChildFirstName] = useState('');
+    const [occasion, setOccasion] = useState('birthday');
+    const [notes, setNotes] = useState('');
+    const [draftId, setDraftId] = useState<string | null>(null);
+    const [message, setMessage] = useState<string | null>(null);
+    const [verified, setVerified] = useState(false);
+
+    const load = async (accessToken: string) => {
+        const response = await fetch('/api/music/custom-song', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const body = await response.json().catch(() => ({}));
+        if (response.ok && Array.isArray(body.requests)) setRequests(body.requests);
+    };
+
+    useEffect(() => {
+        supabase.auth.getSession()
+            .then(({ data }) => {
+                const accessToken = data.session?.access_token || null;
+                setToken(accessToken);
+                if (accessToken) return load(accessToken);
+            })
+            .catch(() => setToken(null))
+            .finally(() => setReady(true));
+    }, []);
+
+    const saveDraft = async (event: FormEvent) => {
+        event.preventDefault();
+        if (!token) return;
+        setVerified(false);
+        setMessage(null);
+        const response = await fetch('/api/music/custom-song', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ childFirstName, occasion, notes }),
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok || typeof body.requestId !== 'string') {
+            setDraftId(null);
+            setMessage(typeof body.error === 'string' ? body.error : 'The request was not saved.');
+            return;
+        }
+        setDraftId(body.requestId);
+        setMessage('Request saved. It stays unpaid until PayPal verifies the catalog price.');
+        await load(token);
+    };
+
+    const page = (
+        <div className="min-h-screen bg-[#F8FAFC] px-4 py-16">
+            <div className="mx-auto max-w-3xl">
+                <Link href="/parent/music" className="text-sm font-bold text-slate-500">Music Store</Link>
+                <p className="mt-6 text-xs font-black uppercase tracking-[0.2em] text-primary">Custom song</p>
+                <h1 className="mt-2 text-4xl font-black text-slate-900">A Caribbean kids song, made to order</h1>
+                <p className="mt-3 text-slate-600">
+                    Style is {CUSTOM_SONG_STYLE}. The catalog price is ${formatUsd(CUSTOM_SONG_PRICE)}. Paying marks the request paid. The audio is delivered by the team later — this page does not generate a song.
+                </p>
+
+                {!ready && <p className="mt-8 text-sm font-bold text-slate-500">Checking parent session…</p>}
+                {ready && !token && (
+                    <Link href="/login?redirect=/parent/music/custom" className="mt-8 inline-flex rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white">
+                        Parent sign in
+                    </Link>
+                )}
+
+                {token && (
+                    <form onSubmit={saveDraft} className="mt-8 space-y-4 rounded-3xl bg-white p-6 shadow-sm">
+                        <label className="block text-sm font-bold text-slate-700">
+                            Child first name
+                            <input value={childFirstName} onChange={(event) => setChildFirstName(event.target.value)} required className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3" />
+                        </label>
+                        <label className="block text-sm font-bold text-slate-700">
+                            Occasion
+                            <select value={occasion} onChange={(event) => setOccasion(event.target.value)} className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3">
+                                <option value="birthday">Birthday</option>
+                                <option value="event">Event</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </label>
+                        <label className="block text-sm font-bold text-slate-700">
+                            Notes
+                            <textarea value={notes} onChange={(event) => setNotes(event.target.value)} className="mt-1 h-28 w-full rounded-2xl border border-slate-200 px-4 py-3" />
+                        </label>
+                        <button type="submit" className="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white">Save request</button>
+                        {draftId && PAYPAL_CLIENT_ID && (
+                            <div className="pt-2">
+                                <MusicPayPalButton
+                                    sku={CUSTOM_SONG_SKU}
+                                    token={token}
+                                    requestId={draftId}
+                                    onVerified={() => {
+                                        setVerified(true);
+                                        setMessage('PayPal verified the payment. The request is paid and waiting for the team.');
+                                        load(token);
+                                    }}
+                                />
+                            </div>
+                        )}
+                        {draftId && !PAYPAL_CLIENT_ID && (
+                            <p className="text-sm font-bold text-red-700">PayPal checkout is unavailable. The request was not paid.</p>
+                        )}
+                    </form>
+                )}
+
+                {message && (
+                    <p className={`mt-6 text-sm font-bold ${verified ? 'text-emerald-700' : 'text-slate-800'}`} role="status">{message}</p>
+                )}
+
+                <section className="mt-10">
+                    <h2 className="text-2xl font-black text-slate-900">Your requests</h2>
+                    {requests.length === 0 ? (
+                        <p className="mt-3 text-sm text-slate-500">No custom song requests yet.</p>
+                    ) : (
+                        <ul className="mt-4 space-y-3">
+                            {requests.map((item) => (
+                                <li key={item.id} className="rounded-3xl bg-white p-5 shadow-sm">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <p className="font-black text-slate-900">{item.childFirstName || 'Child'}</p>
+                                        <span className="text-xs font-black uppercase tracking-widest text-slate-500">{STATUS_LABEL[item.status] || item.status}</span>
+                                    </div>
+                                    <p className="mt-1 text-sm text-slate-500 capitalize">{item.occasion} · {CUSTOM_SONG_STYLE}</p>
+                                    {item.notes && <p className="mt-2 text-sm text-slate-600">{item.notes}</p>}
+                                    {item.status === 'delivered' && item.audioUrl && (
+                                        <a href={item.audioUrl} className="mt-3 inline-flex text-sm font-black text-primary">Listen to the delivered file</a>
+                                    )}
+                                    {item.status !== 'awaiting_payment' && !item.audioUrl && (
+                                        <p className="mt-3 text-sm text-slate-500">No audio file yet. Delivery is manual.</p>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
+            </div>
+        </div>
+    );
+
+    if (!PAYPAL_CLIENT_ID) return page;
+    return (
+        <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture', components: 'buttons' }}>
+            {page}
+        </PayPalScriptProvider>
+    );
+}
