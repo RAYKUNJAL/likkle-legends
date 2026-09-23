@@ -1,61 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { sendEmail, SUBSCRIPTION_CONFIRMATION_TEMPLATE, TRIAL_REMINDER_TEMPLATE } from '@/lib/email';
+import { getPayPalAccessToken } from '@/lib/paypal-api';
+import { normalizePlanId, normalizePlanIdOrDefault } from '@/lib/normalize-plan-id';
 
 // ── Env validation ────────────────────────────────────────────────────────────
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
 
 function hasSupabaseWebhookConfig(): boolean {
     return Boolean(SUPABASE_URL && SUPABASE_SERVICE_KEY);
 }
 
-// Internal mapping of PayPal Plan IDs to our logic tiers
-const PLAN_TO_TIER: Record<string, string> = {
-    'P-0LU582199P7741420NGQA4JI': 'digital_legends',
-    'P-9Y7503296X038324YNGN72CI': 'starter_mailer',
-    'P-1R150232CG183332XNFLNNBQ': 'starter_mailer',
-    'P-0YY72736T56573355NFLOZZQ': 'starter_mailer',
-    'P-45M32159VV6033601NFLOOYI': 'legends_plus',
-    'P-2503312149524980NNFLO34Y': 'legends_plus',
-    'P-9MP32022V70125639NFLT4IA': 'family_legacy',
-    'P-4G842008M1421443UNFLO3MY': 'family_legacy',
-    'P-5U054702T9664311ANFLO53A': 'family_legacy',
-    'P-5U054702T9664311ANFLO53': 'family_legacy',
-};
-
-if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL] = 'digital_legends';
-if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER] = 'starter_mailer';
-if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS] = 'legends_plus';
-if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY] = 'family_legacy';
-
 // ── PayPal base URL ───────────────────────────────────────────────────────────
 const PAYPAL_BASE =
-    process.env.PAYPAL_ENV === 'sandbox'
-        ? 'https://api-m.sandbox.paypal.com'
-        : 'https://api-m.paypal.com';
-
-// ── Get PayPal access token ───────────────────────────────────────────────────
-async function getPayPalAccessToken(): Promise<string> {
-    if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-        throw new Error('Missing PayPal credentials');
-    }
-    const credentials = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
-    const res = await fetch(`${PAYPAL_BASE}/v1/oauth2/token`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Basic ${credentials}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'grant_type=client_credentials',
-    });
-    if (!res.ok) throw new Error(`PayPal token error: ${res.status}`);
-    const data = await res.json() as { access_token: string };
-    return data.access_token;
-}
+    process.env.NODE_ENV === 'production'
+        ? 'https://api-m.paypal.com'
+        : 'https://api-m.sandbox.paypal.com';
 
 // ── Verify PayPal webhook signature ──────────────────────────────────────────
 async function verifyWebhookSignature(
@@ -187,7 +149,8 @@ export async function POST(request: NextRequest) {
 
                 if (profile) {
                     const planId = resource.plan_id;
-                    const tier = PLAN_TO_TIER[planId] || 'starter_mailer';
+                    // Always store canonical plan_* — never raw PayPal P-... IDs
+                    const tier = normalizePlanIdOrDefault(planId, 'plan_mail_intro');
                     const nextBillingTime = resource.billing_info?.next_billing_time;
                     const isTrialing = nextBillingTime &&
                         new Date(nextBillingTime).getTime() > Date.now() + 24 * 60 * 60 * 1000;
@@ -198,7 +161,7 @@ export async function POST(request: NextRequest) {
                         .from('subscriptions')
                         .upsert({
                             user_id: profile.id,
-                            plan_id: planId,
+                            plan_id: tier,
                             status: newStatus as any,
                             provider: 'paypal',
                             provider_subscription_id: subscriptionId,
@@ -220,7 +183,7 @@ export async function POST(request: NextRequest) {
                             subject: "You're Officially in the Club!",
                             html: SUBSCRIPTION_CONFIRMATION_TEMPLATE(
                                 profile.parent_name || 'Legend Parent',
-                                tier.replace('_', ' ').toUpperCase(),
+                                tier.replace(/^plan_/, '').replace(/_/g, ' ').toUpperCase(),
                                 child?.first_name || 'your little legend'
                             )
                         });
@@ -240,7 +203,10 @@ export async function POST(request: NextRequest) {
                 if (profile) {
                     const wasTrialing = profile.subscription_status === 'trialing';
                     const planId = resource.plan_id;
-                    const tier = planId ? (PLAN_TO_TIER[planId] || profile.subscription_tier) : profile.subscription_tier;
+                    const tier =
+                        normalizePlanId(planId) ||
+                        normalizePlanId(profile.subscription_tier) ||
+                        'plan_mail_intro';
 
                     // Record renewal in the subscriptions table (drives the profiles view)
                     await supabase
@@ -269,7 +235,7 @@ export async function POST(request: NextRequest) {
                             subject: "You're Officially in the Club!",
                             html: SUBSCRIPTION_CONFIRMATION_TEMPLATE(
                                 profile.parent_name || 'Legend Parent',
-                                tier.replace('_', ' ').toUpperCase(),
+                                tier.replace(/^plan_/, '').replace(/_/g, ' ').toUpperCase(),
                                 child?.first_name || 'your little legend'
                             )
                         });
@@ -293,13 +259,16 @@ export async function POST(request: NextRequest) {
                         .limit(1)
                         .maybeSingle();
 
+                    const displayTier =
+                        normalizePlanId(profile.subscription_tier) || 'plan_mail_intro';
+
                     await sendEmail({
                         to: profile.email || subscriberEmail,
                         subject: 'Your free trial ends soon. Keep the adventure going!',
                         html: TRIAL_REMINDER_TEMPLATE(
                             profile.parent_name || 'Legend Parent',
                             child?.first_name || 'your little legend',
-                            profile.subscription_tier || 'starter_mailer'
+                            displayTier
                         )
                     });
                     console.log(`Trial ending email sent to ${profile.id}`);
@@ -311,6 +280,8 @@ export async function POST(request: NextRequest) {
             case 'BILLING.SUBSCRIPTION.SUSPENDED': {
                 const subscriptionId = resource.id;
 
+                // Status only — leave plan_id intact so re-activation / history stay coherent.
+                // feature-access treats canceled/past_due as free regardless of stored tier.
                 await supabase
                     .from('subscriptions')
                     .update({ status: 'canceled' })

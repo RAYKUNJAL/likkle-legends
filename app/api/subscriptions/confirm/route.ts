@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { createClient } from '@/lib/supabase/server';
-import { SUBSCRIPTION_PLANS, SubscriptionTier } from '@/lib/paypal';
+import { getPayPalAccessToken, getPayPalSubscriptionDetails } from '@/lib/paypal-api';
+import { normalizePlanId } from '@/lib/normalize-plan-id';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,31 +17,9 @@ export const dynamic = 'force-dynamic';
  */
 
 const PAYPAL_BASE =
-    process.env.PAYPAL_ENV === 'sandbox' || process.env.NODE_ENV !== 'production'
-        ? 'https://api-m.sandbox.paypal.com'
-        : 'https://api-m.paypal.com';
-
-async function getPayPalAccessToken(): Promise<string> {
-    const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-    if (!clientId || !clientSecret) {
-        throw new Error('PayPal credentials are not configured');
-    }
-    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-    const res = await fetch(`${PAYPAL_BASE}/v1/oauth2/token`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${credentials}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'grant_type=client_credentials',
-    });
-    const data = await res.json() as { access_token?: string; error_description?: string };
-    if (!res.ok || !data.access_token) {
-        throw new Error(data.error_description || 'Could not authenticate with PayPal');
-    }
-    return data.access_token;
-}
+    process.env.NODE_ENV === 'production'
+        ? 'https://api-m.paypal.com'
+        : 'https://api-m.sandbox.paypal.com';
 
 /**
  * Verify a PayPal subscription by fetching it from PayPal's API.
@@ -48,16 +27,14 @@ async function getPayPalAccessToken(): Promise<string> {
  */
 async function verifyPayPalSubscription(subscriptionId: string): Promise<{ planId: string | null; valid: boolean }> {
     try {
-        const token = await getPayPalAccessToken();
-        const res = await fetch(`${PAYPAL_BASE}/v1/billing/subscriptions/${encodeURIComponent(subscriptionId)}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) return { planId: null, valid: false };
-        const data = await res.json() as { plan_id?: string; status?: string };
-        const validStatuses = ['ACTIVE', 'APPROVAL_PENDING', 'TRIALING'];
+        const data = await getPayPalSubscriptionDetails(subscriptionId) as {
+            plan_id?: string;
+            status?: string;
+        };
+        const validStatuses = ['ACTIVE', 'APPROVAL_PENDING', 'APPROVED', 'SUSPENDED'];
         return {
             planId: data.plan_id || null,
-            valid: validStatuses.includes(data.status || ''),
+            valid: validStatuses.includes(String(data.status || '').toUpperCase()),
         };
     } catch {
         return { planId: null, valid: false };
@@ -129,15 +106,9 @@ export async function POST(request: NextRequest) {
                     { status: 400 }
                 );
             }
-            // Map plan_id to tier if possible
+            // Map plan_id to canonical plan_* tier
             if (verification.planId) {
-                const planEnvMap: Record<string, string> = {
-                    [process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL || '']: 'digital_legends',
-                    [process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER || '']: 'starter_mailer',
-                    [process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS || '']: 'legends_plus',
-                    [process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY || '']: 'family_legacy',
-                };
-                verifiedTier = planEnvMap[verification.planId] || tier;
+                verifiedTier = normalizePlanId(verification.planId) || normalizePlanId(tier);
             }
         }
 
@@ -149,12 +120,12 @@ export async function POST(request: NextRequest) {
                     { status: 400 }
                 );
             }
-            verifiedTier = tier;
+            verifiedTier = normalizePlanId(tier);
         }
 
-        // Use the verified tier, or fall back to the client-provided one only
-        // if PayPal verification succeeded but didn't return a plan_id.
-        const finalTier = verifiedTier || tier;
+        // Use the verified tier, or fall back to a normalized client tier only
+        // if PayPal verification succeeded but didn't return a mappable plan_id.
+        const finalTier = verifiedTier || normalizePlanId(tier) || tier;
 
         const isFree = finalTier === 'plan_free_forever';
         const TRIAL_DAYS = 7;
