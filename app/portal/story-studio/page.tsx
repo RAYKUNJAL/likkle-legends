@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
     Wand2, BookOpen, Map, Sparkles, ArrowRight, ArrowLeft,
     Check, Star, Brain, ShieldCheck, Rocket, Loader2, Music, Lock
@@ -68,6 +69,8 @@ export default function StoryStudioPage() {
     const hasAccess = hasFeatureAccess(userSubscriptionTier, 'story_builder') || hasHeritageStory;
     const [showUpgradeModal, setShowUpgradeModal] = useState(!hasAccess);
     const upgradeTier = getUpgradeTier(userSubscriptionTier);
+    const [studioReady, setStudioReady] = useState<boolean | null>(null);
+    const [studioReason, setStudioReason] = useState<string | null>(null);
 
     // REDIRECT IF NO ACCESS
     useEffect(() => {
@@ -75,6 +78,23 @@ export default function StoryStudioPage() {
             router.push('/portal');
         }
     }, [hasAccess, showUpgradeModal, router]);
+
+    useEffect(() => {
+        let cancelled = false;
+        fetch('/api/portal/capabilities')
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (cancelled || !data?.storyStudio) return;
+                setStudioReady(data.storyStudio.available !== false);
+                setStudioReason(data.storyStudio.reason || null);
+            })
+            .catch(() => {
+                if (!cancelled) setStudioReady(true);
+            });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
 
     const handleCreate = async () => {
@@ -106,6 +126,23 @@ export default function StoryStudioPage() {
             alert("Something went wrong on the island path. Please try again!");
         }
     };
+
+    if (studioReady === false) {
+        return (
+            <main className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 flex items-center justify-center">
+                <div className="max-w-lg w-full bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 text-center">
+                    <p className="text-4xl mb-3">✨</p>
+                    <h1 className="text-3xl font-black text-slate-800 mb-2">Story Studio coming soon</h1>
+                    <p className="text-slate-500 font-semibold mb-6">
+                        {studioReason || 'The story library and story writer are not connected on this server yet.'}
+                    </p>
+                    <Link href="/portal" className="inline-flex px-5 py-3 rounded-2xl bg-slate-900 text-white font-black">
+                        Back to Village
+                    </Link>
+                </div>
+            </main>
+        );
+    }
 
     return (
         <main className="min-h-screen bg-[#F8FAFC] p-4 md:p-8">

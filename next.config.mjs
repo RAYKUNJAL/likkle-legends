@@ -12,6 +12,11 @@ const nextConfig = {
       { source: '/mailclub', destination: '/pricing', permanent: false },
       { source: '/shop', destination: '/shop/birthday-letter', permanent: false },
       { source: '/shop/', destination: '/shop/birthday-letter', permanent: false },
+      // Arcade HTML games — do not iframe; CSP frame-ancestors is none.
+      { source: '/games/island-hop', destination: '/games/island-hop.html', permanent: false },
+      { source: '/games/tantys-kitchen', destination: '/games/tantys-kitchen.html', permanent: false },
+      { source: '/games/math-market', destination: '/games/math-market.html', permanent: false },
+      { source: '/games/spelling-blaze', destination: '/games/spelling-blaze.html', permanent: false },
     ];
   },
 
