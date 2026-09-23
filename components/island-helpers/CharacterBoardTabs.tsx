@@ -9,6 +9,7 @@ const LABELS: Record<IslandHelpersCharacterId, string> = {
   steelpan_sam: 'Steelpan Sam',
   mango_moko: 'Mango Moko',
   roti: 'R.O.T.I.',
+  dilly_doubles: 'Dilly Doubles',
 };
 
 type Props = {

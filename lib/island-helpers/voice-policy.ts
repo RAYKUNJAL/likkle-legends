@@ -49,13 +49,15 @@ export function islandHelpersVoiceId(
       return env.ELEVENLABS_STEELPAN_SAM_VOICE_ID?.trim() || DEFAULT_STEELPAN_SAM_VOICE_ID;
     case 'mango_moko':
       return env.ELEVENLABS_MANGO_MOKO_VOICE_ID?.trim() || DEFAULT_MANGO_MOKO_VOICE_ID;
+    case 'dilly_doubles':
+      return env.ELEVENLABS_DILLY_VOICE_ID?.trim() || DEFAULT_DILLY_DOUBLES_VOICE_ID;
     default:
       // Fail closed: never fall back to Tanty for unknown characters.
       return null;
   }
 }
 
-/** Resolve any locked character voice (including Dilly, who is not on the Island Helpers board). */
+/** Resolve any locked character voice (board + extended lock map). */
 export function lockedCharacterVoiceId(
   characterId: LockedCharacterVoiceId,
   env: NodeJS.ProcessEnv = process.env,
@@ -86,6 +88,8 @@ export function islandHelpersCharacterLabel(characterId: IslandHelpersCharacterI
       return 'Steelpan Sam';
     case 'mango_moko':
       return 'Mango Moko';
+    case 'dilly_doubles':
+      return 'Dilly Doubles';
     default:
       return 'Unknown helper';
   }

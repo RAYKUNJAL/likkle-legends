@@ -24,13 +24,15 @@ export type IslandHelpersCharacterId =
   | 'tanty_spice'
   | 'steelpan_sam'
   | 'mango_moko'
-  | 'roti';
+  | 'roti'
+  | 'dilly_doubles';
 
 export const ISLAND_HELPERS_CHARACTER_IDS: IslandHelpersCharacterId[] = [
   'tanty_spice',
   'steelpan_sam',
   'mango_moko',
   'roti',
+  'dilly_doubles',
 ];
 
 export const PREFS_STORAGE_KEY = 'likkle.islandHelpers.prefs.v1';

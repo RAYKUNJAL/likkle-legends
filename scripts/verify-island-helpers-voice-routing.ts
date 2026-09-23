@@ -14,6 +14,7 @@ import {
   DEFAULT_TANTY_VOICE_ID,
 } from '../lib/island-helpers/voice-policy';
 import { VOICES } from '../lib/elevenlabs';
+import { ISLAND_HELPERS_CHARACTER_IDS } from '../lib/island-helpers/types';
 
 const originalFetch = globalThis.fetch;
 const originalApiKey = process.env.ELEVENLABS_API_KEY;
@@ -32,6 +33,7 @@ const BOARD_EXPECTED: Record<string, string> = {
   tanty_spice: DEFAULT_TANTY_VOICE_ID,
   steelpan_sam: DEFAULT_STEELPAN_SAM_VOICE_ID,
   mango_moko: DEFAULT_MANGO_MOKO_VOICE_ID,
+  dilly_doubles: DEFAULT_DILLY_DOUBLES_VOICE_ID,
 };
 
 function request(characterId: string) {
@@ -59,7 +61,10 @@ async function main() {
   }) as typeof fetch;
 
   try {
-    // 1) Full lock map: five distinct Ray-supplied IDs
+    if (ISLAND_HELPERS_CHARACTER_IDS.length !== 5 || !ISLAND_HELPERS_CHARACTER_IDS.includes('dilly_doubles')) {
+      throw new Error(`board must list 5 characters including dilly_doubles, got ${ISLAND_HELPERS_CHARACTER_IDS.join(',')}`);
+    }
+
     const locked = Object.entries(LOCKED_CHARACTER_VOICE_IDS);
     if (locked.length !== 5) throw new Error(`lock map size ${locked.length}`);
     const distinctLocked = new Set(Object.values(LOCKED_CHARACTER_VOICE_IDS));
@@ -77,11 +82,7 @@ async function main() {
     if (VOICES.dilly_doubles !== DEFAULT_DILLY_DOUBLES_VOICE_ID) {
       throw new Error(`elevenlabs VOICES.dilly_doubles=${VOICES.dilly_doubles} not locked`);
     }
-    if (VOICES.dilly_doubles === VOICES.roti || VOICES.dilly_doubles === VOICES.tanty_spice) {
-      throw new Error('Dilly must not alias ROTI/Tanty');
-    }
 
-    // 2) Board speak (4 characters currently on Island Helpers soundboard)
     const seen = new Map<string, string>();
     for (const [characterId, expectedVoiceId] of Object.entries(BOARD_EXPECTED)) {
       const res = await POST(request(characterId));
@@ -96,17 +97,17 @@ async function main() {
       seen.set(characterId, voiceId!);
       console.log(`[voice-routing] characterId=${characterId} voiceId=${voiceId}`);
     }
-    if (new Set(seen.values()).size !== 4) {
-      throw new Error('board speak must use 4 distinct voice IDs');
+    if (new Set(seen.values()).size !== 5) {
+      throw new Error(`board speak must use 5 distinct voice IDs, got ${new Set(seen.values()).size}`);
     }
 
-    const unknown = await POST(request('dilly_doubles'));
+    const unknown = await POST(request('not_a_helper'));
     if (unknown.status !== 400) {
-      throw new Error(`dilly_doubles is not on Island Helpers board; expected 400, got ${unknown.status}`);
+      throw new Error(`unknown character expected 400, got ${unknown.status}`);
     }
 
     console.log(
-      `verify-island-helpers-voice-routing: PASS (lock map 5 distinct; board speak 4; dilly locked=${DEFAULT_DILLY_DOUBLES_VOICE_ID})`,
+      `verify-island-helpers-voice-routing: PASS (board 5 cards; 5 distinct speak voices; dilly=${DEFAULT_DILLY_DOUBLES_VOICE_ID})`,
     );
   } finally {
     globalThis.fetch = originalFetch;

@@ -64,4 +64,14 @@ export const SEED_PHRASES: SeedPhraseCard[] = [
     'I’m finished eating.',
     'What’s next on our list?',
   ]),
+
+  ...seed('dilly_doubles', [
+    'Let’s share a bite.',
+    'That smells yummy.',
+    'I want to try something new.',
+    'Can we cook together?',
+    'More sauce, please.',
+    'I’m thankful for this food.',
+    'Let’s invite a friend.',
+  ]),
 ];

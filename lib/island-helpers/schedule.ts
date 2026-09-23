@@ -21,6 +21,7 @@ export const SCHEDULE_EVENT = 'likkle:island-helpers-schedule';
 export const DEFAULT_SCHEDULE_CHOICES: ScheduleItem[] = [
   { id: 'story', label: 'Story time', characterId: 'tanty_spice' },
   { id: 'snack', label: 'Snack', characterId: 'roti' },
+  { id: 'share_food', label: 'Share food', characterId: 'dilly_doubles' },
   { id: 'music', label: 'Music', characterId: 'steelpan_sam' },
   { id: 'outside', label: 'Outside', characterId: 'mango_moko' },
   { id: 'break', label: 'Quiet break', characterId: 'mango_moko' },

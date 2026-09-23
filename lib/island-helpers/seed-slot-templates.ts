@@ -54,6 +54,18 @@ export const SEED_SLOT_TEMPLATES: SlotTemplate[] = [
       { id: 'tired', text: 'tired' },
     ],
   },
+  {
+    id: 'share_food',
+    characterId: 'dilly_doubles',
+    pattern: 'Let’s share ___.',
+    slots: [{ id: 'food', label: 'food' }],
+    fringeOptions: [
+      { id: 'doubles', text: 'doubles' },
+      { id: 'fruit', text: 'fruit' },
+      { id: 'juice', text: 'juice' },
+      { id: 'snack', text: 'a snack' },
+    ],
+  },
 ];
 
 export function getSlotTemplate(id: string): SlotTemplate | undefined {
