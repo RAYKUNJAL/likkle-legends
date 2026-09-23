@@ -12,18 +12,18 @@
     "character": "tanty_spice",
     "reading_level": "transitional",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-river-mummas-gift/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-river-mummas-gift/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-river-mummas-gift/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-river-mummas-gift/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-river-mummas-gift/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-river-mummas-gift/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-river-mummas-gift/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-river-mummas-gift/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-river-mummas-gift/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-river-mummas-gift/page-10.mp3"
+      "/audio/story-narrations/the-river-mummas-gift/page-01.mp3",
+      "/audio/story-narrations/the-river-mummas-gift/page-02.mp3",
+      "/audio/story-narrations/the-river-mummas-gift/page-03.mp3",
+      "/audio/story-narrations/the-river-mummas-gift/page-04.mp3",
+      "/audio/story-narrations/the-river-mummas-gift/page-05.mp3",
+      "/audio/story-narrations/the-river-mummas-gift/page-06.mp3",
+      "/audio/story-narrations/the-river-mummas-gift/page-07.mp3",
+      "/audio/story-narrations/the-river-mummas-gift/page-08.mp3",
+      "/audio/story-narrations/the-river-mummas-gift/page-09.mp3",
+      "/audio/story-narrations/the-river-mummas-gift/page-10.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "There was once a girl named Amani who lived by the Essequibo River in Guyana.",
@@ -80,20 +80,20 @@
     "character": "dilly_doubles",
     "reading_level": "transitional",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-10.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-11.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/dilly-doubles-and-the-carnival-king/page-12.mp3"
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-01.mp3",
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-02.mp3",
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-03.mp3",
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-04.mp3",
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-05.mp3",
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-06.mp3",
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-07.mp3",
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-08.mp3",
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-09.mp3",
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-10.mp3",
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-11.mp3",
+      "/audio/story-narrations/dilly-doubles-and-the-carnival-king/page-12.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "It was Carnival Monday in Trinidad and the whole island was buzzing with excitement.",
@@ -158,19 +158,19 @@
     "character": "tanty_spice",
     "reading_level": "early",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-chickcharneys-lesson/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-chickcharneys-lesson/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-chickcharneys-lesson/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-chickcharneys-lesson/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-chickcharneys-lesson/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-chickcharneys-lesson/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-chickcharneys-lesson/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-chickcharneys-lesson/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-chickcharneys-lesson/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-chickcharneys-lesson/page-10.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-chickcharneys-lesson/page-11.mp3"
+      "/audio/story-narrations/the-chickcharneys-lesson/page-01.mp3",
+      "/audio/story-narrations/the-chickcharneys-lesson/page-02.mp3",
+      "/audio/story-narrations/the-chickcharneys-lesson/page-03.mp3",
+      "/audio/story-narrations/the-chickcharneys-lesson/page-04.mp3",
+      "/audio/story-narrations/the-chickcharneys-lesson/page-05.mp3",
+      "/audio/story-narrations/the-chickcharneys-lesson/page-06.mp3",
+      "/audio/story-narrations/the-chickcharneys-lesson/page-07.mp3",
+      "/audio/story-narrations/the-chickcharneys-lesson/page-08.mp3",
+      "/audio/story-narrations/the-chickcharneys-lesson/page-09.mp3",
+      "/audio/story-narrations/the-chickcharneys-lesson/page-10.mp3",
+      "/audio/story-narrations/the-chickcharneys-lesson/page-11.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "In the pine forests of Andros Island lived strange birds called Chickcharnies.",
@@ -231,19 +231,19 @@
     "character": "tanty_spice",
     "reading_level": "transitional",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-mermaid-of-carlisle-bay/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-mermaid-of-carlisle-bay/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-mermaid-of-carlisle-bay/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-mermaid-of-carlisle-bay/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-mermaid-of-carlisle-bay/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-mermaid-of-carlisle-bay/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-mermaid-of-carlisle-bay/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-mermaid-of-carlisle-bay/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-mermaid-of-carlisle-bay/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-mermaid-of-carlisle-bay/page-10.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-mermaid-of-carlisle-bay/page-11.mp3"
+      "/audio/story-narrations/the-mermaid-of-carlisle-bay/page-01.mp3",
+      "/audio/story-narrations/the-mermaid-of-carlisle-bay/page-02.mp3",
+      "/audio/story-narrations/the-mermaid-of-carlisle-bay/page-03.mp3",
+      "/audio/story-narrations/the-mermaid-of-carlisle-bay/page-04.mp3",
+      "/audio/story-narrations/the-mermaid-of-carlisle-bay/page-05.mp3",
+      "/audio/story-narrations/the-mermaid-of-carlisle-bay/page-06.mp3",
+      "/audio/story-narrations/the-mermaid-of-carlisle-bay/page-07.mp3",
+      "/audio/story-narrations/the-mermaid-of-carlisle-bay/page-08.mp3",
+      "/audio/story-narrations/the-mermaid-of-carlisle-bay/page-09.mp3",
+      "/audio/story-narrations/the-mermaid-of-carlisle-bay/page-10.mp3",
+      "/audio/story-narrations/the-mermaid-of-carlisle-bay/page-11.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "Kwame loved fishing in Carlisle Bay in Barbados.",
@@ -304,18 +304,18 @@
     "character": "tanty_spice",
     "reading_level": "emergent",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/steelpan-sam-and-the-rhythm-of-the-rain/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/steelpan-sam-and-the-rhythm-of-the-rain/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/steelpan-sam-and-the-rhythm-of-the-rain/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/steelpan-sam-and-the-rhythm-of-the-rain/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/steelpan-sam-and-the-rhythm-of-the-rain/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/steelpan-sam-and-the-rhythm-of-the-rain/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/steelpan-sam-and-the-rhythm-of-the-rain/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/steelpan-sam-and-the-rhythm-of-the-rain/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/steelpan-sam-and-the-rhythm-of-the-rain/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/steelpan-sam-and-the-rhythm-of-the-rain/page-10.mp3"
+      "/audio/story-narrations/steelpan-sam-and-the-rhythm-of-the-rain/page-01.mp3",
+      "/audio/story-narrations/steelpan-sam-and-the-rhythm-of-the-rain/page-02.mp3",
+      "/audio/story-narrations/steelpan-sam-and-the-rhythm-of-the-rain/page-03.mp3",
+      "/audio/story-narrations/steelpan-sam-and-the-rhythm-of-the-rain/page-04.mp3",
+      "/audio/story-narrations/steelpan-sam-and-the-rhythm-of-the-rain/page-05.mp3",
+      "/audio/story-narrations/steelpan-sam-and-the-rhythm-of-the-rain/page-06.mp3",
+      "/audio/story-narrations/steelpan-sam-and-the-rhythm-of-the-rain/page-07.mp3",
+      "/audio/story-narrations/steelpan-sam-and-the-rhythm-of-the-rain/page-08.mp3",
+      "/audio/story-narrations/steelpan-sam-and-the-rhythm-of-the-rain/page-09.mp3",
+      "/audio/story-narrations/steelpan-sam-and-the-rhythm-of-the-rain/page-10.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "Sam loved playing his steelpan.",
@@ -372,18 +372,18 @@
     "character": "tanty_spice",
     "reading_level": "early",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/anansi-and-the-mango-tree/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/anansi-and-the-mango-tree/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/anansi-and-the-mango-tree/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/anansi-and-the-mango-tree/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/anansi-and-the-mango-tree/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/anansi-and-the-mango-tree/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/anansi-and-the-mango-tree/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/anansi-and-the-mango-tree/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/anansi-and-the-mango-tree/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/anansi-and-the-mango-tree/page-10.mp3"
+      "/audio/story-narrations/anansi-and-the-mango-tree/page-01.mp3",
+      "/audio/story-narrations/anansi-and-the-mango-tree/page-02.mp3",
+      "/audio/story-narrations/anansi-and-the-mango-tree/page-03.mp3",
+      "/audio/story-narrations/anansi-and-the-mango-tree/page-04.mp3",
+      "/audio/story-narrations/anansi-and-the-mango-tree/page-05.mp3",
+      "/audio/story-narrations/anansi-and-the-mango-tree/page-06.mp3",
+      "/audio/story-narrations/anansi-and-the-mango-tree/page-07.mp3",
+      "/audio/story-narrations/anansi-and-the-mango-tree/page-08.mp3",
+      "/audio/story-narrations/anansi-and-the-mango-tree/page-09.mp3",
+      "/audio/story-narrations/anansi-and-the-mango-tree/page-10.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "Anansi was sitting under the biggest mango tree in Jamaica.",
@@ -440,20 +440,20 @@
     "character": "tanty_spice",
     "reading_level": "transitional",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-10.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-11.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-legend-of-the-silk-cotton-tree/page-12.mp3"
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-01.mp3",
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-02.mp3",
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-03.mp3",
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-04.mp3",
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-05.mp3",
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-06.mp3",
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-07.mp3",
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-08.mp3",
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-09.mp3",
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-10.mp3",
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-11.mp3",
+      "/audio/story-narrations/the-legend-of-the-silk-cotton-tree/page-12.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "In a village in Saint Lucia there stood an ancient silk cotton tree.",
@@ -518,18 +518,18 @@
     "character": "tanty_spice",
     "reading_level": "emergent",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/papa-bois-and-the-lost-fawn/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/papa-bois-and-the-lost-fawn/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/papa-bois-and-the-lost-fawn/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/papa-bois-and-the-lost-fawn/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/papa-bois-and-the-lost-fawn/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/papa-bois-and-the-lost-fawn/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/papa-bois-and-the-lost-fawn/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/papa-bois-and-the-lost-fawn/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/papa-bois-and-the-lost-fawn/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/papa-bois-and-the-lost-fawn/page-10.mp3"
+      "/audio/story-narrations/papa-bois-and-the-lost-fawn/page-01.mp3",
+      "/audio/story-narrations/papa-bois-and-the-lost-fawn/page-02.mp3",
+      "/audio/story-narrations/papa-bois-and-the-lost-fawn/page-03.mp3",
+      "/audio/story-narrations/papa-bois-and-the-lost-fawn/page-04.mp3",
+      "/audio/story-narrations/papa-bois-and-the-lost-fawn/page-05.mp3",
+      "/audio/story-narrations/papa-bois-and-the-lost-fawn/page-06.mp3",
+      "/audio/story-narrations/papa-bois-and-the-lost-fawn/page-07.mp3",
+      "/audio/story-narrations/papa-bois-and-the-lost-fawn/page-08.mp3",
+      "/audio/story-narrations/papa-bois-and-the-lost-fawn/page-09.mp3",
+      "/audio/story-narrations/papa-bois-and-the-lost-fawn/page-10.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "Deep in the Trinidad forest lived Papa Bois.",
@@ -586,20 +586,20 @@
     "character": "tanty_spice",
     "reading_level": "early",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-10.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-11.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/the-rolling-calf-of-green-bay/page-12.mp3"
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-01.mp3",
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-02.mp3",
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-03.mp3",
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-04.mp3",
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-05.mp3",
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-06.mp3",
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-07.mp3",
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-08.mp3",
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-09.mp3",
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-10.mp3",
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-11.mp3",
+      "/audio/story-narrations/the-rolling-calf-of-green-bay/page-12.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "In the hills of St Ann Jamaica lived a girl named Zara.",
@@ -664,20 +664,20 @@
     "character": "tanty_spice",
     "reading_level": "early",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-10.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-11.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/mango-moko-and-the-garden-race/page-12.mp3"
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-01.mp3",
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-02.mp3",
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-03.mp3",
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-04.mp3",
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-05.mp3",
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-06.mp3",
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-07.mp3",
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-08.mp3",
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-09.mp3",
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-10.mp3",
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-11.mp3",
+      "/audio/story-narrations/mango-moko-and-the-garden-race/page-12.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "Mango Moko lived in Grenada the Spice Isle.",
@@ -742,19 +742,19 @@
     "character": "tanty_spice",
     "reading_level": "early",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/roti-and-the-lost-words/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/roti-and-the-lost-words/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/roti-and-the-lost-words/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/roti-and-the-lost-words/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/roti-and-the-lost-words/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/roti-and-the-lost-words/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/roti-and-the-lost-words/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/roti-and-the-lost-words/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/roti-and-the-lost-words/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/roti-and-the-lost-words/page-10.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/roti-and-the-lost-words/page-11.mp3"
+      "/audio/story-narrations/roti-and-the-lost-words/page-01.mp3",
+      "/audio/story-narrations/roti-and-the-lost-words/page-02.mp3",
+      "/audio/story-narrations/roti-and-the-lost-words/page-03.mp3",
+      "/audio/story-narrations/roti-and-the-lost-words/page-04.mp3",
+      "/audio/story-narrations/roti-and-the-lost-words/page-05.mp3",
+      "/audio/story-narrations/roti-and-the-lost-words/page-06.mp3",
+      "/audio/story-narrations/roti-and-the-lost-words/page-07.mp3",
+      "/audio/story-narrations/roti-and-the-lost-words/page-08.mp3",
+      "/audio/story-narrations/roti-and-the-lost-words/page-09.mp3",
+      "/audio/story-narrations/roti-and-the-lost-words/page-10.mp3",
+      "/audio/story-narrations/roti-and-the-lost-words/page-11.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "R.O.T.I. was a friendly robot who loved teaching words.",
@@ -769,7 +769,7 @@
         "illustration": "A dictionary with blank spaces where words should be"
       },
       {
-        "text": "Liming was gone. Bacchanal was gone. Fet\u00ea was gone!",
+        "text": "Liming was gone. Bacchanal was gone. Fetê was gone!",
         "illustration": "Blank pages with question marks"
       },
       {
@@ -785,7 +785,7 @@
         "illustration": "A busy costume workshop with the word floating above"
       },
       {
-        "text": "He found fet\u00ea at the pan yard rehearsal!",
+        "text": "He found fetê at the pan yard rehearsal!",
         "illustration": "A steelpan practice session with the word floating above"
       },
       {
@@ -797,7 +797,7 @@
         "illustration": "The robot carefully placing words back into the book"
       },
       {
-        "text": "The End. Words are alive \u2014 they live where we use them.",
+        "text": "The End. Words are alive — they live where we use them.",
         "illustration": "A happy dictionary with all words glowing"
       }
     ]
@@ -815,19 +815,19 @@
     "character": "tanty_spice",
     "reading_level": "early",
     "audio_urls": [
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/tanty-spice-and-the-pepper-sauce-secret/page-01.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/tanty-spice-and-the-pepper-sauce-secret/page-02.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/tanty-spice-and-the-pepper-sauce-secret/page-03.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/tanty-spice-and-the-pepper-sauce-secret/page-04.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/tanty-spice-and-the-pepper-sauce-secret/page-05.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/tanty-spice-and-the-pepper-sauce-secret/page-06.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/tanty-spice-and-the-pepper-sauce-secret/page-07.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/tanty-spice-and-the-pepper-sauce-secret/page-08.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/tanty-spice-and-the-pepper-sauce-secret/page-09.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/tanty-spice-and-the-pepper-sauce-secret/page-10.mp3",
-      "https://www.likklelegends.com/supabase/storage/v1/object/public/story-narrations/story-audio/tanty-spice-and-the-pepper-sauce-secret/page-11.mp3"
+      "/audio/story-narrations/tanty-spice-and-the-pepper-sauce-secret/page-01.mp3",
+      "/audio/story-narrations/tanty-spice-and-the-pepper-sauce-secret/page-02.mp3",
+      "/audio/story-narrations/tanty-spice-and-the-pepper-sauce-secret/page-03.mp3",
+      "/audio/story-narrations/tanty-spice-and-the-pepper-sauce-secret/page-04.mp3",
+      "/audio/story-narrations/tanty-spice-and-the-pepper-sauce-secret/page-05.mp3",
+      "/audio/story-narrations/tanty-spice-and-the-pepper-sauce-secret/page-06.mp3",
+      "/audio/story-narrations/tanty-spice-and-the-pepper-sauce-secret/page-07.mp3",
+      "/audio/story-narrations/tanty-spice-and-the-pepper-sauce-secret/page-08.mp3",
+      "/audio/story-narrations/tanty-spice-and-the-pepper-sauce-secret/page-09.mp3",
+      "/audio/story-narrations/tanty-spice-and-the-pepper-sauce-secret/page-10.mp3",
+      "/audio/story-narrations/tanty-spice-and-the-pepper-sauce-secret/page-11.mp3"
     ],
-    "narrated_by": "tanty_spice_elevenlabs",
+    "narrated_by": "warm_island_narrator_elevenlabs_tanty_spice",
     "pages": [
       {
         "text": "Tanty Spice was famous for her pepper sauce.",

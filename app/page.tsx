@@ -17,4 +17,4 @@ export const metadata: Metadata = {
   },
 };
 
-export { default } from "@/components/landing-v3/LandingPage";
+export { default } from "@/components/landing-v5/LandingPage";

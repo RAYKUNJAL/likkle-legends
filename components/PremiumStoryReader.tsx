@@ -20,7 +20,14 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { narrateWarmPage } from '@/app/actions/warm-narration';
-import { isWarmNarration, warmNarrationLabel } from '@/lib/story-narration-policy';
+import { isWarmNarration, warmNarrationLabel, estimateNarrationTimings, scaleNarrationTimingsToDuration } from '@/lib/story-narration-policy';
+import { groupWordsIntoPhrases, activePhraseIndex, type TimedPhrase } from '@/lib/island-helpers/phrase-timings';
+import { loadPrefs } from '@/lib/island-helpers/prefs';
+import { CalmModeProvider } from '@/components/island-helpers/CalmModeProvider';
+import { useCalmMode } from '@/components/island-helpers/useCalmMode';
+import { JourneyToolsDrawer } from '@/components/island-helpers/JourneyToolsDrawer';
+import { InStoryAacOverlay } from '@/components/island-helpers/InStoryAacOverlay';
+import { speakPhrase } from '@/lib/island-helpers/speak';
 
 interface StoryPage {
     pageNumber: number;
@@ -71,12 +78,19 @@ function splitWords(text: string) {
     }, []);
 }
 
-export default function PremiumStoryReader({ story, onClose, onComplete }: PremiumStoryReaderProps) {
+function PremiumStoryReaderInner({ story, onClose, onComplete }: PremiumStoryReaderProps) {
     const pages = useMemo(() => story.content_json?.pages || [], [story]);
     const [currentPage, setCurrentPage] = useState(0);
     const [narration, setNarration] = useState<NarrationState>('idle');
     const hasWarmFiles = pages.some((page) => Boolean(page.audioUrl));
-    const [readAloud, setReadAloud] = useState(hasWarmFiles);
+    const { allowAutoplay, allowMotion } = useCalmMode();
+    const prefsBootstrap = typeof window !== 'undefined' ? loadPrefs() : null;
+    const initialReadAloud = prefsBootstrap
+        ? (prefsBootstrap.calmMode ? false : (prefsBootstrap.readAloudDefault && hasWarmFiles))
+        : hasWarmFiles;
+    const [readAloud, setReadAloud] = useState(initialReadAloud);
+    const [highlightPhraseIndex, setHighlightPhraseIndex] = useState<number | null>(null);
+    const phrasesRef = useRef<TimedPhrase[]>([]);
     const [narrationNote, setNarrationNote] = useState(
         isWarmNarration(story.narrated_by)
             ? warmNarrationLabel(story.narrated_by?.includes('gemini') ? 'gemini' : story.narrated_by?.includes('elevenlabs') ? 'elevenlabs' : null)
@@ -93,12 +107,20 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
     const voiceBlockedRef = useRef(false);
     const currentPageRef = useRef(0);
     const autoTurnRef = useRef(true);
-    const readAloudRef = useRef(hasWarmFiles);
+    const readAloudRef = useRef(initialReadAloud);
+    const allowAutoplayRef = useRef(allowAutoplay);
     const completedRef = useRef(false);
 
     useEffect(() => { currentPageRef.current = currentPage; }, [currentPage]);
     useEffect(() => { autoTurnRef.current = autoTurn; }, [autoTurn]);
     useEffect(() => { readAloudRef.current = readAloud; }, [readAloud]);
+    useEffect(() => { allowAutoplayRef.current = allowAutoplay; }, [allowAutoplay]);
+    useEffect(() => {
+        if (!allowAutoplay) {
+            setReadAloud(false);
+            // stop handled when toggling; avoid surprise autoplay under Calm / reduced-motion
+        }
+    }, [allowAutoplay]);
 
     const stopNarration = useCallback(() => {
         playTokenRef.current += 1;
@@ -109,6 +131,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
             audioRef.current = null;
         }
         setHighlightIndex(null);
+        setHighlightPhraseIndex(null);
         setNarration('idle');
     }, []);
 
@@ -117,13 +140,15 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
         completedRef.current = true;
         stopNarration();
         setShowCompletion(true);
-        confetti({
-            particleCount: 150,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ['#FFD700', '#FF4500', '#1E90FF', '#32CD32'],
-        });
-    }, [stopNarration]);
+        if (allowMotion) {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FFD700', '#FF4500', '#1E90FF', '#32CD32'],
+            });
+        }
+    }, [stopNarration, allowMotion]);
 
     const goToPage = useCallback((index: number) => {
         stopNarration();
@@ -172,7 +197,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
         let resolved = pageAudio[pageIndex] || null;
         if (!resolved && pageData.audioUrl) {
-            resolved = { audioUrl: pageData.audioUrl, words: pageData.audioWords || [] };
+            resolved = { audioUrl: pageData.audioUrl, words: pageData.audioWords?.length ? pageData.audioWords : estimateNarrationTimings(text) };
         }
 
         if (!resolved) {
@@ -206,15 +231,35 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
         if (resolved?.audioUrl) {
             const audio = new Audio(resolved.audioUrl);
             audio.preload = 'auto';
-            const timings = resolved.words;
+            // Seed from saved/live word timings when present; otherwise estimate from text.
+            // Always rescale to the real clip duration so karaoke tracks speech.
+            let timings = (resolved.words && resolved.words.length)
+                ? resolved.words
+                : estimateNarrationTimings(text);
+            const timingsRef = { current: timings };
+            phrasesRef.current = groupWordsIntoPhrases(timings, text);
 
-            audio.ontimeupdate = () => {
-                if (playTokenRef.current !== token || !timings.length) return;
+            const syncHighlight = () => {
+                const list = timingsRef.current;
+                if (playTokenRef.current !== token || !list.length) return;
                 const t = audio.currentTime;
-                let idx = timings.findIndex(w => t >= w.start && t <= w.end);
-                if (idx === -1 && t > (timings[timings.length - 1]?.end || 0)) idx = timings.length - 1;
+                let idx = list.findIndex(w => t >= w.start && t <= w.end);
+                if (idx === -1 && t > (list[list.length - 1]?.end || 0)) idx = list.length - 1;
                 if (idx >= 0) setHighlightIndex(idx);
+                const phrases = phrasesRef.current.length
+                    ? phrasesRef.current
+                    : groupWordsIntoPhrases(list, text);
+                phrasesRef.current = phrases;
+                setHighlightPhraseIndex(activePhraseIndex(phrases, t));
             };
+
+            audio.onloadedmetadata = () => {
+                if (playTokenRef.current !== token) return;
+                const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+                timingsRef.current = scaleNarrationTimingsToDuration(text, duration, timingsRef.current);
+                phrasesRef.current = groupWordsIntoPhrases(timingsRef.current, text);
+            };
+            audio.ontimeupdate = syncHighlight;
             audio.onended = () => {
                 if (playTokenRef.current !== token) return;
                 handleNarrationEnd();
@@ -229,7 +274,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                 audioRef.current = null;
                 if (playTokenRef.current === token) {
                     setNarration('idle');
-                    setNarrationNote('Tap play again to hear the warm narrator.');
+                    setNarrationNote('Tap play again to hear Tanty Spice.');
                 }
                 return;
             }
@@ -262,6 +307,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
     useEffect(() => {
         if (showCompletion) return;
         if (!readAloudRef.current) return;
+        if (!allowAutoplayRef.current) return; // Calm Mode / prefers-reduced-motion: no surprise autoplay
         const timer = setTimeout(() => { void playNarration(); }, 400);
         return () => clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -298,8 +344,55 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
     const pageData = pages[currentPage] || { text: '', pageNumber: 1 };
     const tokens = useMemo(() => splitWords(pageData.text || ''), [pageData.text]);
+    const displayPhrases = useMemo(() => {
+        const text = pageData.text || '';
+        const cached = pageAudio[currentPage]?.words;
+        const words = cached?.length ? cached : estimateNarrationTimings(text);
+        return groupWordsIntoPhrases(words, text);
+    }, [pageData.text, pageAudio, currentPage]);
+
+    const replayPhrase = useCallback(async (phrase: TimedPhrase) => {
+        const pageIndex = currentPageRef.current;
+        const resolved = pageAudio[pageIndex] || (pages[pageIndex]?.audioUrl
+            ? { audioUrl: pages[pageIndex].audioUrl!, words: pages[pageIndex].audioWords || [] }
+            : null);
+        if (resolved?.audioUrl) {
+            stopNarration();
+            const token = ++playTokenRef.current;
+            const audio = new Audio(resolved.audioUrl);
+            audioRef.current = audio;
+            const onTime = () => {
+                if (playTokenRef.current !== token) return;
+                if (audio.currentTime >= phrase.end - 0.05) {
+                    audio.pause();
+                    setNarration('idle');
+                    setHighlightPhraseIndex(null);
+                } else {
+                    setHighlightPhraseIndex(activePhraseIndex([phrase], audio.currentTime) === 0 ? displayPhrases.findIndex(p => p.start === phrase.start) : null);
+                }
+            };
+            audio.onloadedmetadata = () => {
+                audio.currentTime = Math.max(0, phrase.start);
+                void audio.play().then(() => {
+                    if (playTokenRef.current === token) setNarration('playing');
+                }).catch(() => setNarration('idle'));
+            };
+            audio.ontimeupdate = onTime;
+            return;
+        }
+        // Fallback: speak substring only if no timings/file
+        const result = await speakPhrase({ text: phrase.text, characterId: 'tanty_spice' });
+        if (result.ok) {
+            const audio = new Audio(result.audioUrl);
+            void audio.play().catch(() => {});
+        }
+    }, [pageAudio, pages, stopNarration, displayPhrases]);
+
     const imageUrl = pageData.imageUrl || pageData.image_url || pageData.illustration_url || pageData.illustrationUrl || story.cover_image_url;
     const progress = pages.length ? ((currentPage + 1) / pages.length) * 100 : 0;
+    const motionProps = allowMotion
+        ? { initial: { opacity: 0, x: 40 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -40 }, transition: { duration: 0.25 } }
+        : { initial: false, animate: { opacity: 1 }, exit: undefined, transition: { duration: 0 } };
 
     if (!pages.length) {
         return (
@@ -362,10 +455,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                 ) : (
                     <motion.div
                         key={`page-${currentPage}`}
-                        initial={{ opacity: 0, x: 40 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -40 }}
-                        transition={{ duration: 0.25 }}
+                        {...motionProps}
                         className="flex-1 flex flex-col min-h-0"
                         onTouchStart={onTouchStart}
                         onTouchEnd={onTouchEnd}
@@ -384,6 +474,7 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                 <p className="text-white/50 text-xs font-bold">Page {currentPage + 1} of {pages.length}</p>
                             </div>
                             <div className="flex items-center gap-2">
+                                <JourneyToolsDrawer parentControls={false} />
                                 <button
                                     onClick={() => setAutoTurn(v => !v)}
                                     aria-label="Toggle auto page turn"
@@ -420,22 +511,79 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                                     draggable={false}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-sky-950/60 via-transparent to-transparent lg:hidden" />
+                                <AnimatePresence>
+                                    {(narration === 'playing' || narration === 'loading') && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 12, scale: 0.9 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                                            className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 flex items-center gap-2 rounded-full bg-black/55 backdrop-blur-md border border-amber-300/40 pl-1.5 pr-3 py-1.5 shadow-xl"
+                                            role="status"
+                                            aria-label="Tanty Spice is narrating"
+                                        >
+                                            <motion.span
+                                                className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-amber-300 shrink-0"
+                                                animate={{ scale: [1, 1.06, 1] }}
+                                                transition={{ repeat: Infinity, duration: 0.85 }}
+                                            >
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src="/images/tanty_spice_avatar.jpg" alt="" className="w-full h-full object-cover" draggable={false} />
+                                            </motion.span>
+                                            <div className="min-w-0">
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-amber-200 leading-none">Tanty Spice</p>
+                                                <p className="text-xs font-bold text-white leading-tight">
+                                                    {narration === 'loading' ? 'Getting ready…' : 'Reading aloud'}
+                                                </p>
+                                            </div>
+                                            <span className="flex gap-0.5 ml-1" aria-hidden>
+                                                {[0, 1, 2].map((i) => (
+                                                    <motion.span
+                                                        key={i}
+                                                        className="w-1 rounded-full bg-amber-300"
+                                                        animate={{ height: [4, 14, 4] }}
+                                                        transition={{ repeat: Infinity, duration: 0.55, delay: i * 0.12 }}
+                                                    />
+                                                ))}
+                                            </span>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
 
-                            {/* Text */}
+                            {/* Large phrase captions (GLP-aligned). Word karaoke remains secondary via highlightIndex. */}
                             <div className="flex-1 min-h-0 overflow-y-auto bg-white lg:rounded-[2rem] px-6 sm:px-10 py-6 sm:py-10 flex flex-col">
-                                <p className="text-xl sm:text-2xl lg:text-3xl leading-relaxed font-bold text-blue-950">
-                                    {tokens.map((token, i) => token.isWord ? (
-                                        <span
-                                            key={i}
-                                            className={`transition-colors duration-150 rounded-md px-0.5 ${token.wordIndex === highlightIndex ? 'bg-amber-300 text-blue-950' : ''}`}
-                                        >
-                                            {token.text}
-                                        </span>
-                                    ) : (
-                                        <span key={i}>{token.text}</span>
-                                    ))}
+                                <p className="sr-only" aria-live="polite">
+                                    {displayPhrases[highlightPhraseIndex ?? -1]?.text || pageData.text}
                                 </p>
+                                <div className="ih-captions text-[1.5rem] sm:text-[1.75rem] lg:text-[2rem] leading-relaxed font-black text-blue-950 space-y-3">
+                                    {displayPhrases.length ? displayPhrases.map((phrase, pi) => (
+                                        <button
+                                            key={`ph-${pi}`}
+                                            type="button"
+                                            onClick={() => void replayPhrase(phrase)}
+                                            className={`block w-full text-left rounded-xl px-2 py-1 transition-colors duration-150 ${
+                                                pi === highlightPhraseIndex
+                                                    ? 'bg-amber-300 text-blue-950 ring-2 ring-amber-500'
+                                                    : 'hover:bg-amber-50'
+                                            }`}
+                                        >
+                                            {phrase.text}
+                                        </button>
+                                    )) : (
+                                        <p className="text-xl sm:text-2xl lg:text-3xl leading-relaxed font-bold text-blue-950">
+                                            {tokens.map((token, i) => token.isWord ? (
+                                                <span
+                                                    key={i}
+                                                    className={`transition-colors duration-150 rounded-md px-0.5 ${token.wordIndex === highlightIndex ? 'bg-amber-300 text-blue-950' : ''}`}
+                                                >
+                                                    {token.text}
+                                                </span>
+                                            ) : (
+                                                <span key={i}>{token.text}</span>
+                                            ))}
+                                        </p>
+                                    )}
+                                </div>
                                 {pageData.question && (
                                     <div className="mt-6 bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 text-amber-900 font-bold text-base">
                                         🤔 {pageData.question}
@@ -457,21 +605,51 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
 
                             <div className="flex flex-col items-center gap-1 min-w-0 max-w-[220px] sm:max-w-xs">
                                 <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-amber-200">
-                                    Warm island narrator
+                                    Tanty Spice narrator
                                 </span>
-                                <button
-                                    onClick={toggleNarration}
-                                    aria-label={narration === 'playing' ? 'Pause warm narration' : 'Play warm narration'}
-                                    className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-orange-500/40 active:scale-90 transition-all"
-                                >
-                                    {narration === 'loading' ? (
-                                        <Loader2 size={30} className="animate-spin" />
-                                    ) : narration === 'playing' ? (
-                                        <Pause size={30} />
-                                    ) : (
-                                        <Play size={30} className="ml-1" />
-                                    )}
-                                </button>
+                                <div className="relative flex items-center justify-center">
+                                    {/* Animated Tanty Spice narrator avatar while audio plays/loads */}
+                                    <motion.div
+                                        aria-hidden
+                                        className="absolute -left-14 sm:-left-16 w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-amber-300 shadow-lg bg-amber-100"
+                                        animate={
+                                            narration === 'playing'
+                                                ? { scale: [1, 1.08, 1], rotate: [0, -3, 3, 0] }
+                                                : narration === 'loading'
+                                                    ? { scale: [1, 1.04, 1], opacity: [0.7, 1, 0.7] }
+                                                    : { scale: 1, rotate: 0, opacity: 1 }
+                                        }
+                                        transition={
+                                            narration === 'playing' || narration === 'loading'
+                                                ? { repeat: Infinity, duration: narration === 'playing' ? 0.9 : 1.2, ease: 'easeInOut' }
+                                                : { duration: 0.2 }
+                                        }
+                                    >
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src="/images/tanty_spice_avatar.jpg"
+                                            alt=""
+                                            className="w-full h-full object-cover"
+                                            draggable={false}
+                                        />
+                                        {(narration === 'playing' || narration === 'loading') && (
+                                            <span className="absolute inset-0 rounded-full ring-2 ring-amber-400/70 animate-ping pointer-events-none" />
+                                        )}
+                                    </motion.div>
+                                    <button
+                                        onClick={toggleNarration}
+                                        aria-label={narration === 'playing' ? 'Pause Tanty Spice narration' : 'Play Tanty Spice narration'}
+                                        className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center text-white shadow-2xl shadow-orange-500/40 active:scale-90 transition-all"
+                                    >
+                                        {narration === 'loading' ? (
+                                            <Loader2 size={30} className="animate-spin" />
+                                        ) : narration === 'playing' ? (
+                                            <Pause size={30} />
+                                        ) : (
+                                            <Play size={30} className="ml-1" />
+                                        )}
+                                    </button>
+                                </div>
                                 <p className="text-[11px] sm:text-xs text-white/80 text-center leading-snug font-bold" role="status">
                                     {narrationNote}
                                 </p>
@@ -488,6 +666,15 @@ export default function PremiumStoryReader({ story, onClose, onComplete }: Premi
                     </motion.div>
                 )}
             </AnimatePresence>
+            <InStoryAacOverlay />
         </div>
+    );
+}
+
+export default function PremiumStoryReader(props: PremiumStoryReaderProps) {
+    return (
+        <CalmModeProvider>
+            <PremiumStoryReaderInner {...props} />
+        </CalmModeProvider>
     );
 }

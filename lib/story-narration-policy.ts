@@ -8,8 +8,8 @@
 
 export const WARM_NARRATOR_PREFIX = 'warm_island_narrator';
 
-/** Premade ElevenLabs narrative voice (Matilda). Not a partnership or a custom clone. */
-export const DEFAULT_WARM_STORY_VOICE_ID = 'XrExE9yKIg1WjnnlVkGX';
+/** Tanty Spice — the voice of every picture-book narration (custom ElevenLabs voice). */
+export const DEFAULT_WARM_STORY_VOICE_ID = 'RdKVaQgg8n1rUzICELn1';
 
 /** Previous story voice. Kept only so we never silently select it again. */
 export const RETIRED_ROBOTIC_VOICE_ID = 'JfiM1myzVx7xU2MZOAJS';
@@ -34,9 +34,9 @@ export function warmStoryVoiceId(env: NodeJS.ProcessEnv = process.env): string {
 }
 
 export function warmNarrationLabel(provider?: 'elevenlabs' | 'gemini' | null): string {
-    if (provider === 'elevenlabs') return 'Warm island narrator · ElevenLabs';
-    if (provider === 'gemini') return 'Warm island narrator · Gemini';
-    return 'Warm island narrator';
+    if (provider === 'elevenlabs') return 'Tanty Spice · reading aloud';
+    if (provider === 'gemini') return 'Tanty Spice · reading aloud';
+    return 'Tanty Spice · reading aloud';
 }
 
 export function missingNarrationKeyMessage(): string {
@@ -65,4 +65,18 @@ export function estimateNarrationTimings(text: string): { text: string; start: n
         currentTime = end;
         return { text: word, start, end };
     });
+}
+
+/** Stretch/squash word timings so the last end matches real audio duration (karaoke sync). */
+export function scaleNarrationTimingsToDuration(
+    text: string,
+    durationSec: number,
+    existing?: { text: string; start: number; end: number }[] | null,
+): { text: string; start: number; end: number }[] {
+    const base = existing && existing.length ? existing : estimateNarrationTimings(text);
+    if (!base.length || !(durationSec > 0)) return base;
+    const lastEnd = base[base.length - 1]?.end || 0;
+    if (!(lastEnd > 0)) return base;
+    const scale = durationSec / lastEnd;
+    return base.map((w) => ({ text: w.text, start: w.start * scale, end: w.end * scale }));
 }

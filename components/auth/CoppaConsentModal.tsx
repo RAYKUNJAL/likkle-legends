@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ShieldAlert, X, ShieldCheck, Lock, ArrowRight, Loader2, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -24,12 +24,21 @@ export default function CoppaConsentModal({ isOpen, onClose, onSuccess }: CoppaC
         return { a, b, result: a + b };
     });
 
+    useEffect(() => {
+        if (isOpen) {
+            setStep('info');
+            setChallengeInput('');
+            setError(null);
+            setIsLoading(false);
+        }
+    }, [isOpen]);
+
     const handleChallenge = () => {
         if (parseInt(challengeInput) === challenge.result) {
             setStep('success');
             setTimeout(() => {
                 onSuccess();
-            }, 1500);
+            }, 600);
         } else {
             setError("That's not quite right. Try again!");
             setChallengeInput('');

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { getCharacterConfig, CharacterId, CharacterChild } from '@/lib/characterConfig';
+import { buildBuddyFollowUps } from '@/lib/buddy-followups';
 import { TIER_LEVELS } from '@/lib/feature-access';
 import {
     GoogleGenerativeAI,
@@ -245,7 +246,9 @@ RUNTIME GUARDRAILS:
 - If child shares personal details, remind them to keep private info offline.
 - If request is unsafe, briefly refuse and redirect to a learning-safe alternative.
 - Keep language age-appropriate and supportive.
-- Do not include links, phone numbers, or email addresses in replies.`;
+- Do not include links, phone numbers, or email addresses in replies.
+- Stay in this character's voice the whole turn (catchphrases, warmth, and island flavor already in the persona).
+- End with one short question or choice so the child can keep talking. This is turn-based chat, not live voice.`;
 }
 
 export async function GET(request: NextRequest) {
@@ -305,10 +308,12 @@ export async function GET(request: NextRequest) {
         const responseBody: Record<string, unknown> = { history: history || [] };
         if (isTantyTrialCharacter && !hasPaid) {
             const used = await getTantyTrialUsage(childId, characterId);
+            const remaining = Math.max(0, TANTY_TRIAL_DAILY_LIMIT - used);
             responseBody.trial = {
                 used,
                 limit: TANTY_TRIAL_DAILY_LIMIT,
-                remaining: Math.max(0, TANTY_TRIAL_DAILY_LIMIT - used),
+                remaining,
+                exhausted: remaining <= 0,
                 characterId: TANTY_TRIAL_CHARACTER,
                 upgradeUrl: '/pricing'
             };
@@ -542,14 +547,30 @@ export async function POST(request: NextRequest) {
             if (error) console.error('Failed to save chat messages:', error.message);
         });
 
+        if (isTantyTrialCharacter && !hasPaid) {
+            await incrementTantyTrialUsage(childId, characterId);
+        }
+
+        const followUps = buildBuddyFollowUps(characterId, safeResponse, safeUserMessage);
+        const trialUsed = isTantyTrialCharacter && !hasPaid
+            ? await getTantyTrialUsage(childId, characterId)
+            : null;
+
         return NextResponse.json({
             response: safeResponse,
+            followUps,
             limits: {
                 dailyUsed: dailyUsed + 1,
                 dailyLimit: policy.dailyLimit,
                 burstUsed: burstUsed + 1,
                 burstLimit: policy.burstLimit,
-                trialLabel: policy.trialLabel
+                trialLabel: policy.trialLabel,
+                trial: trialUsed === null ? null : {
+                    limit: TANTY_TRIAL_DAILY_LIMIT,
+                    remaining: Math.max(0, TANTY_TRIAL_DAILY_LIMIT - trialUsed),
+                    characterId: TANTY_TRIAL_CHARACTER,
+                    exhausted: trialUsed >= TANTY_TRIAL_DAILY_LIMIT
+                }
             }
         });
     } catch (e: any) {

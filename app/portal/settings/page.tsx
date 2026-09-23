@@ -278,6 +278,16 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
 
+                                <div className="bg-amber-50 rounded-[2rem] p-5 border-2 border-amber-200 space-y-2">
+                                    <h3 className="text-lg font-black text-deep">Island Helpers</h3>
+                                    <p className="text-sm font-semibold text-deep/70">
+                                        Adventure supports for reading and communication play. Educational supports — not a medical device.
+                                    </p>
+                                    <a href="/island-helpers" className="inline-flex font-black text-amber-700 underline">
+                                        Open Island Helpers →
+                                    </a>
+                                </div>
+
                                 <button
                                     onClick={handleSave}
                                     disabled={isLoading}

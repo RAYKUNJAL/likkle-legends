@@ -40,10 +40,10 @@ export default function FreeTrialSection() {
 
                             <div className="pt-2">
                                 <Link
-                                    href="/get-started"
+                                    href="/free-trial"
                                     className="inline-flex items-center gap-2 btn bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg transition-all group"
                                 >
-                                    Start Free Digital Trial
+                                    Start a free account
                                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                                 </Link>
                             </div>
