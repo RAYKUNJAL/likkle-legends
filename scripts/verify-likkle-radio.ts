@@ -86,7 +86,8 @@ assert(stepTrack(0, 0, 1) === 0, 'empty playlist does not invent an index');
 const player = read('components/radio/LikkleRadioPlayer.tsx');
 const showcase = read('components/landing-v5/RadioShowcase.tsx');
 const landing = read('components/landing-v5/LandingPage.tsx');
-const parentMusic = read('app/parent/music/page.tsx');
+// The parent store body lives in ParentMusicStore.tsx; page.tsx mounts it.
+const parentMusic = read('app/parent/music/page.tsx') + '\n' + read('app/parent/music/ParentMusicStore.tsx');
 const radioPage = read('app/radio/page.tsx');
 const kidMusic = read('app/portal/music/page.tsx');
 

@@ -14,15 +14,15 @@ export default function MusicPayPalButton({
     onVerified,
 }: {
     sku: string;
-    token: string;
+    token?: string | null;
     trackId?: string;
     requestId?: string;
     onVerified: () => void;
 }) {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
     };
+    if (token) headers.Authorization = `Bearer ${token}`;
 
     return (
         <PayPalButtons
