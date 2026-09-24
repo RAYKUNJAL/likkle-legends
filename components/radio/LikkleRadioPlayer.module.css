@@ -1,4 +1,5 @@
 .player {
+  max-width: 100%;
   --ink: #102543;
   --muted: #51617b;
   --teal: #07898c;
@@ -7,7 +8,9 @@
   --cream: #fffaf0;
   --navy: #102543;
   --line: #e6e9e4;
+  position: relative;
   min-width: 0;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 2rem;
   background: #fff;
@@ -95,11 +98,15 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .dial {
   display: flex;
   flex: 1;
+  min-width: 0;
+  max-width: 100%;
   gap: 0.55rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
@@ -434,6 +441,7 @@
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
 }

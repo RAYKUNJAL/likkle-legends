@@ -293,6 +293,7 @@ export default function LikkleRadioPlayer({ onTrackStarted }: LikkleRadioPlayerP
                                 aria-controls={`${uid}-panel`}
                                 tabIndex={selected ? 0 : -1}
                                 data-station={item.id}
+                                aria-label={`${host.name}, ${item.name}. ${itemNote.primary}`}
                                 onClick={() => selectStation(item.id)}
                                 className={styles.station}
                             >
@@ -306,9 +307,6 @@ export default function LikkleRadioPlayer({ onTrackStarted }: LikkleRadioPlayerP
                                     />
                                 </span>
                                 <span className={styles.stationName}>{item.shortName}</span>
-                                <span className={styles.srOnly}>
-                                    {`${host.name}. ${item.name}. ${itemNote.primary}`}
-                                </span>
                             </button>
                         );
                     })}
