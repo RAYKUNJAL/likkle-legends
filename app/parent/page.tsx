@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import {
     Settings, BarChart, Users, Sparkles, Plus, ArrowRight,
     Edit, BookOpen, Music, Trophy, Flame, Target, TrendingUp,
-    ChevronRight, Star, Calendar, MapPin, Gift, Download, ShieldCheck, LayoutDashboard
+    ChevronRight, Star, Calendar, MapPin, Download, ShieldCheck, LayoutDashboard
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -150,6 +150,20 @@ export default function ParentDashboard() {
                         </Link>
                     </div>
                 </header>
+
+                <section className="mb-10 rounded-3xl bg-white p-6 shadow-lg border border-slate-100">
+                    <p className="text-xs font-black uppercase tracking-widest text-primary">Music</p>
+                    <h2 className="mt-1 text-2xl font-black text-slate-900">Hear the songs</h2>
+                    <p className="mt-1 max-w-2xl text-sm font-medium text-slate-500">Original kids Caribbean songs. Listening is free on every account. A download or a custom song is optional, and only on this parent account.</p>
+                    <Link href="/parent/music" className="mt-4 inline-flex rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white">Hear the songs</Link>
+                    <p className="mt-4 text-sm text-slate-500">
+                        <Link href="/parent/music" className="font-bold text-slate-700 underline">Optional download</Link>
+                        {' · '}
+                        <Link href="/parent/music/custom" className="font-bold text-slate-700 underline">Birthday / event song</Link>
+                        {' · '}
+                        <Link href="/checkout?offer=catalog" className="font-bold text-slate-700 underline">Island Packs and Family</Link>
+                    </p>
+                </section>
 
                 {/* Tab Selection */}
                 <div className="flex gap-8 mb-12 border-b-2 border-slate-100">
@@ -342,12 +356,11 @@ export default function ParentDashboard() {
                                         </div>
                                     )}
                                     <ReferralWidget />
-                                    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-12 rounded-[4rem] shadow-2xl text-white relative overflow-hidden">
-                                        <Gift className="w-12 h-12 text-indigo-300 mb-8" />
-                                        <h3 className="text-3xl font-black tracking-tighter mb-4 leading-tight">Unlock Premium Music.</h3>
-                                        <p className="text-indigo-100/60 font-medium mb-8">Get exclusive tracks or order a custom song for your Legend.</p>
-                                        <Link href="/portal/music" className="block w-full py-5 bg-white text-indigo-700 rounded-2xl font-black text-center shadow-xl hover:scale-105 transition-all text-sm uppercase tracking-widest">
-                                            Visit Music Hub
+                                    <div className="bg-white p-12 rounded-[4rem] shadow-2xl border border-slate-100">
+                                        <h3 className="text-3xl font-black tracking-tighter mb-4 leading-tight text-slate-900">Songs for the family</h3>
+                                        <p className="text-slate-500 font-medium mb-6">Hear the songs we host. A copy or a custom song can wait until after listening.</p>
+                                        <Link href="/parent/music" className="text-primary font-black uppercase tracking-widest text-xs hover:underline">
+                                            Hear the songs
                                         </Link>
                                     </div>
                                     <div className="bg-white p-12 rounded-[4rem] shadow-2xl border border-slate-100 flex flex-col items-center text-center">

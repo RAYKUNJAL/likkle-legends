@@ -283,8 +283,7 @@ const GameWrapper: React.FC<GameWrapperProps> = ({
             }
             onSubscribe={() => {
               gameAnalyticsEvents.paywallClicked(gameId, 'subscribe', session?.id);
-              // Navigate to subscription page
-              router.push('/account/upgrade');
+              setShowPaywall(false);
             }}
             onSkip={() => {
               gameAnalyticsEvents.paywallClicked(gameId, 'skip', session?.id);
@@ -292,7 +291,7 @@ const GameWrapper: React.FC<GameWrapperProps> = ({
             }}
             onTryTrial={() => {
               gameAnalyticsEvents.paywallClicked(gameId, 'try_trial', session?.id);
-              router.push('/account/trial');
+              setShowPaywall(false);
             }}
           />
         </div>

@@ -15,10 +15,10 @@ function SuccessContent() {
       <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center">
         <div className="text-6xl mb-6">🎉</div>
         <h1 className="text-3xl font-black text-slate-900 mb-4">
-          Welcome to the Legends!
+          Check the parent account
         </h1>
         <p className="text-slate-600 mb-2">
-          Your payment was successful. Your child&apos;s Caribbean adventure begins now!
+          This page does not unlock anything. Access appears on the parent account only after PayPal capture or an active subscription is verified.
         </p>
         {transactionId && (
           <p className="text-xs text-slate-400 mb-6">

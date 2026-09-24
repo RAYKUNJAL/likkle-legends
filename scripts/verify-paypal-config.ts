@@ -23,4 +23,4 @@ Object.values(SUBSCRIPTION_PLANS).forEach((plan: any) => {
     }
 });
 
-console.log("\nℹ️  Note: Checkout will simulate success in Sandbox mode if Plan IDs are invalid.");
+console.log("\nℹ️  Checkout fails closed when a required PayPal var or plan id is missing. It does not simulate a successful payment.");

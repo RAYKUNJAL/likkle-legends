@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Play, Pause, SkipBack, SkipForward, Radio, Sparkles, Crown } from "lucide-react";
+import { ArrowLeft, Play, Pause, SkipBack, SkipForward, Radio, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { buildFreeFallbackTracks, RADIO_SEGMENTS } from "@/lib/radio-stations";
 
@@ -33,7 +33,6 @@ export default function FreeRadioPage() {
         []
     );
     const [tracks, setTracks] = useState<StationTrack[]>(fallbackTracks);
-    const [isPremiumUser, setIsPremiumUser] = useState(false);
     const [segmentStatus, setSegmentStatus] = useState<Record<string, boolean>>({});
 
     const audioRef = useRef<HTMLAudioElement>(null);
@@ -50,9 +49,8 @@ export default function FreeRadioPage() {
                     .eq("is_active", true)
                     .order("display_order", { ascending: true });
 
-                const freeSongs = (songs || [])
-                    .filter((song: any) => song.audio_url && !song.metadata?.is_premium)
-                    .slice(0, 10)
+                const fromLibrary = (songs || [])
+                    .filter((song: any) => song.audio_url)
                     .map((song: any) => ({
                         id: song.id,
                         title: song.title,
@@ -60,47 +58,15 @@ export default function FreeRadioPage() {
                         url: song.audio_url,
                     }));
 
-                if (freeSongs.length >= 10) {
-                    setTracks(freeSongs);
-                    return;
+                const seen = new Set(fromLibrary.map((track: StationTrack) => track.url));
+                const merged = [...fromLibrary];
+                for (const track of fallbackTracks) {
+                    if (seen.has(track.url)) continue;
+                    merged.push(track);
                 }
-
-                const ids = new Set(freeSongs.map((t: StationTrack) => t.id));
-                const padded = [...freeSongs];
-                for (const t of fallbackTracks) {
-                    if (padded.length >= 10) break;
-                    if (ids.has(t.id)) continue;
-                    padded.push(t);
-                }
-                setTracks(padded.slice(0, 10));
+                setTracks(merged.length ? merged : fallbackTracks);
             } catch (_e) {
                 setTracks(fallbackTracks);
-            }
-        };
-
-        const loadAccess = async () => {
-            try {
-                const supabase = createClient();
-                const {
-                    data: { session },
-                } = await supabase.auth.getSession();
-
-                if (!session?.user?.id) {
-                    setIsPremiumUser(false);
-                    return;
-                }
-
-                const { data: profile } = await supabase
-                    .from("profiles")
-                    .select("subscription_tier,subscription_status")
-                    .eq("id", session.user.id)
-                    .single();
-
-                const paidTier = profile?.subscription_tier && profile.subscription_tier !== "free";
-                const activeStatus = ["active", "trialing"].includes(profile?.subscription_status || "");
-                setIsPremiumUser(Boolean(paidTier && activeStatus));
-            } catch (_e) {
-                setIsPremiumUser(false);
             }
         };
 
@@ -119,7 +85,6 @@ export default function FreeRadioPage() {
         };
 
         void loadFreeTracks();
-        void loadAccess();
         void loadSegments();
     }, [fallbackTracks]);
 
@@ -176,7 +141,7 @@ export default function FreeRadioPage() {
                     </div>
 
                     <p className="text-deep/60 font-medium mb-8">
-                        Enjoy a rotating 10-song loop. Upgrade for full premium DJ segments, more tracks, and exclusive drops.
+                        Listening is free. This player uses the songs we host.
                     </p>
 
                     <div className="bg-zinc-50 rounded-2xl p-6 border border-zinc-100 mb-6">
@@ -233,23 +198,14 @@ export default function FreeRadioPage() {
                         ))}
                     </div>
 
-                    <div className="mt-8 grid sm:grid-cols-2 gap-3">
+                    <div className="mt-8">
                         <Link href="/signup?plan=free" className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-deep text-white font-black">
                             <Sparkles size={16} /> Sign Up Free
                         </Link>
-                        {isPremiumUser ? (
-                            <Link href="/portal/radio" className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-white font-black">
-                                <Crown size={16} /> Open Premium Radio
-                            </Link>
-                        ) : (
-                            <Link href="/signup?plan=legends_plus" className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-white font-black">
-                                <Crown size={16} /> Unlock Premium Radio
-                            </Link>
-                        )}
                     </div>
 
                     <div className="mt-6 bg-zinc-50 border border-zinc-100 rounded-2xl p-5">
-                        <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-3">Premium Live DJ Segments</p>
+                        <p className="text-xs font-black uppercase tracking-widest text-zinc-500 mb-3">Station hosts</p>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {RADIO_SEGMENTS.map((segment) => (
                                 <div key={segment.id} className="rounded-xl border border-zinc-200 bg-white p-3">

@@ -27,6 +27,8 @@ import { Suspense } from "react";
 import { ISLAND_REGISTRY } from "@/lib/registries/islands";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { SUBSCRIPTION_PLANS, UPSELLS } from "@/lib/paypal";
+import { getParentOffer } from "@/lib/paypal-offers";
+import IslandOffersCheckout from "@/components/checkout/IslandOffersCheckout";
 import { supabase } from "@/lib/supabase-client";
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "sb";
@@ -34,6 +36,12 @@ const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "sb";
 function CheckoutContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
+    const offerParam = searchParams.get('offer');
+    const planParam = searchParams.get('plan');
+    if (offerParam || getParentOffer(planParam)) {
+        const initialSku = offerParam && offerParam !== 'catalog' ? offerParam : planParam;
+        return <IslandOffersCheckout initialSku={initialSku} />;
+    }
     const [step, setStep] = useState(1);
     const [emailError, setEmailError] = useState<string | null>(null);
     const [emailTouched, setEmailTouched] = useState(false);
