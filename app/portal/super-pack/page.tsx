@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Download, Lock, Printer, Sparkles } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 type ActivityAsset = {
   title: string;
@@ -71,9 +72,9 @@ export default function SuperPackPage() {
         {!canOpen && (
           <div className="mt-8 rounded-3xl border-2 border-dashed border-amber-200 bg-amber-50 p-6 text-amber-800">
             <div className="flex items-center gap-3 font-black">
-              <Lock size={20} /> This pack unlocks after checkout.
+              <Lock size={20} /> This pack is locked.
             </div>
-            <p className="mt-2 text-sm font-semibold">Your order bump will open all 55 printable activities here.</p>
+            <AskAParentNotice className="mt-2 text-amber-900" />
           </div>
         )}
       </section>

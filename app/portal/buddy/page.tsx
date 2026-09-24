@@ -8,6 +8,7 @@ import { useUser } from '@/components/UserContext';
 import { CHARACTER_CONFIGS, CHARACTER_ORDER, CharacterId } from '@/lib/characterConfig';
 import { TIER_LEVELS } from '@/lib/feature-access';
 import { normalizeParentalControls } from '@/lib/parental-controls';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 export default function ChooseYourBuddyPage() {
     const router = useRouter();
@@ -69,15 +70,9 @@ export default function ChooseYourBuddyPage() {
                         <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-700">Paid Feature</p>
                         <h2 className="mt-2 text-lg font-black text-slate-900">Buddy chat is available on paid plans.</h2>
                         <p className="mt-1 text-sm font-medium text-slate-600">
-                            Upgrade to unlock the full kid-safe chat, voice mode, and memory experience for your child.
+                            Buddy chat opens when a parent adds a plan. There is no buy button here.
                         </p>
-                        <button
-                            type="button"
-                            onClick={() => router.push('/checkout')}
-                            className="mt-4 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-black text-white"
-                        >
-                            Upgrade Now
-                        </button>
+                        <AskAParentNotice className="mt-4 text-slate-700" />
                     </div>
                 )}
 
@@ -106,7 +101,7 @@ export default function ChooseYourBuddyPage() {
                                 {locked && (
                                     <div className="absolute top-4 right-4 bg-slate-700 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full flex items-center gap-1">
                                         <Lock size={10} />
-                                        Upgrade to Unlock
+                                        Ask a parent
                                     </div>
                                 )}
 
@@ -153,7 +148,7 @@ export default function ChooseYourBuddyPage() {
 
                                 <div className="px-5 pb-4">
                                     {locked ? (
-                                        <p className="text-xs text-slate-400 font-bold">Unlock with any paid plan - starts at $4.99/mo</p>
+                                        <AskAParentNotice className="text-xs text-slate-400" />
                                     ) : (
                                         <p className="text-xs text-slate-400 italic font-medium">
                                             "{config.persona.catchphrases[0]}"
@@ -165,14 +160,9 @@ export default function ChooseYourBuddyPage() {
 
                         if (locked) {
                             return (
-                                <button
-                                    key={characterId}
-                                    type="button"
-                                    onClick={() => router.push('/checkout')}
-                                    className="block w-full text-left group"
-                                >
+                                <div key={characterId} className="block w-full text-left">
                                     {cardContent}
-                                </button>
+                                </div>
                             );
                         }
 

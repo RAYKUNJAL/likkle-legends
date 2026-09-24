@@ -32,7 +32,7 @@ Use this guide to manually verify the checkout flow for the new 5-tier pricing s
    - **Upsell**: Toggle "Grandparent Dashboard". Price should update (+ Free for launch).
    - "Shipping" step should be **SKIPPED**.
    - PayPal buttons should load.
-4. **Action**: Complete payment (using PayPal Sandbox if configured, otherwise mock success).
+4. **Action**: Complete payment in PayPal sandbox or live. There is no mock success. Access stays locked unless the server verifies the capture or an ACTIVE subscription.
 
 ### 3. "Legend Mail Intro" or "Legends Plus" (Physical Plans)
 **Goal**: Verify shipping address collection.
