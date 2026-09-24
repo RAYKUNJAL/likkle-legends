@@ -1,10 +1,10 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
-import { supabase } from '@/lib/supabase-client';
 import MusicPayPalButton from '@/components/parent/MusicPayPalButton';
+import { useParentSession } from '@/components/parent/useParentSession';
 import { formatUsd } from '@/lib/paypal-offers';
 import { CUSTOM_SONG_PRICE, CUSTOM_SONG_SKU, CUSTOM_SONG_STYLE } from '@/lib/music-store';
 
@@ -22,8 +22,7 @@ type SongRequest = {
 };
 
 export default function ParentCustomSongPage() {
-    const [token, setToken] = useState<string | null>(null);
-    const [ready, setReady] = useState(false);
+    const { token, signedIn, ready } = useParentSession();
     const [requests, setRequests] = useState<SongRequest[]>([]);
     const [childFirstName, setChildFirstName] = useState('');
     const [occasion, setOccasion] = useState('birthday');
@@ -32,33 +31,33 @@ export default function ParentCustomSongPage() {
     const [message, setMessage] = useState<string | null>(null);
     const [verified, setVerified] = useState(false);
 
-    const load = async (accessToken: string) => {
+    const load = async (accessToken: string | null) => {
+        const headers: Record<string, string> = {};
+        if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
         const response = await fetch('/api/music/custom-song', {
-            headers: { Authorization: `Bearer ${accessToken}` },
+            credentials: 'same-origin',
+            headers,
         });
         const body = await response.json().catch(() => ({}));
         if (response.ok && Array.isArray(body.requests)) setRequests(body.requests);
     };
 
     useEffect(() => {
-        supabase.auth.getSession()
-            .then(({ data }) => {
-                const accessToken = data.session?.access_token || null;
-                setToken(accessToken);
-                if (accessToken) return load(accessToken);
-            })
-            .catch(() => setToken(null))
-            .finally(() => setReady(true));
-    }, []);
+        if (!ready || !signedIn) return;
+        void load(token);
+    }, [ready, signedIn, token]);
 
     const saveDraft = async (event: FormEvent) => {
         event.preventDefault();
-        if (!token) return;
+        if (!signedIn) return;
         setVerified(false);
         setMessage(null);
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers.Authorization = `Bearer ${token}`;
         const response = await fetch('/api/music/custom-song', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            credentials: 'same-origin',
+            headers,
             body: JSON.stringify({ childFirstName, occasion, notes }),
         });
         const body = await response.json().catch(() => ({}));
@@ -83,13 +82,13 @@ export default function ParentCustomSongPage() {
                 </p>
 
                 {!ready && <p className="mt-8 text-sm font-bold text-slate-500">Checking parent session…</p>}
-                {ready && !token && (
-                    <Link href="/login?redirect=/parent/music/custom" className="mt-8 inline-flex rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white">
+                {ready && !signedIn && (
+                    <a href="/login?redirect=/parent/music/custom" className="mt-8 inline-flex rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white">
                         Parent sign in
-                    </Link>
+                    </a>
                 )}
 
-                {token && (
+                {signedIn && (
                     <form onSubmit={saveDraft} className="mt-8 space-y-4 rounded-3xl bg-white p-6 shadow-sm">
                         <label className="block text-sm font-bold text-slate-700">
                             Child first name
@@ -161,9 +160,16 @@ export default function ParentCustomSongPage() {
         </div>
     );
 
-    if (!PAYPAL_CLIENT_ID) return page;
+    const paypalOptions = useMemo(() => ({
+        clientId: PAYPAL_CLIENT_ID,
+        currency: 'USD',
+        intent: 'capture' as const,
+        components: 'buttons',
+    }), []);
+
+    if (!signedIn || !PAYPAL_CLIENT_ID) return page;
     return (
-        <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture', components: 'buttons' }}>
+        <PayPalScriptProvider options={paypalOptions}>
             {page}
         </PayPalScriptProvider>
     );

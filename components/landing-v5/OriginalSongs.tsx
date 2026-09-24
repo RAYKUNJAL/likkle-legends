@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { Pause, Play } from 'lucide-react';
-import { getPlayableCatalogSongs } from '@/lib/song-catalog';
+import { getPlayableCatalogSongs, playbackUrl } from '@/lib/song-catalog';
 import styles from './landing.module.css';
 
 const songs = getPlayableCatalogSongs();
@@ -52,7 +52,7 @@ export default function OriginalSongs() {
             <article key={song.id} className={styles.songCard}>
               <h3>{song.title}</h3>
               <p>{song.artist}</p>
-              <button type="button" className={styles.secondaryButton} onClick={() => toggle(song.id, song.url)}>
+              <button type="button" className={styles.secondaryButton} onClick={() => toggle(song.id, playbackUrl(song))}>
                 {playing === song.id ? <Pause size={18} /> : <Play size={18} />}
                 {playing === song.id ? 'Pause' : 'Play'}
               </button>
@@ -61,6 +61,7 @@ export default function OriginalSongs() {
         </div>
         <audio
           ref={audioRef}
+          preload="metadata"
           className={styles.songAudio}
           onPlaying={() => setHeard(true)}
           onEnded={() => {
@@ -70,14 +71,14 @@ export default function OriginalSongs() {
         />
         {heard && (
           <p className={styles.songNote}>
-            <Link href="/login?redirect=/parent/music">Download for $1</Link>
+            <Link href="/login?redirect=/parent/music" prefetch={false}>Download for $1</Link>
             {' '}keeps a copy on the parent account. Streaming stays free.
           </p>
         )}
         <div className={styles.customTeaser}>
           <h3>Birthday / event song for your likkle one</h3>
           <p>A parent can request a custom Caribbean kids song after signing in.</p>
-          <Link className={styles.textLink} href="/login?redirect=/parent/music/custom">Request a custom song</Link>
+          <Link className={styles.textLink} href="/login?redirect=/parent/music/custom" prefetch={false}>Request a custom song</Link>
         </div>
       </div>
     </section>

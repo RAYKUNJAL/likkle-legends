@@ -24,6 +24,7 @@ import {
     getPlayableCatalogSongs,
     getPlayableTracks,
     musicCatalogScoreboard,
+    playbackUrl,
     streamPathIsUngated,
 } from '../lib/song-catalog';
 import {
@@ -139,9 +140,14 @@ const scoreboard = musicCatalogScoreboard();
 assert(scoreboard.playable === 2 && scoreboard.invented === 0, 'catalog is the two owned files');
 for (const song of getPlayableCatalogSongs()) {
     const filePath = path.join(process.cwd(), 'public', song.url.replace(/^\//, ''));
+    const streamFile = path.join(process.cwd(), 'public', playbackUrl(song).replace(/^\//, ''));
     assert(fs.existsSync(filePath), `missing audio file ${song.url}`);
-    assert(streamPathIsUngated(song.url), `stream stays ungated ${song.url}`);
+    assert(fs.existsSync(streamFile), `missing stream rendition ${playbackUrl(song)}`);
+    assert(fs.statSync(streamFile).size < fs.statSync(filePath).size, `stream rendition is smaller ${song.id}`);
+    assert(streamPathIsUngated(song.url), `master stays ungated ${song.url}`);
+    assert(streamPathIsUngated(playbackUrl(song)), `stream stays ungated ${playbackUrl(song)}`);
     assert(!song.url.includes('suno') && !song.url.includes('paypal'), 'playable url is a local file');
+    assert(!playbackUrl(song).includes('suno'), 'stream url is a local file');
 }
 assert(getPlayableTracks().every((item) => streamPathIsUngated(item.url)), 'radio tracks are the free catalog');
 assert(RADIO_TRACKS.length === getPlayableTracks().length, 'RADIO_TRACKS matches owned files');

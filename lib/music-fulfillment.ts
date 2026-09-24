@@ -22,7 +22,7 @@ import {
     nextCommerceOrderState,
     normalizeCustomWorkState,
 } from '@/lib/music-orders';
-import { getPlayableCatalogSongs, getPlayableSong } from '@/lib/song-catalog';
+import { getPlayableCatalogSongs, getPlayableSong, playbackUrl } from '@/lib/song-catalog';
 
 const PAID_STATUSES = new Set(['paid', 'queued', 'in_progress', 'delivered', 'creating', 'ready']);
 
@@ -449,7 +449,7 @@ export async function listMusicAccount(userId: string) {
             id: song.id,
             title: song.title,
             artist: song.artist,
-            streamUrl: song.url,
+            streamUrl: playbackUrl(song),
             channel: song.channel,
             owned: ownedTrackIds.includes(song.id),
         })),

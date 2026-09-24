@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { serverEnv } from '@/lib/env/server'
+import { isRouterPrefetch, loginBounceTarget } from '@/lib/login-bounce'
 
 export async function updateSession(request: NextRequest) {
     let response = NextResponse.next({
@@ -52,14 +53,6 @@ export async function updateSession(request: NextRequest) {
     const isAuthCookieName = (name: string) =>
         /^sb-[^-]+-auth-token(?:\.\d+)?$/.test(name) || /^sb-[^-]+-auth-token-code-verifier$/.test(name);
 
-    const sanitizeRedirectPath = (value: string | null) => {
-        if (!value || !value.startsWith('/') || value.startsWith('//')) return '/portal';
-        if (value === '/login' || value.startsWith('/login?') || value === '/signup' || value.startsWith('/signup?')) {
-            return '/portal';
-        }
-        return value;
-    };
-
     let user = null;
     try {
         const hasAuthCookie = request.cookies.getAll().some(c => isAuthCookieName(c.name));
@@ -77,8 +70,14 @@ export async function updateSession(request: NextRequest) {
     const isAdmin = pathname.startsWith('/admin') && pathname !== '/admin/central' && pathname !== '/admin';
 
     if (pathname === '/login' || pathname === '/signup') {
-        if (user) {
-            const redirectTo = sanitizeRedirectPath(request.nextUrl.searchParams.get('redirect'));
+        const redirectTo = loginBounceTarget({
+            pathname,
+            hasUser: !!user,
+            redirectParam: request.nextUrl.searchParams.get('redirect'),
+            prefetch: isRouterPrefetch((name) => request.headers.get(name)),
+            nextUrl: request.headers.get('next-url'),
+        });
+        if (redirectTo) {
             const redirectResponse = NextResponse.redirect(new URL(redirectTo, request.url));
 
             const cookies = response.cookies.getAll();

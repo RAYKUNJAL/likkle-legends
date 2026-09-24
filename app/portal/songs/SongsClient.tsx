@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { EmptyState } from '@/components/EmptyState';
-import { getPlayableCatalogSongs } from '@/lib/song-catalog';
+import { getPlayableCatalogSongs, playbackUrl } from '@/lib/song-catalog';
 
 interface Song {
     id: string;
@@ -32,7 +32,7 @@ function ownedSongs(): Song[] {
         title: song.title,
         artist: song.artist,
         duration_seconds: 0,
-        audio_url: song.url,
+        audio_url: playbackUrl(song),
         cover_image_url: song.cover_image_url || '/images/music-placeholder.svg',
         island_origin: song.island_origin || 'Caribbean',
         tier_required: 'free',
@@ -404,6 +404,7 @@ export default function SongsClient() {
             {/* Hidden Audio Element */}
             <audio
                 ref={audioRef}
+                preload="metadata"
                 onTimeUpdate={handleTimeUpdate}
                 onEnded={handleNext}
                 onPlay={() => setIsPlaying(true)}
