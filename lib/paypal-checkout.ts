@@ -18,6 +18,15 @@ import {
     parsePackCustomId,
     resolveSubscriptionPlanId,
 } from '@/lib/paypal-offers';
+import { fulfillMusicPurchase } from '@/lib/music-fulfillment';
+import {
+    MusicSku,
+    decideMusicGrant,
+    isMusicSku,
+    musicCustomId,
+    musicSkuName,
+    priceForMusicSku,
+} from '@/lib/music-store';
 
 export type PayerUser = {
     id: string;
@@ -202,9 +211,9 @@ function captureFromOrder(order: any): { status?: string; amount?: string; curre
     };
 }
 
-export async function captureOneTimeOrder(orderId: string, buyer: PayerUser, requestedSku?: string | null) {
+async function captureOrReloadOrder(orderId: string): Promise<{ ok: true; data: any } | { ok: false; status: number; error: string }> {
     if (!orderId || !/^[A-Z0-9]+$/i.test(orderId)) {
-        return { entitled: false as const, status: 400, error: 'Invalid PayPal order' };
+        return { ok: false, status: 400, error: 'Invalid PayPal order' };
     }
 
     let result = await paypalFetch(`/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`, {
@@ -221,19 +230,49 @@ export async function captureOneTimeOrder(orderId: string, buyer: PayerUser, req
     }
 
     if (!result.ok) {
-        return {
-            entitled: false as const,
-            status: 402,
-            error: 'PayPal capture verification failed',
-        };
+        return { ok: false, status: 402, error: 'PayPal capture verification failed' };
+    }
+    return { ok: true, data: result.data };
+}
+
+export async function createMusicOrder(userId: string, sku: MusicSku, extra?: string): Promise<{ id: string; status: string }> {
+    const price = priceForMusicSku(sku);
+    if (price == null) throw new Error('Unknown music product');
+    const result = await paypalFetch('/v2/checkout/orders', {
+        method: 'POST',
+        body: JSON.stringify({
+            intent: 'CAPTURE',
+            purchase_units: [
+                {
+                    reference_id: sku,
+                    custom_id: musicCustomId(userId, sku, extra),
+                    description: musicSkuName(sku),
+                    amount: {
+                        currency_code: 'USD',
+                        value: formatUsd(price),
+                    },
+                },
+            ],
+        }),
+    });
+    if (!result.ok || !result.data?.id) {
+        throw new Error(result.data?.message || 'PayPal did not create an order');
+    }
+    return { id: result.data.id, status: result.data.status || 'CREATED' };
+}
+
+export async function captureOneTimeOrder(orderId: string, buyer: PayerUser, requestedSku?: string | null) {
+    const loaded = await captureOrReloadOrder(orderId);
+    if (!loaded.ok) {
+        return { entitled: false as const, status: loaded.status, error: loaded.error };
     }
 
-    const captured = captureFromOrder(result.data);
+    const captured = captureFromOrder(loaded.data);
     const parsed = parsePackCustomId(captured.customId);
     const offer = getParentOffer(parsed?.sku || requestedSku);
     const decision = decideOneTimeGrant({
         offer,
-        captureStatus: captured.status === 'COMPLETED' ? 'COMPLETED' : result.data?.status,
+        captureStatus: captured.status === 'COMPLETED' ? 'COMPLETED' : loaded.data?.status,
         capturedAmount: parseFloat(captured.amount || 'NaN'),
         currency: captured.currency,
         customId: captured.customId,
@@ -267,6 +306,41 @@ export async function captureOneTimeOrder(orderId: string, buyer: PayerUser, req
         status: 200,
         sku: offer.sku,
         tier: offer.entitlementTier,
+        orderId,
+    };
+}
+
+/**
+ * Capture a parent one-time order and grant either an Island Pack or a music
+ * license from the reloaded PayPal order. Client sku and amount are ignored.
+ */
+export async function captureCommerceOrder(orderId: string, buyer: PayerUser) {
+    const loaded = await captureOrReloadOrder(orderId);
+    if (!loaded.ok) {
+        return { entitled: false as const, status: loaded.status, error: loaded.error, handled: true as const };
+    }
+
+    const customId = captureFromOrder(loaded.data).customId || '';
+    if (customId.trim().startsWith('{')) {
+        return { entitled: false as const, status: 200, handled: false as const, captureData: loaded.data };
+    }
+
+    const outcome = await grantFromPayPalOrder(loaded.data, orderId, buyer.id);
+    if (!outcome.granted) {
+        return {
+            entitled: false as const,
+            status: outcome.reason === 'invalid_order' ? 400 : 402,
+            error: 'Payment was not verified',
+            handled: true as const,
+        };
+    }
+    return {
+        entitled: true as const,
+        status: 200,
+        handled: true as const,
+        sku: outcome.sku,
+        tier: outcome.tier,
+        entitlement: outcome.entitlement,
         orderId,
     };
 }
@@ -337,9 +411,90 @@ async function loadParentPayer(userId: string): Promise<{ id: string; email: str
     return { id: data.id, email: data.email || null, role };
 }
 
+type GrantOutcome = {
+    granted: boolean;
+    reason: string;
+    sku?: string;
+    tier?: string;
+    entitlement?: string;
+};
+
 /**
- * Reload a PayPal order and grant a one-time Island Pack only when the
- * captured amount, currency, custom id, and parent role all match.
+ * Grant from a PayPal order payload that was captured or reloaded from PayPal.
+ * Webhook bodies are never passed here.
+ */
+async function grantFromPayPalOrder(orderData: any, orderId: string, sessionBuyerId?: string): Promise<GrantOutcome> {
+    const unit = orderData?.purchase_units?.[0];
+    const capture = unit?.payments?.captures?.find((item: { status?: string }) =>
+        String(item.status || '').toUpperCase() === 'COMPLETED'
+    ) || unit?.payments?.captures?.[0];
+    const captured = captureFromOrder(orderData);
+    const customId = captured.customId || unit?.custom_id || capture?.custom_id;
+    const parsed = parsePackCustomId(customId);
+    if (!parsed) return { granted: false, reason: 'missing_custom' };
+    if (sessionBuyerId && sessionBuyerId !== parsed.userId) {
+        return { granted: false, reason: 'buyer_mismatch' };
+    }
+
+    const payer = await loadParentPayer(parsed.userId);
+    if (!payer) return { granted: false, reason: 'non_parent' };
+
+    const amount = parseFloat(captured.amount || capture?.amount?.value || 'NaN');
+    const currency = captured.currency || capture?.amount?.currency_code || unit?.amount?.currency_code;
+    const captureStatus = capture?.status || captured.status;
+
+    const offer = getParentOffer(parsed.sku);
+    if (offer?.kind === 'one_time') {
+        const decision = decideOneTimeGrant({
+            offer,
+            captureStatus,
+            capturedAmount: amount,
+            currency,
+            customId,
+            buyerUserId: parsed.userId,
+        });
+        if (!decision.ok) return { granted: false, reason: decision.reason };
+        const granted = await grantParentEntitlement({
+            userId: parsed.userId,
+            offer,
+            providerRef: orderId,
+            paypalOrderId: orderId,
+            amount: offer.price,
+            payerEmail: payer.email,
+        });
+        return granted.ok
+            ? { granted: true, reason: 'granted', sku: offer.sku, tier: offer.entitlementTier }
+            : { granted: false, reason: 'write_failed' };
+    }
+
+    const music = decideMusicGrant({
+        captureStatus,
+        capturedAmount: amount,
+        currency,
+        customId,
+        buyerUserId: parsed.userId,
+    });
+    if (!music.ok) {
+        return { granted: false, reason: music.reason === 'unknown_offer' ? 'not_one_time_pack' : music.reason };
+    }
+
+    const fulfilled = await fulfillMusicPurchase({
+        decision: music,
+        userId: parsed.userId,
+        orderId,
+    });
+    if (!fulfilled.ok) return { granted: false, reason: fulfilled.reason };
+    return {
+        granted: true,
+        reason: fulfilled.reason,
+        sku: music.sku,
+        entitlement: music.kind === 'download' ? music.entitlement : undefined,
+    };
+}
+
+/**
+ * Reload a PayPal order and grant a one-time Island Pack or music license
+ * only when the captured amount, currency, custom id, and parent role match.
  * Webhook bodies are never trusted on their own.
  */
 export async function grantVerifiedOrderById(orderId: string): Promise<{ granted: boolean; reason: string }> {
@@ -352,45 +507,8 @@ export async function grantVerifiedOrderById(orderId: string): Promise<{ granted
         return { granted: false, reason: 'order_reload_failed' };
     }
 
-    const unit = result.data?.purchase_units?.[0];
-    const capture = unit?.payments?.captures?.find((item: { status?: string }) =>
-        String(item.status || '').toUpperCase() === 'COMPLETED'
-    ) || unit?.payments?.captures?.[0];
-    const customId = unit?.custom_id || capture?.custom_id || result.data?.custom_id;
-    const parsed = parsePackCustomId(customId);
-    const offer = parsed ? getParentOffer(parsed.sku) : null;
-    if (!parsed || !offer || offer.kind !== 'one_time') {
-        return { granted: false, reason: 'not_one_time_pack' };
-    }
-
-    const payer = await loadParentPayer(parsed.userId);
-    if (!payer) {
-        return { granted: false, reason: 'non_parent' };
-    }
-
-    const decision = decideOneTimeGrant({
-        offer,
-        captureStatus: capture?.status || result.data?.status,
-        capturedAmount: parseFloat(capture?.amount?.value || 'NaN'),
-        currency: capture?.amount?.currency_code || unit?.amount?.currency_code,
-        customId,
-        buyerUserId: parsed.userId,
-    });
-    if (!decision.ok) {
-        return { granted: false, reason: decision.reason };
-    }
-
-    const granted = await grantParentEntitlement({
-        userId: parsed.userId,
-        offer,
-        providerRef: orderId,
-        paypalOrderId: orderId,
-        amount: offer.price,
-        payerEmail: payer.email,
-    });
-    return granted.ok
-        ? { granted: true, reason: 'granted' }
-        : { granted: false, reason: 'write_failed' };
+    const outcome = await grantFromPayPalOrder(result.data, orderId);
+    return { granted: outcome.granted, reason: outcome.reason };
 }
 
 /**
@@ -426,6 +544,31 @@ export async function grantVerifiedSaleById(saleId: string): Promise<{ granted: 
     const offer = getParentOffer(parsed.sku);
     const amountRaw = sale.amount?.total ?? sale.amount?.value;
     const currency = sale.amount?.currency ?? sale.amount?.currency_code;
+    const capturedAmount = parseFloat(String(amountRaw ?? 'NaN'));
+    const saleState = String(sale.state || sale.status || '');
+    const captureStatus = ['COMPLETED', 'COMPLETE'].includes(saleState.toUpperCase()) ? 'COMPLETED' : saleState;
+
+    if (isMusicSku(parsed.sku)) {
+        const payer = await loadParentPayer(parsed.userId);
+        if (!payer) return { granted: false, reason: 'non_parent' };
+        const music = decideMusicGrant({
+            captureStatus,
+            capturedAmount,
+            currency,
+            customId,
+            buyerUserId: parsed.userId,
+        });
+        if (!music.ok) return { granted: false, reason: music.reason };
+        const fulfilled = await fulfillMusicPurchase({
+            decision: music,
+            userId: parsed.userId,
+            orderId: saleId,
+        });
+        return fulfilled.ok
+            ? { granted: true, reason: fulfilled.reason }
+            : { granted: false, reason: fulfilled.reason };
+    }
+
     const decision = decideSaleGrant({
         offer,
         saleState: sale.state || sale.status,

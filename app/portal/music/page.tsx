@@ -3,11 +3,10 @@
 import React, { useState, useRef } from 'react';
 import {
     Music, Play, Pause, ChevronLeft,
-    Heart, Sparkles, Gift, Crown, Star
+    Sparkles, Gift, Star
 } from 'lucide-react';
 import Link from 'next/link';
 import { RADIO_TRACKS, RADIO_CHANNELS } from '@/lib/constants';
-import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 // ── Channel metadata ──────────────────────────────────────────────────────────
 const CHANNEL_META: Record<string, { emoji: string; color: string; bg: string }> = {
@@ -17,23 +16,10 @@ const CHANNEL_META: Record<string, { emoji: string; color: string; bg: string }>
     steelpan_sam:  { emoji: '🥁', color: 'text-amber-600',  bg: 'bg-amber-50'  },
 };
 
-function formatDuration(seconds?: number): string {
-    if (!seconds) return '—';
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-}
-
 export default function MusicHub() {
-    const [activeTab, setActiveTab] = useState<'music' | 'upgrade' | 'custom'>('music');
+    const [activeTab, setActiveTab] = useState<'music' | 'custom'>('music');
     const [isPlaying, setIsPlaying] = useState<string | null>(null);
     const [activeChannel, setActiveChannel] = useState<string>('all');
-
-    // Custom song
-    const [customChildName, setCustomChildName] = useState('');
-    const [customEventType, setCustomEventType] = useState('birthday');
-    const [customInstructions, setCustomInstructions] = useState('');
-    const [customNote, setCustomNote] = useState<string | null>(null);
 
     const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -53,11 +39,6 @@ export default function MusicHub() {
     const filteredTracks = activeChannel === 'all'
         ? RADIO_TRACKS
         : RADIO_TRACKS.filter(t => t.channel === activeChannel);
-
-    const handleCustomSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setCustomNote('A parent orders custom songs from their account. This page cannot take payment.');
-    };
 
     return (
         <div className="min-h-screen bg-[#FDFCF6] pb-24">
@@ -88,7 +69,7 @@ export default function MusicHub() {
                             <span className="italic underline decoration-wavy decoration-yellow-300">Music Hub</span>
                         </h1>
                         <p className="text-white/85 text-lg font-medium mb-10 leading-relaxed max-w-2xl">
-                            Play all 9 island tracks right now — or order a personalised song made just for your child, delivered in 24 hours.
+                            Listen free. These are the songs we have on file.
                         </p>
                         <div className="flex flex-wrap gap-4">
                             <button
@@ -113,7 +94,6 @@ export default function MusicHub() {
                 <div className="bg-white rounded-3xl p-2 shadow-xl border border-zinc-100 flex items-center max-w-fit gap-2">
                     {[
                         { id: 'music',   label: 'Music Hub',   icon: Music },
-                        { id: 'upgrade', label: 'Upgrade',     icon: Crown },
                         { id: 'custom',  label: 'Custom Song', icon: Sparkles },
                     ].map((tab) => {
                         const Icon = tab.icon;
@@ -241,27 +221,6 @@ export default function MusicHub() {
                             )}
                         </div>
 
-                        {/* Upgrade upsell */}
-                        <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
-                            <div className="flex items-center gap-5">
-                                <div className="w-14 h-14 bg-orange-500/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-                                    <Heart size={28} className="text-orange-400" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-black text-white leading-tight">More island music lives with a parent plan</h3>
-                                    <p className="text-zinc-400 text-sm font-medium mt-1">Kids listen here. A parent unlocks more from their account.</p>
-                                </div>
-                            </div>
-                            <AskAParentNotice className="text-white" />
-                        </div>
-                    </div>
-                )}
-
-                {/* ── UPGRADE TAB ── */}
-                {activeTab === 'upgrade' && (
-                    <div className="max-w-xl mx-auto rounded-[2rem] bg-white p-8 text-center shadow-xl">
-                        <h2 className="text-3xl font-black text-zinc-900">Parents choose the plan</h2>
-                        <AskAParentNotice className="mt-4 text-zinc-600" />
                     </div>
                 )}
 
@@ -279,7 +238,7 @@ export default function MusicHub() {
                                 </div>
                                 <h2 className="text-4xl font-black text-zinc-900 mb-3 tracking-tight">A Song Made Just for Them</h2>
                                 <p className="text-zinc-400 text-lg font-medium max-w-xl mx-auto leading-relaxed">
-                                    Tell us about your Likkle Legend and our team will craft a unique Caribbean song with their name woven in. Delivered in 24–48 hours.
+                                    A parent can ask for a custom Caribbean kids song from the parent dashboard. This page cannot take a payment.
                                 </p>
                                 <div className="flex flex-wrap gap-3 justify-center mt-6">
                                     {['🎂 Birthday songs', '👶 New baby', '🏫 First day of school', '🎓 Graduation', '💛 Just because'].map(tag => (
@@ -290,73 +249,7 @@ export default function MusicHub() {
                                 </div>
                             </div>
 
-                            <form className="grid grid-cols-1 md:grid-cols-2 gap-7" onSubmit={handleCustomSubmit}>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-4">Child's Name *</label>
-                                    <input
-                                        value={customChildName}
-                                        onChange={e => setCustomChildName(e.target.value)}
-                                        placeholder="Who is this song for?"
-                                        className="w-full px-6 py-4 bg-zinc-50 border border-transparent rounded-2xl focus:bg-white focus:border-orange-400 transition-all font-bold text-zinc-900 outline-none"
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-4">Occasion *</label>
-                                    <select
-                                        title="Occasion"
-                                        value={customEventType}
-                                        onChange={e => setCustomEventType(e.target.value)}
-                                        className="w-full px-6 py-4 bg-zinc-50 border border-transparent rounded-2xl focus:bg-white focus:border-orange-400 transition-all font-bold text-zinc-900 outline-none"
-                                        required
-                                    >
-                                        <option value="birthday_1st">1st Birthday</option>
-                                        <option value="birthday">Birthday (General)</option>
-                                        <option value="graduation">Graduation</option>
-                                        <option value="new_born">New Baby Arrival</option>
-                                        <option value="first_day">First Day of School</option>
-                                        <option value="just_because">Just Because 💛</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-4">Their Favourite Things *</label>
-                                    <textarea
-                                        value={customInstructions}
-                                        onChange={e => setCustomInstructions(e.target.value)}
-                                        placeholder="Tell us their favourite food, toy, island, cartoon character, or anything that makes them unique — we'll weave it into the lyrics!"
-                                        className="w-full px-6 py-4 bg-zinc-50 border border-transparent rounded-2xl focus:bg-white focus:border-orange-400 transition-all font-bold text-zinc-900 outline-none h-32 resize-none"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2 pt-4">
-                                    <button
-                                        type="submit"
-                                        className="w-full py-6 bg-zinc-900 text-white rounded-[2rem] font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-4 text-lg"
-                                    >
-                                        <Gift size={24} /> Ask a parent
-                                    </button>
-                                    {customNote && <AskAParentNotice className="mt-4 text-center text-zinc-600" />}
-                                </div>
-                            </form>
-
-                            {/* What you get */}
-                            <div className="mt-12 pt-10 border-t border-zinc-100">
-                                <h4 className="text-center text-xs font-black uppercase tracking-widest text-zinc-300 mb-6">What's Included</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    {[
-                                        { icon: '🎶', title: 'Personalised Lyrics', desc: "Their name & favourite things woven into every verse" },
-                                        { icon: '🏝️', title: 'Caribbean Sound', desc: 'Steelpan, calypso & island rhythms — crafted for little ears' },
-                                        { icon: '📥', title: 'MP3 Download', desc: 'High-quality audio file yours to keep forever' },
-                                    ].map(({ icon, title, desc }) => (
-                                        <div key={title} className="bg-zinc-50 rounded-2xl p-5 text-center">
-                                            <div className="text-3xl mb-3">{icon}</div>
-                                            <h5 className="font-black text-zinc-900 text-sm mb-1">{title}</h5>
-                                            <p className="text-zinc-400 text-xs font-medium leading-relaxed">{desc}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                            <p className="text-center text-sm font-bold text-zinc-500">Ask a parent. Buying is not available on this page.</p>
                         </div>
                     </div>
                 )}

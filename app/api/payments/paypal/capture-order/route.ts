@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { KID_IAP_PRODUCT_IDS, getParentOffer } from '@/lib/paypal-offers';
-import { captureOneTimeOrder, getPayPalAccessToken, paymentErrorResponse, paypalApiBase, requireParentPayer } from '@/lib/paypal-checkout';
+import { captureCommerceOrder, getPayPalAccessToken, paypalApiBase, requireParentPayer } from '@/lib/paypal-checkout';
+import { isMusicSku } from '@/lib/music-store';
 
 const PAYPAL_API = paypalApiBase();
 
@@ -20,15 +21,24 @@ export async function POST(request: NextRequest) {
         }
 
         const islandOffer = getParentOffer(requestedSku);
-        if (islandOffer?.kind === 'one_time') {
-            const result = await captureOneTimeOrder(orderID, user, islandOffer.sku);
-            return NextResponse.json(
-                { entitled: result.entitled, error: 'error' in result ? result.error : undefined, sku: 'sku' in result ? result.sku : undefined, tier: 'tier' in result ? result.tier : undefined, orderId: orderID },
-                { status: result.status }
-            );
+        if (islandOffer?.kind === 'one_time' || isMusicSku(requestedSku)) {
+            const result = await captureCommerceOrder(orderID, user);
+            if (result.handled) {
+                return NextResponse.json(
+                    {
+                        entitled: result.entitled,
+                        error: 'error' in result ? result.error : undefined,
+                        sku: 'sku' in result ? result.sku : undefined,
+                        tier: 'tier' in result ? result.tier : undefined,
+                        entitlement: 'entitlement' in result ? result.entitlement : undefined,
+                        orderId: orderID,
+                    },
+                    { status: result.status }
+                );
+            }
         }
 
-        // 2. Capture Order
+        // Legacy gamification orders use a JSON custom_id. Music SKUs never grant here.
         const accessToken = await getPayPalAccessToken();
         const response = await fetch(`${PAYPAL_API}/v2/checkout/orders/${orderID}/capture`, {
             method: "POST",
@@ -41,7 +51,6 @@ export async function POST(request: NextRequest) {
         const captureData = await response.json();
 
         if (!response.ok) {
-            // Handle specific PayPal errors (INSTRUMENT_DECLINED etc)
             const errorDetail = captureData?.details?.[0];
             const errorMessage = errorDetail
                 ? `${errorDetail.issue} ${errorDetail.description} (${captureData.debug_id})`
@@ -74,7 +83,10 @@ export async function POST(request: NextRequest) {
                 }
 
                 {
-                    const productId = customId.productId as string | undefined; // e.g. single_track, streak_freeze
+                    const productId = customId.productId as string | undefined;
+                if (productId === 'single_track' || productId === 'track_bundle_5' || productId === 'custom_song_request' || isMusicSku(productId)) {
+                    return NextResponse.json({ error: 'Payment was not verified', entitled: false }, { status: 402 });
+                }
                     const contentId = customId.contentId as string | undefined; // song uuid
                     const childId = customId.childId as string | undefined; // for gamification products
                     const capturedAmount = parseFloat(transaction.amount?.value || 'NaN');

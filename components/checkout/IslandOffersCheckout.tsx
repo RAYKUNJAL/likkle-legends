@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { supabase } from '@/lib/supabase-client';
 import { formatUsd, getParentOffer, listParentOffers, type ParentOffer } from '@/lib/paypal-offers';
+import MusicStoreUpsell from '@/components/parent/MusicStoreUpsell';
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.trim() || '';
 
@@ -184,6 +185,10 @@ export default function IslandOffersCheckout({ initialSku }: { initialSku?: stri
                     )}
 
                     {PAYPAL_CLIENT_ID && !ready && <p className="mt-6 text-sm font-bold text-slate-500">Checking parent session…</p>}
+                </div>
+
+                <div className="mt-8">
+                    <MusicStoreUpsell />
                 </div>
             </div>
         </div>

@@ -1,21 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MUSIC_STORE_PRODUCTS, GAMIFICATION_PRODUCTS } from '@/lib/paypal';
+import { GAMIFICATION_PRODUCTS, MUSIC_STORE_PRODUCTS } from '@/lib/paypal';
 import { KID_IAP_PRODUCT_IDS, getParentOffer } from '@/lib/paypal-offers';
-import { createOneTimeOrder, getPayPalAccessToken, paymentErrorResponse, paypalApiBase, requireParentPayer } from '@/lib/paypal-checkout';
+import { assertUnpaidCustomDraft, markMusicCheckoutPending, openMusicCheckout } from '@/lib/music-fulfillment';
+import { createMusicOrder, createOneTimeOrder, getPayPalAccessToken, paymentErrorResponse, paypalApiBase, requireParentPayer } from '@/lib/paypal-checkout';
+import {
+    CUSTOM_SONG_SKU,
+    MUSIC_DOWNLOAD_BUNDLE_SKU,
+    MUSIC_DOWNLOAD_SKU,
+    clientSuppliedPriceFields,
+    isMusicSku,
+} from '@/lib/music-store';
+import { getPlayableSong } from '@/lib/song-catalog';
 
 const PAYPAL_API = paypalApiBase();
+const LEGACY_MUSIC_PRODUCTS = new Set(['single_track', 'track_bundle_5']);
 
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { productId, contentId, metadata, sku } = body;
+        const { productId, contentId, metadata, sku, trackId, requestId } = body || {};
         const requestedSku = sku || productId;
 
         const payer = await requireParentPayer(request);
         if (!payer.ok) return payer.response;
         const user = payer.user;
 
-        if (KID_IAP_PRODUCT_IDS.has(requestedSku)) {
+        const priceFields = clientSuppliedPriceFields(body);
+        if (priceFields.length) {
+            return NextResponse.json(
+                { error: 'Price is set by the server catalog.', entitled: false },
+                { status: 400 }
+            );
+        }
+
+        if (KID_IAP_PRODUCT_IDS.has(requestedSku) || LEGACY_MUSIC_PRODUCTS.has(requestedSku)) {
             return NextResponse.json(
                 { error: 'That purchase is not available.', entitled: false },
                 { status: 403 }
@@ -34,19 +52,60 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ id: order.id, status: order.status, entitled: false });
         }
 
-        // 2. Lookup Price (from music store or gamification products)
+        if (isMusicSku(requestedSku)) {
+            let extra: string | undefined;
+            if (requestedSku === MUSIC_DOWNLOAD_SKU) {
+                const track = getPlayableSong(typeof trackId === 'string' ? trackId : '');
+                if (!track) {
+                    return NextResponse.json({ error: 'That song is not in the library.', entitled: false }, { status: 400 });
+                }
+                extra = track.id;
+            } else if (requestedSku === MUSIC_DOWNLOAD_BUNDLE_SKU) {
+                if (trackId) {
+                    return NextResponse.json({ error: 'A license bundle does not take a track.', entitled: false }, { status: 400 });
+                }
+            } else if (requestedSku === CUSTOM_SONG_SKU) {
+                const id = typeof requestId === 'string' ? requestId : '';
+                const ready = await assertUnpaidCustomDraft(user.id, id);
+                if (!ready) {
+                    return NextResponse.json({ error: 'Save the song request before paying.', entitled: false }, { status: 400 });
+                }
+                extra = id;
+            }
+
+            const opened = await openMusicCheckout({
+                userId: user.id,
+                sku: requestedSku,
+                trackId: requestedSku === MUSIC_DOWNLOAD_SKU ? extra : undefined,
+                requestId: requestedSku === CUSTOM_SONG_SKU ? extra : undefined,
+            });
+            if (!opened.ok) {
+                return NextResponse.json({ error: opened.error, entitled: false }, { status: 503 });
+            }
+
+            const order = await createMusicOrder(user.id, requestedSku, extra);
+            await markMusicCheckoutPending({
+                orderId: opened.orderId,
+                userId: user.id,
+                paypalOrderId: order.id,
+                requestId: requestedSku === CUSTOM_SONG_SKU ? extra : undefined,
+            });
+            return NextResponse.json({ id: order.id, status: order.status, entitled: false });
+        }
+
         // @ts-ignore
         let product = MUSIC_STORE_PRODUCTS[productId] || GAMIFICATION_PRODUCTS[productId];
-        if (!product) return NextResponse.json({ error: 'Invalid Product', entitled: false }, { status: 400 });
+        if (!product || LEGACY_MUSIC_PRODUCTS.has(productId) || productId === 'custom_song_request') {
+            return NextResponse.json({ error: 'Invalid Product', entitled: false }, { status: 400 });
+        }
 
-        // 3. Create Order
         const accessToken = await getPayPalAccessToken();
 
         const orderPayload = {
             intent: "CAPTURE",
             purchase_units: [
                 {
-                    reference_id: contentId || productId, // Use content ID (Song ID) or Product ID
+                    reference_id: contentId || productId,
                     amount: {
                         currency_code: "USD",
                         value: product.price.toFixed(2),
@@ -56,7 +115,7 @@ export async function POST(request: NextRequest) {
                         userId: user.id,
                         productId: productId,
                         contentId: contentId,
-                        ...metadata // e.g. custom song details ID
+                        ...(metadata && typeof metadata === 'object' ? metadata : {}),
                     })
                 },
             ],
