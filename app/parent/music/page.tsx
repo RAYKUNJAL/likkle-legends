@@ -13,6 +13,8 @@ import {
     MUSIC_DOWNLOAD_SKU,
 } from '@/lib/music-store';
 import { getPlayableCatalogSongs, musicCatalogScoreboard } from '@/lib/song-catalog';
+import LikkleRadioPlayer from '@/components/radio/LikkleRadioPlayer';
+import { LIKKLE_AUDIO_EVENT, announceLikkleAudio } from '@/lib/likkle-radio';
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.trim() || '';
 
@@ -56,6 +58,18 @@ export default function ParentMusicStorePage() {
     };
 
     useEffect(() => {
+        const onOther = (event: Event) => {
+            const source = (event as CustomEvent<{ source?: string }>).detail?.source;
+            if (source === 'parent-music-store') return;
+            const audio = document.getElementById('parent-music-player') as HTMLAudioElement | null;
+            audio?.pause();
+            setPlaying(null);
+        };
+        window.addEventListener(LIKKLE_AUDIO_EVENT, onOther);
+        return () => window.removeEventListener(LIKKLE_AUDIO_EVENT, onOther);
+    }, []);
+
+    useEffect(() => {
         supabase.auth.getSession()
             .then(({ data }) => {
                 const accessToken = data.session?.access_token || null;
@@ -74,6 +88,7 @@ export default function ParentMusicStorePage() {
             setPlaying(null);
             return;
         }
+        announceLikkleAudio('parent-music-store');
         audio.src = track.streamUrl;
         audio.play().then(() => {
             setPlaying(track.id);
@@ -108,6 +123,10 @@ export default function ParentMusicStorePage() {
                     {scoreboard.playable} kids Caribbean song{scoreboard.playable === 1 ? '' : 's'} can be played today. The library is growing. {scoreboard.inventoryMissing} older titles stay off this page because the audio file is not in this project. Listening is free.
                 </p>
                 <Link href="/parent/music/custom" className="mt-4 inline-flex text-sm font-bold text-slate-600 underline">Birthday / event song for your likkle one</Link>
+
+                <div className="mt-8">
+                    <LikkleRadioPlayer onTrackStarted={(trackId) => setPlayed((prev) => ({ ...prev, [trackId]: true }))} />
+                </div>
 
                 <audio id="parent-music-player" className="hidden" onEnded={() => setPlaying(null)} />
 

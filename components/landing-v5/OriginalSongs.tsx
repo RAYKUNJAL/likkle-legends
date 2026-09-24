@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Pause, Play } from 'lucide-react';
 import { getPlayableCatalogSongs } from '@/lib/song-catalog';
+import { LIKKLE_AUDIO_EVENT, announceLikkleAudio } from '@/lib/likkle-radio';
 import styles from './landing.module.css';
 
 const songs = getPlayableCatalogSongs();
@@ -13,6 +14,18 @@ export default function OriginalSongs() {
   const playingId = useRef<string | null>(null);
   const [playing, setPlaying] = useState<string | null>(null);
   const [heard, setHeard] = useState(false);
+
+  useEffect(() => {
+    const onOther = (event: Event) => {
+      const source = (event as CustomEvent<{ source?: string }>).detail?.source;
+      if (source === 'original-songs') return;
+      audioRef.current?.pause();
+      playingId.current = null;
+      setPlaying(null);
+    };
+    window.addEventListener(LIKKLE_AUDIO_EVENT, onOther);
+    return () => window.removeEventListener(LIKKLE_AUDIO_EVENT, onOther);
+  }, []);
 
   const toggle = async (id: string, url: string) => {
     const audio = audioRef.current;
@@ -29,6 +42,7 @@ export default function OriginalSongs() {
     }
     try {
       await audio.play();
+      announceLikkleAudio('original-songs');
       setPlaying(id);
       setHeard(true);
     } catch {
