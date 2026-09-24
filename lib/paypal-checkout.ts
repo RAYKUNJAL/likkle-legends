@@ -13,12 +13,12 @@ import {
     decideSubscriptionGrant,
     formatUsd,
     getParentOffer,
-    isParentPayerRole,
     packCustomId,
     parsePackCustomId,
     resolveSubscriptionPlanId,
 } from '@/lib/paypal-offers';
 import { fulfillMusicPurchase } from '@/lib/music-fulfillment';
+import { resolvePayerAccount } from '@/lib/payer-account';
 import {
     MusicSku,
     decideMusicGrant,
@@ -100,15 +100,8 @@ export async function requireParentPayer(request: NextRequest): Promise<
         };
     }
 
-    const { data, error } = await supabaseAdmin
-        .from('users')
-        .select('id, role, email')
-        .eq('id', authUser.id)
-        .maybeSingle();
-
-    // Accounts created before role was stored are parents. Explicit non-parent roles stay blocked.
-    const role = (data?.role && String(data.role).trim()) || 'parent';
-    if (error || !data || !isParentPayerRole(role)) {
+    const payer = await loadParentPayer(authUser.id);
+    if (!payer) {
         return {
             ok: false,
             response: NextResponse.json(
@@ -122,8 +115,8 @@ export async function requireParentPayer(request: NextRequest): Promise<
         ok: true,
         user: {
             id: authUser.id,
-            email: data.email || authUser.email,
-            role,
+            email: payer.email || authUser.email,
+            role: payer.role,
         },
     };
 }
@@ -400,15 +393,33 @@ export async function confirmSubscription(subscriptionId: string, buyer: PayerUs
 }
 
 async function loadParentPayer(userId: string): Promise<{ id: string; email: string | null; role: string } | null> {
-    const { data } = await supabaseAdmin
+    const usersResult = await supabaseAdmin
         .from('users')
         .select('id, role, email')
         .eq('id', userId)
         .maybeSingle();
-    if (!data) return null;
-    const role = (data.role && String(data.role).trim()) || 'parent';
-    if (!isParentPayerRole(role)) return null;
-    return { id: data.id, email: data.email || null, role };
+
+    let profileRow: { role?: string | null; email?: string | null } | null = null;
+    let profileError = false;
+    if (usersResult.error || !usersResult.data) {
+        const profileResult = await supabaseAdmin
+            .from('profiles')
+            .select('id, role, email')
+            .eq('id', userId)
+            .maybeSingle();
+        profileRow = profileResult.data && profileResult.data.id === userId ? profileResult.data : null;
+        profileError = !!profileResult.error;
+    }
+
+    // Nothing in this lookup grants a purchase. Capture still has to verify.
+    const payer = resolvePayerAccount({
+        usersRow: usersResult.data,
+        usersError: !!usersResult.error,
+        profileRow,
+        profileError,
+    });
+    if (!payer.ok) return null;
+    return { id: userId, email: payer.email, role: payer.role };
 }
 
 type GrantOutcome = {

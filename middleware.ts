@@ -30,6 +30,6 @@ export const config = {
          * - images (public images)
          * Feel free to modify this pattern to include more paths.
          */
-        '/((?!_next/static|_next/image|favicon.ico|images|api/auth).*)',
+        '/((?!_next/static|_next/image|favicon.ico|images|assets|api/auth).*)',
     ],
 }

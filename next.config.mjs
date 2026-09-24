@@ -31,7 +31,7 @@ const nextConfig = {
       },
       // Always revalidate HTML pages — prevents mobile browsers from serving stale page shells
       {
-        source: '/((?!_next/static|_next/image|images|favicon.ico|apple-icon.png|icon.png|api).*)',
+        source: '/((?!_next/static|_next/image|images|favicon.ico|apple-icon.png|icon.png|api|assets).*)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
         ],
@@ -41,6 +41,14 @@ const nextConfig = {
         source: '/_next/static/(.*)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      // Free song streams. Masters and renditions are content-addressed by filename.
+      {
+        source: '/assets/youtube/music/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+          { key: 'Accept-Ranges', value: 'bytes' },
         ],
       },
       // Cache public images for 7 days

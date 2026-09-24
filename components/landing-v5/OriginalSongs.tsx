@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Pause, Play } from 'lucide-react';
-import { getPlayableCatalogSongs } from '@/lib/song-catalog';
+import { getPlayableCatalogSongs, playbackUrl } from '@/lib/song-catalog';
+import { LIKKLE_AUDIO_EVENT, announceLikkleAudio } from '@/lib/likkle-radio';
 import styles from './landing.module.css';
 
 const songs = getPlayableCatalogSongs();
@@ -13,6 +14,18 @@ export default function OriginalSongs() {
   const playingId = useRef<string | null>(null);
   const [playing, setPlaying] = useState<string | null>(null);
   const [heard, setHeard] = useState(false);
+
+  useEffect(() => {
+    const onOther = (event: Event) => {
+      const source = (event as CustomEvent<{ source?: string }>).detail?.source;
+      if (source === 'original-songs') return;
+      audioRef.current?.pause();
+      playingId.current = null;
+      setPlaying(null);
+    };
+    window.addEventListener(LIKKLE_AUDIO_EVENT, onOther);
+    return () => window.removeEventListener(LIKKLE_AUDIO_EVENT, onOther);
+  }, []);
 
   const toggle = async (id: string, url: string) => {
     const audio = audioRef.current;
@@ -29,6 +42,7 @@ export default function OriginalSongs() {
     }
     try {
       await audio.play();
+      announceLikkleAudio('original-songs');
       setPlaying(id);
       setHeard(true);
     } catch {
@@ -52,7 +66,7 @@ export default function OriginalSongs() {
             <article key={song.id} className={styles.songCard}>
               <h3>{song.title}</h3>
               <p>{song.artist}</p>
-              <button type="button" className={styles.secondaryButton} onClick={() => toggle(song.id, song.url)}>
+              <button type="button" className={styles.secondaryButton} onClick={() => toggle(song.id, playbackUrl(song))}>
                 {playing === song.id ? <Pause size={18} /> : <Play size={18} />}
                 {playing === song.id ? 'Pause' : 'Play'}
               </button>
@@ -62,6 +76,7 @@ export default function OriginalSongs() {
         <audio
           ref={audioRef}
           className={styles.songAudio}
+          preload="metadata"
           onPlaying={() => setHeard(true)}
           onEnded={() => {
             playingId.current = null;
@@ -70,14 +85,14 @@ export default function OriginalSongs() {
         />
         {heard && (
           <p className={styles.songNote}>
-            <Link href="/login?redirect=/parent/music">Download for $1</Link>
+            <Link href="/login?redirect=/parent/music" prefetch={false}>Download for $1</Link>
             {' '}keeps a copy on the parent account. Streaming stays free.
           </p>
         )}
         <div className={styles.customTeaser}>
           <h3>Birthday / event song for your likkle one</h3>
           <p>A parent can request a custom Caribbean kids song after signing in.</p>
-          <Link className={styles.textLink} href="/login?redirect=/parent/music/custom">Request a custom song</Link>
+          <Link className={styles.textLink} href="/login?redirect=/parent/music/custom" prefetch={false}>Request a custom song</Link>
         </div>
       </div>
     </section>

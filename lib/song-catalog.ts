@@ -7,8 +7,10 @@ export interface CatalogSong {
     id: string;
     title: string;
     artist: string;
-    /** Public stream URL. Listening does not require a purchase. */
+    /** Owned master file. Paid downloads serve this file. */
     url: string;
+    /** Smaller streaming rendition. Listening does not require a purchase. */
+    streamUrl?: string;
     channel: string;
     cover_image_url?: string;
     island_origin?: string;
@@ -27,6 +29,7 @@ export const OWNED_PLAYABLE_SONGS: CatalogSong[] = [
         title: 'Drinking Water',
         artist: 'Likkle Legends',
         url: '/assets/youtube/music/drinking-water.mp3',
+        streamUrl: '/assets/youtube/music/drinking-water.stream.mp3',
         channel: 'roti',
         cover_image_url: '/images/roti-new.jpg',
         island_origin: 'Caribbean',
@@ -39,6 +42,7 @@ export const OWNED_PLAYABLE_SONGS: CatalogSong[] = [
         title: 'Saving Money',
         artist: 'Likkle Legends',
         url: '/assets/youtube/music/saving-money.mp3',
+        streamUrl: '/assets/youtube/music/saving-money.stream.mp3',
         channel: 'tanty_spice',
         cover_image_url: '/images/tanty_spice_avatar.jpg',
         island_origin: 'Caribbean',
@@ -74,7 +78,7 @@ export function catalogSongToTrack(song: CatalogSong): Track {
         id: song.id,
         title: song.title,
         artist: song.artist,
-        url: song.url,
+        url: playbackUrl(song),
         channel: song.channel,
     };
 }
@@ -92,10 +96,15 @@ export function getPlayableTracks(): Track[] {
     return getPlayableCatalogSongs().map(catalogSongToTrack);
 }
 
+/** Public URL used for free playback. Masters stay available for paid downloads. */
+export function playbackUrl(song: Pick<CatalogSong, 'url' | 'streamUrl'>): string {
+    return song.streamUrl || song.url;
+}
+
 /** Streaming these files is free for every account. Purchase never gates play. */
 export function streamPathIsUngated(url: string | null | undefined): boolean {
     if (!url) return false;
-    return getPlayableCatalogSongs().some((song) => song.url === url);
+    return getPlayableCatalogSongs().some((song) => song.url === url || playbackUrl(song) === url);
 }
 
 export function musicCatalogScoreboard() {
