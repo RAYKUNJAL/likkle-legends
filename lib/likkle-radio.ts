@@ -6,7 +6,7 @@
  * Stations with no matching file stay empty. Nothing here invents a track.
  */
 import { LANDING_CAST } from '@/lib/landing-cast';
-import { getPlayableCatalogSongs, type CatalogSong } from '@/lib/song-catalog';
+import { getPlayableCatalogSongs, playbackUrl, type CatalogSong } from '@/lib/song-catalog';
 
 export const LIKKLE_AUDIO_EVENT = 'likkle:audio-play';
 export const LIKKLE_RADIO_SOURCE = 'likkle-radio';
@@ -133,6 +133,8 @@ export function tracksForStation(stationId: string, songs: readonly CatalogSong[
     for (const song of songs) {
         if (song.status !== 'playable') continue;
         if (!isOwnedRadioUrl(song.url)) continue;
+        const url = playbackUrl(song);
+        if (!isOwnedRadioUrl(url)) continue;
         if (stationIdForChannel(song.channel) !== station.id) continue;
         if (seen.has(song.id)) continue;
         seen.add(song.id);
@@ -140,7 +142,7 @@ export function tracksForStation(stationId: string, songs: readonly CatalogSong[
             id: song.id,
             title: song.title,
             artist: song.artist,
-            url: song.url,
+            url,
             artwork: artworkFor(song, dj),
             channel: song.channel,
         });
