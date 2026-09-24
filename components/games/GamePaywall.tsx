@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { GameConfig } from '@/lib/game-config';
 import { Button } from '@/components/ui/button';
-import { X, CheckCircle, Zap } from 'lucide-react';
+import { X, CheckCircle } from 'lucide-react';
 
 interface GamePaywallProps {
   gameId: string;
@@ -21,13 +21,10 @@ interface GamePaywallProps {
 }
 
 const GamePaywall: React.FC<GamePaywallProps> = ({
-  gameId,
   gameConfig,
   reason,
   sessionSummary,
-  onSubscribe,
   onSkip,
-  onTryTrial,
 }) => {
   const [isClosing, setIsClosing] = useState(false);
 
@@ -160,36 +157,18 @@ const GamePaywall: React.FC<GamePaywallProps> = ({
             </ul>
           </div>
 
-          {/* Pricing Info */}
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-900">Likkle Legends Premium</span>
-              <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-                <Zap size={12} />
-                Limited Offer
-              </span>
-            </div>
-            <p className="text-xs text-gray-600">
-              First month free, then $4.99/month. Cancel anytime.
-            </p>
-          </div>
+          <p className="mb-6 text-sm font-semibold text-gray-700">
+            Ask a parent to unlock more play. Buying is not available in the game.
+          </p>
 
           {/* Action Buttons */}
           <div className="space-y-3">
             <Button
-              onClick={onSubscribe}
+              onClick={handleClose}
               variant="primary"
               className="shadow-lg w-full"
             >
-              Start Free Trial
-            </Button>
-
-            <Button
-              onClick={onTryTrial}
-              variant="outline"
-              className="w-full"
-            >
-              See Plans
+              Keep playing
             </Button>
 
             <button

@@ -10,6 +10,7 @@ import { useUser } from '@/components/UserContext';
 import { XP_ACTIONS, LEVELS, calculateLevel } from '@/lib/gamification';
 import { claimMissionReward, getMissionProgress } from '@/app/actions/missions';
 import toast from 'react-hot-toast';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 interface Mission {
     id: string;
@@ -305,12 +306,10 @@ export default function MissionsPage() {
                                         )}
 
                                         {isLocked && (
-                                            <Link
-                                                href="/checkout?plan=legends_plus"
-                                                className="mt-4 w-full py-3 bg-gray-100 text-gray-600 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-                                            >
-                                                <Lock size={18} /> Upgrade to Unlock
-                                            </Link>
+                                            <div className="mt-4 w-full py-3 bg-gray-100 text-gray-600 rounded-xl flex items-center justify-center gap-2">
+                                                <Lock size={18} />
+                                                <AskAParentNotice />
+                                            </div>
                                         )}
                                     </div>
                                 </div>

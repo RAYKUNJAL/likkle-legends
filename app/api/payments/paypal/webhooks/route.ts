@@ -1,60 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { sendEmail, SUBSCRIPTION_CONFIRMATION_TEMPLATE, TRIAL_REMINDER_TEMPLATE } from '@/lib/email';
+import { getParentOffer, parsePackCustomId, tierForPaypalPlanId } from '@/lib/paypal-offers';
+import { getPayPalAccessToken, grantVerifiedOrderById, grantVerifiedSaleById, paypalApiBase } from '@/lib/paypal-checkout';
 
 // ── Env validation ────────────────────────────────────────────────────────────
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 const PAYPAL_WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
 
 function hasSupabaseWebhookConfig(): boolean {
     return Boolean(SUPABASE_URL && SUPABASE_SERVICE_KEY);
 }
 
-// Internal mapping of PayPal Plan IDs to our logic tiers
-const PLAN_TO_TIER: Record<string, string> = {
-    'P-0LU582199P7741420NGQA4JI': 'digital_legends',
-    'P-9Y7503296X038324YNGN72CI': 'starter_mailer',
-    'P-1R150232CG183332XNFLNNBQ': 'starter_mailer',
-    'P-0YY72736T56573355NFLOZZQ': 'starter_mailer',
-    'P-45M32159VV6033601NFLOOYI': 'legends_plus',
-    'P-2503312149524980NNFLO34Y': 'legends_plus',
-    'P-9MP32022V70125639NFLT4IA': 'family_legacy',
-    'P-4G842008M1421443UNFLO3MY': 'family_legacy',
-    'P-5U054702T9664311ANFLO53A': 'family_legacy',
-    'P-5U054702T9664311ANFLO53': 'family_legacy',
-};
-
-if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL] = 'digital_legends';
-if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER] = 'starter_mailer';
-if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS] = 'legends_plus';
-if (process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY) PLAN_TO_TIER[process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY] = 'family_legacy';
-
 // ── PayPal base URL ───────────────────────────────────────────────────────────
-const PAYPAL_BASE =
-    process.env.PAYPAL_ENV === 'sandbox'
-        ? 'https://api-m.sandbox.paypal.com'
-        : 'https://api-m.paypal.com';
+const PAYPAL_BASE = paypalApiBase();
 
 // ── Get PayPal access token ───────────────────────────────────────────────────
-async function getPayPalAccessToken(): Promise<string> {
-    if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-        throw new Error('Missing PayPal credentials');
-    }
-    const credentials = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
-    const res = await fetch(`${PAYPAL_BASE}/v1/oauth2/token`, {
-        method: 'POST',
-        headers: {
-            Authorization: `Basic ${credentials}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'grant_type=client_credentials',
-    });
-    if (!res.ok) throw new Error(`PayPal token error: ${res.status}`);
-    const data = await res.json() as { access_token: string };
-    return data.access_token;
+function payerIdFromCustom(customId: string | undefined): string | undefined {
+    return parsePackCustomId(customId)?.userId || customId;
 }
 
 // ── Verify PayPal webhook signature ──────────────────────────────────────────
@@ -183,22 +147,28 @@ export async function POST(request: NextRequest) {
                 const subscriberEmail = resource.subscriber?.email_address;
                 const customId = resource.custom_id || resource.custom;
 
-                const profile = await findProfile(customId, subscriptionId, subscriberEmail, 'id, parent_name, email, subscription_status');
+                const profile = await findProfile(payerIdFromCustom(customId), subscriptionId, subscriberEmail, 'id, parent_name, email, subscription_status');
 
                 if (profile) {
                     const planId = resource.plan_id;
-                    const tier = PLAN_TO_TIER[planId] || 'starter_mailer';
+                    const tier = tierForPaypalPlanId(planId);
+                    if (!tier) {
+                        console.error(`[SECURITY] Webhook activation ignored unmapped plan_id=${planId}`);
+                        break;
+                    }
                     const nextBillingTime = resource.billing_info?.next_billing_time;
-                    const isTrialing = nextBillingTime &&
+                    const annualOffer = getParentOffer(parsePackCustomId(customId)?.sku);
+                    const isAnnual = annualOffer?.interval === 'year';
+                    const isTrialing = !isAnnual && nextBillingTime &&
                         new Date(nextBillingTime).getTime() > Date.now() + 24 * 60 * 60 * 1000;
                     const alreadyTrialing = profile.subscription_status === 'trialing';
-                    const newStatus = (isTrialing || alreadyTrialing) ? 'trialing' : 'active';
+                    const newStatus = isAnnual ? 'active' : ((isTrialing || alreadyTrialing) ? 'trialing' : 'active');
 
                     await supabase
                         .from('subscriptions')
                         .upsert({
                             user_id: profile.id,
-                            plan_id: planId,
+                            plan_id: tier,
                             status: newStatus as any,
                             provider: 'paypal',
                             provider_subscription_id: subscriptionId,
@@ -235,12 +205,16 @@ export async function POST(request: NextRequest) {
                 const subscriberEmail = resource.subscriber?.email_address;
                 const customId = resource.custom_id || resource.custom;
 
-                const profile = await findProfile(customId, subscriptionId, subscriberEmail, 'id, parent_name, email, subscription_status, subscription_tier');
+                const profile = await findProfile(payerIdFromCustom(customId), subscriptionId, subscriberEmail, 'id, parent_name, email, subscription_status, subscription_tier');
 
                 if (profile) {
                     const wasTrialing = profile.subscription_status === 'trialing';
                     const planId = resource.plan_id;
-                    const tier = planId ? (PLAN_TO_TIER[planId] || profile.subscription_tier) : profile.subscription_tier;
+                    const tier = tierForPaypalPlanId(planId);
+                    if (!tier) {
+                        console.error(`[SECURITY] Webhook renewal ignored unmapped plan_id=${planId}`);
+                        break;
+                    }
 
                     // Record renewal in the subscriptions table (drives the profiles view)
                     await supabase
@@ -283,7 +257,7 @@ export async function POST(request: NextRequest) {
                 const subscriberEmail = resource.subscriber?.email_address;
                 const customId = resource.custom_id || resource.custom;
 
-                const profile = await findProfile(customId, subscriptionId, subscriberEmail, 'id, email, parent_name, subscription_tier');
+                const profile = await findProfile(payerIdFromCustom(customId), subscriptionId, subscriberEmail, 'id, email, parent_name, subscription_tier');
 
                 if (profile) {
                     const { data: child } = await supabase
@@ -346,11 +320,32 @@ export async function POST(request: NextRequest) {
             }
 
             case 'PAYMENT.SALE.COMPLETED': {
-                const payerId = resource.payer_id;
-                const amount = resource.amount?.total;
-                const currency = resource.amount?.currency;
+                const relatedOrderId = resource?.supplementary_data?.related_ids?.order_id as string | undefined;
+                if (relatedOrderId) {
+                    const outcome = await grantVerifiedOrderById(relatedOrderId);
+                    if (!outcome.granted && outcome.reason !== 'not_one_time_pack') {
+                        console.error(`[SECURITY] Sale webhook refused order=${relatedOrderId} reason=${outcome.reason}`);
+                    }
+                    break;
+                }
 
-                console.log(`Payment completed: ${amount} ${currency} from ${payerId}`);
+                const saleId = typeof resource?.id === 'string' ? resource.id : '';
+                if (!saleId) break;
+                const outcome = await grantVerifiedSaleById(saleId);
+                if (!outcome.granted && outcome.reason !== 'subscription_sale' && outcome.reason !== 'not_one_time_pack') {
+                    console.error(`[SECURITY] Sale webhook refused sale=${saleId} reason=${outcome.reason}`);
+                }
+                break;
+            }
+
+            case 'PAYMENT.CAPTURE.COMPLETED': {
+                const orderId = resource?.supplementary_data?.related_ids?.order_id as string | undefined;
+                if (!orderId) break;
+
+                const outcome = await grantVerifiedOrderById(orderId);
+                if (!outcome.granted) {
+                    console.error(`[SECURITY] Webhook capture refused order=${orderId} reason=${outcome.reason}`);
+                }
                 break;
             }
 

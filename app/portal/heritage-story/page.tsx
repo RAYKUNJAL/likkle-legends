@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { BookOpen, Download, Lock, Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
 import { useUser } from '@/components/UserContext';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 const ISLAND_DETAILS: Record<string, { name: string; flag: string; food: string; music: string; wisdom: string }> = {
   trinidad: { name: 'Trinidad & Tobago', flag: '🇹🇹', food: 'doubles', music: 'steelpan', wisdom: 'small axe can cut down big tree' },
@@ -52,9 +53,9 @@ export default function HeritageStoryPage() {
         {!canOpen && (
           <div className="mt-8 rounded-3xl border-2 border-dashed border-blue-200 bg-blue-50 p-6 text-blue-900">
             <div className="flex items-center gap-3 font-black">
-              <Lock size={20} /> This story unlocks after checkout.
+              <Lock size={20} /> This story is locked.
             </div>
-            <p className="mt-2 text-sm font-semibold">The Heritage DNA Story order bump opens this personalized story page.</p>
+            <AskAParentNotice className="mt-2 text-blue-900" />
           </div>
         )}
       </section>

@@ -11,6 +11,7 @@ import { useUser } from '@/components/UserContext';
 import { fetchKidsLibraryStories, parentOfficialStories } from '@/lib/library-stories';
 import { trackEvent } from '@/lib/analytics';
 import { normalizeParentalControls } from '@/lib/parental-controls';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 interface Story {
     id: string;
@@ -385,12 +386,10 @@ export default function StoriesLibraryPage() {
                                                         Read Story
                                                     </Link>
                                                 ) : (
-                                                    <Link
-                                                        href="/checkout?plan=legends_plus"
-                                                        className="w-full py-3.5 bg-slate-50 text-slate-500 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-slate-100 border border-slate-200"
-                                                    >
-                                                        <Lock size={18} /> Get Access
-                                                    </Link>
+                                                    <div className="w-full py-3.5 bg-slate-50 text-slate-500 rounded-2xl flex items-center justify-center gap-2 border border-slate-200">
+                                                        <Lock size={18} />
+                                                        <AskAParentNotice />
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>

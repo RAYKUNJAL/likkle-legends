@@ -8,6 +8,7 @@ import { useUser } from '@/components/UserContext';
 import { logActivity } from '@/lib/database';
 import PremiumStoryReader from '@/components/PremiumStoryReader';
 import { fetchKidsLibraryStory, toReaderStory } from '@/lib/library-stories';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 interface StoryPage {
     pageNumber: number;
@@ -180,9 +181,7 @@ export default function StoryReaderPage() {
                     </div>
                     <h2 className="text-3xl font-black text-blue-900 mb-2">Legends Plus Only</h2>
                     <p className="text-blue-700/60 mb-8 font-bold">This adventure is for our special Legends Plus explorers!</p>
-                    <Link href="/checkout?plan=legends_plus" className="w-full py-4 bg-primary text-white rounded-2xl font-black inline-block mb-4">
-                        Upgrade Now
-                    </Link>
+                    <AskAParentNotice className="mb-4 text-blue-900" />
                     <Link href="/portal" className="block text-blue-400 font-bold hover:text-blue-600">
                         Back to Library
                     </Link>

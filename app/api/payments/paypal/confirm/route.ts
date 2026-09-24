@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
 import { SUBSCRIPTION_PLANS, SubscriptionTier } from '@/lib/paypal';
+import { getParentOffer } from '@/lib/paypal-offers';
+import { captureOneTimeOrder, confirmSubscription, paypalApiBase, requireParentPayer } from '@/lib/paypal-checkout';
 import { getFulfillmentHub } from '@/lib/geo-routing';
 import { sendEmail, ADMIN_NEW_ORDER_TEMPLATE } from '@/lib/email';
 import { queueSubscriptionConfirmation, cancelAbandonedCheckout } from '@/lib/services/email-triggers';
@@ -10,10 +12,7 @@ import { cookies } from 'next/headers';
 const supabase = supabaseAdmin;
 
 // ── PayPal base URL ───────────────────────────────────────────────────────────
-const PAYPAL_BASE =
-    process.env.PAYPAL_ENV === 'sandbox' || process.env.NODE_ENV !== 'production'
-        ? 'https://api-m.sandbox.paypal.com'
-        : 'https://api-m.paypal.com';
+const PAYPAL_BASE = paypalApiBase();
 
 // ── Get PayPal access token ───────────────────────────────────────────────────
 async function getPayPalAccessToken(): Promise<string> {
@@ -163,7 +162,29 @@ export async function POST(request: NextRequest) {
         } = body;
 
         if (!subscriptionId && !orderId) {
-            return NextResponse.json({ error: 'Missing subscription or order ID' }, { status: 400 });
+            return NextResponse.json({ error: 'Missing subscription or order ID', entitled: false }, { status: 400 });
+        }
+
+        const parentOffer = getParentOffer(body.sku);
+        if (parentOffer) {
+            const payer = await requireParentPayer(request);
+            if (!payer.ok) return payer.response;
+
+            const result = parentOffer.kind === 'one_time'
+                ? await captureOneTimeOrder(orderId, payer.user, parentOffer.sku)
+                : await confirmSubscription(subscriptionId, payer.user, parentOffer.sku);
+
+            return NextResponse.json(
+                {
+                    success: result.entitled,
+                    entitled: result.entitled,
+                    error: 'error' in result ? result.error : undefined,
+                    tier: 'tier' in result ? result.tier : undefined,
+                    sku: parentOffer.sku,
+                    subscriptionId: subscriptionId || orderId,
+                },
+                { status: result.status }
+            );
         }
 
         const supabaseAuth = createClient();
