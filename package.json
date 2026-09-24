@@ -36,6 +36,7 @@
     "verify:journey-stories-safety": "tsx scripts/verify-journey-stories-safety.ts",
     "verify:journey-stories-seeds": "tsx scripts/verify-journey-stories-seeds.ts",
     "verify:kids-library": "tsx scripts/verify-kids-library.ts",
+    "verify:likkle-radio": "tsx scripts/verify-likkle-radio.ts",
     "verify:music-store": "tsx scripts/verify-music-store.ts",
     "verify:story-products": "tsx scripts/verify-story-products.ts",
     "video:render:sample": "remotion render remotion/index.ts LikkleShort out/likkle-short-sample.mp4",
