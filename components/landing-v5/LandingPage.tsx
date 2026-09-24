@@ -62,6 +62,24 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <section id="explore-path" className={styles.explorePath} aria-labelledby="explore-path-heading">
+          <h2 id="explore-path-heading" className={styles.srOnly}>A simple path to big discoveries</h2>
+          <div className={styles.explorePathFrame}>
+            <Image
+              src="/images/landing/explore-path-band.png"
+              alt="Two children and a dog look over a Caribbean map. A dotted path links Jamaica, Saint Lucia, Barbados, and Trinidad. Three steps: choose your island, meet your guide, and begin today with stories, games, and music."
+              width={1280}
+              height={720}
+              sizes="(max-width: 1320px) 100vw, 1280px"
+              className={styles.explorePathImage}
+            />
+            <div className={styles.explorePathActions}>
+              <Link className={styles.primaryButton} href="/signup?plan=free_trial">Start Exploring <ArrowRight size={18} /></Link>
+              <Link className={styles.secondaryButton} href="/games"><Gamepad2 size={18} /> Play a Free Game</Link>
+            </div>
+          </div>
+        </section>
+
         <RadioShowcase />
         <OriginalSongs />
 
