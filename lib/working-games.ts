@@ -36,7 +36,6 @@ export const WORKING_ARCADE_GAMES: WorkingGame[] = [
   { id: 'tantys-kitchen', title: "Tanty's Kitchen", href: '/games/tantys-kitchen.html', kind: 'arcade' },
   { id: 'math-market', title: "R.O.T.I.'s Math Market", href: '/games/math-market.html', kind: 'arcade' },
   { id: 'spelling-blaze', title: "Scorcha's Spelling Blaze", href: '/games/spelling-blaze.html', kind: 'arcade' },
-  { id: 'doubles-dash', title: 'Doubles Dash', href: '/games/doubles-dash', kind: 'arcade' },
 ];
 
 export const WORKING_GAME_IDS = new Set([
@@ -49,6 +48,8 @@ export const HIDDEN_GAME_IDS = new Set([
   'story-library',
   'cultural-quiz',
   'island-explorer',
+  // Delisted for ship: the Phaser route was never verified start-to-finish.
+  'doubles-dash',
 ]);
 
 export function isWorkingGameId(id: string) {
