@@ -1300,10 +1300,6 @@ function completeRound() {
       state.island = 0;
       state.question = 0;
       state.currentCorrect = 0;
-      if (state.round > 0 && !window.__unlocked) {
-        showGate();
-        return;
-      }
       showRoundIntro();
     }
   }, 1800);
@@ -1455,38 +1451,7 @@ topBar.style.display = 'none';
 showScreen(startScreen);
 
 
-// ===== FREE-TO-PAID GATE =====
-const GATE_CONFIG = {"charImg":"./images/mango_moko.png","charAlt":"Mango Moko","gateTitle":"Ready for more islands?","gateSubtitle":"You've explored the first 10 islands! Unlock all 30 Caribbean islands, 90 trivia questions, and 3 more games.","freeMaxRound":0,"gateCheck":"ISLAND"};
-function showGate() {
-  const g = document.getElementById('gateOverlay');
-  const img = document.getElementById('gateCharImg');
-  const title = document.getElementById('gateTitle');
-  const subtitle = document.getElementById('gateSubtitle');
-  img.src = GATE_CONFIG.charImg;
-  img.alt = GATE_CONFIG.charAlt;
-  title.textContent = GATE_CONFIG.gateTitle;
-  subtitle.textContent = GATE_CONFIG.gateSubtitle;
-  g.classList.add('visible');
-}
-function isGated() { return false; } // Set to true when auth is wired up
-
 </script>
-
-<div class="gate-overlay" id="gateOverlay">
-  <div class="gate-lock">🔒</div>
-  <img src="./images/mango_moko.png" alt="Mango Moko" class="gate-character" id="gateCharImg">
-  <h2 class="gate-title" id="gateTitle">Want to keep playing?</h2>
-  <p class="gate-subtitle" id="gateSubtitle"></p>
-  <div class="gate-features">
-    <div class="gate-feature">All levels in all 4 games</div>
-    <div class="gate-feature">Full Likkle Legends learning portal</div>
-    <div class="gate-feature">Caribbean stories, songs, and activities</div>
-    <div class="gate-feature">New content every month</div>
-  </div>
-  <a href="https://www.likklelegends.com/#pricing" class="gate-cta">Start the $10 Legend Intro Pass →</a>
-  <a href="index.html" class="gate-free-btn">← Back to Free Games</a>
-  <p class="gate-guarantee">🛡️ 30-day money-back guarantee. Cancel anytime.</p>
-</div>
 
 </body>
 </html>
