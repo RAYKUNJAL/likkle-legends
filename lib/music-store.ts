@@ -9,7 +9,7 @@
  *   (the older MUSIC_STORE_PRODUCTS.single_track price was $0.99 and is not used).
  * - music_download_bundle_5 is $4.00 for five download licenses. It uses the
  *   same grant rules as a single track. Licenses apply only to owned playable
- *   files. With two hosted songs, unused licenses stay on the parent account.
+ *   files. Unused licenses stay on the parent account.
  * - custom_song_request is $24.99, the price already defined on
  *   MUSIC_STORE_PRODUCTS.custom_song_request. The custom_song_orders.price_paid
  *   column default of 9.99 is not the catalog price.

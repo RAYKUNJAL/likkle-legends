@@ -137,7 +137,11 @@ assert(decideDownloadCreditRedeem({ trackId: 'not-a-song', creditsRemaining: 5, 
 assert(decideDownloadCreditRedeem({ trackId: track.id, creditsRemaining: 2, alreadyOwned: false }).ok, 'credit can apply to an owned file');
 
 const scoreboard = musicCatalogScoreboard();
-assert(scoreboard.playable === 2 && scoreboard.invented === 0, 'catalog is the two owned files');
+assert(scoreboard.playable === 32 && scoreboard.invented === 0, 'catalog is the owned Suno playlist files');
+assert(scoreboard.inventoryMissing === 3, 'unmatched recovered titles stay off the store');
+const playableIds = new Set(getPlayableCatalogSongs().map((song) => song.id));
+assert(playableIds.has('owned-drinking-water') && playableIds.has('owned-saving-money'), 'existing download ids stay');
+assert(playableIds.has('owned-island-alphabet') && playableIds.has('owned-coco-water') && playableIds.has('owned-goodnight-ocean-breeze'), 'recovered titles with files are playable');
 for (const song of getPlayableCatalogSongs()) {
     const filePath = path.join(process.cwd(), 'public', song.url.replace(/^\//, ''));
     const streamFile = path.join(process.cwd(), 'public', playbackUrl(song).replace(/^\//, ''));

@@ -62,9 +62,20 @@ for (const song of getPlayableCatalogSongs()) {
 const downloadRoute = read('app/api/music/download/[trackId]/route.ts');
 assert(downloadRoute.includes('track.url'), 'paid download reads the master file');
 assert(!downloadRoute.includes('playbackUrl') && !downloadRoute.includes('.stream.mp3'), 'paid download does not serve the stream rendition');
-assert((playlists['island-vibes'] ?? []).length === 0, 'Island Vibes does not invent tracks');
-assert((playlists['calm-cove'] ?? []).length === 0, 'Calm Cove does not invent tracks');
-assert((playlists['playtime'] ?? []).length === 0, 'Playtime does not invent tracks');
+assert((playlists['sing-along'] ?? []).length >= 1, 'Sing-Along has owned tracks');
+assert((playlists['story-bench'] ?? []).length >= 1, 'Story Bench has owned tracks');
+assert((playlists['island-vibes'] ?? []).length >= 1, 'Island Vibes has owned tracks');
+assert((playlists['calm-cove'] ?? []).length >= 1, 'Calm Cove has owned tracks');
+assert((playlists['playtime'] ?? []).length >= 1, 'Playtime has owned tracks');
+assert(playlists['sing-along']?.some((track) => track.title === 'Island Alphabet'), 'alphabet lands on Sing-Along');
+assert(playlists['story-bench']?.some((track) => track.title === 'Coco Water'), 'food songs land on Story Bench');
+assert(playlists['playtime']?.some((track) => track.title === 'Angry Rooster'), 'animal songs land on Playtime');
+assert(playlists['island-vibes']?.some((track) => track.title === 'Island Shaped Song'), 'island shaped song lands on Island Vibes');
+assert(playlists['calm-cove']?.some((track) => track.title === 'Goodnight Ocean Breeze'), 'lullaby lands on Calm Cove');
+const missingTitles = new Set(RECOVERED_UNPLAYABLE_SONGS.map((song) => song.title));
+for (const title of ['Island Alphabet', 'Island Counting', 'Likkle Legends Jingle', 'Coco Water', 'Sorell Drink', 'Angry Rooster', 'Island Monkeys', 'Island Parrots', 'Iguana Song']) {
+    assert(!missingTitles.has(title), `${title} left the missing inventory`);
+}
 
 const mixed: CatalogSong[] = [
     ...OWNED_PLAYABLE_SONGS,
@@ -80,7 +91,8 @@ const mixed: CatalogSong[] = [
     },
 ];
 const calm = tracksForStation('calm-cove', mixed);
-assert(calm.length === 1 && calm[0].id === 'future-calm', 'a new lullaby channel slots onto Calm Cove');
+assert(calm.some((track) => track.id === 'future-calm'), 'a new lullaby channel slots onto Calm Cove');
+assert(calm.filter((track) => track.id !== 'future-calm').length >= 1, 'owned lullabies stay on Calm Cove');
 assert(tracksForStation('sing-along', mixed).every((track) => track.id !== 'future-calm'), 'lullaby does not land on Sing-Along');
 assert(tracksForStation('island-vibes', RECOVERED_UNPLAYABLE_SONGS).length === 0, 'missing audio is not offered');
 assert(stationIdForChannel('unknown-channel') === null, 'unknown channels are not forced onto a station');
