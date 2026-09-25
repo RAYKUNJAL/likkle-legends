@@ -93,6 +93,12 @@ Without `GEMINI_API_KEY`, picture jobs fail closed. The words still work, and a
 parent can use simple local pictures page by page. Set `GEMINI_IMAGE_MODEL` only
 if you need a different Imagen model (default `imagen-3.0-generate-002`).
 
+The parent wizard and `POST /api/island-helpers/journey-stories/illustrate`
+always send one `pageIndex`. Do not generate every page image inside one
+serverless request (`Promise.all` or a five-page loop in a single HTTP call).
+Progress is reported per page. The worker is the background path and still
+draws pages one after another.
+
 ```bash
 docker compose --env-file .env.production up -d --build journey-worker
 docker compose logs -f journey-worker

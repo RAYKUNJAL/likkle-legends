@@ -71,11 +71,22 @@ if (second.claimed?.id !== 'newer') throw new Error('skip locked job');
 const prompt = buildJourneyImagePrompt({
   pageRole: 'intro',
   pageText: 'Tanty Spice sits in a bright quiet room.',
-  castCharacterIds: ['tanty_spice', 'roti'],
+  castCharacterIds: ['tanty_spice', 'roti', 'dilly_doubles', 'steelpan_sam', 'mango_moko'],
 });
 if (!prompt.includes(CHARACTER_HINTS.tanty_spice)) throw new Error('reuse Tanty trait anchor');
+if (!prompt.includes('warm brown skin')) throw new Error('Tanty prompt needs the image-bible traits');
+if (!prompt.includes(CHARACTER_HINTS.dilly_doubles)) throw new Error('Dilly traits required');
+if (!prompt.includes(CHARACTER_HINTS.steelpan_sam)) throw new Error('Steelpan Sam traits required');
+if (!prompt.includes(CHARACTER_HINTS.mango_moko)) throw new Error('Mango Moko traits required');
+if (!prompt.includes('friendly Caribbean island learning robot')) throw new Error('R.O.T.I. robot identity required');
+if (!prompt.includes('composition focused on the action that matches the page text')) {
+  throw new Error('prompt must focus composition on the page action');
+}
+if (!prompt.includes('busy highly-detailed scenes are a fail for comprehension')) {
+  throw new Error('busy scenes must be rejected');
+}
+if (/highly detailed characters|Pixar/i.test(prompt)) throw new Error('do not ask for busy detail');
 if (!prompt.includes(ART_STYLE_SUFFIX)) throw new Error('reuse existing art style');
-if (!prompt.includes('R.O.T.I.')) throw new Error('name friends that have no trait anchor');
 if (!/do not invent a new character design/i.test(prompt)) throw new Error('hold new character looks');
 if (/Social Stories/i.test(prompt)) throw new Error('prompt must not use the trademark');
 const rotiOnly = buildJourneyImagePrompt({
@@ -84,6 +95,7 @@ const rotiOnly = buildJourneyImagePrompt({
   castCharacterIds: ['roti'],
 });
 if (rotiOnly.includes(CHARACTER_HINTS.tanty_spice)) throw new Error('do not attach another character look');
+if (!rotiOnly.includes('friendly Caribbean island learning robot')) throw new Error('R.O.T.I. must not be name-only');
 if (/metal|antenna|robot body/i.test(rotiOnly)) throw new Error('do not invent a R.O.T.I. look');
 
 const filter = journeyPageRealtimeFilter('11111111-1111-4111-8111-111111111111');
@@ -158,6 +170,17 @@ if (/ports:/.test(compose.slice(compose.indexOf('journey-worker:')))) {
 
 const worker = fs.readFileSync(path.join(root, 'scripts/journey-worker.ts'), 'utf8');
 if (/Promise\.all/.test(worker)) throw new Error('worker must not burst page images');
+const illustrateRoute = fs.readFileSync(
+  path.join(root, 'app/api/island-helpers/journey-stories/illustrate/route.ts'),
+  'utf8',
+);
+if (!/Send one pageIndex/.test(illustrateRoute)) throw new Error('illustrate route must require one page');
+const wizard = fs.readFileSync(
+  path.join(root, 'components/island-helpers/journey-stories/JourneyStoryWizard.tsx'),
+  'utf8',
+);
+if (/Promise\.all/.test(wizard)) throw new Error('wizard must not burst image requests');
+if (!/pageIndex/.test(wizard)) throw new Error('wizard must send pageIndex');
 if (/qstash_|@upstash\/qstash/i.test(worker)) throw new Error('worker must not call QStash');
 
 for (const file of ['.env.example', '.env.production.example']) {

@@ -27,8 +27,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: 'draft required' }, { status: 400 });
   }
 
+  // One page per request. A full-story image burst will blow a short serverless timeout.
+  if (typeof body.pageIndex !== 'number' || body.pageIndex < 0 || body.pageIndex > 4) {
+    return NextResponse.json(
+      { ok: false, error: 'Send one pageIndex. One request illustrates one page.' },
+      { status: 400 },
+    );
+  }
+
   const result = await illustrateJourneyPages(draft, {
-    pageIndex: typeof body.pageIndex === 'number' ? body.pageIndex : undefined,
+    pageIndex: body.pageIndex,
     allowPlaceholders: body.allowPlaceholders !== false,
   });
 

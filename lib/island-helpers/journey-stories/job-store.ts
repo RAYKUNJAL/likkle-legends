@@ -91,18 +91,22 @@ export async function enqueueJourneyArt(
   }
 
   const pageRows = input.pages.map((page, pageIndex) => {
-    const planned = plan.pages[pageIndex];
-    return {
+    const row: Record<string, unknown> = {
       story_id: storyId,
       page_index: pageIndex,
       role: page.role,
       title: page.title || null,
       body: page.text,
-      image_url: planned?.imageUrl || null,
-      image_status: planned?.imageStatus || 'pending',
-      image_error: plan.queued ? null : plan.calmCopy,
       updated_at: now,
     };
+    const touchesImage = typeof input.pageIndex !== 'number' || input.pageIndex === pageIndex;
+    if (touchesImage) {
+      const planned = plan.pages[pageIndex];
+      row.image_url = planned?.imageUrl || null;
+      row.image_status = planned?.imageStatus || 'pending';
+      row.image_error = plan.queued ? null : plan.calmCopy;
+    }
+    return row;
   });
   const { error: pageError } = await client.from('journey_story_pages').upsert(pageRows, {
     onConflict: 'story_id,page_index',

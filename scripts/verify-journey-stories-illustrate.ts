@@ -41,6 +41,8 @@ for (const needle of [
   'calm island colors',
   'no text or letters in the image',
   'no scary medical gore',
+  'composition focused on the action that matches the page text',
+  'busy highly-detailed scenes are a fail for comprehension',
 ]) {
   if (!JOURNEY_SENSORY_STYLE_ANCHOR.includes(needle) || !prompt.includes(needle)) {
     throw new Error(`style anchor missing: ${needle}`);
