@@ -138,6 +138,22 @@ export function singleCallbackPageIndex(
   return pending ? pending.pageIndex : null;
 }
 
+/** Sync illustrate when no queue is actually running this page. */
+export function shouldSyncIllustrate(input: {
+  ok: boolean;
+  queued?: boolean;
+  qstash?: string;
+  status?: string;
+  fallback?: string | null;
+}): boolean {
+  if (input.status === 'reused') return false;
+  if (input.queued && (input.qstash === 'published' || input.qstash === 'qstash_publish_failed')) return false;
+  if (input.fallback === 'illustrate') return true;
+  if (!input.ok) return true;
+  if (input.qstash === 'qstash_env_missing' || input.qstash === 'skipped') return true;
+  return false;
+}
+
 export function pageIndexesForJob(pageIndex: number | null, pageCount: number): number[] {
   if (typeof pageIndex === 'number') {
     return pageIndex >= 0 && pageIndex < pageCount ? [pageIndex] : [];

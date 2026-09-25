@@ -120,6 +120,7 @@ export async function executeClaimedJourneyJob(
       .from('journey_story_jobs')
       .update({
         status: result.ok ? 'done' : 'failed',
+        phase: result.ok ? 'ready' : 'failed',
         last_error: result.error,
         finished_at: new Date().toISOString(),
       })
@@ -130,6 +131,7 @@ export async function executeClaimedJourneyJob(
       .from('journey_story_jobs')
       .update({
         status: 'failed',
+        phase: 'failed',
         last_error: PAGE_FAILED,
         finished_at: new Date().toISOString(),
       })

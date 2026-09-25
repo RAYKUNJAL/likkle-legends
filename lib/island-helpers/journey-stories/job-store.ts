@@ -20,6 +20,8 @@ export type EnqueueJourneyArtInput = {
   castCharacterIds: string[];
   pages: JourneyPage[];
   pageIndex?: number | null;
+  /** False when QStash is not configured. The wizard then illustrates one page itself. */
+  insertJob?: boolean;
 };
 
 export type EnqueueJourneyArtResult = {
@@ -162,7 +164,7 @@ export async function enqueueJourneyArt(
     return { ok: false, queued: false, error: JOURNEY_ART_CALM_COPY, message: JOURNEY_ART_CALM_COPY };
   }
 
-  if (!plan.queued || !plan.job) {
+  if (!plan.queued || !plan.job || input.insertJob === false) {
     const reused = pages.every((page) => page.imageStatus === 'reused' || page.imageStatus === 'ready');
     return {
       ok: true,
@@ -181,6 +183,7 @@ export async function enqueueJourneyArt(
       story_id: storyId,
       page_index: plan.job.pageIndex,
       status: 'queued',
+      phase: 'illustrating',
     })
     .select('id')
     .single();

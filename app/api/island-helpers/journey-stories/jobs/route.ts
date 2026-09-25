@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { enqueueJourneyArt, normalizeStoryId } from '@/lib/island-helpers/journey-stories/job-store';
-import { publishJourneyJob } from '@/lib/island-helpers/journey-stories/qstash';
+import { hasQStashConfig, publishJourneyJob } from '@/lib/island-helpers/journey-stories/qstash';
 import { applyJourneySafety } from '@/lib/island-helpers/journey-stories/safety';
 import { JOURNEY_PAGE_ROLES, type JourneyPage, type JourneyPageRole } from '@/lib/island-helpers/journey-stories/types';
 import { ISLAND_HELPERS_CHARACTER_IDS, type IslandHelpersCharacterId } from '@/lib/island-helpers/types';
@@ -49,6 +49,7 @@ export async function POST(req: Request) {
     : [];
 
   const pageIndex = typeof body.pageIndex === 'number' ? body.pageIndex : null;
+  const qstashReady = hasQStashConfig();
   const result = await enqueueJourneyArt({
     storyId: normalizeStoryId(body.storyId) || undefined,
     scenarioId: String(body.scenarioId || 'custom'),
@@ -61,14 +62,31 @@ export async function POST(req: Request) {
       imageUrl: pages[index]?.imageUrl || null,
     })),
     pageIndex,
+    insertJob: qstashReady,
   });
 
   if (!result.ok) {
-    return NextResponse.json({ ...result, qstash: 'skipped' }, { status: 200 });
+    return NextResponse.json(
+      { ...result, qstash: 'qstash_env_missing', fallback: 'illustrate' },
+      { status: 200 },
+    );
+  }
+
+  if (!qstashReady) {
+    return NextResponse.json({
+      ...result,
+      queued: false,
+      qstash: 'qstash_env_missing',
+      fallback: result.status === 'reused' ? null : 'illustrate',
+    });
   }
 
   if (!result.queued || !result.jobId) {
-    return NextResponse.json({ ...result, qstash: 'skipped' });
+    return NextResponse.json({
+      ...result,
+      qstash: 'skipped',
+      fallback: result.status === 'reused' ? null : 'illustrate',
+    });
   }
 
   const published = await publishJourneyJob({

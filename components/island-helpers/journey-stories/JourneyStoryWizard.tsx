@@ -24,6 +24,7 @@ import {
   IH_JOURNEY_LANGUAGE_STANDARD,
   IH_JOURNEY_STORIES,
 } from '@/lib/island-helpers/copy';
+import { shouldSyncIllustrate } from '@/lib/island-helpers/journey-stories/jobs';
 import {
   journeyBroadcastTopic,
   journeyPageRealtimeFilter,
@@ -233,6 +234,23 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchingArt, draft?.serverStoryId]);
 
+  const illustrateOnePage = async (current: JourneyStoryDraft, pageIndex: number) => {
+    const res = await fetch('/api/island-helpers/journey-stories/illustrate', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-island-helpers-adult': '1',
+      },
+      body: JSON.stringify({ draft: current, pageIndex, allowPlaceholders: true }),
+    });
+    const body = await res.json();
+    if (!res.ok || !body.ok || !Array.isArray(body.pages)) return null;
+    return updateDraft(current.id, {
+      pages: body.pages,
+      status: current.safetyFlags.length ? 'draft' : 'ready',
+    });
+  };
+
   const queuePictures = async () => {
     if (!draft) return;
     setBusy(true);
@@ -261,7 +279,25 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
             pageIndex,
           }),
         });
-        const body = await res.json();
+        const body = await res.json().catch(() => ({ ok: false }));
+        if (shouldSyncIllustrate({
+          ok: Boolean(body?.ok) && res.ok,
+          queued: Boolean(body?.queued),
+          qstash: body?.qstash,
+          status: body?.status,
+          fallback: body?.fallback,
+        })) {
+          const illustrated = await illustrateOnePage(current, pageIndex);
+          if (!illustrated) {
+            setArtNote(IH_JOURNEY_ART_CALM);
+            setWatchingArt(false);
+            return;
+          }
+          current = illustrated;
+          draftRef.current = current;
+          setDraft(current);
+          continue;
+        }
         if (!res.ok || body.ok === false) {
           setArtNote(body.message || IH_JOURNEY_ART_CALM);
           setWatchingArt(false);

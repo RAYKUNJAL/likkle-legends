@@ -6,6 +6,7 @@ import {
   claimNextQueuedJob,
   isUsableHostedImage,
   planIllustrationWork,
+  shouldSyncIllustrate,
   type JourneyJobRow,
 } from '../lib/island-helpers/journey-stories/jobs';
 import { journeyLibraryKey, mergePublishedImages } from '../lib/island-helpers/journey-stories/library-key';
@@ -111,6 +112,16 @@ const onlyPage = singleCallbackPageIndex(null, [
   { pageIndex: 1, imageUrl: null, imageStatus: 'pending' },
 ]);
 if (onlyPage !== 1) throw new Error('a callback draws the next unfinished page only');
+if (shouldSyncIllustrate({ ok: true, queued: true, qstash: 'published' })) {
+  throw new Error('a published queue must not also sync-illustrate');
+}
+if (!shouldSyncIllustrate({ ok: true, queued: false, qstash: 'qstash_env_missing', fallback: 'illustrate' })) {
+  throw new Error('missing queue key falls back to one-page illustrate');
+}
+if (shouldSyncIllustrate({ ok: true, queued: false, status: 'reused', fallback: 'illustrate' })) {
+  throw new Error('reused art must not illustrate again');
+}
+if (!shouldSyncIllustrate({ ok: false })) throw new Error('a failed enqueue still illustrates one page');
 if (singleCallbackPageIndex(0, []) !== 0) throw new Error('explicit pageIndex stays one page');
 
 const libraryA = journeyLibraryKey({
@@ -268,6 +279,9 @@ if (!/for update skip locked/i.test(sql)) throw new Error('claim must skip locke
 if (!/journey_story_jobs/.test(sql)) throw new Error('jobs table missing');
 if (!/claim_journey_story_job_by_id/.test(sql)) throw new Error('QStash retries need a job id claim');
 if (!/library_key/.test(sql)) throw new Error('published picture cache needs library_key');
+if (!/generating_text/.test(sql) || !/'illustrating'/.test(sql) || !/'ready'/.test(sql)) {
+  throw new Error('job phase must cover pending through ready');
+}
 if (/qstash_/i.test(sql) || /social stories/i.test(sql)) throw new Error('migration uses a forbidden name');
 
 const compose = fs.readFileSync(path.join(root, 'docker-compose.yml'), 'utf8');
@@ -295,6 +309,8 @@ const jobsRoute = fs.readFileSync(
   'utf8',
 );
 if (!/publishJourneyJob/.test(jobsRoute)) throw new Error('adult API must be able to wake QStash');
+if (!/insertJob: qstashReady/.test(jobsRoute)) throw new Error('absent QStash must not enqueue a background picture');
+if (!/fallback: 'illustrate'/.test(jobsRoute)) throw new Error('absent QStash must tell the wizard to illustrate');
 if (!/x-island-helpers-adult/.test(jobsRoute)) throw new Error('adult gate stays on enqueue');
 const illustrateRoute = fs.readFileSync(
   path.join(root, 'app/api/island-helpers/journey-stories/illustrate/route.ts'),
@@ -307,6 +323,8 @@ const wizard = fs.readFileSync(
 );
 if (/Promise\.all/.test(wizard)) throw new Error('wizard must not burst image requests');
 if (!/pageIndex/.test(wizard)) throw new Error('wizard must send pageIndex');
+if (!/shouldSyncIllustrate/.test(wizard)) throw new Error('wizard must fall back to one-page illustrate');
+if (!/Picture \$\{pageIndex \+ 1\} of/.test(wizard)) throw new Error('wizard must show per-page progress');
 for (const file of ['.env.example', '.env.production.example']) {
   const text = fs.readFileSync(path.join(root, file), 'utf8');
   for (const name of ['QSTASH_TOKEN', 'QSTASH_CURRENT_SIGNING_KEY', 'QSTASH_NEXT_SIGNING_KEY']) {

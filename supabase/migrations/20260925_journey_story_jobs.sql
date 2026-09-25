@@ -40,6 +40,7 @@ create table if not exists public.journey_story_jobs (
   story_id uuid not null references public.journey_stories (id) on delete cascade,
   page_index int,
   status text not null default 'queued' check (status in ('queued', 'running', 'done', 'failed')),
+  phase text not null default 'pending' check (phase in ('pending', 'generating_text', 'illustrating', 'ready', 'failed')),
   attempts int not null default 0,
   last_error text,
   created_at timestamptz not null default now(),
@@ -47,6 +48,8 @@ create table if not exists public.journey_story_jobs (
   finished_at timestamptz,
   check (page_index is null or (page_index >= 0 and page_index < 5))
 );
+
+alter table public.journey_story_jobs add column if not exists phase text not null default 'pending';
 
 create index if not exists journey_story_jobs_queued
   on public.journey_story_jobs (created_at)
@@ -99,6 +102,7 @@ begin
 
   update public.journey_story_jobs
   set status = 'running',
+      phase = 'illustrating',
       attempts = attempts + 1,
       claimed_at = now()
   where id = claimed.id
@@ -142,6 +146,7 @@ begin
 
   update public.journey_story_jobs
   set status = 'running',
+      phase = 'illustrating',
       attempts = attempts + 1,
       claimed_at = now(),
       finished_at = null,
