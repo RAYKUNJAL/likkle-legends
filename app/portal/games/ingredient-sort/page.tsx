@@ -15,7 +15,7 @@ export default function IngredientSortPage() {
         <GameLayoutWrapper
             gameId="ingredient-sort"
             title="Ingredient Sort"
-            description="Drag Caribbean ingredients into their correct baskets! Organize vegetables, fruits, spices, and grains."
+            description="Tap or drag Caribbean ingredients into their correct baskets! Organize vegetables, fruits, spices, and grains."
             learningFocus="Classification, categorization, Caribbean food knowledge, fine motor skills"
             characterBadge={{ emoji: '🟡', name: 'Basket Benny', color: '#FFD23F' }}
             xpReward={110}

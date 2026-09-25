@@ -254,7 +254,7 @@ const FEATURED_GAMES = [
     {
         id: 'ingredient-sort',
         title: 'Ingredient Sort',
-        description: 'Drag Caribbean ingredients into the right kitchen baskets — vegetables, fruits, spices & grains!',
+        description: 'Tap or drag Caribbean ingredients into the right kitchen baskets — vegetables, fruits, spices, and grains!',
         emoji: '🥬',
         gradient: 'from-green-400 via-lime-500 to-emerald-600',
         tier: 'free',
