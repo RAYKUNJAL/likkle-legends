@@ -25,12 +25,12 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { ISLAND_REGISTRY } from "@/lib/registries/islands";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { SUBSCRIPTION_PLANS, UPSELLS } from "@/lib/paypal";
+import { PAYPAL_CONFIG, SUBSCRIPTION_PLANS, UPSELLS, paypalSubscriptionCheckoutMessage } from "@/lib/paypal";
 import { getParentOffer } from "@/lib/paypal-offers";
 import IslandOffersCheckout from "@/components/checkout/IslandOffersCheckout";
 import { supabase } from "@/lib/supabase-client";
 
-const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "sb";
+const PAYPAL_CLIENT_ID = PAYPAL_CONFIG.clientId;
 
 function CheckoutContent() {
     const searchParams = useSearchParams();
@@ -232,16 +232,14 @@ function CheckoutContent() {
         );
     }
 
-    return (
-        <PayPalScriptProvider
-            key={formData.planKey === 'plan_free_forever' ? 'paypal-capture' : 'paypal-subscription'}
-            options={{
-                clientId: PAYPAL_CLIENT_ID,
-                currency: "USD",
-                intent: formData.planKey === 'plan_free_forever' ? "capture" : "subscription",
-                ...(formData.planKey !== 'plan_free_forever' ? { vault: true } : {}),
-            }}
-        >
+    const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
+    const paypalBlockedMessage = formData.planKey === 'plan_free_forever' && calculateOneTimeTotal() === 0
+        ? null
+        : paypalSubscriptionCheckoutMessage(
+            formData.planKey === 'plan_free_forever' ? 'addon' : selectedPlan?.paypalPlanId
+        );
+
+    const checkoutPage = (
             <main className="min-h-screen bg-[#FFFDF7] flex flex-col lg:flex-row">
                 {/* Left: Branding & Summary (Visible on Desktop) */}
                 <section className="lg:w-[40%] bg-white p-8 sm:p-12 lg:p-20 flex flex-col justify-between border-r border-zinc-100">
@@ -771,6 +769,10 @@ function CheckoutContent() {
                                                     >
                                                         Create Account to Continue
                                                     </button>
+                                                ) : paypalBlockedMessage ? (
+                                                    <p className="text-sm font-bold text-red-700" role="alert">
+                                                        {paypalBlockedMessage}
+                                                    </p>
                                                 ) : (
                                                     <PayPalButtons
                                                         style={{ layout: "vertical", shape: "rect", borderRadius: 12, height: 48 }}
@@ -914,6 +916,21 @@ function CheckoutContent() {
                     </div>
                 </section>
             </main>
+    );
+
+    if (!PAYPAL_CLIENT_ID) return checkoutPage;
+
+    return (
+        <PayPalScriptProvider
+            key={formData.planKey === 'plan_free_forever' ? 'paypal-capture' : 'paypal-subscription'}
+            options={{
+                clientId: PAYPAL_CLIENT_ID,
+                currency: "USD",
+                intent: formData.planKey === 'plan_free_forever' ? "capture" : "subscription",
+                ...(formData.planKey !== 'plan_free_forever' ? { vault: true } : {}),
+            }}
+        >
+            {checkoutPage}
         </PayPalScriptProvider>
     );
 }

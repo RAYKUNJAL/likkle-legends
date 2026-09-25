@@ -6,14 +6,14 @@ import Link from 'next/link';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { Lock, ShieldCheck, Sparkles, Clock, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { SUBSCRIPTION_PLANS } from '@/lib/paypal';
+import { PAYPAL_CONFIG, SUBSCRIPTION_PLANS, paypalSubscriptionCheckoutMessage } from '@/lib/paypal';
 import { supabase } from '@/lib/supabase-client';
 import { fireConversionEvent } from '@/lib/analytics';
 import MetaPixel from '@/components/offer/MetaPixel';
 import GA4Pixel from '@/components/offer/GA4Pixel';
 import TikTokPixel from '@/components/offer/TikTokPixel';
 
-const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb';
+const PAYPAL_CLIENT_ID = PAYPAL_CONFIG.clientId;
 
 // Legends Plus = plan_legends_plus (PayPal plan id from NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS).
 const LEGENDS_PLAN = SUBSCRIPTION_PLANS.plan_legends_plus;
@@ -57,16 +57,9 @@ function UpsellContent() {
         return `/offer/thank-you?${p.toString()}`;
     };
 
-    return (
-        <PayPalScriptProvider
-            key="offer-upsell-paypal-subscription"
-            options={{
-                clientId: PAYPAL_CLIENT_ID,
-                currency: 'USD',
-                intent: 'subscription',
-                vault: true,
-            }}
-        >
+    const paypalBlockedMessage = paypalSubscriptionCheckoutMessage(LEGENDS_PLAN.paypalPlanId);
+
+    const checkoutPage = (
             <main className="min-h-screen bg-gradient-to-b from-sky-200 via-amber-50 to-white font-montserrat">
                 {/* ── Tracking pixels — fire ViewContent on upsell page ── */}
                 <MetaPixel event="ViewContent" params={{ content_name: 'plan_legends_plus', value: LEGENDS_PRICE, currency: 'USD' }} />
@@ -146,6 +139,11 @@ function UpsellContent() {
 
                             {/* Primary CTA: PayPal one-click upgrade */}
                             <div className="mt-6 space-y-3">
+                                {paypalBlockedMessage ? (
+                                    <p className="text-sm font-bold text-red-700" role="alert">
+                                        {paypalBlockedMessage}
+                                    </p>
+                                ) : (
                                 <div className="relative min-h-[52px]">
                                     {!paypalReady && !isProcessing && (
                                         <div className="absolute inset-0 flex items-center justify-center">
@@ -164,9 +162,7 @@ function UpsellContent() {
                                         disabled={isProcessing}
                                         onInit={() => setPaypalReady(true)}
                                         createSubscription={(_data, actions) => {
-                                            const targetPlanId =
-                                                process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS ||
-                                                LEGENDS_PLAN.paypalPlanId;
+                                            const targetPlanId = LEGENDS_PLAN.paypalPlanId;
 
                                             if (!targetPlanId) {
                                                 toast.error(
@@ -243,6 +239,7 @@ function UpsellContent() {
                                         }}
                                     />
                                 </div>
+                                )}
 
                                 <p className="text-center font-montserrat text-sm font-bold text-slate-700">
                                     👆 Tap above to <span className="text-[var(--caribbean-mango)]">Upgrade to Legends Plus</span>
@@ -279,6 +276,21 @@ function UpsellContent() {
                     </div>
                 </section>
             </main>
+    );
+
+    if (!PAYPAL_CLIENT_ID || paypalBlockedMessage) return checkoutPage;
+
+    return (
+        <PayPalScriptProvider
+            key="offer-upsell-paypal-subscription"
+            options={{
+                clientId: PAYPAL_CLIENT_ID,
+                currency: 'USD',
+                intent: 'subscription',
+                vault: true,
+            }}
+        >
+            {checkoutPage}
         </PayPalScriptProvider>
     );
 }

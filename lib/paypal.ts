@@ -1,33 +1,31 @@
-const isProd = process.env.NODE_ENV === "production";
-
 /**
- * Ensures an environment variable is set. Handles Vercel build phases
- * by only throwing at runtime in production.
+ * Next inlines only static `process.env.NEXT_PUBLIC_*` reads.
+ * A dynamic process.env lookup stays empty in the browser bundle,
+ * so checkout clicks never receive a PayPal plan id.
  */
-export function requireEnv(name: string, options?: { optional?: boolean }): string {
-    const value = process.env[name];
-
-    if (!value && !options?.optional) {
-        // Only fail hard in true production (Vercel) runtime, not during static builds
-        if (isProd && process.env.VERCEL_URL && process.env.NEXT_PHASE !== 'phase-production-build') {
-            throw new Error(`CRITICAL: Missing required environment variable: ${name}`);
-        }
-        
-        // In dev or build phase, log warning but don't crash the build
-        if (isProd) {
-            console.warn(`[WARN] Missing env var in build/local: ${name}`);
-        }
-        return "";
-    }
-
-    return (value || "") as string;
+function inlinePublicPayPal(value: string | undefined): string {
+    return (value ?? '').trim();
 }
 
+/** Parent-visible. Checkout must show this instead of a PayPal button that cannot open. */
+export const PAYPAL_CLIENT_UNAVAILABLE =
+    'PayPal checkout is unavailable. Nothing can be purchased until it is configured.';
+
+/** Parent-visible. An empty plan id must not look like a dead PayPal click. */
+export const PAYPAL_PLAN_UNAVAILABLE =
+    'PayPal checkout is unavailable for this plan. Nothing was charged.';
+
 export const PAYPAL_CONFIG = {
-    clientId: requireEnv('NEXT_PUBLIC_PAYPAL_CLIENT_ID'),
+    clientId: inlinePublicPayPal(process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID),
     currency: 'USD',
     intent: 'subscription',
 };
+
+export function paypalSubscriptionCheckoutMessage(planId: string | null | undefined): string | null {
+    if (!PAYPAL_CONFIG.clientId) return PAYPAL_CLIENT_UNAVAILABLE;
+    if (!planId?.trim()) return PAYPAL_PLAN_UNAVAILABLE;
+    return null;
+}
 
 export const SUBSCRIPTION_PLANS = {
     plan_free_forever: {
@@ -53,8 +51,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_digital_legends: {
         id: 'plan_digital_legends',
         name: 'Digital Legends',
-        paypalPlanId: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL'),
-        paypalPlanIdYearly: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL_YEARLY'),
+        paypalPlanId: inlinePublicPayPal(process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL),
+        paypalPlanIdYearly: inlinePublicPayPal(process.env.NEXT_PUBLIC_PAYPAL_PLAN_DIGITAL_YEARLY),
         price: 4.99,
         priceYearly: 49.90, // Approx 2 months free
         interval: 'month',
@@ -73,8 +71,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_mail_intro: {
         id: 'plan_mail_intro',
         name: 'Island Starter',
-        paypalPlanId: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_STARTER'),
-        paypalPlanIdYearly: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_MAIL_YEARLY'),
+        paypalPlanId: inlinePublicPayPal(process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER),
+        paypalPlanIdYearly: inlinePublicPayPal(process.env.NEXT_PUBLIC_PAYPAL_PLAN_MAIL_YEARLY),
         price: 9.99,
         priceYearly: 99.00,
         interval: 'month',
@@ -92,8 +90,8 @@ export const SUBSCRIPTION_PLANS = {
     plan_legends_plus: {
         id: 'plan_legends_plus',
         name: 'Legends Plus',
-        paypalPlanId: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS'),
-        paypalPlanIdYearly: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_PLUS_YEARLY'),
+        paypalPlanId: inlinePublicPayPal(process.env.NEXT_PUBLIC_PAYPAL_PLAN_LEGENDS),
+        paypalPlanIdYearly: inlinePublicPayPal(process.env.NEXT_PUBLIC_PAYPAL_PLAN_PLUS_YEARLY),
         price: 19.99,
         priceYearly: 199.00,
         interval: 'month',
@@ -112,8 +110,9 @@ export const SUBSCRIPTION_PLANS = {
     plan_family_legacy: {
         id: 'plan_family_legacy',
         name: 'Family Legacy',
-        paypalPlanId: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_FAMILY'),
-        paypalPlanIdYearly: requireEnv('NEXT_PUBLIC_PAYPAL_PLAN_FAMILY_YEARLY') || requireEnv('NEXT_PUBLIC_PLAN_FAMILY_YEARLY', { optional: true }),
+        paypalPlanId: inlinePublicPayPal(process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY),
+        paypalPlanIdYearly: inlinePublicPayPal(process.env.NEXT_PUBLIC_PAYPAL_PLAN_FAMILY_YEARLY)
+            || inlinePublicPayPal(process.env.NEXT_PUBLIC_PLAN_FAMILY_YEARLY),
         price: 34.99,
         priceYearly: 349.00,
         interval: 'month',

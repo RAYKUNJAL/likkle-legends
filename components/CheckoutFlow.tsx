@@ -3,7 +3,7 @@
 import { useState, useEffect, Component, ErrorInfo } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { Check, ShieldCheck, Sparkles, Gift, AlertCircle, Loader2 } from 'lucide-react';
-import { SUBSCRIPTION_PLANS, UPSELLS, getLocalizedPrice, SubscriptionTier } from '@/lib/paypal';
+import { PAYPAL_CONFIG, SUBSCRIPTION_PLANS, UPSELLS, getLocalizedPrice, paypalSubscriptionCheckoutMessage, SubscriptionTier } from '@/lib/paypal';
 import { detectCountry, GeoInfo } from '@/lib/geo-routing';
 import { supabase } from '@/lib/storage';
 import { useUser } from '@/components/UserContext';
@@ -582,10 +582,14 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                         <>Start My Free Forever Plan <Sparkles size={20} /></>
                                     )}
                                 </button>
+                            ) : paypalSubscriptionCheckoutMessage(paymentBillingCycle === 'year' ? plan.paypalPlanIdYearly : plan.paypalPlanId) ? (
+                                <p className="text-sm font-bold text-red-700" role="alert">
+                                    {paypalSubscriptionCheckoutMessage(paymentBillingCycle === 'year' ? plan.paypalPlanIdYearly : plan.paypalPlanId)}
+                                </p>
                             ) : (
                                 <PayPalScriptProvider
                                     options={{
-                                        clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'test',
+                                        clientId: PAYPAL_CONFIG.clientId,
                                         vault: true,
                                         intent: 'subscription',
                                         currency: displayPrice.currency,
@@ -603,10 +607,13 @@ function CheckoutFlowContent({ selectedTier, initialBillingCycle, initialChildNa
                                             shape: 'rect',
                                             label: 'subscribe',
                                         }}
-                                        createSubscription={(data, actions) => {
-                                            // TODO: Validate that user exists first?
+                                        createSubscription={(_data, actions) => {
+                                            const planId = paymentBillingCycle === 'year' ? plan.paypalPlanIdYearly : plan.paypalPlanId;
+                                            if (!planId) {
+                                                throw new Error('Missing PayPal Plan ID');
+                                            }
                                             return actions.subscription.create({
-                                                plan_id: paymentBillingCycle === 'year' ? (plan.paypalPlanIdYearly || '') : plan.paypalPlanId,
+                                                plan_id: planId,
                                                 custom_id: user?.id // Pass user ID as custom ID
                                             });
                                         }}
