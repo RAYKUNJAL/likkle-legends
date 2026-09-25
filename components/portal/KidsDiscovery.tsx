@@ -26,7 +26,6 @@ const GAME_EMOJI: Record<string, string> = {
   'tantys-kitchen': '🍲',
   'math-market': '🧮',
   'spelling-blaze': '🔥',
-  'doubles-dash': '🫓',
 };
 
 type KidsDiscoveryProps = {
