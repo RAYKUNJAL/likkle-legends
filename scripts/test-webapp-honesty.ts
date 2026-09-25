@@ -190,7 +190,9 @@ function testWorkingGamesOnly() {
   assert.equal(reef.includes('requireAccess'), false);
   assert.equal(reef.includes('GUEST_LEVELS'), false);
   assert.ok(reef.includes('pointer-events-none'));
-  assert.ok(reef.includes('onPointerDown'));
+  assert.ok(reef.includes('entityUnderPoint'));
+  assert.ok(reef.includes('data-reef-arena'));
+  assert.ok(reef.includes('translate3d'));
   const catalog = readFileSync(resolve(process.cwd(), 'app/portal/games/page.tsx'), 'utf8');
   assert.ok(catalog.includes('Clear ocean litter, protect sea life and restore colorful Caribbean reefs.'));
   assert.ok(catalog.includes("title: 'Reef Rescue'"));

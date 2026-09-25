@@ -45,6 +45,30 @@ export function reefConfig(level: number) {
     };
 }
 
+/** Visual size and tap size are the same box. Pieces are not separate moving buttons. */
+export const LITTER_SIZE = 72;
+
+export type LitterBox = { x: number; y: number };
+
+export function clampPlayfieldX(x: number, width: number, size = LITTER_SIZE) {
+    const max = Math.max(0, width - size);
+    if (!Number.isFinite(x)) return 0;
+    return Math.min(max, Math.max(0, x));
+}
+
+/**
+ * Hit the piece whose drawn box contains the playfield point.
+ * Later pieces win so a tap on an overlap clears the one on top.
+ * The layout origin (0, 0) is not a hit unless a piece is actually drawn there.
+ */
+export function entityUnderPoint<T extends LitterBox>(items: readonly T[], px: number, py: number, size = LITTER_SIZE): T | null {
+    for (let index = items.length - 1; index >= 0; index -= 1) {
+        const item = items[index];
+        if (px >= item.x && px < item.x + size && py >= item.y && py < item.y + size) return item;
+    }
+    return null;
+}
+
 export type ReefHitKind = 'trash' | 'wildlife' | 'bonus';
 
 export function scoreReefHit(kind: ReefHitKind, points: number, combo: number) {

@@ -1,11 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import confetti from 'canvas-confetti';
 import {
+    LITTER_SIZE,
     MAX_REEF_LEVEL,
     REEF_TRASH,
     REEF_WILDLIFE,
+    clampPlayfieldX,
+    entityUnderPoint,
     memberCanPlayReefLevel,
     reefConfig,
     reefZone,
@@ -60,6 +63,7 @@ export default function ReefRescue({ onComplete }: GameProps) {
     const idRef = useRef(1);
     const spawnClockRef = useRef(0);
     const awardedRef = useRef(false);
+    const pieceNodes = useRef(new Map<number, HTMLDivElement>());
     const onCompleteRef = useRef(onComplete);
     onCompleteRef.current = onComplete;
 
@@ -98,9 +102,14 @@ export default function ReefRescue({ onComplete }: GameProps) {
         }
     }
 
+    function placePiece(item: Litter) {
+        const node = pieceNodes.current.get(item.id);
+        if (!node) return;
+        node.style.transform = `translate3d(${item.x}px, ${item.y}px, 0)`;
+    }
+
     function spawnOne() {
         const width = arenaRef.current?.clientWidth ?? 320;
-        const size = width < 520 ? 64 : 72;
         const roll = Math.random();
         const cfg = reefConfig(levelRef.current);
         let kind: ReefHitKind = 'trash';
@@ -132,16 +141,14 @@ export default function ReefRescue({ onComplete }: GameProps) {
             label,
             points,
             hits,
-            x: 8 + Math.random() * Math.max(24, width - size - 16),
-            y: -size,
+            x: clampPlayfieldX(Math.random() * Math.max(0, width - LITTER_SIZE), width, LITTER_SIZE),
+            y: -LITTER_SIZE,
             speed: cfg.speed * (0.85 + Math.random() * 0.35),
         };
         litterRef.current = [...litterRef.current, item];
     }
 
-    function clearLitter(id: number, event: PointerEvent<HTMLButtonElement>) {
-        event.preventDefault();
-        event.stopPropagation();
+    function clearLitter(id: number) {
         if (!runningRef.current || endedRef.current) return;
         const item = litterRef.current.find((entry) => entry.id === id);
         if (!item) return;
@@ -230,10 +237,13 @@ export default function ReefRescue({ onComplete }: GameProps) {
                 spawnClockRef.current -= cfg.spawnMs;
                 spawnOne();
             }
-            const limit = (arenaRef.current?.clientHeight ?? 420) - 70;
+            const width = arenaRef.current?.clientWidth ?? 320;
+            const height = arenaRef.current?.clientHeight ?? 420;
+            const limit = height - 8;
             let livesNow = livesRef.current;
             const kept: Litter[] = [];
             litterRef.current.forEach((item) => {
+                item.x = clampPlayfieldX(item.x, width, LITTER_SIZE);
                 const y = item.y + item.speed * delta;
                 if (y >= limit) {
                     if (item.kind === 'trash') {
@@ -243,7 +253,9 @@ export default function ReefRescue({ onComplete }: GameProps) {
                     }
                     return;
                 }
-                kept.push({ ...item, y });
+                item.y = y;
+                placePiece(item);
+                kept.push(item);
             });
             livesRef.current = Math.max(0, livesNow);
             litterRef.current = kept;
@@ -268,6 +280,24 @@ export default function ReefRescue({ onComplete }: GameProps) {
         frame = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(frame);
     }, [phase]);
+
+    useLayoutEffect(() => {
+        litterRef.current.forEach(placePiece);
+    });
+
+    function onPlayfieldPointer(event: ReactPointerEvent<HTMLDivElement>) {
+        if (!runningRef.current || endedRef.current || !arenaRef.current) return;
+        const rect = arenaRef.current.getBoundingClientRect();
+        const hit = entityUnderPoint(
+            litterRef.current,
+            event.clientX - rect.left,
+            event.clientY - rect.top,
+            LITTER_SIZE,
+        );
+        if (!hit) return;
+        event.preventDefault();
+        clearLitter(hit.id);
+    }
 
     return (
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-cyan-300 via-sky-600 to-blue-950 text-white">
@@ -294,8 +324,11 @@ export default function ReefRescue({ onComplete }: GameProps) {
 
             <div
                 ref={arenaRef}
-                className="relative mx-3 mb-3 h-[min(58dvh,520px)] min-h-[390px] overflow-hidden rounded-[1.6rem] border border-white/30 bg-gradient-to-b from-cyan-300 via-sky-500 to-blue-900 touch-manipulation"
+                data-reef-arena
+                className="relative mx-3 mb-3 h-[min(58dvh,520px)] min-h-[390px] cursor-pointer touch-manipulation overflow-hidden rounded-[1.6rem] border border-white/30 bg-gradient-to-b from-cyan-300 via-sky-500 to-blue-900"
+                style={{ touchAction: 'manipulation' }}
                 aria-label="Tap rubbish to protect the reef"
+                onPointerDown={onPlayfieldPointer}
             >
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0,rgba(255,255,220,0.35),transparent_40%)]" />
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-emerald-700/80 to-transparent" />
@@ -305,16 +338,20 @@ export default function ReefRescue({ onComplete }: GameProps) {
                 />
 
                 {litter.map((item) => (
-                    <button
+                    <div
                         key={item.id}
-                        type="button"
-                        aria-label={item.kind === 'wildlife' ? `Let the ${item.label} swim by` : `Clear ${item.label}`}
-                        className="absolute z-20 grid h-16 w-16 cursor-pointer place-items-center rounded-full border-0 bg-white/15 text-4xl shadow-lg touch-manipulation active:scale-90 sm:h-[4.5rem] sm:w-[4.5rem] sm:text-5xl"
-                        style={{ left: item.x, top: item.y, touchAction: 'manipulation' }}
-                        onPointerDown={(event) => clearLitter(item.id, event)}
+                        data-litter-id={item.id}
+                        data-litter-kind={item.kind}
+                        ref={(node) => {
+                            if (node) pieceNodes.current.set(item.id, node);
+                            else pieceNodes.current.delete(item.id);
+                        }}
+                        className="pointer-events-none absolute left-0 top-0 z-20 grid h-[72px] w-[72px] place-items-center rounded-full bg-white/15 text-5xl shadow-lg"
+                        style={{ transform: `translate3d(${item.x}px, ${item.y}px, 0)` }}
+                        aria-hidden
                     >
-                        <span className="pointer-events-none">{item.icon}</span>
-                    </button>
+                        {item.icon}
+                    </div>
                 ))}
 
                 <div className="pointer-events-none absolute inset-0 z-30">
