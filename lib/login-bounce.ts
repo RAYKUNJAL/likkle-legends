@@ -49,3 +49,44 @@ export function musicStorePhase(input: { ready: boolean; signedIn: boolean }): M
     if (!input.signedIn) return 'signed-out';
     return 'checkout';
 }
+
+/**
+ * Browser getSession() can sit on the GoTrue lock forever. The cookie probe
+ * (/api/auth/me) must be allowed to finish on its own, and the UI must leave
+ * "checking" even when both probes stall.
+ */
+export const PARENT_SESSION_CHECK_MS = 4000;
+
+/** Middleware only needs a user on routes that bounce login or gate access. */
+export const AUTH_LOOKUP_MS = 8000;
+
+export function middlewareNeedsAuthUser(pathname: string): boolean {
+    if (pathname === '/login' || pathname === '/signup') return true;
+    if (pathname.startsWith('/portal')) return true;
+    if (pathname.startsWith('/admin') && pathname !== '/admin' && pathname !== '/admin/central') return true;
+    return false;
+}
+
+export type ParentSessionSnapshot = {
+    meSettled: boolean;
+    sessionSettled: boolean;
+    timedOut: boolean;
+    accessToken: string | null;
+    cookieAuthenticated: boolean;
+};
+
+/** Signed-in wins as soon as either probe says so. Otherwise wait for both, then fail open. */
+export function parentSessionView(snapshot: ParentSessionSnapshot): {
+    ready: boolean;
+    signedIn: boolean;
+    token: string | null;
+} {
+    const signedIn = Boolean(snapshot.accessToken) || snapshot.cookieAuthenticated;
+    const probesSettled = snapshot.meSettled && snapshot.sessionSettled;
+    const ready = signedIn || snapshot.timedOut || probesSettled;
+    return {
+        ready,
+        signedIn: ready && signedIn,
+        token: snapshot.accessToken,
+    };
+}

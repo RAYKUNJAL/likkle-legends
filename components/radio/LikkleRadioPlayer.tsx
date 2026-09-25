@@ -301,8 +301,8 @@ export default function LikkleRadioPlayer({ onTrackStarted }: LikkleRadioPlayerP
                                     <Image
                                         src={host.image}
                                         alt=""
-                                        fill
-                                        sizes="68px"
+                                        width={66}
+                                        height={66}
                                         loading={selected ? 'eager' : 'lazy'}
                                     />
                                 </span>
@@ -327,8 +327,8 @@ export default function LikkleRadioPlayer({ onTrackStarted }: LikkleRadioPlayerP
                         <Image
                             src={activeTrack?.artwork || dj.image}
                             alt={`${dj.name}, DJ for ${station.name}`}
-                            fill
-                            sizes="(max-width: 640px) 116px, 152px"
+                            width={152}
+                            height={152}
                         />
                     </div>
                     <div className={styles.meta}>

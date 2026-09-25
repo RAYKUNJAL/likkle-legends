@@ -30,6 +30,7 @@ export default function MusicPayPalButton({
             createOrder={async () => {
                 const response = await fetch('/api/payments/paypal/create-order', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers,
                     body: JSON.stringify({ sku, trackId, requestId }),
                 });
@@ -42,6 +43,7 @@ export default function MusicPayPalButton({
             onApprove={async (data) => {
                 const response = await fetch('/api/payments/paypal/capture-order', {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers,
                     body: JSON.stringify({ orderID: data.orderID, sku }),
                 });
