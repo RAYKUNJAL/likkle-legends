@@ -2,28 +2,13 @@
 
 import FlagMatch from '@/components/games/FlagMatch';
 import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
-import { useUser } from '@/components/UserContext';
-import { logActivity } from '@/lib/database';
+import { useAwardPortalGameXp } from '@/components/games/useAwardPortalGameXp';
 
 export default function FlagMatchPage() {
-    const { user, activeChild } = useUser();
+    const awardGameXp = useAwardPortalGameXp('flag-match', 'Caribbean Flag Match');
 
-    const handleComplete = async (score: number) => {
-        if (!user || !activeChild) return;
-        try {
-            const xp = Math.min(score, 200);
-            await logActivity(
-                user.id,
-                activeChild.id,
-                'game',
-                'flag-match',
-                xp,
-                0,
-                { title: 'Caribbean Flag Match' }
-            );
-        } catch (error) {
-            console.error('Failed to log game activity:', error);
-        }
+    const handleComplete = (score: number) => {
+        void awardGameXp(Math.min(score, 200), score);
     };
 
     return (

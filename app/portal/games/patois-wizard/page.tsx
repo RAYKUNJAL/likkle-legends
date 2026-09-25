@@ -2,28 +2,13 @@
 
 import PatoisWizard from '@/components/games/PatoisWizard';
 import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
-import { useUser } from '@/components/UserContext';
-import { logActivity } from '@/lib/database';
+import { useAwardPortalGameXp } from '@/components/games/useAwardPortalGameXp';
 
 export default function PatoisWizardPage() {
-    const { user, activeChild } = useUser();
+    const awardGameXp = useAwardPortalGameXp('patois-wizard', 'Patois Word Wizard');
 
-    const handleComplete = async (score: number) => {
-        if (!user || !activeChild) return;
-        try {
-            const xp = Math.min(score, 200);
-            await logActivity(
-                user.id,
-                activeChild.id,
-                'game',
-                'patois-wizard',
-                xp,
-                0,
-                { title: 'Patois Word Wizard' }
-            );
-        } catch (error) {
-            console.error('Failed to log game activity:', error);
-        }
+    const handleComplete = (score: number) => {
+        void awardGameXp(Math.min(score, 200), score);
     };
 
     return (

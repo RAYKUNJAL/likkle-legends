@@ -2,27 +2,13 @@
 
 import WordBuilder from '@/components/games/WordBuilder';
 import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
-import { useUser } from '@/components/UserContext';
-import { logActivity } from '@/lib/database';
+import { useAwardPortalGameXp } from '@/components/games/useAwardPortalGameXp';
 
 export default function WordBuilderPage() {
-    const { user, activeChild } = useUser();
+    const awardGameXp = useAwardPortalGameXp('word-builder', 'Word Builder');
 
-    const handleComplete = async (score: number) => {
-        if (!user || !activeChild) return;
-        try {
-            await logActivity(
-                user.id,
-                activeChild.id,
-                'game',
-                'word-builder',
-                score,
-                0,
-                { title: 'Word Builder' }
-            );
-        } catch (error) {
-            console.error('Failed to log game activity:', error);
-        }
+    const handleComplete = (score: number) => {
+        void awardGameXp(score, score);
     };
 
     return (

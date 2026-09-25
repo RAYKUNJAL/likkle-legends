@@ -7,7 +7,8 @@ import { ArrowLeft, Gamepad2, Star, Trophy, RefreshCw, Home } from 'lucide-react
 import dynamic from 'next/dynamic';
 import { useUser } from '@/components/UserContext';
 import confetti from 'canvas-confetti';
-import { getGameById, logActivity } from '@/lib/database';
+import { awardPortalGameXp } from '@/app/actions/game-xp';
+import { getGameById } from '@/lib/database';
 import { recordGameResult } from '@/lib/game-progress';
 
 const LoadingGame = () => (
@@ -135,7 +136,7 @@ export default function GamePlayerPage() {
     const params = useParams();
     const router = useRouter();
     const gameId = (params?.id as string) || '';
-    const { user, activeChild, refreshChildren } = useUser();
+    const { activeChild, applyChildXp, refreshChildren } = useUser();
 
     const [isComplete, setIsComplete] = useState(false);
     const [score, setScore] = useState(0);
@@ -219,21 +220,24 @@ export default function GamePlayerPage() {
 
         recordGameResult(gameId, earnedScore);
 
-        if (user && activeChild) {
+        if (activeChild && earnedScore > 0) {
             const xpEarned = Math.max(Math.floor(earnedScore / 10), 0);
             try {
-                await logActivity(
-                    user.id,
-                    activeChild.id,
-                    'game',
+                const result = await awardPortalGameXp({
+                    childId: activeChild.id,
                     gameId,
-                    xpEarned,
-                    0,
-                    { score: earnedScore, correctAnswers: correct, totalQuestions: total }
-                );
-                await refreshChildren();
+                    xp: xpEarned,
+                    score: earnedScore,
+                    title: getGameTitle(),
+                });
+                if (result.success && result.xpAwarded > 0) {
+                    applyChildXp(activeChild.id, result.totalXp);
+                    await refreshChildren();
+                } else if (!result.success) {
+                    console.error("Error awarding game XP:", result.error);
+                }
             } catch (err) {
-                console.error("Error logging game activity:", err);
+                console.error("Error awarding game XP:", err);
             }
         }
     };

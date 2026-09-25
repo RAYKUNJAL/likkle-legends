@@ -2,27 +2,13 @@
 
 import IngredientSort from '@/components/games/IngredientSort';
 import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
-import { useUser } from '@/components/UserContext';
-import { logActivity } from '@/lib/database';
+import { useAwardPortalGameXp } from '@/components/games/useAwardPortalGameXp';
 
 export default function IngredientSortPage() {
-    const { user, activeChild } = useUser();
+    const awardGameXp = useAwardPortalGameXp('ingredient-sort', 'Ingredient Sort');
 
-    const handleComplete = async (score: number) => {
-        if (!user || !activeChild) return;
-        try {
-            await logActivity(
-                user.id,
-                activeChild.id,
-                'game',
-                'ingredient-sort',
-                score,
-                0,
-                { title: 'Ingredient Sort' }
-            );
-        } catch (error) {
-            console.error('Failed to log game activity:', error);
-        }
+    const handleComplete = (score: number) => {
+        void awardGameXp(score, score);
     };
 
     return (

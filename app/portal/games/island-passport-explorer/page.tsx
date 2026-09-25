@@ -2,27 +2,13 @@
 
 import IslandPassportExplorer from '@/components/games/IslandPassportExplorer';
 import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
-import { useUser } from '@/components/UserContext';
-import { logActivity } from '@/lib/database';
+import { useAwardPortalGameXp } from '@/components/games/useAwardPortalGameXp';
 
 export default function IslandPassportExplorerPage() {
-    const { user, activeChild } = useUser();
+    const awardGameXp = useAwardPortalGameXp('island-passport-explorer', 'Island Passport Explorer');
 
-    const handleComplete = async (score: number) => {
-        if (!user || !activeChild) return;
-        try {
-            await logActivity(
-                user.id,
-                activeChild.id,
-                'game',
-                'island-passport-explorer',
-                score,
-                0,
-                { title: 'Island Passport Explorer' }
-            );
-        } catch (error) {
-            console.error('Failed to log game activity:', error);
-        }
+    const handleComplete = (score: number) => {
+        void awardGameXp(score, score);
     };
 
     return (

@@ -162,7 +162,8 @@ export default function ChildPortalPage() {
         unlockedBadge,
         clearUnlockedBadge,
         verifyAge,
-        refreshChildren
+        refreshChildren,
+        refreshUser
     } = useUser();
     const [stories, setStories] = useState<Storybook[]>([]);
     const [videos, setVideos] = useState<Video[]>([]);
@@ -374,6 +375,12 @@ export default function ChildPortalPage() {
 
         return () => window.clearInterval(interval);
     }, [userLoading, user]);
+
+    // Reload child XP from the cookie session whenever the portal mounts,
+    // including a return from a finished game.
+    useEffect(() => {
+        void refreshUser();
+    }, [refreshUser]);
 
     // Phase 1 Retention: check daily login on portal mount
     useEffect(() => {
