@@ -2,27 +2,13 @@
 
 import MathAdventure from '@/components/games/MathAdventure';
 import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
-import { useUser } from '@/components/UserContext';
-import { logActivity } from '@/lib/database';
+import { useAwardPortalGameXp } from '@/components/games/useAwardPortalGameXp';
 
 export default function MathAdventurePage() {
-    const { user, activeChild } = useUser();
+    const awardGameXp = useAwardPortalGameXp('math-adventure', 'Math Adventure');
 
-    const handleComplete = async (score: number) => {
-        if (!user || !activeChild) return;
-        try {
-            await logActivity(
-                user.id,
-                activeChild.id,
-                'game',
-                'math-adventure',
-                score,
-                0,
-                { title: 'Math Adventure' }
-            );
-        } catch (error) {
-            console.error('Failed to log game activity:', error);
-        }
+    const handleComplete = (score: number) => {
+        void awardGameXp(score, score);
     };
 
     return (

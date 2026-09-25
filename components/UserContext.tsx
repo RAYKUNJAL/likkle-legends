@@ -87,6 +87,7 @@ interface UserContextType {
   setActiveChild: (childId: string) => void;
   refreshUser: (sessionUser?: SessionUserLike | null) => Promise<void>;
   refreshChildren: (userIdOverride?: string) => Promise<void>;
+  applyChildXp: (childId: string, totalXp: number) => void;
   logout: () => Promise<void>;
 
   // Gamification
@@ -151,9 +152,11 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
   const [isLoading, setIsLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
   const [unlockedBadge, setUnlockedBadge] = useState<any | null>(null);
+  const childrenRefreshSeq = React.useRef(0);
 
   /** Prefer cookie-session bridge — browser GoTrue often can't see httpOnly SSR cookies. */
     const hydrateFromCookieBridge = useCallback(async (): Promise<boolean> => {
+      const seq = childrenRefreshSeq.current;
       try {
         const ctrl = new AbortController();
         const timer = setTimeout(() => ctrl.abort(), 8000);
@@ -190,7 +193,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
         setUser(next);
 
         const kidsRaw = Array.isArray(body.children) ? body.children : [];
-        if (kidsRaw.length > 0) {
+        if (kidsRaw.length > 0 && seq === childrenRefreshSeq.current) {
           const normalized = kidsRaw.map((c: any) => normalizeChildName(c)) as Child[];
           setChildren(normalized);
           const savedChildId = typeof window !== 'undefined' ? localStorage.getItem('activeChildId') : null;
@@ -315,9 +318,22 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     }, [hydrateFromCookieBridge]);
 
     // Refresh children
+    const applyChildXp = useCallback((childId: string, totalXp: number) => {
+      if (!childId || !Number.isFinite(totalXp)) return;
+      const nextXp = Math.max(0, Math.floor(totalXp));
+      childrenRefreshSeq.current += 1;
+      setChildren((prev) => prev.map((child) => (
+        child.id === childId ? { ...child, total_xp: nextXp } : child
+      )));
+      setActiveChildState((prev) => (
+        prev && prev.id === childId ? { ...prev, total_xp: nextXp } : prev
+      ));
+    }, []);
+
     const refreshChildren = useCallback(async (userIdOverride?: string) => {
       const userId = userIdOverride || user?.id;
       if (!userId) return;
+      const seq = childrenRefreshSeq.current;
 
       try {
         // Live schema may use parent_id OR primary_user_id
@@ -339,6 +355,10 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
         }
 
         if (data) {
+          if (seq !== childrenRefreshSeq.current) return;
+          // An anonymous browser client can return zero rows even when the
+          // cookie session has children. Don't wipe the list in that case.
+          if (data.length === 0) return;
           const normalized = (data as Child[]).map((c) => normalizeChildName(c)) as Child[];
           setChildren(normalized);
 
@@ -644,6 +664,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     setActiveChild,
     refreshUser,
     refreshChildren,
+    applyChildXp,
     logout,
     isSubscribed: user?.subscription_status === 'active' || user?.subscription_status === 'trialing',
     canAccess,
@@ -665,6 +686,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     setActiveChild,
     refreshUser,
     refreshChildren,
+    applyChildXp,
     logout,
     canAccess,
     unreadCount,
