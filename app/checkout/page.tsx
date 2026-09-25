@@ -921,6 +921,12 @@ function CheckoutContent() {
                                     <Link href="/refund" className="hover:text-deep underline underline-offset-4">
                                         Refund
                                     </Link>
+                                    <Link href="/shipping" className="hover:text-deep underline underline-offset-4">
+                                        Shipping
+                                    </Link>
+                                    <Link href="/guarantee" className="hover:text-deep underline underline-offset-4">
+                                        Guarantee
+                                    </Link>
                                 </nav>
                             </div>
                         </form>

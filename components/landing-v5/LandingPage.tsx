@@ -47,7 +47,7 @@ export default function LandingPage() {
               <p className={styles.eyebrow}>Big roots. Brighter futures.</p>
               <h1 id="hero-heading">Bring the<br /><span>Caribbean</span><br /><em>Home.</em></h1>
               <p className={styles.heroDescription}>Stories, games, <strong>island music</strong> and learning adventures. A little connection to home, wherever your family lives.</p>
-              <div className={styles.heroActions}><Link className={styles.primaryButton} href="/signup?plan=free_trial">Start your 7-day trial <ArrowRight size={20} /></Link><a className={styles.secondaryButton} href="#radio"><Headphones size={20} /> Listen to island radio</a></div>
+              <div className={styles.heroActions}><Link className={styles.primaryButton} href="/signup">Create your free account <ArrowRight size={20} /></Link><a className={styles.secondaryButton} href="#radio"><Headphones size={20} /> Listen to island radio</a></div>
               <p className={styles.trust}>No card. No automatic charge. Keep your free account afterward.</p>
               <p className={styles.trust}><ShieldCheck size={17} /> Parent-guided <span>·</span> Ad-free <span>·</span> Ages 3–9</p>
             </div>
@@ -74,7 +74,7 @@ export default function LandingPage() {
               className={styles.explorePathImage}
             />
             <div className={styles.explorePathActions}>
-              <Link className={styles.primaryButton} href="/signup?plan=free_trial">Start Exploring <ArrowRight size={18} /></Link>
+              <Link className={styles.primaryButton} href="/signup">Create your free account <ArrowRight size={18} /></Link>
               <Link className={styles.secondaryButton} href="/games"><Gamepad2 size={18} /> Play a Free Game</Link>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function LandingPage() {
 
         <section className={styles.finalCta}><p className={styles.eyebrow}>For little legends, everywhere</p><h2>Their roots travel with them.</h2><p>Let’s help them discover just how much there is to love.</p><Link className={styles.primaryButton} href="/signup">Start your family’s adventure <ArrowRight size={20} /></Link><Link className={styles.textLink} href="/games">Or play a free game first <ArrowRight size={16} /></Link></section>
       </main>
-      <footer className={styles.footer}><div className={styles.container}><div><strong>Likkle Legends</strong><p>Little people. Big heritage.</p></div><nav aria-label="Footer navigation"><a href="#radio">Island radio</a><a href="#songs">Songs</a><a href="#characters">Our characters</a><Link href="/games">Games</Link><Link href="/schools">Schools</Link><Link href="/island-helpers">Island Helpers</Link><Link href="/safety">Child safety</Link><Link href="/privacy">Privacy</Link><Link href="/contact">Contact</Link></nav><p className={styles.copyright}>© {new Date().getFullYear()} Likkle Legends.</p></div></footer>
+      <footer className={styles.footer}><div className={styles.container}><div><strong>Likkle Legends</strong><p>Little people. Big heritage.</p></div><nav aria-label="Footer navigation"><a href="#radio">Island radio</a><a href="#songs">Songs</a><a href="#characters">Our characters</a><Link href="/games">Games</Link><Link href="/schools">Schools</Link><Link href="/island-helpers">Island Helpers</Link><Link href="/safety">Child safety</Link><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/refund">Refund</Link><Link href="/shipping">Shipping</Link><Link href="/guarantee">Guarantee</Link><Link href="/contact">Contact</Link></nav><p className={styles.copyright}>© {new Date().getFullYear()} Likkle Legends.</p></div></footer>
     </div>
   );
 }
