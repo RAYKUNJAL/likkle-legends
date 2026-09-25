@@ -3,7 +3,17 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
-import { getNextActivityRecommendation, CurriculumInput } from '@/lib/registries/curriculum';
+import {
+    buildGroundedFallbackWeeks,
+    curriculumEngine,
+    weeksAreKidSafe,
+} from '@/lib/curriculum/grounded-plan';
+import {
+    canonicalPrimaryIsland,
+    groundingBrief,
+    resolveSignupPlace,
+    type ResolvedSignupPlace,
+} from '@/lib/curriculum/resolve-signup-island';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,6 +56,16 @@ export interface LearningPlan {
         weeksUnlocked: number;
         generatedAt: string;
         progressScore?: number;
+        generator?: 'gemini' | 'oecs_fallback';
+        ageYears?: number;
+        place?: {
+            displayName: string;
+            diaspora: boolean;
+            registryId: string | null;
+            primaryIslandId: string | null;
+            source: string;
+            unpackedPlace: string | null;
+        };
     };
     curriculum_standard: string;
     island_theme: string | null;
@@ -55,6 +75,10 @@ export interface LearningPlan {
 
 export interface GeneratePlanInput {
     childId: string;
+    /** Explicit parent country. Never the profiles.country_code default. */
+    country?: string;
+    /** IslandPicker id or signup slug to store on the child before generating. */
+    primaryIsland?: string;
 }
 
 interface NormalizedQuizResults {
@@ -82,24 +106,6 @@ function getWeeksForTier(tier: string): number {
     if (level >= 1) return 4; // starter
     return 1; // free — trial week only
 }
-
-// ─── Character → Domain Mapping ───────────────────────────────────────────────
-
-const CHARACTER_DOMAINS: Record<string, string[]> = {
-    roti: ['literacy', 'math'],
-    tanty_spice: ['culture', 'social'],
-    dilly_doubles: ['social', 'music'],
-    benny: ['science', 'literacy'],
-};
-
-const DOMAIN_CHARACTERS: Record<string, string> = {
-    literacy: 'roti',
-    math: 'roti',
-    science: 'benny',
-    culture: 'tanty_spice',
-    social: 'dilly_doubles',
-    music: 'dilly_doubles',
-};
 
 // ─── OECS Curriculum Standards by age ─────────────────────────────────────────
 
@@ -136,85 +142,20 @@ function buildFallbackPlan(
     child: any,
     quizResults: any,
     weeksCount: number,
-    availableContent: any[]
+    place: ResolvedSignupPlace,
 ): PlanWeek[] {
     const age = child.age_years || child.age || 5;
     const focusAreas: string[] = quizResults?.focus_areas || ['literacy', 'culture'];
-    const preferredChar: string = quizResults?.preferred_character || 'roti';
-    const dailyMinutes: number = quizResults?.daily_minutes || 30;
-    const standards = getCurriculumStandards(age);
-
-    const WEEK_THEMES = [
-        'Island Explorer', 'Caribbean Roots', 'Legend in the Making', 'The Great Adventure'
-    ];
-
-    const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-
-    return Array.from({ length: weeksCount }, (_, wi) => {
-        const weekNum = wi + 1;
-        const theme = WEEK_THEMES[wi] || `Week ${weekNum} Journey`;
-        const primaryFocus = focusAreas[wi % focusAreas.length];
-        const secondaryFocus = focusAreas[(wi + 1) % focusAreas.length];
-        const charGuide = CHARACTER_DOMAINS[preferredChar]?.includes(primaryFocus)
-            ? preferredChar
-            : (DOMAIN_CHARACTERS[primaryFocus] || preferredChar);
-        const standard = standards[primaryFocus] || 'OECS Caribbean Primary';
-
-        const days: PlanDay[] = DAY_NAMES.map((day, di) => {
-            const input: CurriculumInput = {
-                child_age: age,
-                learning_goals: focusAreas,
-                attention_span_minutes: dailyMinutes,
-            };
-            const rec = getNextActivityRecommendation(input);
-            const domainCycle = focusAreas[di % focusAreas.length];
-            const actChar = DOMAIN_CHARACTERS[domainCycle] || preferredChar;
-
-            const activities: PlanActivity[] = [];
-
-            // Main lesson activity
-            activities.push({
-                title: `${day} ${domainCycle.charAt(0).toUpperCase() + domainCycle.slice(1)} with ${actChar === 'roti' ? 'R.O.T.I.' : actChar === 'tanty_spice' ? 'Tanty Spice' : actChar === 'dilly_doubles' ? 'Dilly Doubles' : 'Benny'}`,
-                type: 'lesson_micro',
-                characterGuide: actChar,
-                domain: domainCycle,
-                duration: Math.min(dailyMinutes, 15),
-                xpReward: 50,
-                description: `Explore ${domainCycle} through Caribbean-themed interactive activities. Focus on ${standard}.`,
-            });
-
-            // Second activity if daily minutes allow
-            if (dailyMinutes >= 25) {
-                const storyChar = 'tanty_spice';
-                activities.push({
-                    title: 'Story Island — Read Aloud',
-                    type: 'story_short',
-                    characterGuide: storyChar,
-                    domain: 'literacy',
-                    duration: 10,
-                    xpReward: 30,
-                    description: 'Tanty Spice reads an island story to build vocabulary and listening skills.',
-                });
-            }
-
-            // Third activity: culture/fun
-            if (dailyMinutes >= 40) {
-                activities.push({
-                    title: 'Dilly\'s Movement Break',
-                    type: 'game',
-                    characterGuide: 'dilly_doubles',
-                    domain: 'social',
-                    duration: 10,
-                    xpReward: 20,
-                    description: 'Dilly Doubles leads an energizing Caribbean-themed movement activity to keep the vibes high!',
-                });
-            }
-
-            return { day, activities };
-        });
-
-        return { weekNumber: weekNum, theme, curriculumStandard: standard, characterGuide: charGuide, days };
+    const weeks = buildGroundedFallbackWeeks({
+        age,
+        weeksCount,
+        place,
+        focusAreas,
+        preferredCharacter: quizResults?.preferred_character || 'roti',
+        dailyMinutes: quizResults?.daily_minutes || 30,
+        standards: getCurriculumStandards(age),
     });
+    return weeks as PlanWeek[];
 }
 
 // ─── Gemini Plan Builder ──────────────────────────────────────────────────────
@@ -224,12 +165,14 @@ async function buildGeminiPlan(
     quizResults: any,
     weeksCount: number,
     contentList: string,
+    place: ResolvedSignupPlace,
 ): Promise<PlanWeek[] | null> {
-    const apiKey = process.env.GEMINI_API_KEY;
+    if (curriculumEngine() !== 'gemini') return null;
+    const apiKey = process.env.GEMINI_API_KEY?.trim();
     if (!apiKey) return null;
 
     const age = child.age_years || child.age || 5;
-    const name = child.child_name || child.name || 'your little legend';
+    const name = child.child_name || child.first_name || child.name || 'your little legend';
     const focusAreas = quizResults?.focus_areas || ['literacy', 'culture'];
     const preferredChar = quizResults?.preferred_character || 'roti';
     const dailyMinutes = quizResults?.daily_minutes || 30;
@@ -242,11 +185,14 @@ async function buildGeminiPlan(
         .join('\n');
 
     const prompt = `
-You are the Likkle Legends AI Curriculum Architect. You design world-class Caribbean homeschool learning plans for kids aged 3–9, grounded in OECS and CPEA curriculum frameworks.
+You are the Likkle Legends AI Curriculum Architect. You design Caribbean learning plans for kids aged 3–9, grounded in OECS and CPEA curriculum frameworks and the retrieved place pack below.
+
+${groundingBrief(place)}
 
 **Child Profile:**
 - Name: ${name}
 - Age: ${age} years old
+- Place: ${place.displayName}
 - Learning focus areas: ${focusAreas.join(', ')}
 - Preferred learning style: ${learningStyle}
 - Daily learning time: ${dailyMinutes} minutes
@@ -298,7 +244,8 @@ Return ONLY valid JSON matching this exact structure:
 
 Activity types: lesson_micro, quiz_micro, story_short, song_video_script, printable, game
 Domains: literacy, math, science, culture, social, music
-Keep descriptions warm, Caribbean, encouraging. Reference island life, folklore, food, and nature.
+Keep descriptions warm and Caribbean. Use only foods, music, topics, and landmarks from the retrieved pack.
+Do not make medical, diagnostic, or therapy claims. Do not tell the child they must comply.
 Do NOT include markdown code fences. Return only the JSON object.
 `;
 
@@ -312,11 +259,16 @@ Do NOT include markdown code fences. Return only the JSON object.
         const text = result.response.text().trim();
         const parsed = JSON.parse(text);
         if (parsed?.weeks && Array.isArray(parsed.weeks)) {
-            return parsed.weeks as PlanWeek[];
+            const weeks = parsed.weeks as PlanWeek[];
+            if (!weeksAreKidSafe(weeks)) {
+                console.error('[generate-plan] Gemini plan failed the kid-safety check, using OECS outline');
+                return null;
+            }
+            return weeks;
         }
         return null;
     } catch (err) {
-        console.error('[generate-plan] Gemini failed, using fallback:', err);
+        console.error('[generate-plan] Gemini failed, using OECS outline:', err);
         return null;
     }
 }
@@ -328,6 +280,7 @@ export async function generatePlanAction(input: GeneratePlanInput): Promise<{
     plan?: LearningPlan;
     trialMode?: boolean;
     error?: string;
+    code?: 'unknown_place' | 'error';
 }> {
     const supabase = createClient();
 
@@ -345,20 +298,59 @@ export async function generatePlanAction(input: GeneratePlanInput): Promise<{
 
     if (childError || !child) return { success: false, error: 'Child not found' };
 
-    // 3. Get parent subscription tier
+    // 3. Optional parent edits: island slug or an explicit country (not the US column default).
+    let primaryIsland = child.primary_island || child.island || '';
+    const rawMetadata = child.metadata;
+    let metadata: Record<string, any> =
+        rawMetadata && typeof rawMetadata === 'object' && !Array.isArray(rawMetadata)
+            ? { ...rawMetadata }
+            : {};
+    if (input.primaryIsland?.trim()) {
+        const canon = canonicalPrimaryIsland(input.primaryIsland) || input.primaryIsland.trim();
+        primaryIsland = canon;
+        const { error: islandError } = await supabaseAdmin
+            .from('children')
+            .update({ primary_island: canon })
+            .eq('id', child.id)
+            .eq('parent_id', user.id);
+        if (islandError) console.error('[generate-plan] Island save failed:', islandError.message);
+    }
+    if (input.country?.trim()) {
+        metadata = { ...metadata, signup_country: input.country.trim() };
+        const { error: countryError } = await supabaseAdmin
+            .from('children')
+            .update({ metadata })
+            .eq('id', child.id)
+            .eq('parent_id', user.id);
+        if (countryError) console.error('[generate-plan] Country save failed:', countryError.message);
+    }
+
     const { data: profile } = await supabase
         .from('profiles')
-        .select('subscription_tier, subscription_status')
+        .select('subscription_tier, subscription_status, origin_island, preferred_island_code')
         .eq('id', user.id)
         .single();
 
+    const place = resolveSignupPlace({
+        primaryIsland,
+        originIsland: profile?.origin_island,
+        preferredIslandCode: profile?.preferred_island_code,
+        country: metadata.signup_country || metadata.country || null,
+    });
+    if (place.status !== 'resolved') {
+        return {
+            success: false,
+            code: 'unknown_place',
+            error: 'Add an island or country before a custom plan can be built.',
+        };
+    }
+
     const tier = profile?.subscription_tier || 'free';
-    const isActive = profile?.subscription_status === 'active' || tier === 'free';
     const weeksToGenerate = getWeeksForTier(tier);
     const trialMode = TIER_LEVELS[tier] === 0;
 
     // 4. Get quiz results from child metadata
-    const quizResults = child.metadata || {};
+    const quizResults = metadata;
 
     // 5. Fetch available content for this child's age track
     const ageTrack = (child.age_years || child.age || 5) <= 5 ? 'mini' : 'big';
@@ -384,10 +376,17 @@ export async function generatePlanAction(input: GeneratePlanInput): Promise<{
 
     const progressScore = xpData?.total_xp || xpData?.xp || 0;
 
-    // 7. Generate plan via Gemini (with fallback)
-    let weeks = await buildGeminiPlan(child, quizResults, weeksToGenerate, contentList);
-    if (!weeks || weeks.length === 0) {
-        weeks = buildFallbackPlan(child, quizResults, weeksToGenerate, []);
+    // 7. Gemini when GEMINI_API_KEY is set. Otherwise the OECS pack outline (no second model).
+    const ageYears = child.age_years || child.age || 5;
+    let generator: 'gemini' | 'oecs_fallback' = 'oecs_fallback';
+    let weeks: PlanWeek[] | null = null;
+    if (curriculumEngine() === 'gemini') {
+        weeks = await buildGeminiPlan({ ...child, primary_island: primaryIsland }, quizResults, weeksToGenerate, contentList, place);
+        if (weeks && weeks.length > 0) generator = 'gemini';
+    }
+    if (!weeks || weeks.length === 0 || !weeksAreKidSafe(weeks)) {
+        weeks = buildFallbackPlan({ ...child, age: ageYears }, quizResults, weeksToGenerate, place);
+        generator = 'oecs_fallback';
     }
 
     // 8. Deactivate previous active plans
@@ -424,9 +423,19 @@ export async function generatePlanAction(input: GeneratePlanInput): Promise<{
                 weeksUnlocked: weeksToGenerate,
                 generatedAt: new Date().toISOString(),
                 progressScore,
+                generator,
+                ageYears,
+                place: {
+                    displayName: place.displayName,
+                    diaspora: place.diaspora,
+                    registryId: place.registryId,
+                    primaryIslandId: place.primaryIslandId,
+                    source: place.source,
+                    unpackedPlace: place.unpackedPlace,
+                },
             },
             curriculum_standard: 'OECS Caribbean Primary',
-            island_theme: child.island_theme || null,
+            island_theme: place.displayName,
             is_active: true,
         })
         .select()

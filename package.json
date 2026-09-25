@@ -39,6 +39,7 @@
     "verify:likkle-radio": "tsx scripts/verify-likkle-radio.ts",
     "verify:music-store": "tsx scripts/verify-music-store.ts",
     "verify:story-products": "tsx scripts/verify-story-products.ts",
+    "verify:signup-curriculum": "tsx scripts/verify-signup-curriculum.ts",
     "video:render:sample": "remotion render remotion/index.ts LikkleShort out/likkle-short-sample.mp4",
     "video:studio": "remotion studio remotion/index.ts"
   },
