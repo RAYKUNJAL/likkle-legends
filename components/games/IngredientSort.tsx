@@ -207,6 +207,7 @@ export default function IngredientSort({ onComplete }: GameProps) {
   const onFoodPointerDown = (event: ReactPointerEvent<HTMLButtonElement>, id: number) => {
     if (placedRef.current.has(id)) return;
     if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (event.pointerType !== 'mouse' && event.cancelable) event.preventDefault();
 
     pointerCleanupRef.current?.();
     const food = event.currentTarget;
@@ -319,7 +320,7 @@ export default function IngredientSort({ onComplete }: GameProps) {
           user-select: none;
           -webkit-user-select: none;
           -webkit-touch-callout: none;
-          touch-action: manipulation;
+          touch-action: none;
           transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
           color: #FFD23F;
           font-weight: 600;
