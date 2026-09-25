@@ -535,6 +535,7 @@ export function UserProvider({ children: childrenNodes }: { children: ReactNode 
     const path = pathname || '/';
     return (
       path.startsWith('/portal') ||
+      path.startsWith('/games') ||
       path.startsWith('/parent') ||
       path.startsWith('/account') ||
       path.startsWith('/messages') ||

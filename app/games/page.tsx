@@ -1,8 +1,23 @@
 'use client';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { LEGENDS_LEAD_GAMES } from '@/lib/games/public-play';
+
+const LEAD_GAMES = LEGENDS_LEAD_GAMES.map((game) => ({
+  id: game.id,
+  href: game.publicHref,
+  char: game.char,
+  charEmoji: game.charEmoji,
+  title: game.title,
+  desc: game.description,
+  tags: game.tags,
+  bannerIcon: game.emoji,
+  image: '',
+  theme: game.theme,
+}));
 
 const GAMES = [
+  ...LEAD_GAMES,
   {
     id: 'island-hop',
     href: '/games/island-hop.html',
@@ -51,18 +66,6 @@ const GAMES = [
     image: '/games/images/scorcha_pepper.jpg',
     theme: 'scorcha',
   },
-  {
-    id: 'doubles-dash',
-    href: '/games/doubles-dash',
-    char: 'Dilly Doubles',
-    charEmoji: '🫓',
-    title: 'Doubles Dash',
-    desc: 'Dash through the streets with Dilly Doubles, dodging obstacles and collecting tasty doubles along the way.',
-    tags: ['Action', 'Reflexes', 'Ages 4-8'],
-    bannerIcon: '🫓',
-    image: '/games/images/dilly-doubles.jpg',
-    theme: 'dilly',
-  },
 ];
 
 const THEME: Record<string, { badge: string; badgeText: string; btn: string }> = {
@@ -70,7 +73,9 @@ const THEME: Record<string, { badge: string; badgeText: string; btn: string }> =
   tanty:   { badge: 'rgba(255,105,180,0.15)', badgeText: '#FF8FCC', btn: 'linear-gradient(135deg,#FF69B4,#C2185B)' },
   roti:    { badge: 'rgba(46,196,182,0.15)',  badgeText: '#2EC4B6', btn: 'linear-gradient(135deg,#2EC4B6,#00796B)' },
   scorcha: { badge: 'rgba(255,23,68,0.15)',   badgeText: '#FF5252', btn: 'linear-gradient(135deg,#FF1744,#D50000)' },
-  dilly:   { badge: 'rgba(255,210,63,0.15)',  badgeText: '#FFD23F', btn: 'linear-gradient(135deg,#FFD23F,#FF6B35)' },
+  reef:    { badge: 'rgba(46,196,182,0.15)',  badgeText: '#7EE8DE', btn: 'linear-gradient(135deg,#2EC4B6,#0E7490)' },
+  carnival:{ badge: 'rgba(255,107,53,0.18)', badgeText: '#FFB088', btn: 'linear-gradient(135deg,#FF6B35,#F43F5E)' },
+  quiz:    { badge: 'rgba(124,108,255,0.18)', badgeText: '#C4B5FD', btn: 'linear-gradient(135deg,#7C6CFF,#C026D3)' },
 };
 
 export default function GamesPage() {
@@ -194,6 +199,9 @@ export default function GamesPage() {
         <p style={{fontFamily:'Chillax,sans-serif',fontSize:'clamp(0.95rem,2.2vw,1.25rem)',color:'#8EA4C8',fontWeight:500,marginBottom:'0.25rem'}}>
           Game Zone — Learn, Play, Explore the Caribbean
         </p>
+        <p style={{fontFamily:'General Sans,sans-serif',fontSize:'0.95rem',color:'#F0F4FF',fontWeight:600,marginTop:'0.35rem'}}>
+          Reef Rescue, Caribbean Block Carnival, and Island Quiz Quest play right here on Likkle Legends.
+        </p>
         <Link href="/" style={{display:'inline-block',marginTop:'0.5rem',color:'#8EA4C8',fontSize:'0.85rem',textDecoration:'none'}}>
           ← Back to likklelegends.com
         </Link>
@@ -208,12 +216,27 @@ export default function GamesPage() {
               <a key={game.id} href={game.href} className="ll-card">
                 {/* Banner */}
                 <div className="ll-banner" style={{height:220,position:'relative',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    className="ll-banner-img"
-                    src={game.image}
-                    alt={game.char}
-                  />
+                  {game.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className="ll-banner-img"
+                      src={game.image}
+                      alt={game.char}
+                    />
+                  ) : (
+                    <div
+                      className="ll-banner-img"
+                      style={{
+                        display: 'grid',
+                        placeItems: 'center',
+                        fontSize: '5.5rem',
+                        background: t.btn,
+                      }}
+                      aria-hidden
+                    >
+                      {game.bannerIcon}
+                    </div>
+                  )}
                   <div style={{
                     position:'absolute',inset:0,
                     background:'linear-gradient(0deg,#132240 0%,transparent 60%)',

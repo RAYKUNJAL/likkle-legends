@@ -2,13 +2,22 @@
 
 import { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { QUIZ_LEVELS, QUIZ_QUEST_QUESTIONS, QUIZ_ROUNDS, questionFor } from '@/lib/games/island-quiz-data';
+import { QUIZ_LEVELS, QUIZ_ROUNDS, questionFor } from '@/lib/games/island-quiz-data';
 
 interface GameProps {
     onComplete?: (score: number) => void;
+    /** How many quest rounds this sitting includes. Omit for the full three-round quest. */
+    roundLimit?: number;
 }
 
-export default function IslandQuizQuest({ onComplete }: GameProps) {
+function roundCeiling(roundLimit?: number) {
+    if (roundLimit == null) return QUIZ_ROUNDS.length;
+    const safe = Math.floor(Number(roundLimit));
+    if (!Number.isFinite(safe) || safe < 1) return 1;
+    return Math.min(QUIZ_ROUNDS.length, safe);
+}
+
+export default function IslandQuizQuest({ onComplete, roundLimit }: GameProps) {
     const [started, setStarted] = useState(false);
     const [level, setLevel] = useState(1);
     const [roundIndex, setRoundIndex] = useState(0);
@@ -20,9 +29,11 @@ export default function IslandQuizQuest({ onComplete }: GameProps) {
     const [roundClear, setRoundClear] = useState(false);
     const [done, setDone] = useState(false);
 
-    const round = QUIZ_ROUNDS[roundIndex];
+    const rounds = QUIZ_ROUNDS.slice(0, roundCeiling(roundLimit));
+    const round = rounds[Math.min(roundIndex, rounds.length - 1)];
     const question = questionFor(level);
-    const questAnswered = QUIZ_ROUNDS.slice(0, roundIndex).reduce((sum, item) => sum + item.questions, 0) + answered;
+    const questTotal = rounds.reduce((sum, item) => sum + item.questions, 0);
+    const questAnswered = rounds.slice(0, roundIndex).reduce((sum, item) => sum + item.questions, 0) + answered;
 
     function begin(nextLevel = 1) {
         setStarted(true);
@@ -55,7 +66,7 @@ export default function IslandQuizQuest({ onComplete }: GameProps) {
         setAnswered(nextAnswered);
         confetti({ particleCount: 36, spread: 50, origin: { y: 0.65 } });
         if (nextAnswered >= round.questions) {
-            if (roundIndex < QUIZ_ROUNDS.length - 1) {
+            if (roundIndex < rounds.length - 1) {
                 setRoundClear(true);
             } else {
                 setDone(true);
@@ -89,14 +100,14 @@ export default function IslandQuizQuest({ onComplete }: GameProps) {
                     <h2 className="text-3xl font-black">Island Quiz Quest</h2>
                 </div>
                 <div className="flex gap-2 text-center text-sm font-black">
-                    <Stat label="Round" value={`${roundIndex + 1}/${QUIZ_ROUNDS.length}`} />
+                    <Stat label="Round" value={`${roundIndex + 1}/${rounds.length}`} />
                     <Stat label="Level" value={`${((level - 1) % QUIZ_LEVELS) + 1}/${QUIZ_LEVELS}`} />
                     <Stat label="Score" value={score} />
                     <Stat label="Streak" value={streak} />
                 </div>
             </div>
             <div className="mb-4 h-2 overflow-hidden rounded-full bg-white/20">
-                <div className="h-full bg-amber-300" style={{ width: `${(questAnswered / QUIZ_QUEST_QUESTIONS) * 100}%` }} />
+                <div className="h-full bg-amber-300" style={{ width: `${(questAnswered / questTotal) * 100}%` }} />
             </div>
 
             <div className="rounded-3xl bg-white/10 p-4 sm:p-6">
@@ -188,7 +199,7 @@ export default function IslandQuizQuest({ onComplete }: GameProps) {
                         <p className="text-5xl">🎖️</p>
                         <h2 className="mt-2 text-3xl font-black">Quest complete!</h2>
                         <p className="mt-2 text-sm font-semibold text-slate-500">
-                            {QUIZ_QUEST_QUESTIONS} stamps across {QUIZ_ROUNDS.length} rounds. Every island question stays open for another quest.
+                            {questTotal} stamps across {rounds.length} {rounds.length === 1 ? 'round' : 'rounds'}. Play again whenever you like.
                         </p>
                         <p className="mt-3 text-4xl font-black text-indigo-600">{score}</p>
                         <button

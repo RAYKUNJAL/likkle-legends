@@ -12,6 +12,8 @@ interface GameLayoutWrapperProps {
   xpReward: number;
   gradient: string;
   children: React.ReactNode;
+  backHref?: string;
+  showXp?: boolean;
 }
 
 export default function GameLayoutWrapper({
@@ -23,6 +25,8 @@ export default function GameLayoutWrapper({
   xpReward,
   gradient,
   children,
+  backHref = '/portal/games',
+  showXp = true,
 }: GameLayoutWrapperProps) {
   const [stars, setStars] = useState<Array<{ id: number; left: string; top: string; size: string; delay: string; duration: string }>>([]);
 
@@ -120,7 +124,7 @@ export default function GameLayoutWrapper({
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <Link
-            href="/portal/games"
+            href={backHref}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -181,21 +185,22 @@ export default function GameLayoutWrapper({
               <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>With {characterBadge.name}</span>
             </div>
 
-            {/* XP Reward Badge */}
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              background: `linear-gradient(135deg, rgba(255, 210, 63, 0.2), rgba(255, 107, 53, 0.2))`,
-              padding: '0.75rem 1.5rem',
-              borderRadius: '100px',
-              border: '2px solid rgba(255, 210, 63, 0.4)',
-              fontWeight: '600',
-              fontSize: '0.9rem',
-            }}>
-              <span style={{ fontSize: '1.2rem' }}>⭐</span>
-              <span>Earn up to {xpReward} XP</span>
-            </div>
+            {showXp && (
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                background: `linear-gradient(135deg, rgba(255, 210, 63, 0.2), rgba(255, 107, 53, 0.2))`,
+                padding: '0.75rem 1.5rem',
+                borderRadius: '100px',
+                border: '2px solid rgba(255, 210, 63, 0.4)',
+                fontWeight: '600',
+                fontSize: '0.9rem',
+              }}>
+                <span style={{ fontSize: '1.2rem' }}>⭐</span>
+                <span>Earn up to {xpReward} XP</span>
+              </div>
+            )}
           </div>
 
           {/* Learning Focus */}

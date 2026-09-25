@@ -354,21 +354,6 @@ const FEATURED_GAMES = [
         isPopular: false,
         game_url: '/games/spelling-blaze.html',
     },
-    {
-        id: 'doubles-dash',
-        title: 'Doubles Dash',
-        description: 'Dash through the streets collecting tasty doubles!',
-        emoji: '🫓',
-        gradient: 'from-yellow-400 via-amber-500 to-orange-600',
-        tier: 'free',
-        category: 'adventure',
-        xp: 150,
-        time: '5 min',
-        learningFocus: 'Reflexes and Trini street food culture',
-        isNew: true,
-        isPopular: true,
-        game_url: '/games/doubles-dash',
-    },
 ];
 
 import { EmptyState } from '@/components/EmptyState';
@@ -645,42 +630,39 @@ export default function GamesHubPage() {
 
             {/* Featured Hero Game */}
             <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 mt-5 sm:mt-8 mb-6 sm:mb-10">
-                <div className="relative bg-gradient-to-r from-violet-500 via-fuchsia-500 to-orange-400 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 overflow-hidden group border-4 border-white shadow-2xl shadow-fuchsia-200/60">
+                <div className="relative bg-gradient-to-r from-cyan-400 via-teal-500 to-emerald-600 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 overflow-hidden group border-4 border-white shadow-2xl shadow-teal-200/60">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/15 rounded-full -mr-32 -mt-32 blur-2xl" />
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full -ml-24 -mb-24 blur-2xl" />
                     <Sparkles className="absolute top-5 right-5 text-white/40 w-8 h-8 sm:w-14 sm:h-14 animate-pulse" />
 
                     <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-4 md:gap-8 text-white">
                         <div className="w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-white/25 backdrop-blur-sm rounded-3xl flex items-center justify-center text-4xl sm:text-6xl shadow-xl group-hover:scale-110 group-hover:-rotate-6 transition-transform shrink-0">
-                            🫓
+                            🪸
                         </div>
                         <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <span className="px-3 py-1 bg-white/25 rounded-full text-[11px] font-black uppercase tracking-wider">
                                     ⭐ Today's Pick
                                 </span>
-                                <span className="px-3 py-1 bg-emerald-400/90 text-white rounded-full text-[11px] font-black uppercase tracking-wider">
-                                    Kid Favorite
-                                </span>
                             </div>
-                            <h2 className="text-2xl sm:text-3xl font-black mb-1.5 drop-shadow-sm">Doubles Dash</h2>
+                            <h2 className="text-2xl sm:text-3xl font-black mb-1.5 drop-shadow-sm">Reef Rescue</h2>
                             <p className="text-white/90 text-sm sm:text-lg mb-3 font-semibold">
-                                Dash with Dilly through a working island game — then pick another title that actually plays.
+                                Clear ocean litter, protect sea life and restore colorful Caribbean reefs.
                             </p>
                             <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-xs sm:text-sm font-bold">
                                 <span className="flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1">
-                                    <Zap className="text-yellow-300" size={15} /> 160 XP
+                                    <Zap className="text-yellow-300" size={15} /> 150 XP
                                 </span>
                                 <span className="flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1">
-                                    <Clock size={15} /> 8-12 min
+                                    <Clock size={15} /> 5 min
                                 </span>
                             </div>
                         </div>
                         <Link
-                            href="/games/doubles-dash"
-                            className="w-full md:w-auto px-8 py-4 bg-white text-fuchsia-600 rounded-full font-black text-base sm:text-lg shadow-xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                            href="/portal/games/reef-rescue"
+                            className="w-full md:w-auto px-8 py-4 bg-white text-teal-700 rounded-full font-black text-base sm:text-lg shadow-xl hover:scale-105 active:scale-95 transition-transform flex items-center justify-center gap-2"
                         >
-                            <Play size={22} className="fill-fuchsia-600" /> Play Now
+                            <Play size={22} className="fill-teal-700" /> Play Now
                         </Link>
                     </div>
                 </div>

@@ -24,15 +24,15 @@ featured game in the portal.
 - **Supabase** — auth, database (RLS), storage
 - **Gemini** — character buddy chat & content agents · **Claude** — content generator
 - **PayPal** — checkout (app routes + Supabase Edge Functions for webhooks)
-- **Resend** — email · **Phaser 3** — Doubles Dash arcade game
+- **Resend** — email · **Phaser 3** — arcade runtime (Doubles Dash is not listed)
 
 ## Key areas
 
 ```
 app/
   portal/            Kid/parent portal (auth) — dashboard, games, stories, buddy chat
-  portal/games/      Games hub — 21 games, XP, categories
-  games/             Public Game Zone (arcade games incl. Doubles Dash)
+  portal/games/      Games hub — featured games, XP, categories
+  games/             Public Game Zone (arcade games)
   admin/             Admin control center (~40 tools)
   api/payments/      PayPal confirm + webhooks
   api/cron/          Scheduled jobs (content, emails, streaks)

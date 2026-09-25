@@ -19,6 +19,14 @@ import {
 
 interface GameProps {
     onComplete?: (score: number) => void;
+    /** Highest level this sitting can open. Omit for the full member curve. */
+    levelLimit?: number;
+}
+
+function levelCeiling(levelLimit?: number) {
+    if (levelLimit == null) return MAX_REEF_LEVEL;
+    const safe = Math.floor(Number(levelLimit));
+    return memberCanPlayReefLevel(safe) ? safe : 1;
 }
 
 type Phase = 'start' | 'countdown' | 'play' | 'won' | 'lost';
@@ -39,7 +47,7 @@ type FloatNote = { id: number; text: string; x: number; y: number };
 
 const COUNTDOWN = ['3', '2', '1', 'GO!'];
 
-export default function ReefRescue({ onComplete }: GameProps) {
+export default function ReefRescue({ onComplete, levelLimit }: GameProps) {
     const [phase, setPhase] = useState<Phase>('start');
     const [level, setLevel] = useState(1);
     const [showLevels, setShowLevels] = useState(false);
@@ -69,6 +77,9 @@ export default function ReefRescue({ onComplete }: GameProps) {
     const pieceNodes = useRef(new Map<number, HTMLDivElement>());
     const onCompleteRef = useRef(onComplete);
     onCompleteRef.current = onComplete;
+    const ceilingRef = useRef(levelCeiling(levelLimit));
+    ceilingRef.current = levelCeiling(levelLimit);
+    const ceiling = ceilingRef.current;
 
     const zone = reefZone(level);
     const config = reefConfig(level);
@@ -183,7 +194,8 @@ export default function ReefRescue({ onComplete }: GameProps) {
     }
 
     function begin(nextLevel = level) {
-        if (!memberCanPlayReefLevel(nextLevel)) return;
+        const allowed = ceilingRef.current;
+        if (!memberCanPlayReefLevel(nextLevel) || nextLevel > allowed) return;
         const cfg = reefConfig(nextLevel);
         awardedRef.current = false;
         endedRef.current = false;
@@ -314,7 +326,7 @@ export default function ReefRescue({ onComplete }: GameProps) {
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
                 <div>
                     <p className="text-xs font-black uppercase tracking-widest text-amber-200">{zone.flag} {zone.name}</p>
-                    <p className="text-lg font-black">Level {level} / {MAX_REEF_LEVEL}</p>
+                    <p className="text-lg font-black">Level {level} / {ceiling}</p>
                     <p className="text-xs font-black text-cyan-100">Wave {wave} / {config.waves}</p>
                 </div>
                 <div className="flex gap-2 text-center text-sm font-black">
@@ -428,7 +440,7 @@ export default function ReefRescue({ onComplete }: GameProps) {
                 <div className="absolute inset-0 z-[60] grid place-items-center bg-slate-950/80 p-4">
                     <div className="max-h-[80%] w-full max-w-lg overflow-auto rounded-3xl bg-sky-950 p-4">
                         <div className="mb-3 flex items-center justify-between">
-                            <h3 className="text-xl font-black">Every level is open</h3>
+                            <h3 className="text-xl font-black">{ceiling === MAX_REEF_LEVEL ? 'Every level is open' : 'Choose a level'}</h3>
                             <button
                                 type="button"
                                 className="h-12 w-12 cursor-pointer rounded-xl bg-white/10 text-2xl touch-manipulation"
@@ -442,7 +454,7 @@ export default function ReefRescue({ onComplete }: GameProps) {
                             </button>
                         </div>
                         <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
-                            {Array.from({ length: MAX_REEF_LEVEL }, (_, index) => index + 1).map((number) => (
+                            {Array.from({ length: ceiling }, (_, index) => index + 1).map((number) => (
                                 <button
                                     key={number}
                                     type="button"
@@ -477,10 +489,12 @@ export default function ReefRescue({ onComplete }: GameProps) {
                             className="mt-4 min-h-[64px] w-full cursor-pointer rounded-2xl bg-gradient-to-r from-emerald-300 to-amber-300 text-lg font-black text-slate-900 touch-manipulation"
                             onPointerDown={(event) => {
                                 event.preventDefault();
-                                begin(phase === 'won' ? Math.min(MAX_REEF_LEVEL, level + 1) : level);
+                                const atTop = phase === 'won' && level >= ceiling;
+                                if (atTop && ceiling < MAX_REEF_LEVEL) begin(1);
+                                else begin(phase === 'won' ? Math.min(ceiling, level + 1) : level);
                             }}
                         >
-                            {phase === 'won' && level < MAX_REEF_LEVEL ? 'Next mission' : 'Play again'}
+                            {phase === 'won' && level < ceiling ? 'Next mission' : 'Play again'}
                         </button>
                     </div>
                 </div>

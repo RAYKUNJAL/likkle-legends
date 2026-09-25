@@ -20,6 +20,15 @@ import { blockCarnivalLines, blockCarnivalSwaps } from '@/lib/games/long-play';
 
 interface GameProps {
     onComplete?: (score: number) => void;
+    /** How many islands this sitting can open. Omit for the full carnival. */
+    islandLimit?: number;
+}
+
+function islandCeiling(islandLimit: number | undefined, total: number) {
+    if (islandLimit == null) return total;
+    const safe = Math.floor(Number(islandLimit));
+    if (!Number.isFinite(safe) || safe < 1) return 1;
+    return Math.min(total, safe);
 }
 
 type Piece = {
@@ -64,7 +73,7 @@ function makePiece(index: number, islandEmoji: string): Piece {
     };
 }
 
-export default function BlockCarnival({ onComplete }: GameProps) {
+export default function BlockCarnival({ onComplete, islandLimit }: GameProps) {
     const [islandIndex, setIslandIndex] = useState(0);
     const [started, setStarted] = useState(false);
     const [board, setBoard] = useState<BlockCell[][]>(() => emptyBoard());
@@ -79,7 +88,8 @@ export default function BlockCarnival({ onComplete }: GameProps) {
     const [finished, setFinished] = useState<'win' | 'lose' | null>(null);
     const [awarded, setAwarded] = useState(false);
 
-    const island = ISLANDS[islandIndex];
+    const ceiling = islandCeiling(islandLimit, ISLANDS.length);
+    const island = ISLANDS[Math.min(islandIndex, ceiling - 1)];
     const linesToWin = blockCarnivalLines(islandIndex);
     const selected = pieces.find((piece) => piece.id === selectedId && !piece.used) ?? null;
 
@@ -276,7 +286,7 @@ export default function BlockCarnival({ onComplete }: GameProps) {
                             Place colorful blocks, clear full rows, and fill the Carnival Fever meter.
                         </p>
                         <div className="mt-4 grid grid-cols-2 gap-2">
-                            {ISLANDS.map((item, index) => (
+                            {ISLANDS.slice(0, ceiling).map((item, index) => (
                                 <button
                                     key={item.id}
                                     type="button"
@@ -320,10 +330,18 @@ export default function BlockCarnival({ onComplete }: GameProps) {
                             className="mt-4 min-h-[64px] w-full cursor-pointer rounded-2xl bg-slate-900 text-lg font-black text-white touch-manipulation"
                             onPointerDown={(event) => {
                                 event.preventDefault();
-                                start(finished === 'win' ? (islandIndex + 1) % ISLANDS.length : islandIndex);
+                                if (finished !== 'win') {
+                                    start(Math.min(islandIndex, ceiling - 1));
+                                    return;
+                                }
+                                if (ceiling === ISLANDS.length) {
+                                    start((islandIndex + 1) % ISLANDS.length);
+                                    return;
+                                }
+                                start(islandIndex + 1 < ceiling ? islandIndex + 1 : 0);
                             }}
                         >
-                            {finished === 'win' ? 'Next island' : 'Play again'}
+                            {finished === 'win' && (ceiling === ISLANDS.length || islandIndex + 1 < ceiling) ? 'Next island' : 'Play again'}
                         </button>
                     </div>
                 </div>
