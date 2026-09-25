@@ -173,10 +173,11 @@ function testWorkingGamesOnly() {
   assert.equal(HIDDEN_GAME_IDS.has('story-library'), true);
   assert.equal(HIDDEN_GAME_IDS.has('cultural-quiz'), true);
   assert.equal(isWorkingGameId('island-memory'), true);
-  assert.equal(isWorkingGameId('doubles-dash'), true);
+  assert.equal(isWorkingGameId('doubles-dash'), false);
+  assert.equal(HIDDEN_GAME_IDS.has('doubles-dash'), true);
   assert.equal(isWorkingGameId('story-library'), false);
   assert.ok(WORKING_PORTAL_GAMES.length >= 10);
-  assert.equal(WORKING_ARCADE_GAMES.length, 5);
+  assert.equal(WORKING_ARCADE_GAMES.length, 4);
   for (const id of ['reef-rescue', 'block-carnival', 'island-quiz'] as const) {
     assert.equal(isWorkingGameId(id), true, id);
     assert.equal(isUuid(PORTAL_GAME_CONTENT_IDS[id]), true, id);
@@ -197,8 +198,16 @@ function testWorkingGamesOnly() {
   assert.ok(catalog.includes('Clear ocean litter, protect sea life and restore colorful Caribbean reefs.'));
   assert.ok(catalog.includes("title: 'Reef Rescue'"));
   assert.ok(catalog.includes('Arcade · Conservation'));
+  assert.equal(catalog.includes('Doubles Dash'), false);
+  assert.equal(catalog.includes('/games/doubles-dash'), false);
 
   const hub = readFileSync(resolve(process.cwd(), 'app/games/page.tsx'), 'utf8');
+  assert.equal(hub.includes('doubles-dash'), false);
+  assert.equal(hub.includes('Doubles Dash'), false);
+  const directRoute = readFileSync(resolve(process.cwd(), 'app/games/doubles-dash/page.tsx'), 'utf8');
+  assert.equal(directRoute.includes('initDoublesDashGame'), false);
+  assert.ok(directRoute.includes('not available'));
+
   assert.ok(hub.includes('Likkle Legends'));
   assert.equal(hub.toLowerCase().includes('nextbagchaser'), false);
   assert.ok(hub.includes('LEGENDS_LEAD_GAMES'));
