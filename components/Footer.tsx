@@ -72,7 +72,25 @@ export default function Footer() {
                     <p className="text-base font-black text-white/40 tracking-normal">
                         {footer.copyright}
                     </p>
-                    <div className="flex items-center justify-center gap-6">
+                    <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+                        <Link
+                            href="/terms"
+                            className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
+                        >
+                            Terms
+                        </Link>
+                        <Link
+                            href="/privacy"
+                            className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
+                        >
+                            Privacy
+                        </Link>
+                        <Link
+                            href="/refund"
+                            className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"
+                        >
+                            Refund
+                        </Link>
                         <Link
                             href="/contact"
                             className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest font-bold"

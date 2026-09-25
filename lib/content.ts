@@ -407,6 +407,7 @@ export const siteContent = {
                     { label: "FAQ", href: "/faq" },
                     { label: "Privacy Policy", href: "/privacy" },
                     { label: "Terms of Use", href: "/terms" },
+                    { label: "Refund Policy", href: "/refund" },
                     { label: "Kids' Safety Policy", href: "/safety" }
                 ]
             }

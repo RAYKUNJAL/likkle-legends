@@ -893,16 +893,32 @@ function CheckoutContent() {
                                 )}
                             </AnimatePresence>
 
-                            {/* Guarantee Footer */}
-                            <div className="pt-8 border-t border-zinc-100 flex items-center justify-center gap-6">
-                                <div className="flex items-center gap-2">
-                                    <Globe size={14} className="text-primary/40" />
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-deep/20">Global Heritage</span>
+                            {/* Guarantee Footer + commercial trust legal links */}
+                            <div className="pt-8 border-t border-zinc-100 space-y-4">
+                                <div className="flex items-center justify-center gap-6">
+                                    <div className="flex items-center gap-2">
+                                        <Globe size={14} className="text-primary/40" />
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-deep/20">Global Heritage</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Zap size={14} className="text-secondary/40" />
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-deep/20">Instant Activation</span>
+                                    </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Zap size={14} className="text-secondary/40" />
-                                    <span className="text-[8px] font-black uppercase tracking-widest text-deep/20">Instant Activation</span>
-                                </div>
+                                <nav
+                                    aria-label="Legal"
+                                    className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-widest text-deep/50"
+                                >
+                                    <Link href="/terms" className="hover:text-deep underline underline-offset-4">
+                                        Terms
+                                    </Link>
+                                    <Link href="/privacy" className="hover:text-deep underline underline-offset-4">
+                                        Privacy
+                                    </Link>
+                                    <Link href="/refund" className="hover:text-deep underline underline-offset-4">
+                                        Refund
+                                    </Link>
+                                </nav>
                             </div>
                         </form>
                     </div>
