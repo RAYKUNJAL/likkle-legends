@@ -77,21 +77,23 @@ and health-checks the app before finishing.
 
 ## Journey Stories pictures
 
-The primary path is `POST /api/island-helpers/journey-stories/queue` (adult
-header). It inserts a **pending** `journey_stories` row and a
+**Today, without a QStash token,** the parent wizard writes the story on the
+generate route and **Make pictures** calls
+`POST /api/island-helpers/journey-stories/illustrate` once per page. Each
+request sends one `pageIndex` and the screen shows “Picture 1 of 5…”. Do not
+draw every page inside one request. If the queue route cannot reach QStash it
+returns `fallback: sync` and does not publish. The parent UI keeps going.
+
+**Target path, after the token exists:** `POST /api/island-helpers/journey-stories/queue`
+(adult header) inserts a pending `journey_stories` row and a
 `journey_story_jobs` row (`phase` starts at `generating_text`), pings QStash,
 and returns the story id immediately. The signed worker writes the five pages,
-then draws **one picture per callback** (`phase` `illustrating`, then `ready`
-or `failed`). The wizard subscribes with Supabase Realtime and polls, so a
-parent can leave and come back.
+then draws one picture per callback (`phase` `illustrating`, then `ready` or
+`failed`). The wizard subscribes with Supabase Realtime and polls, so a parent
+can leave and come back. A published story with the same scenario, language
+mode, and cast is reused instead of calling Imagen again.
 
-Picture jobs are rows in Supabase (`journey_story_jobs`). The parent wizard
-sends **one `pageIndex` per request** and shows progress per page. Do not draw
-every page image inside one serverless request. Without the three QStash
-names, that queue route returns `fallback: sync` and the wizard writes the
-story in the browser request, then illustrates one page at a time.
-
-**QStash (primary wake-up)** when all three are set in the server env (never in git):
+**Enable QStash later** by setting all three names in the server env (never in git):
 
 - `QSTASH_TOKEN`
 - `QSTASH_CURRENT_SIGNING_KEY`

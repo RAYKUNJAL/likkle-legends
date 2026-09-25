@@ -362,6 +362,11 @@ const queueRoute = fs.readFileSync(
 if (!/x-island-helpers-adult/.test(queueRoute)) throw new Error('queue route keeps the adult gate');
 if (!/publishJourneyJob/.test(queueRoute)) throw new Error('queue route must ping QStash');
 if (!/fallback: 'sync'/.test(queueRoute)) throw new Error('missing QStash falls back to sync generation');
+const syncReturn = queueRoute.indexOf("plan === 'sync'");
+const publishCall = queueRoute.indexOf('await publishJourneyJob');
+if (syncReturn < 0 || publishCall < 0 || syncReturn > publishCall) {
+  throw new Error('missing QStash must return before any publish');
+}
 if (/Promise\.all/.test(queueRoute)) throw new Error('queue route must return before image generation');
 const advance = fs.readFileSync(path.join(root, 'lib/island-helpers/journey-stories/advance-story.ts'), 'utf8');
 if (/Promise\.all/.test(advance)) throw new Error('story worker must not burst page images');

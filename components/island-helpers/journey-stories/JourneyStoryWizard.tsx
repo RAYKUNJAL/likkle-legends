@@ -115,24 +115,31 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
     setBusy(true);
     setError(null);
     try {
-      const queueRes = await fetch('/api/island-helpers/journey-stories/queue', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'x-island-helpers-adult': '1',
-        },
-        body: JSON.stringify({
-          scenarioId: scenarioId === 'custom' ? 'custom' : scenarioId,
-          scenarioLabel: selectedSeed?.parentLabel || customScenario || 'Journey Story',
-          customScenario: scenarioId === 'custom' ? customScenario : undefined,
-          childName: childName || undefined,
-          pointOfView: scenarioId === 'custom' ? pointOfView : selectedSeed?.pointOfView || pointOfView,
-          languageMode,
-          castCharacterIds: cast.length ? cast : selectedSeed?.defaultCast || ['tanty_spice'],
-        }),
-      });
-      const queuedBody = await queueRes.json().catch(() => ({ ok: false }));
-      if (queueRes.ok && queuedBody?.status === 'reused' && Array.isArray(queuedBody.pages)) {
+      let queuedBody: { status?: string; pages?: unknown; storyId?: string; queued?: boolean; qstash?: string } | null =
+        null;
+      try {
+        const queueRes = await fetch('/api/island-helpers/journey-stories/queue', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-island-helpers-adult': '1',
+          },
+          body: JSON.stringify({
+            scenarioId: scenarioId === 'custom' ? 'custom' : scenarioId,
+            scenarioLabel: selectedSeed?.parentLabel || customScenario || 'Journey Story',
+            customScenario: scenarioId === 'custom' ? customScenario : undefined,
+            childName: childName || undefined,
+            pointOfView: scenarioId === 'custom' ? pointOfView : selectedSeed?.pointOfView || pointOfView,
+            languageMode,
+            castCharacterIds: cast.length ? cast : selectedSeed?.defaultCast || ['tanty_spice'],
+          }),
+        });
+        queuedBody = await queueRes.json().catch(() => null);
+        if (!queueRes.ok) queuedBody = null;
+      } catch {
+        queuedBody = null;
+      }
+      if (queuedBody?.status === 'reused' && Array.isArray(queuedBody.pages)) {
         const pages = JOURNEY_PAGE_ROLES.map((role, index) => {
           const page = queuedBody.pages.find((item: { pageIndex: number }) => item.pageIndex === index);
           return {
@@ -150,7 +157,7 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
         router.replace(`/island-helpers/journey-stories/${saved.id}/edit`);
         return;
       }
-      if (queueRes.ok && queuedBody?.queued && queuedBody.storyId) {
+      if (queuedBody?.queued && queuedBody.storyId && queuedBody.qstash === 'published') {
         const pages = JOURNEY_PAGE_ROLES.map((role) => ({
           role,
           text: '',
