@@ -19,57 +19,95 @@ export interface CatalogSong {
     notes?: string;
 }
 
+const CHANNEL_COVER: Record<string, string> = {
+    roti: '/images/roti-new.jpg',
+    tanty_spice: '/images/tanty_spice_avatar.jpg',
+    dilly_doubles: '/images/dilly-doubles.jpg',
+    steelpan_sam: '/images/steelpan_sam.png',
+    calm: '/images/benny-of-shadows.jpg',
+    lullaby: '/images/benny-of-shadows.jpg',
+};
+
+type OwnedSongInput = {
+    title: string;
+    slug: string;
+    channel: string;
+    /** Keep a previous id when a download entitlement may already point at it. */
+    id?: string;
+};
+
+function ownedPlayable(input: OwnedSongInput): CatalogSong {
+    return {
+        id: input.id ?? `owned-${input.slug}`,
+        title: input.title,
+        artist: 'Likkle Legends',
+        url: `/assets/youtube/music/${input.slug}.mp3`,
+        streamUrl: `/assets/youtube/music/${input.slug}.stream.mp3`,
+        channel: input.channel,
+        cover_image_url: CHANNEL_COVER[input.channel],
+        island_origin: 'Caribbean',
+        status: 'playable',
+        source: 'owned-asset',
+        notes: `Owned file at public/assets/youtube/music/${input.slug}.mp3.`,
+    };
+}
+
 /**
  * First-party audio that exists in this repo under public/assets/youtube/music/.
  * Do not add a title here unless the file is in the tree.
+ *
+ * Drinking Water and Saving Money keep their original ids so existing
+ * music_download entitlements still resolve. Their master and stream bytes
+ * are Ray's current Suno playlist takes (share DpiVPR7s0kSq2iJm).
  */
 export const OWNED_PLAYABLE_SONGS: CatalogSong[] = [
-    {
-        id: 'owned-drinking-water',
-        title: 'Drinking Water',
-        artist: 'Likkle Legends',
-        url: '/assets/youtube/music/drinking-water.mp3',
-        streamUrl: '/assets/youtube/music/drinking-water.stream.mp3',
-        channel: 'roti',
-        cover_image_url: '/images/roti-new.jpg',
-        island_origin: 'Caribbean',
-        status: 'playable',
-        source: 'owned-asset',
-        notes: 'Owned file at public/assets/youtube/music/drinking-water.mp3.',
-    },
-    {
-        id: 'owned-saving-money',
-        title: 'Saving Money',
-        artist: 'Likkle Legends',
-        url: '/assets/youtube/music/saving-money.mp3',
-        streamUrl: '/assets/youtube/music/saving-money.stream.mp3',
-        channel: 'tanty_spice',
-        cover_image_url: '/images/tanty_spice_avatar.jpg',
-        island_origin: 'Caribbean',
-        status: 'playable',
-        source: 'owned-asset',
-        notes: 'Owned file at public/assets/youtube/music/saving-money.mp3.',
-    },
+    ownedPlayable({ id: 'owned-drinking-water', title: 'Drinking Water', slug: 'drinking-water', channel: 'roti' }),
+    ownedPlayable({ id: 'owned-saving-money', title: 'Saving Money', slug: 'saving-money', channel: 'tanty_spice' }),
+
+    ownedPlayable({ title: 'Island Alphabet', slug: 'island-alphabet', channel: 'roti' }),
+    ownedPlayable({ title: 'Island Counting', slug: 'island-counting', channel: 'roti' }),
+    ownedPlayable({ title: "Let's Count to 20", slug: 'lets-count-to-20', channel: 'roti' }),
+    ownedPlayable({ title: 'Learn to Tie Your Shoe', slug: 'learn-to-tie-your-shoe', channel: 'roti' }),
+    ownedPlayable({ title: 'Eat Your Vegetables', slug: 'eat-your-vegetables', channel: 'roti' }),
+    ownedPlayable({ title: 'Anger Management', slug: 'anger-management', channel: 'roti' }),
+    ownedPlayable({ title: 'Good Morning', slug: 'good-morning-song', channel: 'roti' }),
+    ownedPlayable({ title: 'Likkle Legends Jingle', slug: 'likkle-legends-jingle', channel: 'roti' }),
+    ownedPlayable({ title: 'Head, Shoulders, Knees, and Toes', slug: 'head-shoulders-knees-and-toes', channel: 'roti' }),
+    ownedPlayable({ title: 'The AM Song 2', slug: 'the-am-song2', channel: 'roti' }),
+
+    ownedPlayable({ title: 'Blue Mountain Coffee', slug: 'blue-mountain-coffee-kids-song', channel: 'tanty_spice' }),
+    ownedPlayable({ title: 'Sorell Drink', slug: 'sorell-drink', channel: 'tanty_spice' }),
+    ownedPlayable({ title: 'Coco Water', slug: 'coco-water', channel: 'tanty_spice' }),
+    ownedPlayable({ title: 'Callaloo', slug: 'callaloo', channel: 'tanty_spice' }),
+    ownedPlayable({ title: 'Doubles', slug: 'doubles-2', channel: 'tanty_spice' }),
+    ownedPlayable({ title: 'Akee and Salt Fish', slug: 'akee-and-salt-fish', channel: 'tanty_spice' }),
+    ownedPlayable({ title: 'Coconut Song', slug: 'coconut-song', channel: 'tanty_spice' }),
+    ownedPlayable({ title: 'Soursop', slug: 'soursop', channel: 'tanty_spice' }),
+    ownedPlayable({ title: 'Lunch Time Flavor Train', slug: 'lunch-time-flavor-train', channel: 'tanty_spice' }),
+    ownedPlayable({ title: 'Bath Time Bubble Soca', slug: 'bath-time-bubble-soca', channel: 'tanty_spice' }),
+
+    ownedPlayable({ title: 'Angry Rooster', slug: 'angry-rooster', channel: 'dilly_doubles' }),
+    ownedPlayable({ title: 'Island Monkeys', slug: 'island-monkeys', channel: 'dilly_doubles' }),
+    ownedPlayable({ title: 'Island Parrots', slug: 'island-parrots', channel: 'dilly_doubles' }),
+    ownedPlayable({ title: 'Iguana Song', slug: 'iguana-song', channel: 'dilly_doubles' }),
+    ownedPlayable({ title: 'Coconut Crab Climbs High', slug: 'coconut-crab-climbs-high', channel: 'dilly_doubles' }),
+
+    ownedPlayable({ title: 'Island Shaped Song', slug: 'island-shaped-song', channel: 'steelpan_sam' }),
+    ownedPlayable({ title: 'Island Shout Out', slug: 'island-shout-out', channel: 'steelpan_sam' }),
+
+    ownedPlayable({ title: 'Island Lullaby', slug: 'island-lullaby', channel: 'lullaby' }),
+    ownedPlayable({ title: 'Goodnight Ocean Breeze', slug: 'goodnight-ocean-breeze', channel: 'lullaby' }),
+    ownedPlayable({ title: 'Sleep Now Island Moon', slug: 'sleep-now-island-moon-lullaby', channel: 'calm' }),
 ];
 
 /**
  * Titles recovered from older radio seeds. The audio hosts returned 403/404
  * and the files are not in this repo. Inventory only — never streamed or sold.
+ * Playlist takes that now have owned files live in OWNED_PLAYABLE_SONGS.
  */
 export const RECOVERED_UNPLAYABLE_SONGS: CatalogSong[] = [
-    { id: 'track-roti-1', title: 'Island Alphabet', artist: 'R.O.T.I', url: 'https://cdn1.suno.ai/614d60d0-dce6-4fdf-8c65-4f6efdec40a3.mp3', channel: 'roti', status: 'audio_missing', source: 'suno-cdn', notes: 'Suno CDN unavailable. No owned file.' },
-    { id: 'track-roti-2', title: 'Island Counting', artist: 'R.O.T.I', url: 'https://cdn1.suno.ai/d85cfbfe-41ac-4694-9000-54b8ab87f460.mp3', channel: 'roti', status: 'audio_missing', source: 'suno-cdn', notes: 'Suno CDN unavailable. No owned file.' },
-    { id: 'track-roti-3', title: 'Likkle Legends Jingle', artist: 'R.O.T.I', url: 'https://cdn1.suno.ai/b792349c-09ad-4d94-8e96-ef4077b39209.mp3', channel: 'roti', status: 'audio_missing', source: 'suno-cdn', notes: 'Suno CDN unavailable. No owned file.' },
-    { id: 'track-tanty-1', title: 'Coco Water', artist: 'Tanty Spice', url: 'https://cdn1.suno.ai/ed6d7539-ed37-4f21-a06c-73142ea2129d.mp3', channel: 'tanty_spice', status: 'audio_missing', source: 'suno-cdn', notes: 'Suno CDN unavailable. No owned file.' },
-    { id: 'track-tanty-2', title: 'Sorell Drink', artist: 'Tanty Spice', url: 'https://cdn1.suno.ai/3f649c16-75ff-43de-99d6-17e4534d716b.mp3', channel: 'tanty_spice', status: 'audio_missing', source: 'suno-cdn', notes: 'Suno CDN unavailable. No owned file.' },
-    { id: 'track-dilly-1', title: 'Angry Rooster', artist: 'Dilly Doubles', url: 'https://cdn1.suno.ai/c5e7a4d5-3154-4a42-9106-e33f446b9b4b.mp3', channel: 'dilly_doubles', status: 'audio_missing', source: 'suno-cdn', notes: 'Suno CDN unavailable. No owned file.' },
-    { id: 'track-dilly-2', title: 'Island Monkeys', artist: 'Dilly Doubles', url: 'https://cdn1.suno.ai/6d2d490e-2cd6-4593-898d-ee6c82d7b4b8.mp3', channel: 'dilly_doubles', status: 'audio_missing', source: 'suno-cdn', notes: 'Suno CDN unavailable. No owned file.' },
-    { id: 'track-sam-1', title: 'Island Parrots', artist: 'Steelpan Sam', url: 'https://cdn1.suno.ai/ee0e94a6-d116-4116-992e-7ecb8fd76109.mp3', channel: 'steelpan_sam', status: 'audio_missing', source: 'suno-cdn', notes: 'Suno CDN unavailable. No owned file.' },
-    { id: 'track-sam-2', title: 'Iguana Song', artist: 'Steelpan Sam', url: 'https://cdn1.suno.ai/0303769f-299a-40dd-bc6a-890c405dbb07.mp3', channel: 'steelpan_sam', status: 'audio_missing', source: 'suno-cdn', notes: 'Suno CDN unavailable. No owned file.' },
     { id: 'gcs-morning-calypso', title: "Tanty's Morning Calypso", artist: 'Likkle Legends', url: 'https://storage.googleapis.com/likkle-legends-public/radio/morning-calypso.mp3', channel: 'tanty_spice', status: 'audio_missing', source: 'gcs-public', notes: 'GCS object missing. Title only, from scripts/seed-radio.ts.' },
     { id: 'gcs-anansi-story', title: 'The Legend of Anansi', artist: 'Caribbean Storytellers', url: 'https://storage.googleapis.com/likkle-legends-public/radio/anansi-story.mp3', channel: 'tanty_spice', status: 'audio_missing', source: 'gcs-public', notes: 'GCS object missing. Title only, from scripts/seed-radio.ts.' },
-    { id: 'gcs-island-lullaby', title: 'Island Lullaby (Soft Steelpan)', artist: 'Steelpan Sam', url: 'https://storage.googleapis.com/likkle-legends-public/radio/island-lullaby.mp3', channel: 'steelpan_sam', status: 'audio_missing', source: 'gcs-public', notes: 'GCS object missing. Title only, from scripts/seed-radio.ts.' },
-    { id: 'gcs-abc-island', title: 'A-B-C Island Style', artist: 'Likkle Legends', url: 'https://storage.googleapis.com/likkle-legends-public/radio/abc-island.mp3', channel: 'roti', status: 'audio_missing', source: 'gcs-public', notes: 'GCS object missing. Title only, from scripts/seed-radio.ts.' },
     { id: 'gcs-reggae-roti', title: 'Reggae Rhythms for Roti', artist: 'Mango Moko', url: 'https://storage.googleapis.com/likkle-legends-public/radio/reggae-roti.mp3', channel: 'roti', status: 'audio_missing', source: 'gcs-public', notes: 'GCS object missing. Title only, from scripts/seed-radio.ts.' },
 ];
 
