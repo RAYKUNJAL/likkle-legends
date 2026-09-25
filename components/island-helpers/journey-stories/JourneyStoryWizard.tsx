@@ -12,7 +12,7 @@ import {
   getDraft,
 } from '@/lib/island-helpers/journey-stories/draft-store';
 import { applyJourneySafety } from '@/lib/island-helpers/journey-stories/safety';
-import type { JourneyLanguageMode, JourneyStoryDraft } from '@/lib/island-helpers/journey-stories/types';
+import { JOURNEY_PAGE_ROLES, type JourneyLanguageMode, type JourneyStoryDraft } from '@/lib/island-helpers/journey-stories/types';
 import {
   IH_JOURNEY_ART_CALM,
   IH_JOURNEY_ART_NOTE,
@@ -76,6 +76,11 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
   const draftRef = useRef(draft);
   draftRef.current = draft;
 
+  useEffect(() => {
+    if (!draft?.serverStoryId) return;
+    if (draft.status === 'generating') setWatchingArt(true);
+  }, [draft?.serverStoryId, draft?.status]);
+
   const selectedSeed = useMemo(
     () => SEED_SCENARIOS.find((s) => s.id === scenarioId),
     [scenarioId],
@@ -85,10 +90,81 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
     setCast((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
+  const rememberServerStory = (
+    storyId: string,
+    pages: JourneyStoryDraft['pages'],
+    status: JourneyStoryDraft['status'],
+  ) => {
+    const saved = createDraft({
+      scenarioId: scenarioId === 'custom' ? 'custom' : scenarioId,
+      scenarioLabel: selectedSeed?.parentLabel || customScenario || 'Journey Story',
+      childName: childName || undefined,
+      pointOfView,
+      languageMode,
+      castCharacterIds: cast.length ? cast : selectedSeed?.defaultCast || ['tanty_spice'],
+      status,
+      pages,
+      serverStoryId: storyId,
+    });
+    draftRef.current = saved;
+    setDraft(saved);
+    return saved;
+  };
+
   const generate = async () => {
     setBusy(true);
     setError(null);
     try {
+      const queueRes = await fetch('/api/island-helpers/journey-stories/queue', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-island-helpers-adult': '1',
+        },
+        body: JSON.stringify({
+          scenarioId: scenarioId === 'custom' ? 'custom' : scenarioId,
+          scenarioLabel: selectedSeed?.parentLabel || customScenario || 'Journey Story',
+          customScenario: scenarioId === 'custom' ? customScenario : undefined,
+          childName: childName || undefined,
+          pointOfView: scenarioId === 'custom' ? pointOfView : selectedSeed?.pointOfView || pointOfView,
+          languageMode,
+          castCharacterIds: cast.length ? cast : selectedSeed?.defaultCast || ['tanty_spice'],
+        }),
+      });
+      const queuedBody = await queueRes.json().catch(() => ({ ok: false }));
+      if (queueRes.ok && queuedBody?.status === 'reused' && Array.isArray(queuedBody.pages)) {
+        const pages = JOURNEY_PAGE_ROLES.map((role, index) => {
+          const page = queuedBody.pages.find((item: { pageIndex: number }) => item.pageIndex === index);
+          return {
+            role,
+            title: page?.title || undefined,
+            text: String(page?.text || ''),
+            imageUrl: page?.imageUrl || null,
+            imageStatus: page?.imageStatus || 'reused',
+            coachingLineCount: 0,
+          };
+        });
+        const saved = rememberServerStory(String(queuedBody.storyId), pages, 'ready');
+        setStep('edit');
+        setArtNote(IH_JOURNEY_ART_NOTE);
+        router.replace(`/island-helpers/journey-stories/${saved.id}/edit`);
+        return;
+      }
+      if (queueRes.ok && queuedBody?.queued && queuedBody.storyId) {
+        const pages = JOURNEY_PAGE_ROLES.map((role) => ({
+          role,
+          text: '',
+          imageUrl: null,
+          imageStatus: 'pending' as const,
+          coachingLineCount: 0,
+        }));
+        rememberServerStory(String(queuedBody.storyId), pages, 'generating');
+        setArtNote('Writing the story…');
+        setWatchingArt(true);
+        setError(null);
+        return;
+      }
+
       const res = await fetch('/api/island-helpers/journey-stories/generate', {
         method: 'POST',
         headers: {
@@ -205,20 +281,43 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
         });
         const body = await res.json();
         if (!body?.ok || !Array.isArray(body.pages)) return;
-        for (const page of body.pages) {
-          const update = readPageImageUpdate(storyId, {
-            page_index: page.pageIndex,
-            image_url: page.imageUrl,
-            image_status: page.imageStatus,
+        const current = draftRef.current;
+        if (current) {
+          const pages = current.pages.map((page, index) => {
+            const server = body.pages.find((item: { pageIndex: number }) => item.pageIndex === index);
+            if (!server) return page;
+            const text = String(server.text || '').trim();
+            return {
+              ...page,
+              title: server.title || page.title,
+              text: text || page.text,
+              imageUrl: server.imageUrl ?? page.imageUrl,
+              imageStatus: server.imageStatus || page.imageStatus,
+            };
           });
-          if (update && (update.imageStatus === 'ready' || update.imageStatus === 'reused' || update.imageStatus === 'failed')) {
-            mergeArt(update);
+          const readyText = pages.filter((page) => page.text.trim()).length === 5;
+          const latest = Array.isArray(body.jobs) ? body.jobs[0] : null;
+          const settled =
+            latest &&
+            (latest.phase === 'ready' ||
+              latest.phase === 'failed' ||
+              latest.status === 'done' ||
+              latest.status === 'failed');
+          const next = updateDraft(current.id, {
+            pages,
+            status: settled
+              ? readyText
+                ? 'ready'
+                : 'draft'
+              : current.status,
+          });
+          draftRef.current = next;
+          setDraft(next);
+          if (readyText) setStep('edit');
+          if (settled) {
+            setWatchingArt(false);
+            setArtNote(latest.phase === 'failed' || latest.status === 'failed' ? IH_JOURNEY_ART_CALM : IH_JOURNEY_ART_NOTE);
           }
-        }
-        const latest = Array.isArray(body.jobs) ? body.jobs[0] : null;
-        if (latest && (latest.status === 'done' || latest.status === 'failed')) {
-          setWatchingArt(false);
-          if (latest.status === 'failed') setArtNote(IH_JOURNEY_ART_CALM);
         }
       } catch {
         /* keep the words on screen */

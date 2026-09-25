@@ -109,6 +109,8 @@ export async function publishJourneyJob(
     storyId: string;
     jobId: string;
     pageIndex: number | null;
+    /** generate = write the five pages first. page = one picture. */
+    step?: 'generate' | 'page';
   },
   deps?: { env?: NodeJS.ProcessEnv; fetchImpl?: typeof fetch },
 ): Promise<{ published: boolean; reason: 'published' | 'qstash_env_missing' | 'qstash_publish_failed' }> {
@@ -130,6 +132,7 @@ export async function publishJourneyJob(
         storyId: input.storyId,
         jobId: input.jobId,
         pageIndex: input.pageIndex,
+        step: input.step || (typeof input.pageIndex === 'number' ? 'page' : 'generate'),
       }),
     });
     if (!response.ok) return { published: false, reason: 'qstash_publish_failed' };

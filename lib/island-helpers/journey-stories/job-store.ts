@@ -209,8 +209,15 @@ export async function readJourneyArt(
   | {
       ok: true;
       storyId: string;
-      jobs: { id: string; status: string; pageIndex: number | null; lastError: string | null }[];
-      pages: { pageIndex: number; imageUrl: string | null; imageStatus: JourneyImageStatus }[];
+      jobs: { id: string; status: string; phase: string; pageIndex: number | null; lastError: string | null }[];
+      pages: {
+        pageIndex: number;
+        role: string;
+        title: string | null;
+        text: string;
+        imageUrl: string | null;
+        imageStatus: JourneyImageStatus;
+      }[];
     }
   | { ok: false; error: string }
 > {
@@ -220,12 +227,12 @@ export async function readJourneyArt(
   const [{ data: pageRows, error: pageError }, { data: jobRows, error: jobError }] = await Promise.all([
     client
       .from('journey_story_pages')
-      .select('page_index, image_url, image_status')
+      .select('page_index, role, title, body, image_url, image_status')
       .eq('story_id', storyId)
       .order('page_index'),
     client
       .from('journey_story_jobs')
-      .select('id, status, page_index, last_error')
+      .select('id, status, phase, page_index, last_error')
       .eq('story_id', storyId)
       .order('created_at', { ascending: false })
       .limit(5),
@@ -238,11 +245,15 @@ export async function readJourneyArt(
     jobs: (jobRows || []).map((row) => ({
       id: String(row.id),
       status: String(row.status),
+      phase: String(row.phase || 'pending'),
       pageIndex: row.page_index == null ? null : Number(row.page_index),
       lastError: row.last_error ? String(row.last_error) : null,
     })),
     pages: (pageRows || []).map((row) => ({
       pageIndex: Number(row.page_index),
+      role: String(row.role || ''),
+      title: row.title ? String(row.title) : null,
+      text: String(row.body || ''),
       imageUrl: row.image_url ? String(row.image_url) : null,
       imageStatus: (row.image_status || 'pending') as JourneyImageStatus,
     })),

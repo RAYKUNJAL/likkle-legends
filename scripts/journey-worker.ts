@@ -5,8 +5,10 @@
  * No Redis. No public port.
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { runClaimedStoryStep, type StoryJobRequest } from '../lib/island-helpers/journey-stories/advance-story';
 import { executeClaimedJourneyJob } from '../lib/island-helpers/journey-stories/execute-job';
 import { hasGeminiImageKey } from '../lib/island-helpers/journey-stories/imagen';
+import { hasQStashConfig, publishJourneyJob } from '../lib/island-helpers/journey-stories/qstash';
 import fs from 'fs';
 
 const HEARTBEAT = '/tmp/journey-worker-heartbeat';
@@ -36,6 +38,23 @@ async function workOne(supabase: SupabaseClient): Promise<boolean> {
   if (!job?.id) return false;
 
   console.log(`[journey-worker] claimed ${job.id} story ${job.story_id} page ${job.page_index ?? 'all'}`);
+  if (job.request || job.phase === 'generating_text') {
+    const advanced = await runClaimedStoryStep(supabase, {
+      id: String(job.id),
+      story_id: String(job.story_id),
+      page_index: job.page_index == null ? null : Number(job.page_index),
+      request: (job.request || null) as StoryJobRequest | null,
+    });
+    if (typeof advanced.publishPage === 'number' && hasQStashConfig()) {
+      await publishJourneyJob({
+        storyId: String(job.story_id),
+        jobId: String(job.id),
+        pageIndex: advanced.publishPage,
+        step: 'page',
+      });
+    }
+    return true;
+  }
   await executeClaimedJourneyJob(supabase, {
     id: String(job.id),
     story_id: String(job.story_id),

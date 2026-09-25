@@ -43,6 +43,7 @@ create table if not exists public.journey_story_jobs (
   phase text not null default 'pending' check (phase in ('pending', 'generating_text', 'illustrating', 'ready', 'failed')),
   attempts int not null default 0,
   last_error text,
+  request jsonb,
   created_at timestamptz not null default now(),
   claimed_at timestamptz,
   finished_at timestamptz,
@@ -50,6 +51,7 @@ create table if not exists public.journey_story_jobs (
 );
 
 alter table public.journey_story_jobs add column if not exists phase text not null default 'pending';
+alter table public.journey_story_jobs add column if not exists request jsonb;
 
 create index if not exists journey_story_jobs_queued
   on public.journey_story_jobs (created_at)
@@ -90,7 +92,7 @@ begin
      or (
        status = 'running'
        and claimed_at < now() - interval '15 minutes'
-       and attempts < 3
+       and attempts < 8
      )
   order by case when status = 'queued' then 0 else 1 end, created_at
   for update skip locked
@@ -134,9 +136,9 @@ begin
       or (
         status = 'running'
         and claimed_at < now() - interval '3 minutes'
-        and attempts < 3
+        and attempts < 8
       )
-      or (status = 'failed' and attempts < 3)
+      or (status = 'failed' and attempts < 8)
     )
   for update skip locked;
 

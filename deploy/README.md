@@ -77,9 +77,19 @@ and health-checks the app before finishing.
 
 ## Journey Stories pictures
 
+The primary path is `POST /api/island-helpers/journey-stories/queue` (adult
+header). It inserts a **pending** `journey_stories` row and a
+`journey_story_jobs` row (`phase` starts at `generating_text`), pings QStash,
+and returns the story id immediately. The signed worker writes the five pages,
+then draws **one picture per callback** (`phase` `illustrating`, then `ready`
+or `failed`). The wizard subscribes with Supabase Realtime and polls, so a
+parent can leave and come back.
+
 Picture jobs are rows in Supabase (`journey_story_jobs`). The parent wizard
 sends **one `pageIndex` per request** and shows progress per page. Do not draw
-every page image inside one serverless request.
+every page image inside one serverless request. Without the three QStash
+names, that queue route returns `fallback: sync` and the wizard writes the
+story in the browser request, then illustrates one page at a time.
 
 **QStash (primary wake-up)** when all three are set in the server env (never in git):
 

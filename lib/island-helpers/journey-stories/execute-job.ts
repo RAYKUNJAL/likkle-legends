@@ -60,7 +60,7 @@ async function notify(supabase: SupabaseClient, storyId: string, payload: Record
 export async function executeClaimedJourneyJob(
   supabase: SupabaseClient,
   job: { id: string; story_id: string; page_index: number | null },
-  options?: { pageIndex?: number | null },
+  options?: { pageIndex?: number | null; finish?: boolean },
 ): Promise<{ ok: boolean; error: string | null }> {
   const storyId = String(job.story_id);
   const pageIndex =
@@ -116,15 +116,17 @@ export async function executeClaimedJourneyJob(
         });
       },
     });
-    await supabase
-      .from('journey_story_jobs')
-      .update({
-        status: result.ok ? 'done' : 'failed',
-        phase: result.ok ? 'ready' : 'failed',
-        last_error: result.error,
-        finished_at: new Date().toISOString(),
-      })
-      .eq('id', job.id);
+    if (options?.finish !== false) {
+      await supabase
+        .from('journey_story_jobs')
+        .update({
+          status: result.ok ? 'done' : 'failed',
+          phase: result.ok ? 'ready' : 'failed',
+          last_error: result.error,
+          finished_at: new Date().toISOString(),
+        })
+        .eq('id', job.id);
+    }
     return result;
   } catch {
     await supabase

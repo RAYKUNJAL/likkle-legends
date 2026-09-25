@@ -4,6 +4,7 @@
  */
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { runClaimedStoryStep, type StoryJobRequest } from '@/lib/island-helpers/journey-stories/advance-story';
 import { executeClaimedJourneyJob } from '@/lib/island-helpers/journey-stories/execute-job';
 import { singleCallbackPageIndex } from '@/lib/island-helpers/journey-stories/jobs';
 import {
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: 'Journey Stories callback rejected' }, { status });
   }
 
-  let body: { storyId?: string; jobId?: string; pageIndex?: number | null };
+  let body: { storyId?: string; jobId?: string; pageIndex?: number | null; step?: string };
   try {
     body = JSON.parse(raw);
   } catch {
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
 
   const { data: existing } = await supabase
     .from('journey_story_jobs')
-    .select('id, story_id, page_index, status')
+    .select('id, story_id, page_index, status, phase, request')
     .eq('id', body.jobId)
     .maybeSingle();
   if (!existing) {
@@ -97,6 +98,40 @@ export async function POST(req: Request) {
   const claimed = Array.isArray(claimedRows) ? claimedRows[0] : claimedRows;
   if (!claimed?.id) {
     return NextResponse.json({ ok: true, idempotent: true });
+  }
+
+  const storyPipeline =
+    body.step === 'generate' ||
+    existing.phase === 'generating_text' ||
+    Boolean(existing.request || claimed.request);
+  if (storyPipeline) {
+    let advanced: Awaited<ReturnType<typeof runClaimedStoryStep>>;
+    try {
+      advanced = await runClaimedStoryStep(supabase, {
+        id: String(claimed.id),
+        story_id: String(claimed.story_id),
+        page_index: claimed.page_index == null ? null : Number(claimed.page_index),
+        request: (claimed.request || existing.request || null) as StoryJobRequest | null,
+      });
+    } catch {
+      await supabase
+        .from('journey_story_jobs')
+        .update({ status: 'failed', phase: 'failed', finished_at: new Date().toISOString() })
+        .eq('id', claimed.id);
+      return NextResponse.json({ ok: false, error: 'Story writing is resting for now.' }, { status: 500 });
+    }
+    if (typeof advanced.publishPage === 'number') {
+      await publishJourneyJob({
+        storyId: String(claimed.story_id),
+        jobId: String(claimed.id),
+        pageIndex: advanced.publishPage,
+        step: 'page',
+      });
+    }
+    if (!advanced.ok && advanced.retry) {
+      return NextResponse.json({ ok: false, error: advanced.error }, { status: 500 });
+    }
+    return NextResponse.json({ ok: advanced.ok, idempotent: !advanced.retry });
   }
 
   const result = await executeClaimedJourneyJob(

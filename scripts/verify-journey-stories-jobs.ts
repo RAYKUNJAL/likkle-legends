@@ -18,6 +18,7 @@ import {
   verifyQStashRequest,
 } from '../lib/island-helpers/journey-stories/qstash';
 import { singleCallbackPageIndex } from '../lib/island-helpers/journey-stories/jobs';
+import { nextStoryStep, planStoryStart } from '../lib/island-helpers/journey-stories/advance-story';
 import { processJourneyJob } from '../lib/island-helpers/journey-stories/worker-run';
 
 const pages = [
@@ -122,6 +123,35 @@ if (shouldSyncIllustrate({ ok: true, queued: false, status: 'reused', fallback: 
   throw new Error('reused art must not illustrate again');
 }
 if (!shouldSyncIllustrate({ ok: false })) throw new Error('a failed enqueue still illustrates one page');
+if (planStoryStart({ hasQStash: false, reusable: false }) !== 'sync') {
+  throw new Error('missing QStash keeps synchronous generation');
+}
+if (planStoryStart({ hasQStash: true, reusable: false }) !== 'queue') {
+  throw new Error('QStash is the primary story queue');
+}
+if (planStoryStart({ hasQStash: true, reusable: true }) !== 'reuse') {
+  throw new Error('a published match is reused before generation');
+}
+if (nextStoryStep([{ text: '' }, { text: 'Hi.' }]) !== 'narrative') {
+  throw new Error('empty pages write the story before pictures');
+}
+const pictured = Array.from({ length: 5 }, (_, index) => ({
+  text: `Page ${index}.`,
+  imageUrl: index === 0 ? null : 'https://cdn.example.test/page.png',
+  imageStatus: index === 0 ? 'pending' : 'ready',
+}));
+if (nextStoryStep(pictured) !== 0) throw new Error('the next callback draws one pending page');
+if (
+  nextStoryStep(
+    Array.from({ length: 5 }, () => ({
+      text: 'Ready.',
+      imageUrl: 'https://cdn.example.test/page.png',
+      imageStatus: 'ready',
+    })),
+  ) !== 'ready'
+) {
+  throw new Error('finished pages mark the story ready');
+}
 if (singleCallbackPageIndex(0, []) !== 0) throw new Error('explicit pageIndex stays one page');
 
 const libraryA = journeyLibraryKey({
@@ -279,6 +309,7 @@ if (!/for update skip locked/i.test(sql)) throw new Error('claim must skip locke
 if (!/journey_story_jobs/.test(sql)) throw new Error('jobs table missing');
 if (!/claim_journey_story_job_by_id/.test(sql)) throw new Error('QStash retries need a job id claim');
 if (!/library_key/.test(sql)) throw new Error('published picture cache needs library_key');
+if (!/request jsonb/.test(sql)) throw new Error('queued stories need the request payload');
 if (!/generating_text/.test(sql) || !/'illustrating'/.test(sql) || !/'ready'/.test(sql)) {
   throw new Error('job phase must cover pending through ready');
 }
@@ -296,7 +327,7 @@ if (/ports:/.test(compose.slice(compose.indexOf('journey-worker:')))) {
 
 const worker = fs.readFileSync(path.join(root, 'scripts/journey-worker.ts'), 'utf8');
 if (/Promise\.all/.test(worker)) throw new Error('worker must not burst page images');
-if (/qstash_|@upstash\/qstash/i.test(worker)) throw new Error('on-host worker must not call QStash');
+if (/@upstash\/qstash/.test(worker)) throw new Error('worker uses the HTTP publish helper, not a new package');
 const callbackRoute = fs.readFileSync(
   path.join(root, 'app/api/island-helpers/journey-stories/jobs/worker/route.ts'),
   'utf8',
@@ -323,6 +354,17 @@ const wizard = fs.readFileSync(
 );
 if (/Promise\.all/.test(wizard)) throw new Error('wizard must not burst image requests');
 if (!/pageIndex/.test(wizard)) throw new Error('wizard must send pageIndex');
+if (!/journey-stories\/queue/.test(wizard)) throw new Error('wizard must request the queued story first');
+const queueRoute = fs.readFileSync(
+  path.join(root, 'app/api/island-helpers/journey-stories/queue/route.ts'),
+  'utf8',
+);
+if (!/x-island-helpers-adult/.test(queueRoute)) throw new Error('queue route keeps the adult gate');
+if (!/publishJourneyJob/.test(queueRoute)) throw new Error('queue route must ping QStash');
+if (!/fallback: 'sync'/.test(queueRoute)) throw new Error('missing QStash falls back to sync generation');
+if (/Promise\.all/.test(queueRoute)) throw new Error('queue route must return before image generation');
+const advance = fs.readFileSync(path.join(root, 'lib/island-helpers/journey-stories/advance-story.ts'), 'utf8');
+if (/Promise\.all/.test(advance)) throw new Error('story worker must not burst page images');
 if (!/shouldSyncIllustrate/.test(wizard)) throw new Error('wizard must fall back to one-page illustrate');
 if (!/Picture \$\{pageIndex \+ 1\} of/.test(wizard)) throw new Error('wizard must show per-page progress');
 for (const file of ['.env.example', '.env.production.example']) {
