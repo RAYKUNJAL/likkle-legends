@@ -21,6 +21,7 @@ import { checkDailyLogin, getFreezeCount } from '@/app/actions/retention';
 import { getXPMultiplier } from '@/lib/services/gamification';
 import { CharacterGuideBanner } from '@/components/portal/CharacterGuideBanner';
 import { TodaysPlanCard } from '@/components/portal/TodaysPlanCard';
+import { pickTodaysActivities } from '@/lib/curriculum/grounded-plan';
 import type { PlanActivity } from '@/app/actions/generate-plan';
 import { addScreenMinute, getTodayScreenMinutes, normalizeParentalControls } from '@/lib/parental-controls';
 
@@ -195,6 +196,9 @@ export default function ChildPortalPage() {
     const [xpMultiplier, setXpMultiplier] = useState(1);
     const [giftModalOpen, setGiftModalOpen] = useState(false);
     const [todaysActivities, setTodaysActivities] = useState<PlanActivity[]>([]);
+    const [planWeekend, setPlanWeekend] = useState(false);
+    const [planPlaceLabel, setPlanPlaceLabel] = useState<string | null>(null);
+    const [planAgeYears, setPlanAgeYears] = useState<number | null>(null);
     const [isPortalIdleReady, setIsPortalIdleReady] = useState(false);
     const [authRetryElapsedMs, setAuthRetryElapsedMs] = useState(0);
     const [noChildElapsedMs, setNoChildElapsedMs] = useState(0);
@@ -424,15 +428,18 @@ export default function ChildPortalPage() {
                 const res = await fetch(`/api/learning-plan?childId=${activeChild.id}`);
                 if (!res.ok) return;
                 const { plan } = await res.json();
-                if (!plan?.plan_data?.weeks) return;
-
-                // Determine today's activities from the plan
-                const dayIndex = new Date().getDay(); // 0=Sun, 1=Mon...
-                const weekdayIndex = Math.max(0, dayIndex - 1); // Mon=0, Fri=4
-                const week = plan.plan_data.weeks[0]; // Use week 1 for daily view
-                if (week?.days?.[weekdayIndex]) {
-                    setTodaysActivities(week.days[weekdayIndex].activities || []);
+                if (!plan?.plan_data?.weeks) {
+                    setTodaysActivities([]);
+                    setPlanWeekend(false);
+                    setPlanPlaceLabel(null);
+                    return;
                 }
+
+                const picked = pickTodaysActivities<PlanActivity>(plan.plan_data.weeks);
+                setTodaysActivities(picked.activities);
+                setPlanWeekend(picked.weekend);
+                setPlanPlaceLabel(plan.plan_data.place?.displayName || plan.island_theme || null);
+                setPlanAgeYears(plan.plan_data.ageYears || activeChild.age || null);
             } catch (_e) {
                 // silently ignore — plan is optional
             }
@@ -887,16 +894,22 @@ export default function ChildPortalPage() {
                                 </div>
                             )}
                             {/* Today's Learning Plan */}
-                            {todaysActivities.length > 0 && (
+                            {(todaysActivities.length > 0 || planWeekend) && (
                                 <div className="bg-white rounded-3xl border-2 border-primary/10 p-5 shadow-md">
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
                                             <h3 className="font-black text-lg text-gray-800 leading-tight">Today's Learning</h3>
-                                            <p className="text-xs text-gray-400 font-medium">Your personalised plan for today</p>
+                                            <p className="text-xs text-gray-400 font-medium">
+                                                {planWeekend
+                                                    ? 'Weekend — school-day work starts Monday.'
+                                                    : [planPlaceLabel, planAgeYears ? `age ${planAgeYears}` : null].filter(Boolean).join(' · ') || 'Your plan for today'}
+                                            </p>
                                         </div>
-                                        <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
-                                            {todaysActivities.length} activities
-                                        </span>
+                                        {!planWeekend && (
+                                            <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                                                {todaysActivities.length} activities
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="space-y-3">
                                         {todaysActivities.slice(0, 3).map((activity, i) => (

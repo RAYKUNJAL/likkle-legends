@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    let body: { childId?: string };
+    let body: { childId?: string; country?: string; primaryIsland?: string };
     try {
         body = await request.json();
     } catch (_e) {
@@ -91,10 +91,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'childId required' }, { status: 400 });
     }
 
-    const result = await generatePlanAction({ childId: body.childId });
+    const result = await generatePlanAction({
+        childId: body.childId,
+        country: typeof body.country === 'string' ? body.country : undefined,
+        primaryIsland: typeof body.primaryIsland === 'string' ? body.primaryIsland : undefined,
+    });
 
     if (!result.success) {
-        return NextResponse.json({ error: result.error }, { status: 500 });
+        const status = result.code === 'unknown_place' ? 422 : 500;
+        return NextResponse.json({ error: result.error, code: result.code || 'error', plan: null }, { status });
     }
 
     return NextResponse.json({

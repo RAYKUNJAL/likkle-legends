@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-client";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail, CONFIRMATION_EMAIL_TEMPLATE, RESET_PASSWORD_EMAIL_TEMPLATE, WELCOME_EMAIL_TEMPLATE } from "@/lib/email";
 import { claimReferralReward } from "@/app/actions/referrals";
+import { canonicalPrimaryIsland, resolveSignupPlace } from "@/lib/curriculum/resolve-signup-island";
 
 export interface SignupResult {
     success: boolean;
@@ -39,7 +40,9 @@ export async function signupAction(formData: {
         const supabase = createClient();
         const parentName = formData.parentName?.trim() || `Parent of ${formData.childName}`;
         const childName = formData.childName.trim();
-        const island = formData.island?.trim() || 'mixed';
+        const rawIsland = formData.island?.trim() || 'mixed';
+        const resolvedIsland = resolveSignupPlace({ primaryIsland: rawIsland });
+        const island = canonicalPrimaryIsland(rawIsland) || rawIsland;
         const childAge = Math.min(9, Math.max(3, Number(formData.childAge) || 5));
         const childAgeTrack = childAge < 6 ? 'mini' : 'big';
         const metadata = {
@@ -121,7 +124,7 @@ export async function signupAction(formData: {
                 first_name: parentName,
                 full_name: parentName,
                 origin_island: island,
-                preferred_island_code: island,
+                preferred_island_code: resolvedIsland.registryId || island,
             })
             .eq("id", userId);
 

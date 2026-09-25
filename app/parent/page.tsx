@@ -19,6 +19,7 @@ import ContentReviewFeed from '@/components/island-brain/ContentReviewFeed';
 import ReferralWidget from '@/components/dashboard/ReferralWidget';
 import { AssessmentDashboard } from '@/components/portal/AssessmentDashboard';
 import { LibraryDashboard } from '@/components/dashboard/LibraryDashboard';
+import TodaysCustomWork from '@/components/parent/TodaysCustomWork';
 
 export default function ParentDashboard() {
     const { user, children, activeChild, isLoading, isSubscribed, setActiveChild } = useUser();
@@ -150,6 +151,14 @@ export default function ParentDashboard() {
                         </Link>
                     </div>
                 </header>
+
+                {activeChild && (
+                    <TodaysCustomWork
+                        childId={activeChild.id}
+                        childName={activeChild.first_name}
+                        age={activeChild.age}
+                    />
+                )}
 
                 <section className="mb-10 rounded-3xl bg-white p-6 shadow-lg border border-slate-100">
                     <p className="text-xs font-black uppercase tracking-widest text-primary">Music</p>
