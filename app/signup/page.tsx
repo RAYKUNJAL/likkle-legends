@@ -141,7 +141,17 @@ function SignupForm() {
             };
             const normalizedPlan = planToTier[plan] || 'legends_plus';
             const cycle = (plan === 'annual_plus' || plan === 'legends_plus_annual') ? 'year' : 'month';
-            router.push(`/checkout?plan=${normalizedPlan}&cycle=${cycle}&uid=${result.userId || ''}&childName=${encodeURIComponent(formData.childName)}`);
+            const checkoutPath = `/checkout?plan=${normalizedPlan}&cycle=${cycle}&pay=1&uid=${encodeURIComponent(result.userId || '')}&childName=${encodeURIComponent(formData.childName)}`;
+            const supabase = createClient();
+            const { error: signInErr } = await supabase.auth.signInWithPassword({
+                email: formData.email,
+                password: formData.password,
+            });
+            if (signInErr) {
+                router.push(`/login?email=${encodeURIComponent(formData.email)}&redirect=${encodeURIComponent(checkoutPath)}`);
+                return;
+            }
+            router.push(checkoutPath);
         } catch (err: any) {
             console.error('Signup Error:', err);
             setError(err.message || 'An unexpected error occurred. Please try again.');

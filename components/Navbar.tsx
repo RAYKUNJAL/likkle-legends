@@ -49,7 +49,7 @@ export default function Navbar() {
                         )}
                     </div>
 
-                    <Link href={navigation.auth.primary_cta.href} className="btn btn-primary">
+                    <Link href={user ? '/checkout?plan=starter_mailer&pay=1' : navigation.auth.primary_cta.href} className="btn btn-primary">
                         {navigation.auth.primary_cta.label}
                     </Link>
                 </div>
@@ -86,7 +86,7 @@ export default function Navbar() {
                         </Link>
                     )}
 
-                    <Link href={navigation.auth.primary_cta.href} className="btn btn-primary w-full text-center" onClick={() => setIsOpen(false)}>
+                    <Link href={user ? '/checkout?plan=starter_mailer&pay=1' : navigation.auth.primary_cta.href} className="btn btn-primary w-full text-center" onClick={() => setIsOpen(false)}>
                         {navigation.auth.primary_cta.label}
                     </Link>
                 </div>

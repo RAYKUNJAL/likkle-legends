@@ -17,7 +17,7 @@ import {
     Sparkles,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { SUBSCRIPTION_PLANS } from '@/lib/paypal';
+import { PAYPAL_CONFIG, SUBSCRIPTION_PLANS, paypalSubscriptionCheckoutMessage } from '@/lib/paypal';
 import { supabase } from '@/lib/supabase-client';
 import { fireConversionEvent } from '@/lib/analytics';
 import MetaPixel from '@/components/offer/MetaPixel';
@@ -25,7 +25,7 @@ import GA4Pixel from '@/components/offer/GA4Pixel';
 import TikTokPixel from '@/components/offer/TikTokPixel';
 import { fireAddPaymentInfo } from '@/lib/offer-tracking';
 
-const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'sb';
+const PAYPAL_CLIENT_ID = PAYPAL_CONFIG.clientId;
 
 // Intro Mailer = plan_mail_intro (PayPal plan id from NEXT_PUBLIC_PAYPAL_PLAN_STARTER).
 const INTRO_PLAN = SUBSCRIPTION_PLANS.plan_mail_intro;
@@ -143,17 +143,9 @@ function CheckoutContent() {
     // If user has no Supabase session, route through signup first so the
     // confirm endpoint (which requires auth) can run after account creation.
     const needsSignup = hasSession === false && !searchParams.get('uid');
+    const paypalBlockedMessage = paypalSubscriptionCheckoutMessage(INTRO_PLAN.paypalPlanId);
 
-    return (
-        <PayPalScriptProvider
-            key="offer-paypal-subscription"
-            options={{
-                clientId: PAYPAL_CLIENT_ID,
-                currency: 'USD',
-                intent: 'subscription',
-                vault: true,
-            }}
-        >
+    const checkoutPage = (
             <main className="min-h-screen bg-[#FFFDF7] flex flex-col">
                 {/* ── Tracking: InitiateCheckout when the checkout page opens ── */}
                 <MetaPixel event="InitiateCheckout" params={{ content_name: 'intro_mailer', content_type: 'product' }} />
@@ -459,6 +451,10 @@ function CheckoutContent() {
                                             Create Account to Continue
                                             <ArrowRight size={16} />
                                         </button>
+                                    ) : paypalBlockedMessage ? (
+                                        <p className="text-sm font-bold text-red-700" role="alert">
+                                            {paypalBlockedMessage}
+                                        </p>
                                     ) : (
                                         <div className="relative min-h-[120px]">
                                             {!paypalReady && (
@@ -486,9 +482,7 @@ function CheckoutContent() {
                                                     return actions.resolve();
                                                 }}
                                                 createSubscription={(_data, actions) => {
-                                                    const targetPlanId =
-                                                        process.env.NEXT_PUBLIC_PAYPAL_PLAN_STARTER ||
-                                                        INTRO_PLAN.paypalPlanId;
+                                                    const targetPlanId = INTRO_PLAN.paypalPlanId;
 
                                                     if (!targetPlanId) {
                                                         toast.error(
@@ -677,6 +671,21 @@ function CheckoutContent() {
                     </div>
                 </footer>
             </main>
+    );
+
+    if (!PAYPAL_CLIENT_ID || paypalBlockedMessage) return checkoutPage;
+
+    return (
+        <PayPalScriptProvider
+            key="offer-paypal-subscription"
+            options={{
+                clientId: PAYPAL_CLIENT_ID,
+                currency: 'USD',
+                intent: 'subscription',
+                vault: true,
+            }}
+        >
+            {checkoutPage}
         </PayPalScriptProvider>
     );
 }
