@@ -1,8 +1,8 @@
 # Lead magnet MVP — Free printable Journey Story pack
 
-**Status:** Draft PR only. Do **not** deploy. Portal agent must not ship this live.
+**Status:** Ready for review. Do **not** deploy until Ray approves.
 
-**Brand rule:** Product name is **Journey Stories** (Island Helpers). Never use Social Stories™ / Social Stories in UI, PDF, metadata, or ads.
+**Brand rule:** Product name is **Journey Stories** (Island Helpers). Printables, UI, and ads must not name trademarked social-routine products. Parent disclaimer: educational play supports, not a medical device.
 
 ## Path
 
@@ -54,15 +54,17 @@ Art: **simple black line placeholders** (branded Journey art may still be HOLD).
 - **Bullets:** 3 stories · Caribbean routines · special-needs friendly · print at home  
 - **CTA:** Download Free Pack  
 - **Consent:** emails from Likkle Legends; unsubscribe anytime  
-- **Disclaimer (footer / PDF):** Not a medical device. Journey Stories ≠ Social Stories™.
+- **Disclaimer (landing + PDF cover):** Educational play supports. Not a medical device. Do not print a trademarked product name, including in a disclaimer.
 
-## Blockers before go-live
+## Host env still required before welcome mail sends
 
-1. **`RESEND_API_KEY` / `EMAIL_FROM`** set on the host (welcome + nurture actually send).  
-2. **Upload PDF** to Supabase `lead-magnets/journey-story-pack.pdf` (optional; local fallback works in draft).  
-3. **Insert `lead_magnets` row** for `journey-story-pack` if admin catalog should list it.  
-4. **Branded Journey art HOLD** — keep line art until cleared; do not invent new character looks.  
-5. **No deploy** until Ray / portal agent explicitly approves.
+Capture writes `leads` and queues `email_queue` (`template_id: WELCOME`). `/api/cron/process-emails` sends through Resend (`lib/email.ts`).
+
+1. **`RESEND_API_KEY`** on the host (required). Without it, `sendEmail` logs and the queue row fails.
+2. **`EMAIL_FROM`** optional. Default is `Likkle Legends <noreply@likklelegends.com>`. The address domain must be verified in Resend.
+3. Cron bearer **`CRON_SECRET`** already used by `/api/cron/process-emails` — leave it set so the queue drains.
+
+Not required to merge: upload `lead-magnets/journey-story-pack.pdf` (local `public/printables/free-journey-pack.pdf` is the fallback), a `lead_magnets` catalog row (slug capture does not depend on it), or branded Journey art (line art stays until HOLD clears). Do not deploy until Ray approves.
 
 ## Related in-repo
 

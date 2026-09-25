@@ -1,6 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/admin';
-import { sendEmail, WELCOME_EMAIL_TEMPLATE } from '@/lib/email';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuid(value: unknown): value is string {
+    return typeof value === 'string' && UUID_RE.test(value);
+}
+
+/**
+ * `leads.lead_magnet_id` is a UUID in schema, but magnet pages post a slug
+ * (`journey-story-pack`). Keep the slug when the column accepts text; if
+ * Postgres rejects it, retry without the UUID so capture still succeeds.
+ */
+async function insertLead(admin: ReturnType<typeof createAdminClient>, row: Record<string, unknown>) {
+    const first = await admin.from('leads').insert(row).select().single();
+    if (!first.error) return first;
+
+    const magnet = row.lead_magnet_id;
+    const message = `${first.error.message || ''} ${first.error.details || ''} ${first.error.code || ''}`;
+    const slugRejected = typeof magnet === 'string' && !isUuid(magnet) && /uuid|22P02|invalid input/i.test(message);
+    if (!slugRejected) return first;
+
+    const source = [row.source, magnet].filter(Boolean).join(':');
+    return admin.from('leads').insert({ ...row, lead_magnet_id: null, source }).select().single();
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -70,38 +93,35 @@ export async function POST(request: NextRequest) {
             request.headers.get('x-real-ip') ||
             'unknown';
 
-        // Insert new lead
-        const { data: newLead, error: insertError } = await admin
-            .from('leads')
-            .insert({
-                email: email.toLowerCase(),
-                first_name,
-                last_name,
-                user_type,
-                island_origin,
-                is_diaspora,
-                num_children,
-                child_age_range,
-                interests,
-                source,
-                lead_magnet_id,
-                referrer_id,
-                utm_source,
-                utm_medium,
-                utm_campaign,
-                ip_address: ip,
-                email_consent: true,
-                marketing_consent: true,
-            })
-            .select()
-            .single();
+        // Insert new lead. Slug magnet ids retry without the UUID column.
+        const { data: newLead, error: insertError } = await insertLead(admin, {
+            email: email.toLowerCase(),
+            first_name,
+            last_name,
+            user_type,
+            island_origin,
+            is_diaspora,
+            num_children,
+            child_age_range,
+            interests,
+            source,
+            lead_magnet_id,
+            referrer_id,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            ip_address: ip,
+            email_consent: true,
+            marketing_consent: true,
+        });
 
         if (insertError) {
             console.error('Lead insert error:', insertError);
             return NextResponse.json({ error: 'Failed to subscribe' }, { status: 500 });
         }
 
-        // If they downloaded a lead magnet, track it
+        // If they downloaded a lead magnet, track it.
+        // Slug ids fail closed on the UUID foreign key; that must not block capture.
         if (lead_magnet_id) {
             await admin.from('lead_magnet_downloads').insert({
                 lead_id: newLead.id,

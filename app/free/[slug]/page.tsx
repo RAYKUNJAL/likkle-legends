@@ -12,6 +12,7 @@ const LEAD_MAGNETS: Record<string, {
     image: string;
     leadMagnetId: string;
     ageBands?: boolean;
+    disclaimer?: string;
 }> = {
     "caribbean-abc": {
         title: "Free Caribbean ABC Coloring Pack",
@@ -52,6 +53,7 @@ const LEAD_MAGNETS: Record<string, {
         image: "/printables/free-journey-pack.html",
         leadMagnetId: "journey-story-pack",
         ageBands: true,
+        disclaimer: "Journey Stories are educational play supports for families — not a medical device.",
     },
 };
 
@@ -273,6 +275,9 @@ export default function LeadMagnetPage() {
                                         By downloading, you agree to receive emails from Likkle Legends.
                                         Unsubscribe anytime. We respect your privacy.
                                     </p>
+                                    {magnet.disclaimer && (
+                                        <p className="text-xs text-gray-500 text-center">{magnet.disclaimer}</p>
+                                    )}
                                 </form>
 
                                 {/* Trust Badges */}

@@ -1,6 +1,6 @@
 /**
  * Free printable Journey Story pack — sample stories for the email-gated lead magnet.
- * Public product name: Journey Stories. Never use Social Stories™ / Social Stories.
+ * Public product name: Journey Stories. Do not use trademarked social-routine product names.
  * Line-art placeholders until branded Journey art clears HOLD.
  */
 
