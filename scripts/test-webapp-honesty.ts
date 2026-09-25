@@ -5,7 +5,8 @@ import { buildFreeTrialSuccessBody, stripAuthSecrets } from '../lib/auth/free-tr
 import { buildBuddyFollowUps } from '../lib/buddy-followups';
 import { getPortalCapabilities } from '../lib/portal-capabilities';
 import { activityContentFields, clampPortalGameXp, isUuid } from '../lib/game-xp';
-import { HIDDEN_GAME_IDS, isWorkingGameId, WORKING_ARCADE_GAMES, WORKING_PORTAL_GAMES } from '../lib/working-games';
+import { HIDDEN_GAME_IDS, isWorkingGameId, playHrefFor, WORKING_ARCADE_GAMES, WORKING_PORTAL_GAMES } from '../lib/working-games';
+import { KIDS_CONTENT_SHELVES } from '../lib/kids-shelves';
 import { PORTAL_GAME_CONTENT_IDS } from '../lib/portal-game-content';
 
 function testFreeTrialRouteSourceHasNoMagicLink() {
@@ -173,10 +174,11 @@ function testWorkingGamesOnly() {
   assert.equal(HIDDEN_GAME_IDS.has('story-library'), true);
   assert.equal(HIDDEN_GAME_IDS.has('cultural-quiz'), true);
   assert.equal(isWorkingGameId('island-memory'), true);
-  assert.equal(isWorkingGameId('doubles-dash'), true);
+  assert.equal(isWorkingGameId('doubles-dash'), false);
+  assert.equal(HIDDEN_GAME_IDS.has('doubles-dash'), true);
   assert.equal(isWorkingGameId('story-library'), false);
   assert.ok(WORKING_PORTAL_GAMES.length >= 10);
-  assert.equal(WORKING_ARCADE_GAMES.length, 5);
+  assert.equal(WORKING_ARCADE_GAMES.length, 4);
   for (const id of ['reef-rescue', 'block-carnival', 'island-quiz'] as const) {
     assert.equal(isWorkingGameId(id), true, id);
     assert.equal(isUuid(PORTAL_GAME_CONTENT_IDS[id]), true, id);
@@ -197,6 +199,43 @@ function testWorkingGamesOnly() {
   assert.ok(catalog.includes('Clear ocean litter, protect sea life and restore colorful Caribbean reefs.'));
   assert.ok(catalog.includes("title: 'Reef Rescue'"));
   assert.ok(catalog.includes('Arcade · Conservation'));
+  assert.ok(catalog.includes('KidsShelfNav'));
+  assert.ok(catalog.includes('playHrefFor'));
+  assert.equal(catalog.includes('/checkout'), false);
+  assert.equal(catalog.includes('Upgrade to Play'), false);
+  assert.equal(catalog.includes('Doubles Dash'), false);
+  assert.equal(catalog.includes('/games/doubles-dash'), false);
+  assert.equal(catalog.includes('doubles-dash'), false);
+
+  const discovery = readFileSync(resolve(process.cwd(), 'components/portal/KidsDiscovery.tsx'), 'utf8');
+  assert.ok(discovery.includes('ALL_WORKING_GAMES'));
+  assert.ok(discovery.includes('KIDS_CONTENT_SHELVES'));
+  assert.equal(discovery.includes('/checkout'), false);
+  assert.equal(discovery.toLowerCase().includes('upgrade'), false);
+  assert.equal(discovery.includes('doubles-dash'), false);
+  assert.equal(discovery.includes('Doubles Dash'), false);
+
+  const portal = readFileSync(resolve(process.cwd(), 'app/portal/PortalClient.tsx'), 'utf8');
+  assert.ok(portal.includes('KidsDiscovery'));
+  assert.equal(portal.includes('FreeTierBanner'), false);
+  assert.equal(portal.includes('UpgradeModal'), false);
+  assert.equal(portal.includes('/checkout'), false);
+
+  for (const game of [...WORKING_PORTAL_GAMES, ...WORKING_ARCADE_GAMES]) {
+    assert.equal(playHrefFor(game.id), game.href, game.id);
+    assert.equal(playHrefFor('db-row', game.href), game.href, game.href);
+    if (game.kind === 'portal') {
+      assert.equal(existsSync(resolve(process.cwd(), `app${game.href}/page.tsx`)), true, game.href);
+    }
+  }
+  for (const shelf of KIDS_CONTENT_SHELVES) {
+    assert.equal(existsSync(resolve(process.cwd(), `app${shelf.href}/page.tsx`)), true, shelf.href);
+  }
+
+  const buddy = readFileSync(resolve(process.cwd(), 'app/portal/buddy/[character]/page.tsx'), 'utf8');
+  assert.equal(buddy.includes("router.push('/checkout')"), false);
+  assert.equal(buddy.includes("router.push('/pricing')"), false);
+  assert.equal(buddy.includes('Upgrade Now'), false);
 }
 
 testFreeTrialRouteSourceHasNoMagicLink();

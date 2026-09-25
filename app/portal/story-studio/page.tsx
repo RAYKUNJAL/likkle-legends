@@ -11,8 +11,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { selectStoryAction } from '@/app/actions/story-database-actions';
 import { useUser } from '@/components/UserContext';
-import { hasFeatureAccess, getFeatureInfo, isFreeTier, getUpgradeTier } from '@/lib/feature-access';
-import FeatureUpgradeModal from '@/components/FeatureUpgradeModal';
+import { hasFeatureAccess } from '@/lib/feature-access';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 type WizardStep = 'tradition' | 'reading-level' | 'island' | 'creating';
 
@@ -67,17 +67,8 @@ export default function StoryStudioPage() {
     // ACCESS CONTROL
     const userSubscriptionTier = (user?.subscription_tier as any) || 'free';
     const hasAccess = hasFeatureAccess(userSubscriptionTier, 'story_builder') || hasHeritageStory;
-    const [showUpgradeModal, setShowUpgradeModal] = useState(!hasAccess);
-    const upgradeTier = getUpgradeTier(userSubscriptionTier);
     const [studioReady, setStudioReady] = useState<boolean | null>(null);
     const [studioReason, setStudioReason] = useState<string | null>(null);
-
-    // REDIRECT IF NO ACCESS
-    useEffect(() => {
-        if (!hasAccess && !showUpgradeModal) {
-            router.push('/portal');
-        }
-    }, [hasAccess, showUpgradeModal, router]);
 
     useEffect(() => {
         let cancelled = false;
@@ -126,6 +117,21 @@ export default function StoryStudioPage() {
             alert("Something went wrong on the island path. Please try again!");
         }
     };
+
+    if (!hasAccess) {
+        return (
+            <main className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 flex items-center justify-center">
+                <div className="max-w-lg w-full bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 text-center">
+                    <p className="text-4xl mb-3">✨</p>
+                    <h1 className="text-3xl font-black text-slate-800 mb-2">Story Studio is resting</h1>
+                    <AskAParentNotice className="mb-6 text-slate-600" />
+                    <Link href="/portal" className="inline-flex px-5 py-3 rounded-2xl bg-slate-900 text-white font-black">
+                        Back to the village
+                    </Link>
+                </div>
+            </main>
+        );
+    }
 
     if (studioReady === false) {
         return (
@@ -348,18 +354,6 @@ export default function StoryStudioPage() {
                 )}
             </div>
 
-            {/* UPGRADE MODAL */}
-            <FeatureUpgradeModal
-                isOpen={showUpgradeModal}
-                onClose={() => {
-                    setShowUpgradeModal(false);
-                    router.push('/portal');
-                }}
-                featureName="Story Builder"
-                featureDescription="Create personalized Caribbean stories for your child"
-                currentTier={userSubscriptionTier}
-                requiredTier="starter_mailer"
-            />
         </main>
     );
 }

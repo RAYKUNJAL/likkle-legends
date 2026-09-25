@@ -19,6 +19,7 @@ import {
     Zap
 } from 'lucide-react';
 import { useUser } from '@/components/UserContext';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 import { getCharacterConfig, CHARACTER_ORDER, CharacterId, CharacterChild } from '@/lib/characterConfig';
 import IslandVoice from '@/components/IslandVoice';
 import { normalizeParentalControls } from '@/lib/parental-controls';
@@ -661,24 +662,25 @@ export default function CharacterChatPage() {
                             <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
                                 <Lock size={22} />
                             </div>
-                            <h2 className="mt-4 text-2xl font-black text-slate-900">Buddy chat requires a paid plan.</h2>
+                            <h2 className="mt-4 text-2xl font-black text-slate-900">This Legend is resting</h2>
                             <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">
-                                Upgrade to unlock unlimited buddy chat, safe memory, and the full buddy experience for your child.
+                                Buddy chat is not open on this account yet.
                             </p>
+                            <AskAParentNotice className="mt-4 text-slate-700" />
                             <div className="mt-5 flex gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => router.push('/checkout')}
-                                    className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white"
+                                    onClick={() => router.push('/portal/buddy')}
+                                    className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-700"
                                 >
-                                    Upgrade Now
+                                    Back to Legends
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => router.push('/portal/buddy/tanty_spice')}
                                     className="rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-black text-orange-700"
                                 >
-                                    Try Tanty Free →
+                                    See Tanty
                                 </button>
                             </div>
                         </div>
@@ -689,18 +691,12 @@ export default function CharacterChatPage() {
                             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-orange-600 text-3xl">
                                 💝
                             </div>
-                            <h2 className="mt-4 text-2xl font-black text-slate-900">You've used all 5 free Tanty chats today!</h2>
+                            <h2 className="mt-4 text-2xl font-black text-slate-900">Tanty&apos;s free chats are used up for today</h2>
                             <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">
-                                Tanty Spice loves talking with you! Upgrade to keep the conversation going — unlimited chats with Tanty and all the Legends, anytime.
+                                Come back tomorrow for more stories with Tanty Spice.
                             </p>
-                            <div className="mt-5 flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => router.push('/pricing')}
-                                    className="rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-3 text-sm font-black text-white shadow-lg hover:scale-105 transition-transform"
-                                >
-                                    Unlock Unlimited Tanty →
-                                </button>
+                            <AskAParentNotice className="mt-4 text-slate-700" />
+                            <div className="mt-5">
                                 <button
                                     type="button"
                                     onClick={() => router.push('/portal/buddy')}
