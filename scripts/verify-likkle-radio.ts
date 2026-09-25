@@ -14,7 +14,7 @@ import {
     stepTrack,
     tracksForStation,
 } from '../lib/likkle-radio';
-import { OWNED_PLAYABLE_SONGS, RECOVERED_UNPLAYABLE_SONGS, getPlayableCatalogSongs, type CatalogSong } from '../lib/song-catalog';
+import { OWNED_PLAYABLE_SONGS, RECOVERED_UNPLAYABLE_SONGS, getPlayableCatalogSongs, playbackUrl, type CatalogSong } from '../lib/song-catalog';
 
 function assert(condition: unknown, message: string) {
     if (!condition) throw new Error(message);
@@ -49,8 +49,19 @@ for (const track of allTracks) {
     assert(fs.existsSync(file), `audio file exists ${track.url}`);
 }
 
-assert(playlists['sing-along']?.some((track) => track.url.endsWith('/drinking-water.mp3')), 'Drinking Water is on Sing-Along Lab');
-assert(playlists['story-bench']?.some((track) => track.url.endsWith('/saving-money.mp3')), 'Saving Money stays on Tanty’s station');
+assert(playlists['sing-along']?.some((track) => track.url.endsWith('/drinking-water.stream.mp3')), 'Drinking Water streams on Sing-Along Lab');
+assert(playlists['story-bench']?.some((track) => track.url.endsWith('/saving-money.stream.mp3')), 'Saving Money streams on Tanty’s station');
+for (const song of getPlayableCatalogSongs()) {
+    const listed = allTracks.find((track) => track.id === song.id);
+    assert(listed?.url === playbackUrl(song), `${song.id} uses the same stream rendition as parent music`);
+    assert(listed?.url !== song.url, `${song.id} playback is not the master`);
+    const streamBytes = fs.statSync(path.join(root, 'public', listed!.url.replace(/^\//, ''))).size;
+    const masterBytes = fs.statSync(path.join(root, 'public', song.url.replace(/^\//, ''))).size;
+    assert(streamBytes < masterBytes, `${song.id} stream is smaller than the master`);
+}
+const downloadRoute = read('app/api/music/download/[trackId]/route.ts');
+assert(downloadRoute.includes('track.url'), 'paid download reads the master file');
+assert(!downloadRoute.includes('playbackUrl') && !downloadRoute.includes('.stream.mp3'), 'paid download does not serve the stream rendition');
 assert((playlists['island-vibes'] ?? []).length === 0, 'Island Vibes does not invent tracks');
 assert((playlists['calm-cove'] ?? []).length === 0, 'Calm Cove does not invent tracks');
 assert((playlists['playtime'] ?? []).length === 0, 'Playtime does not invent tracks');
@@ -98,6 +109,9 @@ for (const source of [player, showcase, radioPage]) {
     assert(!source.includes('Live-capable') && !source.includes('live broadcast'), 'radio surface does not claim a live show');
 }
 assert(player.includes('preload="metadata"'), 'active audio preloads metadata');
+assert(!player.split('\n').some((line) => line.trim() === 'fill'), 'station art does not use next/image fill');
+assert(player.includes('width={66}'), 'station avatars request a small image');
+assert(!player.includes('sizes='), 'fixed-size art does not opt into the full device srcset');
 assert(player.includes("loading={selected ? 'eager' : 'lazy'}"), 'non-active station art is lazy');
 assert((player.match(/<audio/g) || []).length === 1, 'one audio element');
 assert(player.includes('prefers-reduced-motion'), 'motion preference is read');

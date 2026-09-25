@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { serverEnv } from '@/lib/env/server'
-import { isRouterPrefetch, loginBounceTarget } from '@/lib/login-bounce'
+import { AUTH_LOOKUP_MS, isRouterPrefetch, loginBounceTarget, middlewareNeedsAuthUser } from '@/lib/login-bounce'
 
 export async function updateSession(request: NextRequest) {
     let response = NextResponse.next({
@@ -54,16 +54,32 @@ export async function updateSession(request: NextRequest) {
         /^sb-[^-]+-auth-token(?:\.\d+)?$/.test(name) || /^sb-[^-]+-auth-token-code-verifier$/.test(name);
 
     let user = null;
-    try {
-        const hasAuthCookie = request.cookies.getAll().some(c => isAuthCookieName(c.name));
-        if (hasAuthCookie) {
-            const { data, error } = await supabase.auth.getUser();
-            if (!error) {
-                user = data.user;
+    // /parent/music does not gate on the user. Waiting on getUser() here is
+    // what leaves a signed-in parent on the full-screen "Setting Sail" fallback
+    // until GoTrue answers. Other routes still look the user up, with a cap.
+    if (middlewareNeedsAuthUser(pathname)) {
+        try {
+            const hasAuthCookie = request.cookies.getAll().some(c => isAuthCookieName(c.name));
+            if (hasAuthCookie) {
+                let timer: ReturnType<typeof setTimeout> | undefined;
+                const pending = supabase.auth.getUser().then(
+                    (result) => result,
+                    () => null,
+                );
+                const result = await Promise.race([
+                    pending,
+                    new Promise<null>((resolve) => {
+                        timer = setTimeout(() => resolve(null), AUTH_LOOKUP_MS);
+                    }),
+                ]);
+                if (timer) clearTimeout(timer);
+                if (result && !result.error) {
+                    user = result.data.user;
+                }
             }
+        } catch (_e) {
+            user = null;
         }
-    } catch (_e) {
-        user = null;
     }
 
     const isPortal = pathname.startsWith('/portal');
