@@ -7,6 +7,8 @@ const nextConfig = {
   async redirects() {
     return [
       // Permanent aliases for common SEO / marketing URLs that had no page.
+      // Force hard redirect: soft app/refund-policy page previously returned 200.
+      { source: '/refund-policy', destination: '/refund', permanent: true },
       { source: '/heritage', destination: '/characters', permanent: false },
       { source: '/mail-club', destination: '/pricing', permanent: false },
       { source: '/mailclub', destination: '/pricing', permanent: false },

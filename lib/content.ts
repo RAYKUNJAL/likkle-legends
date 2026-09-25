@@ -6,9 +6,10 @@ export const siteContent = {
         og_image: "/images/logo.png"
     },
     notification_bar: {
-        enabled: true,
-        text: "Limited Time: Get 15% OFF your first month with code LEGEND15",
-        subtext: "Ends soon. New members only.",
+        // Disabled: LEGEND15 is not accepted by POST /api/discount/validate.
+        enabled: false,
+        text: "",
+        subtext: "",
         // No fake client timer — only show a countdown when CMS provides a real future ends_at.
         countdown: {
             enabled: false,

@@ -270,6 +270,16 @@ function SignupForm() {
                         <p className="mt-8 text-center font-bold text-deep/40">
                             Already have an account? <Link href="/login" className="font-black text-primary hover:underline">Log in</Link>
                         </p>
+                        <nav
+                            aria-label="Legal"
+                            className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[10px] font-bold uppercase tracking-widest text-deep/40"
+                        >
+                            <Link href="/terms" className="hover:text-deep underline underline-offset-4">Terms</Link>
+                            <Link href="/privacy" className="hover:text-deep underline underline-offset-4">Privacy</Link>
+                            <Link href="/refund" className="hover:text-deep underline underline-offset-4">Refund</Link>
+                            <Link href="/shipping" className="hover:text-deep underline underline-offset-4">Shipping</Link>
+                            <Link href="/guarantee" className="hover:text-deep underline underline-offset-4">Guarantee</Link>
+                        </nav>
                     </div>
                 </section>
             </div>
