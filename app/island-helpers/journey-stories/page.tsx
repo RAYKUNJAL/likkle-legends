@@ -40,7 +40,10 @@ export default function JourneyStoriesIndexPage() {
               <div>
                 <p className="font-black text-blue-950">{d.scenarioLabel}</p>
                 <p className="text-xs font-bold text-blue-700/70">
-                  {d.status} · {new Date(d.updatedAt).toLocaleString()}
+                  {d.status}
+                  {d.languageMode === 'literal' ? ' · Literal words' : ''}
+                  {' · '}
+                  {new Date(d.updatedAt).toLocaleString()}
                 </p>
               </div>
               <Link

@@ -62,6 +62,24 @@ services:
     networks:
       - default
 
+  # Sequential Journey Stories pictures. No public port. No Traefik labels.
+  # Claims journey_story_jobs in Supabase (FOR UPDATE SKIP LOCKED). No QStash, no Redis.
+  journey-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.journey-worker
+    restart: always
+    env_file: .env.production
+    networks:
+      - default
+      - supabase_default
+    healthcheck:
+      test: ["CMD", "node", "scripts/journey-worker-healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+
 networks:
   coolify:
     external: true

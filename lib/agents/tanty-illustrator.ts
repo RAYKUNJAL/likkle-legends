@@ -21,7 +21,7 @@ const STORAGE_PATH_PREFIX = 'illustrations';
  * Art style suffix appended to every illustration description to keep the
  * look consistent across all 12 books and every page within a book.
  */
-const ART_STYLE_SUFFIX =
+export const ART_STYLE_SUFFIX =
     "Caribbean art style, warm tropical colors, flat illustration, child-friendly, " +
     "soft painterly textures, storybook illustration, consistent character design, no text, no words, no letters";
 
@@ -30,7 +30,7 @@ const ART_STYLE_SUFFIX =
  * short, stable description of the recurring character helps FLUX keep their
  * appearance consistent page-to-page.
  */
-const CHARACTER_HINTS: Record<string, string> = {
+export const CHARACTER_HINTS: Record<string, string> = {
     anansi: 'Anansi the spider is small and round with eight legs, a cheeky grin, and a tiny straw hat',
     tanty_spice: 'Tanty Spice is a warm Caribbean grandmother with silver hair, glasses, a colorful headwrap, and a flowing floral dress',
     dilly_doubles: 'Dilly Doubles is a fun-loving boy with brown skin, curly hair, a bright yellow t-shirt, and a big smile',

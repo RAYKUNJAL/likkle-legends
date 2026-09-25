@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { generateJourneyStory } from '@/lib/island-helpers/journey-stories/generate';
+import { generateJourneyStory, parseJourneyLanguageMode } from '@/lib/island-helpers/journey-stories/generate';
 import { ISLAND_HELPERS_CHARACTER_IDS, type IslandHelpersCharacterId } from '@/lib/island-helpers/types';
 
 export const runtime = 'nodejs';
@@ -28,12 +28,22 @@ export async function POST(req: Request) {
       ) as IslandHelpersCharacterId[])
     : [];
 
+  const languageMode = parseJourneyLanguageMode(body.languageMode);
+  if (!languageMode) {
+    return NextResponse.json(
+      { ok: false, error: 'languageMode must be standard or literal' },
+      { status: 400 },
+    );
+  }
+
+  // Words only. Picture jobs are queued by POST /journey-stories/jobs and are not awaited here.
   const result = await generateJourneyStory({
     scenarioId: body.scenarioId || 'custom',
     customScenario: body.customScenario,
     childName: body.childName,
     pointOfView: body.pointOfView === 'first' ? 'first' : 'third',
     castCharacterIds: cast,
+    languageMode,
   });
 
   if (!result.ok) {

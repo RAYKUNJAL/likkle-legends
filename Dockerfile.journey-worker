@@ -1,0 +1,9 @@
+# Journey Stories picture worker. Same repo, no public port.
+# Runs on the VPS compose network beside web. Not the Next.js standalone image.
+FROM node:20-alpine
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --legacy-peer-deps
+COPY . .
+ENV NODE_ENV=production
+CMD ["npx", "tsx", "scripts/journey-worker.ts"]

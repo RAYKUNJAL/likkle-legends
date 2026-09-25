@@ -75,6 +75,34 @@ and health-checks the app before finishing.
 
 ---
 
+## Journey Stories pictures (`journey-worker`)
+
+Picture jobs are rows in Supabase (`journey_story_jobs`), not a third-party queue.
+There is no QStash and no Redis. The `journey-worker` service in
+`docker-compose.yml` runs on the same Compose network as `web`, joins
+`supabase_default`, and is not published on a host port. Traefik stays off
+(`web` keeps `traefik.enable=false`).
+
+Apply `supabase/migrations/20260925_journey_story_jobs.sql` on the self-hosted
+database once. The worker claims a job with `claim_journey_story_job()`
+(`FOR UPDATE SKIP LOCKED`), draws **one page image at a time** with Imagen when
+`GEMINI_API_KEY` is set, writes the file to the `story-illustrations` bucket,
+and updates `journey_story_pages` so Realtime can stream each picture.
+
+Without `GEMINI_API_KEY`, picture jobs fail closed. The words still work, and a
+parent can use simple local pictures page by page. Set `GEMINI_IMAGE_MODEL` only
+if you need a different Imagen model (default `imagen-3.0-generate-002`).
+
+```bash
+docker compose --env-file .env.production up -d --build journey-worker
+docker compose logs -f journey-worker
+```
+
+Code building deploys this with the rest of the compose stack at
+`/opt/likkle-legends`. Do not point Journey Stories at Vercel or QStash.
+
+---
+
 ## Scheduled jobs
 
 `deploy/crontab` mirrors the schedules that used to live in `vercel.json`
