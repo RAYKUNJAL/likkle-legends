@@ -7,13 +7,11 @@ import {
   updateGuestSession,
   endGuestSession,
   getSessionDuration,
-  shouldShowConversionPrompt,
   GameSession,
   initializeGuestSession,
 } from '@/lib/guest-game-session';
-import { getGameConfig, isGameAccessible, GameConfig } from '@/lib/game-config';
+import { getGameConfig, GameConfig } from '@/lib/game-config';
 import { gameAnalyticsEvents } from '@/lib/analytics';
-import GamePaywall from './GamePaywall';
 
 interface GameWrapperProps {
   gameId: string;
@@ -34,7 +32,6 @@ const GameWrapper: React.FC<GameWrapperProps> = ({
   gameId,
   gameIframeSrc,
   onGameMessage,
-  userTier = 'free',
   userId,
 }) => {
   const router = useRouter();
@@ -44,24 +41,12 @@ const GameWrapper: React.FC<GameWrapperProps> = ({
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [session, setSession] = useState<GameSession | null>(null);
-  const [showPaywall, setShowPaywall] = useState(false);
-  const [paywallReason, setPaywallReason] = useState<'level_complete' | 'premium_game' | 'guest_session'>('guest_session');
-  const sessionCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize game
   useEffect(() => {
     const config = getGameConfig(gameId);
     if (!config) {
       setError(`Game "${gameId}" not found`);
-      setIsLoading(false);
-      return;
-    }
-
-    // Check access
-    if (!isGameAccessible(gameId, userTier)) {
-      setShowPaywall(true);
-      setPaywallReason('premium_game');
       setIsLoading(false);
       return;
     }
@@ -75,7 +60,6 @@ const GameWrapper: React.FC<GameWrapperProps> = ({
     }
 
     sessionRef.current = gameSession;
-    setSession(gameSession);
 
     if (userId) {
       gameAnalyticsEvents.gameStarted(gameId, 'authenticated', userId);
@@ -84,7 +68,7 @@ const GameWrapper: React.FC<GameWrapperProps> = ({
     }
 
     setIsLoading(false);
-  }, [gameId, userTier, userId]);
+  }, [gameId, userId]);
 
   // Setup message listener for game iframe
   useEffect(() => {
@@ -110,17 +94,10 @@ const GameWrapper: React.FC<GameWrapperProps> = ({
           });
 
           if (updated) {
-            setSession(updated);
             sessionRef.current = updated;
 
             if (!userId) {
               gameAnalyticsEvents.gameLevelCompleted(gameId, newLevel, sessionRef.current.id);
-
-              // Check if should show paywall after level complete
-              if (shouldShowConversionPrompt(updated)) {
-                setPaywallReason('guest_session');
-                setShowPaywall(true);
-              }
             }
           }
           break;
@@ -133,7 +110,6 @@ const GameWrapper: React.FC<GameWrapperProps> = ({
           });
 
           if (updated) {
-            setSession(updated);
             sessionRef.current = updated;
 
             if (!userId) {
@@ -169,33 +145,9 @@ const GameWrapper: React.FC<GameWrapperProps> = ({
     return () => window.removeEventListener('message', handleMessage);
   }, [gameId, userId]);
 
-  // Monitor session duration for paywall
-  useEffect(() => {
-    if (userId || !sessionRef.current) return;
-
-    sessionCheckIntervalRef.current = setInterval(() => {
-      if (sessionRef.current && shouldShowConversionPrompt(sessionRef.current)) {
-        if (!showPaywall) {
-          setPaywallReason('guest_session');
-          setShowPaywall(true);
-          gameAnalyticsEvents.paywallShown(gameId, 'guest_session', sessionRef.current.id);
-        }
-      }
-    }, 10000); // Check every 10 seconds
-
-    return () => {
-      if (sessionCheckIntervalRef.current) {
-        clearInterval(sessionCheckIntervalRef.current);
-      }
-    };
-  }, [gameId, userId, showPaywall]);
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (sessionCheckIntervalRef.current) {
-        clearInterval(sessionCheckIntervalRef.current);
-      }
       if (sessionRef.current && !userId) {
         endGuestSession(sessionRef.current.id);
       }
@@ -240,7 +192,7 @@ const GameWrapper: React.FC<GameWrapperProps> = ({
   return (
     <div className="relative w-full h-screen bg-white">
       {/* Game Container */}
-      <div className={`w-full h-full ${showPaywall ? 'opacity-30 pointer-events-none' : ''}`}>
+      <div className="w-full h-full">
         {gameIframeSrc ? (
           <iframe
             ref={iframeRef}
@@ -263,39 +215,6 @@ const GameWrapper: React.FC<GameWrapperProps> = ({
           </div>
         )}
       </div>
-
-      {/* Paywall Overlay */}
-      {showPaywall && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center">
-          <GamePaywall
-            gameId={gameId}
-            gameConfig={gameConfig}
-            reason={paywallReason}
-            sessionSummary={
-              session
-                ? {
-                    duration: getSessionDuration(session),
-                    level: session.level,
-                    score: session.score,
-                    achievements: [],
-                  }
-                : undefined
-            }
-            onSubscribe={() => {
-              gameAnalyticsEvents.paywallClicked(gameId, 'subscribe', session?.id);
-              setShowPaywall(false);
-            }}
-            onSkip={() => {
-              gameAnalyticsEvents.paywallClicked(gameId, 'skip', session?.id);
-              setShowPaywall(false);
-            }}
-            onTryTrial={() => {
-              gameAnalyticsEvents.paywallClicked(gameId, 'try_trial', session?.id);
-              setShowPaywall(false);
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 };
