@@ -256,8 +256,8 @@ function PrintableCard({ item, isLocked, view }: { item: Printable, isLocked: bo
                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4">
                             <Star size={32} className="text-amber-400 fill-amber-400" />
                         </div>
-                        <p className="font-black text-lg">Subscribers Only</p>
-                        <p className="text-white/80 text-xs font-bold mt-2">Join Likkle Legends for unlimited printables!</p>
+                        <p className="font-black text-lg">Ask a parent</p>
+                        <p className="text-white/80 text-xs font-bold mt-2">This sheet is not open on this account.</p>
                         <AskAParentNotice className="mt-6 text-white" />
                     </div>
                 )}

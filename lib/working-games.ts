@@ -39,10 +39,14 @@ export const WORKING_ARCADE_GAMES: WorkingGame[] = [
   { id: 'doubles-dash', title: 'Doubles Dash', href: '/games/doubles-dash', kind: 'arcade' },
 ];
 
-export const WORKING_GAME_IDS = new Set([
-  ...WORKING_PORTAL_GAMES.map((game) => game.id),
-  ...WORKING_ARCADE_GAMES.map((game) => game.id),
-]);
+export const ALL_WORKING_GAMES: WorkingGame[] = [
+  ...WORKING_PORTAL_GAMES,
+  ...WORKING_ARCADE_GAMES,
+];
+
+export const WORKING_GAME_IDS = new Set(ALL_WORKING_GAMES.map((game) => game.id));
+
+const WORKING_HREF_BY_ID = new Map(ALL_WORKING_GAMES.map((game) => [game.id, game.href]));
 
 /** Duplicate / story cards that were listed as games but are not unique playable titles. */
 export const HIDDEN_GAME_IDS = new Set([
@@ -58,4 +62,19 @@ export function isWorkingGameId(id: string) {
 export function arcadeHrefFor(id: string) {
   const match = WORKING_ARCADE_GAMES.find((game) => game.id === id);
   return match?.href;
+}
+
+/** Canonical play link for a catalog card. Known games always use their verified route. */
+export function playHrefFor(id: string, gameUrl?: string) {
+  const direct = WORKING_HREF_BY_ID.get(id);
+  if (direct) return direct;
+
+  if (gameUrl) {
+    const tail = gameUrl.split('?')[0].split('/').filter(Boolean).pop() || '';
+    const fromRoute = WORKING_HREF_BY_ID.get(tail);
+    if (fromRoute) return fromRoute;
+    if (gameUrl.startsWith('/')) return gameUrl;
+  }
+
+  return `/portal/games/${id}`;
 }

@@ -220,7 +220,7 @@ function PrintableCard({ item, isLocked, idx }: { item: Printable; isLocked: boo
                 {isLocked && (
                     <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm flex flex-col items-center justify-center text-white p-4 text-center">
                         <span className="text-3xl mb-2">🔒</span>
-                        <p className="font-black text-xs">Upgrade to Unlock</p>
+                        <p className="font-black text-xs">Ask a parent</p>
                     </div>
                 )}
 

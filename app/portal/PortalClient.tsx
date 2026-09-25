@@ -48,12 +48,10 @@ const StreakWidget = nextDynamic(() => import('@/components/portal/StreakWidget'
 const DailyChestModal = nextDynamic(() => import('@/components/portal/DailyChestModal'), { ssr: false });
 const StreakShareCard = nextDynamic(() => import('@/components/portal/StreakShareCard'), { ssr: false });
 const CoppaConsentModal = nextDynamic(() => import('@/components/auth/CoppaConsentModal'), { ssr: false });
-const UpgradeModal = nextDynamic(() => import('@/components/UpgradeModal'), { ssr: false });
 const DoubleXPBanner = nextDynamic(() => import('@/components/portal/DoubleXPBanner'), { ssr: false });
 const MangoGiftModal = nextDynamic(() => import('@/components/portal/MangoGiftModal'), { ssr: false });
-const FeatureUpgradeModal = nextDynamic(() => import('@/components/FeatureUpgradeModal'), { ssr: false });
-import { FreeTierBanner } from '@/components/portal/FreeTierBanner';
-import { fireConversionEvent, trackEvent } from '@/lib/analytics';
+import { KidsDiscovery } from '@/components/portal/KidsDiscovery';
+import { trackEvent } from '@/lib/analytics';
 
 interface Storybook {
     id: string;
@@ -186,8 +184,6 @@ export default function ChildPortalPage() {
     const [activeVideo, setActiveVideo] = useState<Video | null>(null);
     const [isCoppaModalOpen, setIsCoppaModalOpen] = useState(false);
     const [pendingRoute, setPendingRoute] = useState<string | null>(null);
-    const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; tier?: string; feature?: string }>({ open: false });
-
     // Retention mechanic state
     const [streakDay, setStreakDay] = useState(0);
     const [freezeCount, setFreezeCount] = useState(0);
@@ -213,12 +209,6 @@ export default function ChildPortalPage() {
         return () => window.clearTimeout(timer);
     }, [blockedMessage]);
     const [todayScreenMinutes, setTodayScreenMinutes] = useState(0);
-
-    // CRO: track how many locked items a free user has hit this session
-    const [lockedHitCount, setLockedHitCount] = useState(0);
-    const [featureUpgradeModal, setFeatureUpgradeModal] = useState<{
-        open: boolean; featureName: string; featureDescription: string; requiredTier: string;
-    }>({ open: false, featureName: '', featureDescription: '', requiredTier: 'legends_plus' });
 
     const fetchStories = useCallback(async () => {
         if (loadingStates.stories || hasLoadedStories) return;
@@ -487,17 +477,8 @@ export default function ChildPortalPage() {
         await handleActivityLog('mission', questId, undefined, xp);
     };
 
-    const handleLockedClick = (tier: string, featureName: string, featureDescription = '') => {
-        const nextCount = lockedHitCount + 1;
-        setLockedHitCount(nextCount);
-        trackEvent('view_item', { item_name: featureName, item_tier: tier, locked_hit: nextCount });
-
-        if (nextCount >= 3) {
-            // After 3 locked hits, use FeatureUpgradeModal for a more targeted pitch
-            setFeatureUpgradeModal({ open: true, featureName, featureDescription: featureDescription || `Upgrade to access ${featureName} and more premium content.`, requiredTier: tier });
-        } else {
-            setUpgradeModal({ open: true, tier, feature: featureName });
-        }
+    const handleLockedClick = (_tier: string, featureName: string) => {
+        setBlockedMessage(`Ask a parent about ${featureName}. Buying is not available here.`);
     };
 
     const currentLevel = activeChild ? calculateLevel(activeChild.total_xp) : LEVELS[0];
@@ -861,10 +842,6 @@ export default function ChildPortalPage() {
 
                     {/* Main Viewport — padded for mobile header + bottom nav; desktop scrolls in parent column */}
                     <main className="relative px-5 lg:px-12 pt-20 pb-28 lg:pb-12 lg:pt-6">
-                    {/* CRO: Free / Trial upgrade banner — sits at top of content, sticky within main scroll */}
-                    <div className="-mx-5 lg:-mx-12 mb-4 sticky top-0 z-20">
-                        <FreeTierBanner />
-                    </div>
                     {/* Streak Widget (Desktop) */}
                     <div className="hidden lg:flex items-center gap-4">
                         {activeChild && (
@@ -891,6 +868,12 @@ export default function ChildPortalPage() {
 
                     {activeSection === 'home' ? (
                         <div className="max-w-6xl mx-auto space-y-6 py-4">
+                            <KidsDiscovery
+                                gamesLocked={!parentalControls.allow_games}
+                                storiesLocked={!parentalControls.allow_stories}
+                                navigationBlocked={screenTimeExceeded}
+                                onBlocked={setBlockedMessage}
+                            />
                             <MemberContentShelf
                                 section="featured_home"
                                 title="New for you"
@@ -1247,7 +1230,7 @@ export default function ChildPortalPage() {
                                                     <Link
                                                         key={story.id}
                                                         href={isLocked ? '#' : `/portal/stories/${story.id}`}
-                                                        onClick={isLocked ? (e) => { e.preventDefault(); handleLockedClick(story.tier_required, story.title, 'Read this story and explore the full library of island tales.'); } : undefined}
+                                                        onClick={isLocked ? (e) => { e.preventDefault(); handleLockedClick(story.tier_required, story.title); } : undefined}
                                                         className={`bg-white rounded-[2rem] sm:rounded-[3rem] p-3 sm:p-5 shadow-lg sm:shadow-xl hover:shadow-2xl transition-all group border-2 sm:border-4 border-transparent hover:border-blue-100 relative ${isLocked ? 'cursor-pointer opacity-80' : ''}`}
                                                     >
                                                         <div className="relative aspect-[3/4] bg-blue-50 rounded-[1.5rem] sm:rounded-[2.5rem] mb-4 sm:mx-0 overflow-hidden">
@@ -1331,7 +1314,7 @@ export default function ChildPortalPage() {
                                                     <button
                                                         type="button"
                                                         key={video.id}
-                                                        onClick={() => isLocked ? handleLockedClick(video.tier_required, video.title, 'Watch this lesson and unlock all Village Cinema videos.') : setActiveVideo(video)}
+                                                        onClick={() => isLocked ? handleLockedClick(video.tier_required, video.title) : setActiveVideo(video)}
                                                         className={`bg-white rounded-[3.5rem] p-6 shadow-xl hover:shadow-2xl transition-all group border-4 border-transparent hover:border-indigo-100 text-left ${isLocked ? 'opacity-80 cursor-pointer' : ''}`}
                                                     >
                                                         <div className="relative aspect-video bg-indigo-50 rounded-[2.5rem] mb-6 overflow-hidden shadow-inner">
@@ -1523,28 +1506,6 @@ export default function ChildPortalPage() {
                             console.error('[COPPA] background verifyAge failed:', err);
                         });
                     }}
-                />
-            )}
-
-            {/* Standard Upgrade Modal (first 2 locked hits) */}
-            {upgradeModal.open && (
-                <UpgradeModal
-                    isOpen={upgradeModal.open}
-                    onClose={() => setUpgradeModal({ open: false })}
-                    requiredTier={upgradeModal.tier}
-                    featureName={upgradeModal.feature}
-                />
-            )}
-
-            {/* Feature-Specific Upgrade Modal (shown after 3+ locked hits) */}
-            {featureUpgradeModal.open && (
-                <FeatureUpgradeModal
-                    isOpen={featureUpgradeModal.open}
-                    onClose={() => setFeatureUpgradeModal({ open: false, featureName: '', featureDescription: '', requiredTier: 'legends_plus' })}
-                    featureName={featureUpgradeModal.featureName}
-                    featureDescription={featureUpgradeModal.featureDescription}
-                    currentTier={(user?.subscription_tier || 'free') as import('@/lib/feature-access').SubscriptionTier}
-                    requiredTier={(featureUpgradeModal.requiredTier || 'legends_plus') as import('@/lib/feature-access').SubscriptionTier}
                 />
             )}
 

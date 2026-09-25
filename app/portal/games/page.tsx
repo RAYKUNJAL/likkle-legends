@@ -12,7 +12,8 @@ import { CHARACTER_CONFIGS, CHARACTER_ORDER } from '@/lib/characterConfig';
 import { getGames, getRecentActivities } from '@/lib/database';
 import { getGameProgressMap, type GameProgressEntry } from '@/lib/game-progress';
 import { normalizeParentalControls } from '@/lib/parental-controls';
-import { HIDDEN_GAME_IDS, isWorkingGameId } from '@/lib/working-games';
+import { ALL_WORKING_GAMES, HIDDEN_GAME_IDS, isWorkingGameId, playHrefFor } from '@/lib/working-games';
+import { KidsShelfNav } from '@/components/portal/KidsDiscovery';
 
 interface Game {
     id: string;
@@ -373,9 +374,31 @@ const FEATURED_GAMES = [
 
 import { EmptyState } from '@/components/EmptyState';
 
+function baseCatalog(): Game[] {
+    const featured = (FEATURED_GAMES as Game[]).filter(
+        (game) => isWorkingGameId(game.id) && !HIDDEN_GAME_IDS.has(game.id),
+    );
+    const seen = new Set(featured.map((game) => game.id));
+    const missing = ALL_WORKING_GAMES
+        .filter((game) => !seen.has(game.id))
+        .map((game) => ({
+            id: game.id,
+            title: game.title,
+            description: 'A Caribbean game you can play now.',
+            emoji: '🎮',
+            gradient: 'from-sky-400 to-cyan-500',
+            tier: 'free',
+            category: 'adventure',
+            xp: 100,
+            time: '5 min',
+            game_url: game.href,
+        }));
+    return [...featured, ...missing];
+}
+
 export default function GamesHubPage() {
     const { activeChild, user } = useUser();
-    const [games, setGames] = useState<Game[]>(FEATURED_GAMES as Game[]);
+    const [games, setGames] = useState<Game[]>(baseCatalog);
     const [activeCategory, setActiveCategory] = useState('all');
     const [showOnlyAccessible, setShowOnlyAccessible] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -389,7 +412,7 @@ export default function GamesHubPage() {
         let idleHandle: number | null = null;
         let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
 
-        const featuredById = new Map((FEATURED_GAMES as Game[]).map((game) => [game.id, game]));
+        const catalogIds = new Set(baseCatalog().map((game) => game.id));
 
         const hydrateGames = async () => {
             try {
@@ -416,7 +439,7 @@ export default function GamesHubPage() {
                         const id = String(game.id);
                         const route = routeKeyOf(game);
                         if (HIDDEN_GAME_IDS.has(id) || HIDDEN_GAME_IDS.has(route)) return false;
-                        if (featuredById.has(id) || featuredById.has(route)) return false;
+                        if (catalogIds.has(id) || catalogIds.has(route)) return false;
                         return isWorkingGameId(id) || isWorkingGameId(route);
                     })
                     .map((game) => ({
@@ -428,7 +451,7 @@ export default function GamesHubPage() {
                         time: game.time ?? game.estimated_time ?? '5 min',
                     }));
 
-                setGames([...(FEATURED_GAMES as Game[]), ...extras]);
+                setGames([...baseCatalog(), ...extras]);
             } catch (error) {
                 console.error('Failed to hydrate games:', error);
             }
@@ -586,6 +609,11 @@ export default function GamesHubPage() {
                     </div>
                 </div>
             </header>
+
+            <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 pt-4">
+                <p className="mb-2 text-xs font-black uppercase tracking-widest text-slate-500">Library shelves</p>
+                <KidsShelfNav />
+            </div>
 
             {/* Category pills */}
             <div className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 pt-4 sm:pt-6">
@@ -751,15 +779,7 @@ export default function GamesHubPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {filteredGames.map((game) => {
                             const progress = progressMap[game.id];
-                            const playHref = game.game_url && game.game_url.startsWith('/')
-                                ? game.game_url
-                                : game.id === 'story-library'
-                                    ? '/portal/stories'
-                                    : game.id === 'island-explorer'
-                                        ? '/portal/games/flag-match'
-                                        : game.id === 'cultural-quiz'
-                                            ? '/portal/games/island-trivia'
-                                            : `/portal/games/${game.id}`;
+                            const playHref = playHrefFor(game.id, game.game_url);
 
                             return (
                                 <div
