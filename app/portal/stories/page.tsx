@@ -12,6 +12,7 @@ import { fetchKidsLibraryStories, parentOfficialStories } from '@/lib/library-st
 import { trackEvent } from '@/lib/analytics';
 import { normalizeParentalControls } from '@/lib/parental-controls';
 import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
+import { MemberContentShelf } from '@/components/portal/MemberContentShelf';
 
 interface Story {
     id: string;
@@ -240,6 +241,14 @@ export default function StoriesLibraryPage() {
                     </div>
                 </div>
             </div>
+
+            <MemberContentShelf
+                section="stories"
+                title="Story files"
+                emptyMessage="No story files are on this shelf yet."
+                variant="embed"
+                className="max-w-7xl mx-auto mt-8 px-4"
+            />
 
             <div className="max-w-7xl mx-auto px-4 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-8">
 

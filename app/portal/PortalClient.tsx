@@ -24,6 +24,7 @@ import { TodaysPlanCard } from '@/components/portal/TodaysPlanCard';
 import { pickTodaysActivities } from '@/lib/curriculum/grounded-plan';
 import type { PlanActivity } from '@/app/actions/generate-plan';
 import { addScreenMinute, getTodayScreenMinutes, normalizeParentalControls } from '@/lib/parental-controls';
+import { MemberContentShelf } from '@/components/portal/MemberContentShelf';
 
 // ─── Lazy-loaded heavy components ────────────────────────────────────────────
 // Only loaded when the user navigates to that section — keeps initial bundle small.
@@ -511,6 +512,10 @@ export default function ChildPortalPage() {
         { id: 'leaderboard', label: 'Legends', icon: Trophy, color: 'from-amber-500 to-yellow-500' },
         { id: 'challenges', label: 'Challenges', icon: Crown, color: 'from-red-500 to-pink-500' },
         { id: 'printables', label: 'Printables', icon: Download, color: 'from-amber-400 to-orange-500' },
+        { id: 'coloring-books', label: 'Coloring', icon: Palette, color: 'from-pink-400 to-rose-500', href: '/portal/coloring-books' },
+        { id: 'journey-stories', label: 'Journeys', icon: BookOpen, color: 'from-teal-500 to-emerald-500', href: '/portal/journey-stories' },
+        { id: 'downloads', label: 'Downloads', icon: Download, color: 'from-amber-500 to-orange-600', href: '/portal/downloads' },
+        { id: 'library', label: 'Library', icon: BookOpen, color: 'from-sky-500 to-blue-600', href: '/portal/library' },
         { id: 'radio', label: 'Radio', icon: Radio, color: 'from-blue-600 to-indigo-600' },
         { id: 'music-hub', label: 'Market', icon: ShoppingBag, color: 'from-indigo-600 to-purple-700' },
         { id: 'buddy', label: 'My Buddy', icon: MessageCircle, color: 'from-emerald-500 to-teal-500' },
@@ -737,6 +742,15 @@ export default function ChildPortalPage() {
                                                 : 'This channel is currently locked by parent controls.');
                                             return;
                                         }
+                                        if ('href' in item && item.href) {
+                                            if ((item.id === 'journey-stories' || item.id === 'library') && !parentalControls.allow_stories) {
+                                                setBlockedMessage('This channel is currently locked by parent controls.');
+                                                return;
+                                            }
+                                            router.push(item.href);
+                                            setIsSidebarOpen(false);
+                                            return;
+                                        }
                                         if (item.id === 'games') {
                                             router.push('/portal/games');
                                         } else if (item.id === 'music-hub') {
@@ -877,6 +891,12 @@ export default function ChildPortalPage() {
 
                     {activeSection === 'home' ? (
                         <div className="max-w-6xl mx-auto space-y-6 py-4">
+                            <MemberContentShelf
+                                section="featured_home"
+                                title="New for you"
+                                emptyMessage=""
+                                variant="embed"
+                            />
                             {/* Streak Widget — visible on mobile and desktop */}
                             {activeChild && streakDay > 0 && (
                                 <div className="lg:max-w-md">
