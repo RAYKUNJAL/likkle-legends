@@ -6,6 +6,7 @@ import { buildBuddyFollowUps } from '../lib/buddy-followups';
 import { getPortalCapabilities } from '../lib/portal-capabilities';
 import { activityContentFields, clampPortalGameXp, isUuid } from '../lib/game-xp';
 import { HIDDEN_GAME_IDS, isWorkingGameId, WORKING_ARCADE_GAMES, WORKING_PORTAL_GAMES } from '../lib/working-games';
+import { PORTAL_GAME_CONTENT_IDS } from '../lib/portal-game-content';
 
 function testFreeTrialRouteSourceHasNoMagicLink() {
   const source = readFileSync(resolve(process.cwd(), 'app/api/auth/free-trial/route.ts'), 'utf8');
@@ -176,6 +177,24 @@ function testWorkingGamesOnly() {
   assert.equal(isWorkingGameId('story-library'), false);
   assert.ok(WORKING_PORTAL_GAMES.length >= 10);
   assert.equal(WORKING_ARCADE_GAMES.length, 5);
+  for (const id of ['reef-rescue', 'block-carnival', 'island-quiz'] as const) {
+    assert.equal(isWorkingGameId(id), true, id);
+    assert.equal(isUuid(PORTAL_GAME_CONTENT_IDS[id]), true, id);
+    const page = readFileSync(resolve(process.cwd(), `app/portal/games/${id}/page.tsx`), 'utf8');
+    assert.ok(page.includes('useAwardPortalGameXp'));
+    assert.ok(page.includes(`PORTAL_GAME_CONTENT_IDS['${id}']`));
+    assert.equal(page.toLowerCase().includes('upgrade'), false);
+    assert.equal(page.includes('/#pricing'), false);
+  }
+  const reef = readFileSync(resolve(process.cwd(), 'components/games/ReefRescue.tsx'), 'utf8');
+  assert.equal(reef.includes('requireAccess'), false);
+  assert.equal(reef.includes('GUEST_LEVELS'), false);
+  assert.ok(reef.includes('pointer-events-none'));
+  assert.ok(reef.includes('onPointerDown'));
+  const catalog = readFileSync(resolve(process.cwd(), 'app/portal/games/page.tsx'), 'utf8');
+  assert.ok(catalog.includes('Clear ocean litter, protect sea life and restore colorful Caribbean reefs.'));
+  assert.ok(catalog.includes("title: 'Reef Rescue'"));
+  assert.ok(catalog.includes('Arcade · Conservation'));
 }
 
 testFreeTrialRouteSourceHasNoMagicLink();

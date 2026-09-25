@@ -47,6 +47,8 @@ const GAME_CATEGORIES = [
     { id: 'adventure', label: 'Adventure', icon: MapIcon, color: 'from-orange-500 to-amber-600', emoji: '🗺️' },
     { id: 'creative', label: 'Creative', icon: Palette, color: 'from-pink-500 to-rose-600', emoji: '🎨' },
     { id: 'music', label: 'Music', icon: Music, color: 'from-violet-500 to-purple-600', emoji: '🎵' },
+    { id: 'puzzle', label: 'Puzzle', icon: Puzzle, color: 'from-rose-500 to-orange-500', emoji: '🎉' },
+    { id: 'conservation', label: 'Arcade · Conservation', icon: Heart, color: 'from-cyan-500 to-teal-500', emoji: '🪸' },
 ];
 
 // Maps admin game-builder game_type values to hub category tabs
@@ -67,6 +69,48 @@ const GAME_TYPE_TO_CATEGORY: Record<string, string> = {
 
 // Featured games with premium styling
 const FEATURED_GAMES = [
+    {
+        id: 'reef-rescue',
+        title: 'Reef Rescue',
+        description: 'Clear ocean litter, protect sea life and restore colorful Caribbean reefs.',
+        emoji: '🪸',
+        gradient: 'from-cyan-400 via-teal-500 to-emerald-600',
+        tier: 'free',
+        category: 'conservation',
+        xp: 150,
+        time: '5 min',
+        learningFocus: 'Ocean care and Caribbean reef life',
+        isNew: true,
+        isPopular: true,
+    },
+    {
+        id: 'block-carnival',
+        title: 'Caribbean Block Carnival',
+        description: 'Place vibrant blocks, clear lines, and fill the Carnival Fever meter.',
+        emoji: '🎉',
+        gradient: 'from-rose-400 via-orange-500 to-amber-400',
+        tier: 'free',
+        category: 'puzzle',
+        xp: 160,
+        time: '8 min',
+        learningFocus: 'Spatial planning and Caribbean treasures',
+        isNew: true,
+        isPopular: true,
+    },
+    {
+        id: 'island-quiz',
+        title: 'Island Quiz Quest',
+        description: 'Match each island with its foods, wildlife, flags and cultural treasures.',
+        emoji: '🏝️',
+        gradient: 'from-indigo-400 via-violet-500 to-fuchsia-500',
+        tier: 'free',
+        category: 'trivia',
+        xp: 140,
+        time: '6 min',
+        learningFocus: 'Caribbean geography, food, wildlife, and flags',
+        isNew: true,
+        isPopular: false,
+    },
     {
         id: 'island-memory',
         title: 'Island Memory Match',
