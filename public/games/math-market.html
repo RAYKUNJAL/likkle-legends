@@ -1519,11 +1519,6 @@ btnNext.addEventListener('click', () => {
     return;
   }
 
-  const nextLvl = state.currentLevel + 1;
-  if (nextLvl > 2 && !window.__unlocked) {
-    showGate();
-    return;
-  }
   state.currentLevel++;
   state.currentQuestion = 0;
   state.questions = LEVEL_GENERATORS[state.currentLevel]();
@@ -1610,38 +1605,7 @@ $('btnReplay').addEventListener('click', () => {
 
 
 
-// ===== FREE-TO-PAID GATE =====
-const GATE_CONFIG = {"charImg":"./images/roti-new.jpg","charAlt":"R.O.T.I.","gateTitle":"You're doing great! Want more math?","gateSubtitle":"You've completed the free levels! Unlock all 6 levels of Caribbean math — counting, addition, subtraction, and making change — plus 3 more games.","freeMaxLevel":1,"gateCheck":"MATH"};
-function showGate() {
-  const g = document.getElementById('gateOverlay');
-  const img = document.getElementById('gateCharImg');
-  const title = document.getElementById('gateTitle');
-  const subtitle = document.getElementById('gateSubtitle');
-  img.src = GATE_CONFIG.charImg;
-  img.alt = GATE_CONFIG.charAlt;
-  title.textContent = GATE_CONFIG.gateTitle;
-  subtitle.textContent = GATE_CONFIG.gateSubtitle;
-  g.classList.add('visible');
-}
-function isGated() { return false; } // Set to true when auth is wired up
-
 </script>
-
-<div class="gate-overlay" id="gateOverlay">
-  <div class="gate-lock">🔒</div>
-  <img src="./images/roti-new.jpg" alt="R.O.T.I." class="gate-character" id="gateCharImg">
-  <h2 class="gate-title" id="gateTitle">Want to keep playing?</h2>
-  <p class="gate-subtitle" id="gateSubtitle"></p>
-  <div class="gate-features">
-    <div class="gate-feature">All levels in all 4 games</div>
-    <div class="gate-feature">Full Likkle Legends learning portal</div>
-    <div class="gate-feature">Caribbean stories, songs, and activities</div>
-    <div class="gate-feature">New content every month</div>
-  </div>
-  <a href="https://www.likklelegends.com/#pricing" class="gate-cta">Start the $10 Legend Intro Pass →</a>
-  <a href="index.html" class="gate-free-btn">← Back to Free Games</a>
-  <p class="gate-guarantee">🛡️ 30-day money-back guarantee. Cancel anytime.</p>
-</div>
 
 </body>
 </html>

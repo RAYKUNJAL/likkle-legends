@@ -1425,10 +1425,6 @@ $('roundStartBtn').addEventListener('click', () => {
 });
 
 $('nextRoundBtn').addEventListener('click', () => {
-  if (state.currentRound > 1 && !window.__unlocked) {
-    showGate();
-    return;
-  }
   state.currentRound++;
   showRoundIntro();
 });
@@ -1938,38 +1934,7 @@ createEmbers();
 
 
 
-// ===== FREE-TO-PAID GATE =====
-const GATE_CONFIG = {"charImg":"./images/scorcha_pepper.jpg","charAlt":"Scorcha Pepper","gateTitle":"Scorcha wants a rematch!","gateSubtitle":"You've blazed through the free rounds! Unlock all 6 rounds of Caribbean spelling — 48 words total — plus 3 more games.","freeMaxRound":1,"gateCheck":"SPELLING"};
-function showGate() {
-  const g = document.getElementById('gateOverlay');
-  const img = document.getElementById('gateCharImg');
-  const title = document.getElementById('gateTitle');
-  const subtitle = document.getElementById('gateSubtitle');
-  img.src = GATE_CONFIG.charImg;
-  img.alt = GATE_CONFIG.charAlt;
-  title.textContent = GATE_CONFIG.gateTitle;
-  subtitle.textContent = GATE_CONFIG.gateSubtitle;
-  g.classList.add('visible');
-}
-function isGated() { return false; } // Set to true when auth is wired up
-
 </script>
-
-<div class="gate-overlay" id="gateOverlay">
-  <div class="gate-lock">🔒</div>
-  <img src="./images/scorcha_pepper.jpg" alt="Scorcha Pepper" class="gate-character" id="gateCharImg">
-  <h2 class="gate-title" id="gateTitle">Want to keep playing?</h2>
-  <p class="gate-subtitle" id="gateSubtitle"></p>
-  <div class="gate-features">
-    <div class="gate-feature">All levels in all 4 games</div>
-    <div class="gate-feature">Full Likkle Legends learning portal</div>
-    <div class="gate-feature">Caribbean stories, songs, and activities</div>
-    <div class="gate-feature">New content every month</div>
-  </div>
-  <a href="https://www.likklelegends.com/#pricing" class="gate-cta">Start the $10 Legend Intro Pass →</a>
-  <a href="index.html" class="gate-free-btn">← Back to Free Games</a>
-  <p class="gate-guarantee">🛡️ 30-day money-back guarantee. Cancel anytime.</p>
-</div>
 
 </body>
 </html>
