@@ -11,7 +11,8 @@ import {
     BOARD_SIZE,
 } from '../lib/games/block-placement';
 import { QUIZ_QUEST_QUESTIONS, QUIZ_ROUNDS, questionFor, QUIZ_LEVELS } from '../lib/games/island-quiz-data';
-import { clampPlayfieldX, entityUnderPoint, memberCanPlayReefLevel, reefConfig, reefWave, scoreReefHit } from '../lib/games/reef-rescue-rules';
+import { carnivalIslandLimit, LEGENDS_LEAD_GAMES, PUBLIC_GUEST_LEVELS, quizRoundLimit, reefLevelLimit } from '../lib/games/public-play';
+import { MAX_REEF_LEVEL, clampPlayfieldX, entityUnderPoint, memberCanPlayReefLevel, reefConfig, reefWave, scoreReefHit } from '../lib/games/reef-rescue-rules';
 import {
     FLAG_LEVELS,
     MATH_PROBLEM_COUNTS,
@@ -94,6 +95,26 @@ function testLongPlayCurvesStayBeatable() {
     assert.ok(doublesDashSeconds(10) > doublesDashSeconds(1));
 }
 
+function testPublicGuestCapsLeaveTheLongCurveForMembers() {
+    assert.equal(PUBLIC_GUEST_LEVELS, 3);
+    assert.equal(reefLevelLimit(false), 3);
+    assert.equal(reefLevelLimit(true), MAX_REEF_LEVEL);
+    assert.equal(carnivalIslandLimit(false), 3);
+    assert.equal(carnivalIslandLimit(true), 6);
+    assert.equal(quizRoundLimit(false), 1);
+    assert.equal(quizRoundLimit(true), QUIZ_ROUNDS.length);
+    assert.deepEqual(LEGENDS_LEAD_GAMES.map((game) => game.publicHref), [
+        '/games/reef-rescue',
+        '/games/block-carnival',
+        '/games/island-quiz',
+    ]);
+    assert.deepEqual(LEGENDS_LEAD_GAMES.map((game) => game.portalHref), [
+        '/portal/games/reef-rescue',
+        '/portal/games/block-carnival',
+        '/portal/games/island-quiz',
+    ]);
+}
+
 function testBlockPlacementClearsAFullRow() {
     let board = emptyBoard();
     const cells = [{ x: 0, y: 0 }];
@@ -114,5 +135,6 @@ function testBlockPlacementClearsAFullRow() {
 testReefMembersAreNeverGated();
 testQuizAlwaysHasATappableAnswer();
 testLongPlayCurvesStayBeatable();
+testPublicGuestCapsLeaveTheLongCurveForMembers();
 testBlockPlacementClearsAFullRow();
 console.log('portal lead games checks passed');

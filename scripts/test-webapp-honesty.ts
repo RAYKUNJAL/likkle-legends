@@ -197,6 +197,22 @@ function testWorkingGamesOnly() {
   assert.ok(catalog.includes('Clear ocean litter, protect sea life and restore colorful Caribbean reefs.'));
   assert.ok(catalog.includes("title: 'Reef Rescue'"));
   assert.ok(catalog.includes('Arcade · Conservation'));
+
+  const hub = readFileSync(resolve(process.cwd(), 'app/games/page.tsx'), 'utf8');
+  assert.ok(hub.includes('Likkle Legends'));
+  assert.equal(hub.toLowerCase().includes('nextbagchaser'), false);
+  assert.ok(hub.includes('LEGENDS_LEAD_GAMES'));
+  assert.ok(hub.includes('publicHref'));
+  const lead = readFileSync(resolve(process.cwd(), 'components/games/PublicLeadGame.tsx'), 'utf8');
+  assert.equal(lead.toLowerCase().includes('upgrade'), false);
+  assert.equal(lead.includes('/#pricing'), false);
+  assert.equal(lead.toLowerCase().includes('subscribe'), false);
+  for (const id of ['reef-rescue', 'block-carnival', 'island-quiz'] as const) {
+    assert.equal(existsSync(resolve(process.cwd(), `app/games/${id}/page.tsx`)), true, id);
+    const publicPage = readFileSync(resolve(process.cwd(), `app/games/${id}/page.tsx`), 'utf8');
+    assert.ok(publicPage.includes('PublicLeadGame'));
+    assert.equal(publicPage.toLowerCase().includes('upgrade'), false);
+  }
 }
 
 testFreeTrialRouteSourceHasNoMagicLink();
