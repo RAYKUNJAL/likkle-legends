@@ -12,6 +12,14 @@ const DOWNLOAD_SLUGS: Record<string, {
     upsellDescription: string;
     upsellPrice: string;
     upsellLink: string;
+    secondaryCtaLabel?: string;
+    secondaryCtaLink?: string;
+    printHtmlPath?: string;
+    /** Public PDF if the gated download API cannot start. */
+    directPdfPath?: string;
+    shareText?: string;
+    /** Shown under the download button. Defaults to “we sent a copy”. */
+    emailNote?: string;
 }> = {
     "caribbean-abc": {
         title: "Caribbean ABC Coloring Pack",
@@ -29,6 +37,20 @@ const DOWNLOAD_SLUGS: Record<string, {
         upsellPrice: "Free",
         upsellLink: "/signup?plan=free&user_type=teacher",
     },
+    "journey-pack": {
+        title: "Journey Story Pack",
+        downloadId: "journey-story-pack",
+        upsellTitle: "Make custom Journey Stories in the app",
+        upsellDescription: "Unlock Island Helpers Journey Stories, more printables, and the kids games hub. Start a free trial, then explore free games anytime.",
+        upsellPrice: "7-day trial",
+        upsellLink: "/signup?plan=free_trial&utm_source=journey_pack&utm_medium=thankyou",
+        secondaryCtaLabel: "Play free games",
+        secondaryCtaLink: "https://likkle-games.nextbagchaser.com/",
+        printHtmlPath: "/printables/free-journey-pack.html",
+        directPdfPath: "/printables/free-journey-pack.pdf",
+        shareText: "Free printable Journey Story pack for Caribbean kids",
+        emailNote: "We saved this address for Likkle Legends updates. Your pack downloads on this page.",
+    },
 };
 
 export default function ThankYouPage() {
@@ -41,6 +63,7 @@ export default function ThankYouPage() {
 
     const [downloading, setDownloading] = useState(false);
     const [downloaded, setDownloaded] = useState(false);
+    const [downloadError, setDownloadError] = useState("");
     const [countdown, setCountdown] = useState(15 * 60); // 15 minute countdown for urgency
 
     // Auto-trigger download on page load
@@ -68,12 +91,14 @@ export default function ThankYouPage() {
         if (!config || downloading) return;
         setDownloading(true);
 
+        setDownloadError("");
         try {
             const response = await fetch(
                 `/api/free-download?id=${config.downloadId}&email=${encodeURIComponent(email)}`
             );
 
-            if (response.ok) {
+            const contentType = response.headers.get("content-type") || "";
+            if (response.ok && contentType.includes("pdf")) {
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement("a");
@@ -84,9 +109,20 @@ export default function ThankYouPage() {
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
                 setDownloaded(true);
+            } else {
+                setDownloadError(
+                    config.directPdfPath || config.printHtmlPath
+                        ? "The automatic download did not start. Use the PDF or print view below."
+                        : "The automatic download did not start. Please try again."
+                );
             }
         } catch (err) {
             console.error("Download failed:", err);
+            setDownloadError(
+                config.directPdfPath || config.printHtmlPath
+                    ? "The automatic download did not start. Use the PDF or print view below."
+                    : "The automatic download did not start. Please try again."
+            );
         } finally {
             setDownloading(false);
         }
@@ -127,8 +163,28 @@ export default function ThankYouPage() {
                     </button>
 
                     <p className="text-sm text-gray-400 mt-4">
-                        We also sent a copy to <strong>{email}</strong>
+                        {config.emailNote || "We also sent a copy to"}{" "}
+                        {!config.emailNote && <strong>{email}</strong>}
+                        {config.emailNote && email && (
+                            <>
+                                {" "}
+                                (<strong>{email}</strong>)
+                            </>
+                        )}
                     </p>
+                    {downloadError && (
+                        <p className="text-sm text-orange-600 mt-3" role="alert">
+                            {downloadError}
+                            {config.directPdfPath && (
+                                <>
+                                    {" "}
+                                    <a className="underline font-semibold" href={config.directPdfPath}>
+                                        Download the PDF
+                                    </a>
+                                </>
+                            )}
+                        </p>
+                    )}
                 </div>
 
                 {/* Upsell Card */}
@@ -189,6 +245,29 @@ export default function ThankYouPage() {
                             </div>
                         </div>
 
+                        {config.secondaryCtaLink && (
+                            <div className="mt-4">
+                                <a
+                                    href={config.secondaryCtaLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 text-sm font-bold text-yellow-300 hover:text-yellow-200 underline-offset-2 hover:underline"
+                                >
+                                    {config.secondaryCtaLabel || "Explore free games"}
+                                    <ArrowRight className="w-4 h-4" />
+                                </a>
+                            </div>
+                        )}
+
+                        {config.printHtmlPath && (
+                            <p className="mt-4 text-sm text-gray-400">
+                                Prefer print-from-browser?{" "}
+                                <a href={config.printHtmlPath} className="text-yellow-300 underline" target="_blank" rel="noopener noreferrer">
+                                    Open the HTML print view
+                                </a>
+                            </p>
+                        )}
+
                         {/* Trust */}
                         <div className="mt-6 pt-6 border-t border-white/10 flex items-center justify-center gap-4 text-xs text-gray-400">
                             <div className="flex items-center gap-1">
@@ -206,7 +285,7 @@ export default function ThankYouPage() {
                     <p className="text-gray-500 text-sm mb-3">Know a parent who'd love this?</p>
                     <div className="flex items-center justify-center gap-3">
                         <a
-                            href={`https://wa.me/?text=${encodeURIComponent(`Check out this free Caribbean ABC Coloring Pack for kids! https://likklelegends.com/free/${slug}`)}`}
+                            href={`https://wa.me/?text=${encodeURIComponent(`${config.shareText || `Check out this free ${config.title} for kids!`} https://likklelegends.com/free/${slug}`)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-6 py-2.5 bg-green-500 text-white rounded-xl font-bold text-sm hover:bg-green-600 transition-colors"
