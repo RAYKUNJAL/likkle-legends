@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { RHYTHM_ROUNDS } from '@/lib/games/long-play';
 
 const RHYTHM_PATTERNS = [
   { beats: [1, 0, 1, 0], name: 'Basic', difficulty: 'easy' },
@@ -35,7 +36,7 @@ export default function RhythmMatcher({ onComplete }: GameProps) {
   );
 
   const currentPattern = patterns[currentPatternIndex];
-  const MAX_ROUNDS = 5;
+  const MAX_ROUNDS = RHYTHM_ROUNDS[difficulty];
 
   const playPatternAnimation = useCallback(async () => {
     setPlayingPattern(true);
@@ -131,7 +132,7 @@ export default function RhythmMatcher({ onComplete }: GameProps) {
         setFeedback({ message: '', type: '' });
       }, 1000);
     }
-  }, [userPattern, currentPattern, playingPattern, gameState, round, score, currentPatternIndex, patterns, playPatternAnimation, onComplete]);
+  }, [userPattern, currentPattern, playingPattern, gameState, round, score, currentPatternIndex, patterns, playPatternAnimation, onComplete, MAX_ROUNDS]);
 
   const handleHint = useCallback(() => {
     setHint(true);

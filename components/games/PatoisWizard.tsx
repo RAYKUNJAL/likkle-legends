@@ -4,6 +4,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { ArrowLeft, Trophy, Lightbulb, CheckCircle2, XCircle, Target, MapPin, Star, Unlock, Lock, Globe } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
+import { PATOIS_LEVELS } from '@/lib/games/long-play';
 
 type Pair = {
     id?: string;
@@ -128,13 +129,7 @@ const VOCABULARY: Record<string, Pair[]> = {
 
 const ISLANDS = Object.keys(VOCABULARY);
 
-const LEVELS = [
-    { num: 1, pairs: 4, name: "Beginner" },
-    { num: 2, pairs: 6, name: "Apprentice" },
-    { num: 3, pairs: 8, name: "Explorer" },
-    { num: 4, pairs: 10, name: "Scholar" },
-    { num: 5, pairs: 12, name: "Legend" },
-];
+const LEVELS = PATOIS_LEVELS;
 
 type Choice = { id: string; text: string };
 
@@ -144,6 +139,7 @@ export default function PatoisWizard({ onComplete }: { onComplete?: (score: numb
 
     const [selectedIsland, setSelectedIsland] = useState<string | null>(null);
     const [currentLevel, setCurrentLevel] = useState(1);
+    const [board, setBoard] = useState(1);
     const [unlockedLevels, setUnlockedLevels] = useState<Record<string, number>>({});
 
     const [roundPairs, setRoundPairs] = useState<Pair[]>([]);
@@ -180,11 +176,11 @@ export default function PatoisWizard({ onComplete }: { onComplete?: (score: numb
         setGameState('level_select');
     };
 
-    const startGame = (levelNum: number) => {
+    const dealBoard = (levelNum: number, boardNum: number, keepScore: boolean) => {
         if (!selectedIsland) return;
         const levelData = LEVELS.find(l => l.num === levelNum)!;
 
-        // Randomly pick unique words for this level
+        // Randomly pick unique words for this board
         const possibleWords = VOCABULARY[selectedIsland];
         const chosenCount = Math.min(levelData.pairs, possibleWords.length);
         const shuffled = [...possibleWords].sort(() => Math.random() - 0.5).slice(0, chosenCount);
@@ -197,17 +193,23 @@ export default function PatoisWizard({ onComplete }: { onComplete?: (score: numb
         setRoundPairs(mappedPairs);
         setLeftCol(mappedPairs.map((p) => ({ id: p.id!, text: p.patois })).sort(() => Math.random() - 0.5));
         setRightCol(mappedPairs.map((p) => ({ id: p.id!, text: p.english })).sort(() => Math.random() - 0.5));
-
         setMatchedIds([]);
-        setScore(0);
-        setStreak(0);
-        setAttempts(0);
         setSelectedLeft(null);
         setSelectedRight(null);
         setFeedback(null);
-        setActiveHint('Find the matching words to learn!');
+        setBoard(boardNum);
+        setActiveHint(boardNum === 1 ? 'Find the matching words to learn!' : `Board ${boardNum} of ${levelData.boards}. Match the next set.`);
+        if (!keepScore) {
+            setScore(0);
+            setStreak(0);
+            setAttempts(0);
+        }
         setCurrentLevel(levelNum);
         setGameState('playing');
+    };
+
+    const startGame = (levelNum: number) => {
+        dealBoard(levelNum, 1, false);
     };
 
     const evaluateMatch = (leftId: string, rightId: string) => {
@@ -230,10 +232,17 @@ export default function PatoisWizard({ onComplete }: { onComplete?: (score: numb
             confetti({ particleCount: 20, spread: 35, origin: { y: 0.6 } });
 
             if (nextMatched === roundPairs.length) {
-                // Game Won
-                setTimeout(() => {
-                    handleLevelComplete(score + earned, nextMatched, roundPairs.length);
-                }, 700);
+                const levelData = LEVELS.find((level) => level.num === currentLevel);
+                const boards = levelData?.boards ?? 1;
+                if (board < boards) {
+                    setTimeout(() => {
+                        dealBoard(currentLevel, board + 1, true);
+                    }, 700);
+                } else {
+                    setTimeout(() => {
+                        handleLevelComplete(score + earned, nextMatched, roundPairs.length);
+                    }, 700);
+                }
             }
         } else {
             setStreak(0);
@@ -347,7 +356,7 @@ export default function PatoisWizard({ onComplete }: { onComplete?: (score: numb
                                     <div className="text-center">
                                         <div className="font-black text-2xl">Lvl {level.num}</div>
                                         <div className="text-xs uppercase tracking-widest font-bold opacity-60 mt-1">{level.name}</div>
-                                        <div className="text-xs opacity-50 mt-1">{level.pairs} Pairs</div>
+                                        <div className="text-xs opacity-50 mt-1">{level.pairs} pairs × {level.boards} boards</div>
                                     </div>
                                 </button>
                             );
@@ -449,7 +458,7 @@ export default function PatoisWizard({ onComplete }: { onComplete?: (score: numb
                 </div>
 
                 <div className="text-center mt-4">
-                    <span className="text-xs font-black uppercase text-slate-400 tracking-widest">{matchedIds.length} of {roundPairs.length} matches found</span>
+                    <span className="text-xs font-black uppercase text-slate-400 tracking-widest">Board {board}/{LEVELS.find((level) => level.num === currentLevel)?.boards ?? 1} · {matchedIds.length} of {roundPairs.length} matches found</span>
                 </div>
             </div>
         );

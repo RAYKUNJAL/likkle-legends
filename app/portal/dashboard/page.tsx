@@ -8,7 +8,7 @@ import { useUser } from '@/components/UserContext';
 import TodaysCustomWork from '@/components/parent/TodaysCustomWork';
 
 function DashboardContent() {
-    const { user, activeChild, children, isLoading } = useUser();
+    const { user, activeChild, children, isLoading, canAccess } = useUser();
     const [childName, setChildName] = useState<string>('Legend');
     const [userId, setUserId] = useState<string>('');
     const [hasUpsell, setHasUpsell] = useState<boolean>(false);
@@ -70,6 +70,21 @@ function DashboardContent() {
                         </div>
                         <div className="absolute right-0 bottom-0 w-64 h-64 bg-white/10 rounded-full blur-[80px] -mr-16 -mb-16"></div>
                     </div>
+
+                    {canAccess('starter_mailer') && (
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            {[
+                                ['/portal/coloring-books', 'Coloring books'],
+                                ['/portal/journey-stories', 'Journey stories'],
+                                ['/portal/downloads', 'Downloads'],
+                                ['/portal/library', 'Library files'],
+                            ].map(([href, label]) => (
+                                <Link key={href} href={href} className="rounded-2xl border border-zinc-100 bg-white px-5 py-4 font-black text-deep">
+                                    {label}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
 
                     {isLoading ? (
                         <p className="text-sm font-bold text-deep/50">Checking the parent session…</p>

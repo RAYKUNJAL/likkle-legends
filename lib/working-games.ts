@@ -26,6 +26,9 @@ export const WORKING_PORTAL_GAMES: WorkingGame[] = [
   { id: 'ingredient-sort', title: 'Ingredient Sort', href: '/portal/games/ingredient-sort', kind: 'portal' },
   { id: 'rhythm-matcher', title: 'Rhythm Matcher', href: '/portal/games/rhythm-matcher', kind: 'portal' },
   { id: 'island-passport-explorer', title: 'Island Passport Explorer', href: '/portal/games/island-passport-explorer', kind: 'portal' },
+  { id: 'block-carnival', title: 'Caribbean Block Carnival', href: '/portal/games/block-carnival', kind: 'portal' },
+  { id: 'island-quiz', title: 'Island Quiz Quest', href: '/portal/games/island-quiz', kind: 'portal' },
+  { id: 'reef-rescue', title: 'Reef Rescue', href: '/portal/games/reef-rescue', kind: 'portal' },
 ];
 
 export const WORKING_ARCADE_GAMES: WorkingGame[] = [

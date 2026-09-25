@@ -48,7 +48,7 @@ export default class Customer extends Phaser.GameObjects.Container {
     this.setSize(80, 140);
 
     this.patienceEvent = scene.time.addEvent({
-      delay: Math.max(3000, 6000 - (scene as any).level * 400),
+      delay: Math.max(4500, 8000 - (scene as any).level * 350),
       loop: true,
       callback: () => {
         this.patience -= 1;

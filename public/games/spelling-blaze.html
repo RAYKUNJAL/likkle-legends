@@ -1041,7 +1041,7 @@ body {
   <p class="game-subtitle">6 Rounds of Caribbean Spelling!</p>
   <div class="game-stats-preview">
     <span class="stat-pill">6 Rounds</span>
-    <span class="stat-pill">48 Words</span>
+    <span class="stat-pill">104 Words</span>
   </div>
   <div class="round-preview">
     <div class="round-preview-item"><span class="round-num">R1</span><span class="round-name">Warm Up</span><span class="round-time">20s</span></div>
@@ -1107,7 +1107,7 @@ body {
   <img src="./images/scorcha_pepper.jpg" alt="Scorcha" class="victory-scorcha" id="victoryScocha">
   <h2 class="victory-title" id="victoryTitle">SPELLING LEGEND!</h2>
   <p class="victory-subtitle" id="victorySubtitle">Scorcha is DEFEATED!</p>
-  <p class="victory-badges" id="victoryBadges">🔥 42/48</p>
+  <p class="victory-badges" id="victoryBadges">🔥 0/104</p>
   <p class="victory-streak" id="victoryStreak">Best streak: 12 words</p>
   <div class="round-breakdown" id="roundBreakdown"></div>
   <div class="word-results" id="wordResults"></div>
@@ -1183,7 +1183,7 @@ const ROUNDS = [
   {
     name: "Warm Up",
     missingCount: 1,
-    timePerWord: 20,
+    timePerWord: 26,
     words: [
       { word: "SUN", hint: "Bright in the sky" },
       { word: "HAT", hint: "Wear on your head" },
@@ -1196,13 +1196,17 @@ const ROUNDS = [
       { word: "RUM", hint: "Not for kids — Caribbean drink" },
       { word: "NET", hint: "Catch fish with this" },
       { word: "POT", hint: "Cook in this" },
-      { word: "PAN", hint: "Fry food in this" }
+      { word: "PAN", hint: "Fry food in this" },
+      { word: "SEA", hint: "Salty water" },
+      { word: "MAP", hint: "Shows the way" },
+      { word: "BUS", hint: "A ride through town" },
+      { word: "FUN", hint: "A good time" }
     ]
   },
   {
     name: "Getting Hotter",
     missingCount: 1,
-    timePerWord: 18,
+    timePerWord: 24,
     words: [
       { word: "FISH", hint: "From the sea" },
       { word: "LIME", hint: "Green citrus" },
@@ -1217,13 +1221,17 @@ const ROUNDS = [
       { word: "WAVE", hint: "In the ocean" },
       { word: "RAIN", hint: "Falls from clouds" },
       { word: "SALT", hint: "Season your food" },
-      { word: "COAL", hint: "For the barbecue" }
+      { word: "COAL", hint: "For the barbecue" },
+      { word: "BOAT", hint: "Rides on the water" },
+      { word: "REEF", hint: "Home for fish" },
+      { word: "CAKE", hint: "Sweet baked treat" },
+      { word: "SONG", hint: "You sing this" }
     ]
   },
   {
     name: "Island Heat",
     missingCount: 2,
-    timePerWord: 16,
+    timePerWord: 22,
     words: [
       { word: "MANGO", hint: "Sweet tropical fruit" },
       { word: "GUAVA", hint: "Pink inside fruit" },
@@ -1238,13 +1246,17 @@ const ROUNDS = [
       { word: "STEEL", hint: "Steelpan metal" },
       { word: "FLOAT", hint: "On Carnival day" },
       { word: "PARROT", hint: "Colorful bird" },
-      { word: "ISLAND", hint: "Surrounded by water" }
+      { word: "ISLAND", hint: "Surrounded by water" },
+      { word: "PATTY", hint: "Jamaican pastry" },
+      { word: "CURRY", hint: "Spiced stew" },
+      { word: "MUSIC", hint: "Songs and rhythm" },
+      { word: "CANOE", hint: "Small boat" }
     ]
   },
   {
     name: "Blazing",
     missingCount: 2,
-    timePerWord: 14,
+    timePerWord: 20,
     words: [
       { word: "PELAU", hint: "One-pot rice dish" },
       { word: "DOUBLES", hint: "Trinidad street food" },
@@ -1259,13 +1271,17 @@ const ROUNDS = [
       { word: "PITONS", hint: "St. Lucia mountains" },
       { word: "CRICKET", hint: "Bat and ball sport" },
       { word: "PAPAYA", hint: "Tropical melon" },
-      { word: "NUTMEG", hint: "Grenada's spice" }
+      { word: "NUTMEG", hint: "Grenada's spice" },
+      { word: "ACKEE", hint: "Jamaica's national fruit" },
+      { word: "CASSAVA", hint: "A root you can cook" },
+      { word: "CHUTNEY", hint: "Sweet spicy sauce" },
+      { word: "ROTI", hint: "Wrapped flatbread" }
     ]
   },
   {
     name: "Inferno",
     missingCount: 3,
-    timePerWord: 12,
+    timePerWord: 18,
     words: [
       { word: "CARNIVAL", hint: "Big celebration" },
       { word: "STEELPAN", hint: "Musical instrument" },
@@ -1280,13 +1296,17 @@ const ROUNDS = [
       { word: "PASSPORT", hint: "Travel document" },
       { word: "TREASURE", hint: "Pirate's gold" },
       { word: "PARADISE", hint: "Island heaven" },
-      { word: "TROPICAL", hint: "Warm and sunny" }
+      { word: "TROPICAL", hint: "Warm and sunny" },
+      { word: "JUNKANOO", hint: "Bahamas festival" },
+      { word: "FLAMINGO", hint: "Pink Bahamas bird" },
+      { word: "PEPPERPOT", hint: "Guyana stew" },
+      { word: "GRENADA", hint: "The spice island" }
     ]
   },
   {
     name: "Scorcha's Boss Round",
     missingCount: 3,
-    timePerWord: 10,
+    timePerWord: 16,
     words: [
       { word: "PINEAPPLE", hint: "Spiky sweet fruit" },
       { word: "SUGARCANE", hint: "Sweet stalk plant" },
@@ -1299,7 +1319,11 @@ const ROUNDS = [
       { word: "TOBAGO", hint: "Trinidad's sister island" },
       { word: "LIMBO", hint: "Dance under the bar" },
       { word: "SOCA", hint: "Caribbean party music" },
-      { word: "ROTI", hint: "Wrapped flatbread meal" }
+      { word: "ROTI", hint: "Wrapped flatbread meal" },
+      { word: "JAMAICA", hint: "Land of reggae" },
+      { word: "TRINIDAD", hint: "Home of carnival" },
+      { word: "BARBADOS", hint: "Gem of the Caribbean" },
+      { word: "KINGSTON", hint: "Jamaica's capital" }
     ]
   }
 ];
@@ -1879,7 +1903,7 @@ function showVictoryScreen() {
   vTitle.textContent = titleText;
   vTitle.className = 'victory-title ' + titleClass;
   $('victorySubtitle').textContent = subtitleText;
-  $('victoryBadges').textContent = `🔥 ${total}/48`;
+  $('victoryBadges').textContent = `🔥 ${total}/104`;
   $('victoryStreak').textContent = `Best streak: ${state.bestStreak} word${state.bestStreak !== 1 ? 's' : ''}`;
 
   // Scorcha

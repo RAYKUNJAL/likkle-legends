@@ -83,6 +83,10 @@ export default function PrintablesPage() {
                                 </span>
                             </h1>
                             <p className="text-slate-500 font-bold">Activity sheets, coloring pages & more!</p>
+                            <div className="mt-2 flex gap-4 text-sm font-black">
+                                <Link href="/portal/coloring-books" className="text-amber-700">Coloring books</Link>
+                                <Link href="/portal/downloads" className="text-amber-700">Downloads</Link>
+                            </div>
                         </div>
                     </div>
 

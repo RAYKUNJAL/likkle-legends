@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Trophy, ArrowLeft, RefreshCw, Play, Volume2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
+import { COLOR_MATCH_ROUNDS } from '@/lib/games/long-play';
 
 // ==========================================
 // CONSTANTS
@@ -62,9 +63,9 @@ export default function ColorMatch({ onComplete }: { onComplete?: (score: number
             setFeedback({ type: 'success', text: 'Correct! Great job!' });
 
             setTimeout(() => {
-                if (rounds + 1 >= 10) {
+                if (rounds + 1 >= COLOR_MATCH_ROUNDS) {
                     setGameState('complete');
-                    if (onComplete) onComplete(score + 100, 10, 10);
+                    if (onComplete) onComplete(score + 100, COLOR_MATCH_ROUNDS, COLOR_MATCH_ROUNDS);
                     confetti({
                         particleCount: 150,
                         spread: 70,
@@ -94,10 +95,10 @@ export default function ColorMatch({ onComplete }: { onComplete?: (score: number
                     <div className="h-3 w-48 bg-indigo-200 rounded-full overflow-hidden">
                         <motion.div
                             className="h-full bg-indigo-500"
-                            animate={{ width: `${(rounds / 10) * 100}%` }}
+                            animate={{ width: `${(rounds / COLOR_MATCH_ROUNDS) * 100}%` }}
                         />
                     </div>
-                    <span className="font-bold text-indigo-400">Round {rounds + 1}/10</span>
+                    <span className="font-bold text-indigo-400">Round {rounds + 1}/{COLOR_MATCH_ROUNDS}</span>
                 </div>
             </div>
 

@@ -1,6 +1,11 @@
 const nextConfig = {
   compress: true,
   poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '80mb',
+    },
+  },
   // Self-contained server bundle for Docker/VPS deploys (deploy/README.md)
   output: 'standalone',
 
