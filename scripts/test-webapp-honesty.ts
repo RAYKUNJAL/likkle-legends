@@ -74,6 +74,18 @@ function testArcadeGamesHaveNoKidPaywall() {
   }
 }
 
+function testPortalGamesHaveNoKidPayCta() {
+  assert.equal(existsSync(resolve(process.cwd(), 'components/games/GamePaywall.tsx')), false);
+  const wrapper = readFileSync(resolve(process.cwd(), 'components/games/GameWrapper.tsx'), 'utf8');
+  assert.equal(wrapper.includes('GamePaywall'), false);
+  assert.equal(wrapper.includes('showPaywall'), false);
+  const portalGames = readFileSync(resolve(process.cwd(), 'app/portal/games/page.tsx'), 'utf8');
+  assert.equal(portalGames.includes('Upgrade to Play'), false);
+  assert.equal(portalGames.includes('/#pricing'), false);
+  const pricing = readFileSync(resolve(process.cwd(), 'app/pricing/page.tsx'), 'utf8');
+  assert.ok(pricing.includes('Upgrade anytime'));
+}
+
 function testArcadeRoutesRedirectToHtml() {
   const config = readFileSync(resolve(process.cwd(), 'next.config.mjs'), 'utf8');
   for (const id of ['island-hop', 'tantys-kitchen', 'math-market', 'spelling-blaze']) {
@@ -124,6 +136,7 @@ testFreeTrialNeverLeaksMagicLink();
 testBuddyFollowUpsStayInCharacter();
 testVoiceFailsClosedWithoutKeys();
 testArcadeGamesHaveNoKidPaywall();
+testPortalGamesHaveNoKidPayCta();
 testArcadeRoutesRedirectToHtml();
 testWorkingGamesOnly();
 testIslandWeekAndPreservedSurfaces();

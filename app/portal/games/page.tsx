@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
-    ArrowLeft, Gamepad2, Star, Lock, Play, Trophy, Clock,
+    ArrowLeft, Gamepad2, Star, Play, Trophy, Clock,
     Users, Sparkles, Brain, Palette, Zap, Crown, Gift, Wand2,
     Puzzle, Music, BookOpen, Map as MapIcon, Heart, Target, CheckCircle, Search
 } from 'lucide-react';
@@ -702,8 +702,6 @@ export default function GamesHubPage() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {filteredGames.map((game) => {
-                            const tier = (game as any).tier_required || (game as any).tier;
-                            const isLocked = !canPlayGame(tier);
                             const progress = progressMap[game.id];
                             const playHref = game.game_url && game.game_url.startsWith('/')
                                 ? game.game_url
@@ -718,7 +716,7 @@ export default function GamesHubPage() {
                             return (
                                 <div
                                     key={game.id}
-                                    className={`group relative bg-white rounded-[2rem] overflow-hidden transition-all duration-300 shadow-lg shadow-sky-100 hover:shadow-2xl hover:shadow-sky-200 hover:-translate-y-2 border-4 border-white ${isLocked ? 'opacity-80' : ''}`}
+                                    className="group relative bg-white rounded-[2rem] overflow-hidden transition-all duration-300 shadow-lg shadow-sky-100 hover:shadow-2xl hover:shadow-sky-200 hover:-translate-y-2 border-4 border-white"
                                 >
                                     {/* Colorful cover */}
                                     <div className={`relative h-32 sm:h-36 bg-gradient-to-br ${(game as any).gradient || 'from-sky-400 to-cyan-500'} flex items-center justify-center`}>
@@ -744,20 +742,6 @@ export default function GamesHubPage() {
                                         </span>
                                     </div>
 
-                                    {/* Lock Overlay */}
-                                    {isLocked && (
-                                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex flex-col items-center justify-center z-30 text-white">
-                                            <Lock size={36} className="mb-2" />
-                                            <p className="font-black mb-2">Upgrade to Play</p>
-                                            <Link
-                                                href="/#pricing"
-                                                className="px-4 py-2 bg-white text-slate-800 rounded-full text-sm font-black hover:scale-105 transition-transform"
-                                            >
-                                                See Plans
-                                            </Link>
-                                        </div>
-                                    )}
-
                                     {/* Body */}
                                     <div className="p-4 sm:p-5 flex flex-col">
                                         <h3 className="text-lg sm:text-xl font-black text-slate-800 mb-1 leading-tight">{game.title}</h3>
@@ -780,15 +764,13 @@ export default function GamesHubPage() {
                                             </div>
                                         )}
 
-                                        {!isLocked && (
-                                            <Link
-                                                prefetch={false}
-                                                href={playHref}
-                                                className={`w-full min-h-[52px] bg-gradient-to-r ${(game as any).gradient || 'from-sky-400 to-cyan-500'} text-white rounded-full font-black text-base text-center transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.03] active:scale-95`}
-                                            >
-                                                <Play size={20} className="fill-white" /> PLAY!
-                                            </Link>
-                                        )}
+                                        <Link
+                                            prefetch={false}
+                                            href={playHref}
+                                            className={`w-full min-h-[52px] bg-gradient-to-r ${(game as any).gradient || 'from-sky-400 to-cyan-500'} text-white rounded-full font-black text-base text-center transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.03] active:scale-95`}
+                                        >
+                                            <Play size={20} className="fill-white" /> PLAY!
+                                        </Link>
                                     </div>
                                 </div>
                             );
