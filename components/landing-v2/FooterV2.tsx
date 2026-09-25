@@ -78,6 +78,7 @@ export const FooterV2 = () => {
                                         { name: 'Guarantee', href: '/guarantee' },
                                         { name: 'Privacy', href: '/privacy' },
                                         { name: 'Terms', href: '/terms' },
+                                        { name: 'Refund', href: '/refund' },
                                         { name: 'Contact', href: '/contact' }
                                     ].map(item => (
                                         <li key={item.name}><Link href={item.href} className="text-white/40 hover:text-white font-bold transition-all text-sm uppercase tracking-widest">{item.name}</Link></li>
