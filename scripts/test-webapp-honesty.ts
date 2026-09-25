@@ -76,6 +76,15 @@ function testArcadeGamesHaveNoKidPaywall() {
   }
 }
 
+function testBuddyChatHasNoKidPayCta() {
+  const source = readFileSync(resolve(process.cwd(), 'app/portal/buddy/[character]/page.tsx'), 'utf8');
+  assert.equal(source.includes("router.push('/checkout')"), false);
+  assert.equal(source.includes("router.push('/pricing')"), false);
+  assert.equal(source.includes('Upgrade Now'), false);
+  assert.equal(source.includes('Unlock Unlimited'), false);
+  assert.ok(source.includes('AskAParentNotice'));
+}
+
 function testPortalGamesHaveNoKidPayCta() {
   assert.equal(existsSync(resolve(process.cwd(), 'components/games/GamePaywall.tsx')), false);
   const wrapper = readFileSync(resolve(process.cwd(), 'components/games/GameWrapper.tsx'), 'utf8');
@@ -204,6 +213,7 @@ testFreeTrialNeverLeaksMagicLink();
 testBuddyFollowUpsStayInCharacter();
 testVoiceFailsClosedWithoutKeys();
 testArcadeGamesHaveNoKidPaywall();
+testBuddyChatHasNoKidPayCta();
 testPortalGamesHaveNoKidPayCta();
 testArcadeRoutesRedirectToHtml();
 testWorkingGamesOnly();
