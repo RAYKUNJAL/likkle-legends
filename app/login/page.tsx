@@ -18,6 +18,9 @@ function LoginForm() {
     const [loginMethod, setLoginMethod] = useState<'password' | 'magiclink'>('password');
     const [error, setError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+    const redirectTo = searchParams.get('redirect') || '';
+    const safeCheckout = redirectTo.startsWith('/checkout') && !redirectTo.startsWith('//') ? redirectTo : '';
+    const signupHref = safeCheckout ? `/signup?redirect=${encodeURIComponent(safeCheckout)}` : '/signup';
 
     useEffect(() => {
         const errorParam = searchParams.get('error');
@@ -206,7 +209,7 @@ function LoginForm() {
                         </Link>
                     )}
                     <div className="text-sm text-deep/40">
-                        Don't have an account? <Link href="/signup" className="text-secondary font-bold hover:underline">Start your adventure</Link>
+                        Don&apos;t have an account? <Link href={signupHref} className="text-secondary font-bold hover:underline">{safeCheckout ? 'Create a parent account, then pay' : 'Start your adventure'}</Link>
                     </div>
                     <div className="pt-2 border-t border-zinc-100">
                         <Link href="/admin" className="text-xs text-deep/25 hover:text-deep/50 font-bold uppercase tracking-widest transition-colors">

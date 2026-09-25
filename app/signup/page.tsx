@@ -29,6 +29,12 @@ const ISLAND_ALIASES: Record<string, string> = {
     curacao: 'curacao',
 };
 
+function safeCheckoutRedirect(value: string) {
+    if (!value.startsWith('/checkout')) return '';
+    if (value.startsWith('//') || value.includes('://') || value.includes('\\')) return '';
+    return value;
+}
+
 function cleanParam(searchParams: ReturnType<typeof useSearchParams>, key: string, fallback = '') {
     try {
         const value = searchParams?.get(key);
@@ -43,6 +49,7 @@ function SignupForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const plan = cleanParam(searchParams, 'plan', 'mail_club');
+    const checkoutRedirect = safeCheckoutRedirect(cleanParam(searchParams, 'redirect') || cleanParam(searchParams, 'next'));
     const referral = cleanParam(searchParams, 'ref') || cleanParam(searchParams, 'referral', 'direct');
     const rawInitialIsland = cleanParam(searchParams, 'island', 'mixed');
     const initialIsland = ISLAND_ALIASES[rawInitialIsland] || rawInitialIsland;
@@ -126,6 +133,21 @@ function SignupForm() {
             });
 
             const freePlans = ['free', 'mail_club', 'free_trial'];
+            if (checkoutRedirect) {
+                const supabase = createClient();
+                const { error: signInErr } = await supabase.auth.signInWithPassword({
+                    email: formData.email,
+                    password: formData.password,
+                });
+                if (signInErr) {
+                    setIsLoading(false);
+                    router.push(`/login?email=${encodeURIComponent(formData.email)}&redirect=${encodeURIComponent(checkoutRedirect)}`);
+                    return;
+                }
+                router.push(checkoutRedirect);
+                return;
+            }
+
             if (freePlans.includes(plan)) {
                 await redirectAfterSignup(formData.email, formData.password, result.userId);
                 return;
@@ -263,12 +285,12 @@ function SignupForm() {
                             )}
 
                             <button type="submit" disabled={isLoading} className="flex w-full items-center justify-center gap-3 rounded-[1.5rem] bg-primary px-8 py-5 text-xl font-black text-white shadow-xl shadow-primary/20 transition-all hover:scale-[1.01] active:scale-95 disabled:cursor-not-allowed disabled:opacity-70">
-                                {isLoading ? <Loader2 className="animate-spin" size={24} /> : <>Create Account & Enter Portal <Sparkles size={24} /></>}
+                                {isLoading ? <Loader2 className="animate-spin" size={24} /> : <>{checkoutRedirect ? 'Create account, then pay' : 'Create Account & Enter Portal'} <Sparkles size={24} /></>}
                             </button>
                         </form>
 
                         <p className="mt-8 text-center font-bold text-deep/40">
-                            Already have an account? <Link href="/login" className="font-black text-primary hover:underline">Log in</Link>
+                            Already have an account? <Link href={checkoutRedirect ? `/login?redirect=${encodeURIComponent(checkoutRedirect)}` : '/login'} className="font-black text-primary hover:underline">Log in</Link>
                         </p>
                         <nav
                             aria-label="Legal"

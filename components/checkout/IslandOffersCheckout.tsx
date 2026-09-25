@@ -108,6 +108,9 @@ export default function IslandOffersCheckout({ initialSku }: { initialSku?: stri
     const [token, setToken] = useState<string | null>(null);
     const [ready, setReady] = useState(false);
     const offer = getParentOffer(sku) || offers[0];
+    const returnPath = `/checkout?offer=${encodeURIComponent(offer.sku)}`;
+    const signupHref = `/signup?redirect=${encodeURIComponent(returnPath)}`;
+    const loginHref = `/login?redirect=${encodeURIComponent(returnPath)}`;
 
     useEffect(() => {
         supabase.auth.getSession()
@@ -159,11 +162,18 @@ export default function IslandOffersCheckout({ initialSku }: { initialSku?: stri
                     )}
 
                     {PAYPAL_CLIENT_ID && ready && !token && (
-                        <div className="mt-6 space-y-3">
-                            <p className="text-sm font-bold text-slate-700">Sign in with a parent account before paying.</p>
-                            <Link href={`/login?redirect=${encodeURIComponent(`/checkout?offer=${offer.sku}`)}`} className="inline-flex rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white">
-                                Parent sign in
-                            </Link>
+                        <div className="mt-6 space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                            <p className="text-sm font-bold text-slate-800">
+                                This is {offer.name} — ${formatUsd(offer.price)}{offer.interval === 'year' ? '/year' : ' once'}. PayPal opens after a parent account exists. Nothing is charged on the signup page.
+                            </p>
+                            <div className="flex flex-wrap gap-3">
+                                <Link href={signupHref} className="inline-flex rounded-2xl bg-slate-900 px-5 py-3 text-sm font-black text-white">
+                                    Create parent account, then pay
+                                </Link>
+                                <Link href={loginHref} className="inline-flex rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-black text-slate-900">
+                                    I already have an account
+                                </Link>
+                            </div>
                         </div>
                     )}
 
