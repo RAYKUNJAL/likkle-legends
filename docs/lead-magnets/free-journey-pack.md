@@ -43,7 +43,7 @@ Art: **simple black line placeholders** (branded Journey art may still be HOLD).
 
 1. Auto PDF download (storage bucket when uploaded; else local `public/printables/…`)  
 2. Primary CTA → `/signup?plan=free_trial&utm_source=journey_pack`  
-3. Secondary CTA → games hub `https://likkle-games.nextbagchaser.com/`  
+3. Secondary CTA → games hub `https://likklelegends.com/games` (`/games` on the thank-you page)
 4. HTML print view link for parents who prefer print-from-browser  
 
 ## Copy outline (landing)
