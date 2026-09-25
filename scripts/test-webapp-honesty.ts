@@ -59,6 +59,21 @@ function testVoiceFailsClosedWithoutKeys() {
   assert.equal(ready.storyStudio.available, true);
 }
 
+function testArcadeGamesHaveNoKidPaywall() {
+  const banned = ['showGate(', '__unlocked', 'Legend Intro Pass', 'id="gateOverlay"'];
+  for (const file of [
+    'public/games/island-hop.html',
+    'public/games/tantys-kitchen.html',
+    'public/games/math-market.html',
+    'public/games/spelling-blaze.html',
+  ]) {
+    const source = readFileSync(resolve(process.cwd(), file), 'utf8');
+    for (const needle of banned) {
+      assert.equal(source.includes(needle), false, `${file} still contains ${needle}`);
+    }
+  }
+}
+
 function testArcadeRoutesRedirectToHtml() {
   const config = readFileSync(resolve(process.cwd(), 'next.config.mjs'), 'utf8');
   for (const id of ['island-hop', 'tantys-kitchen', 'math-market', 'spelling-blaze']) {
@@ -108,6 +123,7 @@ testFreeTrialRouteSourceHasNoMagicLink();
 testFreeTrialNeverLeaksMagicLink();
 testBuddyFollowUpsStayInCharacter();
 testVoiceFailsClosedWithoutKeys();
+testArcadeGamesHaveNoKidPaywall();
 testArcadeRoutesRedirectToHtml();
 testWorkingGamesOnly();
 testIslandWeekAndPreservedSurfaces();
