@@ -241,6 +241,7 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
       let current = draft;
       let storyId = draft.serverStoryId;
       let anyQueued = false;
+      let anyReused = false;
       for (let pageIndex = 0; pageIndex < current.pages.length; pageIndex += 1) {
         setArtNote(`Picture ${pageIndex + 1} of ${current.pages.length}…`);
         const res = await fetch('/api/island-helpers/journey-stories/jobs', {
@@ -279,10 +280,14 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
         draftRef.current = current;
         setDraft(current);
         if (body.queued) anyQueued = true;
+        if (body.status === 'reused') anyReused = true;
       }
       if (anyQueued) {
         setArtNote(IH_JOURNEY_ART_QUEUED);
         setWatchingArt(true);
+      } else if (anyReused) {
+        setArtNote(IH_JOURNEY_ART_NOTE);
+        setWatchingArt(false);
       } else {
         setArtNote(IH_JOURNEY_ART_CALM);
         setWatchingArt(false);

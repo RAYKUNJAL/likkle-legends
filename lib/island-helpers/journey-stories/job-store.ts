@@ -4,7 +4,8 @@
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { hasGeminiImageKey } from './imagen';
-import { JOURNEY_ART_CALM_COPY, planIllustrationWork, type EnqueuePlan } from './jobs';
+import { journeyLibraryKey, mergePublishedImages } from './library-key';
+import { JOURNEY_ART_CALM_COPY, isUsableHostedImage, planIllustrationWork, type EnqueuePlan } from './jobs';
 import type { JourneyImageStatus, JourneyLanguageMode, JourneyPage } from './types';
 
 const UUID_RE =
@@ -47,16 +48,61 @@ export function normalizeStoryId(value: unknown): string | null {
   return UUID_RE.test(value) ? value : null;
 }
 
+async function publishedImagesForKey(
+  client: SupabaseClient,
+  libraryKey: string,
+  exceptStoryId: string,
+): Promise<{ pageIndex: number; imageUrl: string | null }[]> {
+  const found: { pageIndex: number; imageUrl: string | null }[] = [];
+  const { data: stories, error } = await client
+    .from('journey_stories')
+    .select('id')
+    .eq('library_key', libraryKey)
+    .eq('status', 'published')
+    .neq('id', exceptStoryId)
+    .limit(5);
+  if (error || !stories?.length) return found;
+
+  for (const story of stories) {
+    const { data: pageRows } = await client
+      .from('journey_story_pages')
+      .select('page_index, image_url')
+      .eq('story_id', story.id);
+    for (const row of pageRows || []) {
+      const imageUrl = row.image_url ? String(row.image_url) : null;
+      if (!isUsableHostedImage(imageUrl)) continue;
+      found.push({ pageIndex: Number(row.page_index), imageUrl });
+    }
+  }
+  return found;
+}
+
 export async function enqueueJourneyArt(
   input: EnqueueJourneyArtInput,
   client: SupabaseClient | null = adminClient(),
 ): Promise<EnqueueJourneyArtResult | { ok: false; error: string; queued: false; message: string }> {
+  const storyId = normalizeStoryId(input.storyId) || newStoryId();
+  const libraryKey = journeyLibraryKey({
+    scenarioId: input.scenarioId,
+    scenarioLabel: input.scenarioLabel,
+    languageMode: input.languageMode,
+    castCharacterIds: input.castCharacterIds,
+  });
+  let pagesForPlan = input.pages;
+  if (client) {
+    try {
+      const published = await publishedImagesForKey(client, libraryKey, storyId);
+      pagesForPlan = mergePublishedImages(input.pages, published);
+    } catch {
+      pagesForPlan = input.pages;
+    }
+  }
+
   const plan: EnqueuePlan = planIllustrationWork({
     hasImagenKey: hasGeminiImageKey(),
     pageIndex: input.pageIndex,
-    pages: input.pages,
+    pages: pagesForPlan,
   });
-  const storyId = normalizeStoryId(input.storyId) || newStoryId();
   const pages = plan.pages.map((page) => ({
     pageIndex: page.pageIndex,
     imageUrl: page.imageUrl,
@@ -82,6 +128,7 @@ export async function enqueueJourneyArt(
       language_mode: input.languageMode,
       point_of_view: input.pointOfView,
       cast_character_ids: input.castCharacterIds,
+      library_key: libraryKey,
       updated_at: now,
     },
     { onConflict: 'id' },

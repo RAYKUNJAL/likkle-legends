@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { enqueueJourneyArt, normalizeStoryId } from '@/lib/island-helpers/journey-stories/job-store';
+import { publishJourneyJob } from '@/lib/island-helpers/journey-stories/qstash';
 import { applyJourneySafety } from '@/lib/island-helpers/journey-stories/safety';
 import { JOURNEY_PAGE_ROLES, type JourneyPage, type JourneyPageRole } from '@/lib/island-helpers/journey-stories/types';
 import { ISLAND_HELPERS_CHARACTER_IDS, type IslandHelpersCharacterId } from '@/lib/island-helpers/types';
@@ -63,7 +64,20 @@ export async function POST(req: Request) {
   });
 
   if (!result.ok) {
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json({ ...result, qstash: 'skipped' }, { status: 200 });
   }
-  return NextResponse.json(result);
+
+  if (!result.queued || !result.jobId) {
+    return NextResponse.json({ ...result, qstash: 'skipped' });
+  }
+
+  const published = await publishJourneyJob({
+    storyId: result.storyId,
+    jobId: result.jobId,
+    pageIndex,
+  });
+  return NextResponse.json({
+    ...result,
+    qstash: published.reason,
+  });
 }

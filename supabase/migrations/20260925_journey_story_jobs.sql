@@ -1,5 +1,5 @@
--- Journey Stories picture queue for the VPS worker.
--- No QStash. No Redis. Claim with FOR UPDATE SKIP LOCKED.
+-- Journey Stories picture queue.
+-- Rows are the source of truth. Claim with FOR UPDATE SKIP LOCKED.
 -- Product name stays Journey Stories. Not a trademarked social-story table.
 
 create table if not exists public.journey_stories (
@@ -10,9 +10,16 @@ create table if not exists public.journey_stories (
   language_mode text not null default 'standard' check (language_mode in ('standard', 'literal')),
   point_of_view text not null default 'third' check (point_of_view in ('first', 'third')),
   cast_character_ids text[] not null default '{}',
+  library_key text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.journey_stories add column if not exists library_key text;
+
+create index if not exists journey_stories_library_key
+  on public.journey_stories (library_key)
+  where status = 'published';
 
 create table if not exists public.journey_story_pages (
   id uuid primary key default gen_random_uuid(),
@@ -103,6 +110,51 @@ $$;
 
 revoke all on function public.claim_journey_story_job() from public, anon, authenticated;
 grant execute on function public.claim_journey_story_job() to service_role;
+
+-- QStash retries must claim the same job, not whichever row is oldest.
+create or replace function public.claim_journey_story_job_by_id(target uuid)
+returns setof public.journey_story_jobs
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  claimed public.journey_story_jobs;
+begin
+  select *
+    into claimed
+  from public.journey_story_jobs
+  where id = target
+    and (
+      status = 'queued'
+      or (
+        status = 'running'
+        and claimed_at < now() - interval '3 minutes'
+        and attempts < 3
+      )
+      or (status = 'failed' and attempts < 3)
+    )
+  for update skip locked;
+
+  if not found then
+    return;
+  end if;
+
+  update public.journey_story_jobs
+  set status = 'running',
+      attempts = attempts + 1,
+      claimed_at = now(),
+      finished_at = null,
+      last_error = null
+  where id = claimed.id
+  returning * into claimed;
+
+  return next claimed;
+end;
+$$;
+
+revoke all on function public.claim_journey_story_job_by_id(uuid) from public, anon, authenticated;
+grant execute on function public.claim_journey_story_job_by_id(uuid) to service_role;
 
 do $$
 begin

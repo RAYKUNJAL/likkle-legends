@@ -1,7 +1,7 @@
 /**
  * Journey Stories picture queue — pure planning + claim.
  * Durable rows live in Postgres. This module does not call Imagen.
- * No QStash. No Redis.
+ * QStash only wakes a signed route when its env is set. No Redis.
  */
 import type { JourneyImageStatus } from './types';
 
@@ -119,6 +119,23 @@ export function claimNextQueuedJob(
     claimed,
     jobs: jobs.map((job) => (job.id === claimed.id ? claimed : job)),
   };
+}
+
+/**
+ * One HTTP callback draws one page. A full-story job continues on the next callback.
+ */
+export function singleCallbackPageIndex(
+  jobPageIndex: number | null,
+  pages: { pageIndex: number; imageUrl?: string | null; imageStatus?: string }[],
+): number | null {
+  if (typeof jobPageIndex === 'number') return jobPageIndex;
+  const pending = pages.find(
+    (page) =>
+      page.imageStatus !== 'ready' &&
+      page.imageStatus !== 'reused' &&
+      !isUsableHostedImage(page.imageUrl),
+  );
+  return pending ? pending.pageIndex : null;
 }
 
 export function pageIndexesForJob(pageIndex: number | null, pageCount: number): number[] {
