@@ -1,7 +1,8 @@
 /**
  * Imagen bytes for one Journey Stories page.
- * No key, no image, no invented URL.
+ * No key, or art on hold: no request, no invented URL.
  */
+import { journeyArtOnHold } from './art-hold';
 export function geminiImageKey(): string | null {
   const key = (process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || '').trim();
   return key || null;
@@ -12,6 +13,7 @@ export function hasGeminiImageKey(): boolean {
 }
 
 export async function generateJourneyImageBytes(prompt: string): Promise<Buffer | null> {
+  if (journeyArtOnHold()) return null;
   const key = geminiImageKey();
   if (!key) return null;
 

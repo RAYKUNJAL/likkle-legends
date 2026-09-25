@@ -77,69 +77,38 @@ and health-checks the app before finishing.
 
 ## Journey Stories pictures
 
-**Code building:** the QStash values are already on the Likkle Portal box.
-Copy them into the server env under these exact names before compose. Do not
-commit them, and do not invent other names.
+Compose starts `journey-worker` beside `web`. It has no host port and does not
+change `web` `traefik.enable=false`. There is no external queue and no Redis.
 
-If any of the three is empty, publish is skipped and the parent UI does not
-crash. The wizard writes the story on the generate route, and **Make pictures**
-calls `POST /api/island-helpers/journey-stories/illustrate` once per page.
-Each request sends one `pageIndex` and the screen shows “Picture 1 of 5…”.
-Do not draw every page inside one request.
+Apply `supabase/migrations/20260925_journey_story_jobs.sql` once. The worker
+claims `journey_story_jobs` with `claim_journey_story_job()` (`FOR UPDATE SKIP
+LOCKED`) and draws **one page, then the next**.
 
-**Target path, after the token exists:** `POST /api/island-helpers/journey-stories/queue`
-(adult header) inserts a pending `journey_stories` row and a
-`journey_story_jobs` row (`phase` starts at `generating_text`), pings QStash,
-and returns the story id immediately. The signed worker writes the five pages,
-then draws one picture per callback (`phase` `illustrating`, then `ready` or
-`failed`). The wizard subscribes with Supabase Realtime and polls, so a parent
-can leave and come back. A published story with the same scenario, language
-mode, and cast is reused instead of calling Imagen again.
+`POST /api/island-helpers/journey-stories/queue` (adult header) inserts a
+pending story and a job (`phase` `generating_text`) and returns the story id.
+The worker writes the five pages, then one picture at a time. The wizard
+follows Supabase Realtime and polls. A published story with the same scenario,
+language mode, and cast (`library_key`) reuses hosted pictures.
 
-**Enable QStash later** by setting all three names in the server env (never in git):
+**Art on hold.** If `GEMINI_API_KEY` is empty, or `JOURNEY_ART_HOLD=1`, the
+queue does not wait on image generation. The wizard writes the words itself.
+**Make pictures** stores the local SVGs under `public/images/island-helpers/`
+and does not call Imagen or FLUX. No stub remote URLs.
 
-- `QSTASH_TOKEN`
-- `QSTASH_CURRENT_SIGNING_KEY`
-- `QSTASH_NEXT_SIGNING_KEY`
+**Text model.** Literal words need `OPENROUTER_API_KEY` or `LLM_API_KEY`.
+If both are empty, literal generation fails closed. Standard seed scenarios
+still use the offline pages. Do not commit key values.
 
-The adult API inserts the row, publishes that one page to QStash, and returns
-`200` with the story id immediately. QStash calls
-`POST /api/island-helpers/journey-stories/jobs/worker` on
-`NEXT_PUBLIC_APP_URL`. The route checks the `Upstash-Signature` header and
-rejects unsigned or partially configured calls. It draws that single page,
-writes `journey_story_pages`, and Realtime streams the picture. A retry is
-safe: `claim_journey_story_job_by_id` skips a job that is already done or
-still running. There is no Redis service in compose.
-
-If any of the three QStash vars is missing, no background picture job is
-inserted and the parent UI does not crash. **Make pictures** falls back to
-`POST /api/island-helpers/journey-stories/illustrate` with one `pageIndex` per
-request and shows “Picture 1 of 5…”. That is the timeout-safe path today.
-When the three vars are set, the on-host worker below can still claim a row
-the callback missed.
-
-**On-host backup (`journey-worker`)** in `docker-compose.yml` joins
-`supabase_default`, has no host port, and does not change
-`web` `traefik.enable=false`. It claims with `claim_journey_story_job()`
-(`FOR UPDATE SKIP LOCKED`) and draws pages one after another when
-`GEMINI_API_KEY` is set.
-
-Apply `supabase/migrations/20260925_journey_story_jobs.sql` on the database
-once. Without `GEMINI_API_KEY`, picture jobs fail closed. The words still work,
-and a parent can use simple local pictures page by page. Set
-`GEMINI_IMAGE_MODEL` only to override Imagen (default `imagen-3.0-generate-002`).
-
-A published Journey Story with the same scenario, literal/standard mode, and
-cast (`library_key`) reuses hosted page images instead of calling Imagen again.
+Set `GEMINI_IMAGE_MODEL` only to override Imagen (default
+`imagen-3.0-generate-002`).
 
 ```bash
 docker compose --env-file .env.production up -d --build journey-worker
 docker compose logs -f journey-worker
 ```
 
-Code building deploys this with the rest of the compose stack at
-`/opt/likkle-legends`. Set the three QStash names in the server env before
-compose. Do not commit the values.
+This file does not deploy. Code building runs compose at `/opt/likkle-legends`
+when that host is updated separately.
 
 ---
 

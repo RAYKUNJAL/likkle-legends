@@ -115,7 +115,7 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
     setBusy(true);
     setError(null);
     try {
-      let queuedBody: { status?: string; pages?: unknown; storyId?: string; queued?: boolean; qstash?: string } | null =
+      let queuedBody: { status?: string; pages?: unknown; storyId?: string; queued?: boolean; art?: string } | null =
         null;
       try {
         const queueRes = await fetch('/api/island-helpers/journey-stories/queue', {
@@ -157,7 +157,7 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
         router.replace(`/island-helpers/journey-stories/${saved.id}/edit`);
         return;
       }
-      if (queuedBody?.queued && queuedBody.storyId && queuedBody.qstash === 'published') {
+      if (queuedBody?.queued && queuedBody.storyId) {
         const pages = JOURNEY_PAGE_ROLES.map((role) => ({
           role,
           text: '',
@@ -366,6 +366,7 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
       let storyId = draft.serverStoryId;
       let anyQueued = false;
       let anyReused = false;
+      let anyPlaceholders = false;
       for (let pageIndex = 0; pageIndex < current.pages.length; pageIndex += 1) {
         setArtNote(`Picture ${pageIndex + 1} of ${current.pages.length}…`);
         const res = await fetch('/api/island-helpers/journey-stories/jobs', {
@@ -389,7 +390,6 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
         if (shouldSyncIllustrate({
           ok: Boolean(body?.ok) && res.ok,
           queued: Boolean(body?.queued),
-          qstash: body?.qstash,
           status: body?.status,
           fallback: body?.fallback,
         })) {
@@ -423,10 +423,14 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
         setDraft(current);
         if (body.queued) anyQueued = true;
         if (body.status === 'reused') anyReused = true;
+        if (body.status === 'placeholders' || body.art === 'hold') anyPlaceholders = true;
       }
       if (anyQueued) {
         setArtNote(IH_JOURNEY_ART_QUEUED);
         setWatchingArt(true);
+      } else if (anyPlaceholders) {
+        setArtNote(IH_JOURNEY_ART_CALM);
+        setWatchingArt(false);
       } else if (anyReused) {
         setArtNote(IH_JOURNEY_ART_NOTE);
         setWatchingArt(false);

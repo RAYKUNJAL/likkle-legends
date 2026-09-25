@@ -2,6 +2,7 @@
  * Draw the pages on one claimed Journey Stories job, one image after another.
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { journeyArtOnHold } from './art-hold';
 import { generateJourneyImageBytes, hasGeminiImageKey } from './imagen';
 import { isUsableHostedImage } from './jobs';
 import { journeyBroadcastTopic } from './realtime';
@@ -94,7 +95,7 @@ export async function executeClaimedJourneyJob(
       job: { id: String(job.id), storyId, pageIndex },
       pages,
       castCharacterIds: Array.isArray(story?.cast_character_ids) ? story.cast_character_ids.map(String) : [],
-      hasImagenKey: hasGeminiImageKey(),
+      hasImagenKey: hasGeminiImageKey() && !journeyArtOnHold(),
       illustrate: (prompt) => generateJourneyImageBytes(prompt),
       saveImage: (index, bytes) => uploadPng(supabase, storyId, index, bytes),
       markPage: async (index, patch) => {

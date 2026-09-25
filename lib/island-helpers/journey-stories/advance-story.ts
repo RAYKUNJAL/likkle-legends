@@ -1,13 +1,16 @@
 /**
  * One step of a queued Journey Story: write the pages, or draw the next picture.
- * A single callback never draws every page. The next step is queued for QStash.
+ * The on-VPS worker claims the next row. One claim draws one page.
+ * Art on hold stamps local placeholders and does not call an image model.
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { IslandHelpersCharacterId } from '../types';
+import { journeyArtOnHold } from './art-hold';
 import { generateJourneyStory } from './generate';
 import { executeClaimedJourneyJob } from './execute-job';
 import { isUsableHostedImage } from './jobs';
 import { journeyLibraryKey } from './library-key';
+import { placeholderForRole } from './placeholders';
 import { JOURNEY_PAGE_ROLES, type JourneyLanguageMode, type JourneyPageRole } from './types';
 
 export type StoryJobRequest = {
@@ -44,10 +47,10 @@ export function storyFinishedPhase(pages: StoryPageSnapshot[]): 'ready' | 'faile
   return pages.some((page) => page.imageStatus === 'failed') ? 'failed' : 'ready';
 }
 
-/** Primary path queues. No queue key keeps the synchronous page-by-page path. */
-export function planStoryStart(input: { hasQStash: boolean; reusable: boolean }): 'reuse' | 'queue' | 'sync' {
+/** Reuse a published match. Otherwise queue on the VPS worker, or write in the request when the database is down or art is on hold. */
+export function planStoryStart(input: { canQueue: boolean; reusable: boolean }): 'reuse' | 'queue' | 'sync' {
   if (input.reusable) return 'reuse';
-  if (input.hasQStash) return 'queue';
+  if (input.canQueue) return 'queue';
   return 'sync';
 }
 
@@ -138,6 +141,9 @@ export async function runClaimedStoryStep(
   }
 
   if (wroteNarrative) {
+    if (journeyArtOnHold()) {
+      return settleWithPlaceholders(supabase, job.id, storyId);
+    }
     await supabase
       .from('journey_story_jobs')
       .update({
@@ -160,6 +166,10 @@ export async function runClaimedStoryStep(
     const phase = storyFinishedPhase(pages);
     await finishStoryJob(supabase, job.id, phase, phase === 'failed' ? 'A picture could not be made.' : null);
     return { ok: phase === 'ready', retry: false, error: null, publishPage: null };
+  }
+
+  if (journeyArtOnHold()) {
+    return settleWithPlaceholders(supabase, job.id, storyId);
   }
 
   const drawn = await executeClaimedJourneyJob(
@@ -192,6 +202,28 @@ export async function runClaimedStoryStep(
     .eq('id', job.id);
 
   return { ok: true, retry: false, error: null, publishPage: following };
+}
+
+async function settleWithPlaceholders(
+  supabase: SupabaseClient,
+  jobId: string,
+  storyId: string,
+): Promise<{ ok: true; retry: false; error: null; publishPage: null }> {
+  const now = new Date().toISOString();
+  for (let pageIndex = 0; pageIndex < JOURNEY_PAGE_ROLES.length; pageIndex += 1) {
+    await supabase
+      .from('journey_story_pages')
+      .update({
+        image_url: placeholderForRole(JOURNEY_PAGE_ROLES[pageIndex]),
+        image_status: 'ready',
+        image_error: null,
+        updated_at: now,
+      })
+      .eq('story_id', storyId)
+      .eq('page_index', pageIndex);
+  }
+  await finishStoryJob(supabase, jobId, 'ready', null);
+  return { ok: true, retry: false, error: null, publishPage: null };
 }
 
 async function finishStoryJob(

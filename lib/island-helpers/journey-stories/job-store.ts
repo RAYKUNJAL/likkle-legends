@@ -3,6 +3,7 @@
  * Returns as soon as the row is queued. Does not call Imagen.
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { journeyArtOnHold } from './art-hold';
 import { hasGeminiImageKey } from './imagen';
 import { journeyLibraryKey, mergePublishedImages } from './library-key';
 import { JOURNEY_ART_CALM_COPY, isUsableHostedImage, planIllustrationWork, type EnqueuePlan } from './jobs';
@@ -20,7 +21,9 @@ export type EnqueueJourneyArtInput = {
   castCharacterIds: string[];
   pages: JourneyPage[];
   pageIndex?: number | null;
-  /** False when QStash is not configured. The wizard then illustrates one page itself. */
+  /** When true, local placeholders are stored and no picture job is inserted. */
+  artHold?: boolean;
+  /** False skips the worker row. The wizard then illustrates one page itself. */
   insertJob?: boolean;
 };
 
@@ -29,7 +32,7 @@ export type EnqueueJourneyArtResult = {
   storyId: string;
   queued: boolean;
   jobId: string | null;
-  status: 'queued' | 'pending' | 'reused';
+  status: 'queued' | 'pending' | 'reused' | 'placeholders';
   message: string | null;
   pages: { pageIndex: number; imageUrl: string | null; imageStatus: JourneyImageStatus }[];
 };
@@ -100,8 +103,10 @@ export async function enqueueJourneyArt(
     }
   }
 
+  const artHold = input.artHold ?? journeyArtOnHold();
   const plan: EnqueuePlan = planIllustrationWork({
-    hasImagenKey: hasGeminiImageKey(),
+    hasImagenKey: hasGeminiImageKey() && !artHold,
+    artHold,
     pageIndex: input.pageIndex,
     pages: pagesForPlan,
   });
@@ -165,13 +170,14 @@ export async function enqueueJourneyArt(
   }
 
   if (!plan.queued || !plan.job || input.insertJob === false) {
-    const reused = pages.every((page) => page.imageStatus === 'reused' || page.imageStatus === 'ready');
+    const reused = pages.every((page) => page.imageStatus === 'reused');
+    const placeholders = plan.artHold && pages.some((page) => page.imageStatus === 'ready');
     return {
       ok: true,
       storyId,
       queued: false,
       jobId: null,
-      status: reused ? 'reused' : 'pending',
+      status: reused ? 'reused' : placeholders ? 'placeholders' : 'pending',
       message: plan.calmCopy,
       pages,
     };

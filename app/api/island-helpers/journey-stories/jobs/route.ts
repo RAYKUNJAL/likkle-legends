@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import { journeyArtOnHold } from '@/lib/island-helpers/journey-stories/art-hold';
 import { enqueueJourneyArt, normalizeStoryId } from '@/lib/island-helpers/journey-stories/job-store';
-import { hasQStashConfig, publishJourneyJob } from '@/lib/island-helpers/journey-stories/qstash';
 import { applyJourneySafety } from '@/lib/island-helpers/journey-stories/safety';
 import { JOURNEY_PAGE_ROLES, type JourneyPage, type JourneyPageRole } from '@/lib/island-helpers/journey-stories/types';
 import { ISLAND_HELPERS_CHARACTER_IDS, type IslandHelpersCharacterId } from '@/lib/island-helpers/types';
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     : [];
 
   const pageIndex = typeof body.pageIndex === 'number' ? body.pageIndex : null;
-  const qstashReady = hasQStashConfig();
+  const artHold = journeyArtOnHold();
   const result = await enqueueJourneyArt({
     storyId: normalizeStoryId(body.storyId) || undefined,
     scenarioId: String(body.scenarioId || 'custom'),
@@ -62,40 +62,35 @@ export async function POST(req: Request) {
       imageUrl: pages[index]?.imageUrl || null,
     })),
     pageIndex,
-    insertJob: qstashReady,
+    artHold,
+    insertJob: !artHold,
   });
 
   if (!result.ok) {
-    return NextResponse.json(
-      { ...result, qstash: 'qstash_env_missing', fallback: 'illustrate' },
-      { status: 200 },
-    );
+    return NextResponse.json({ ...result, art: artHold ? 'hold' : 'live', fallback: 'illustrate' }, { status: 200 });
   }
 
-  if (!qstashReady) {
+  if (artHold || result.status === 'placeholders') {
     return NextResponse.json({
       ...result,
       queued: false,
-      qstash: 'qstash_env_missing',
-      fallback: result.status === 'reused' ? null : 'illustrate',
+      art: 'hold',
+      status: result.status === 'reused' ? 'reused' : 'placeholders',
+      fallback: null,
     });
   }
 
   if (!result.queued || !result.jobId) {
     return NextResponse.json({
       ...result,
-      qstash: 'skipped',
+      art: 'live',
       fallback: result.status === 'reused' ? null : 'illustrate',
     });
   }
 
-  const published = await publishJourneyJob({
-    storyId: result.storyId,
-    jobId: result.jobId,
-    pageIndex,
-  });
   return NextResponse.json({
     ...result,
-    qstash: published.reason,
+    art: 'live',
+    worker: 'vps',
   });
 }

@@ -1,19 +1,14 @@
 /**
  * Journey Stories — illustration pipeline.
- * Prefer FAL FLUX when FAL_KEY present; else calm SVG placeholders (fail-closed art, not stub remote URLs).
+ * One page per call. Art on hold, or a missing FAL key, uses local SVG placeholders.
+ * Never invent a remote image URL.
  */
 import type { JourneyPage, JourneyStoryDraft } from './types';
-import { JOURNEY_PAGE_ROLES } from './types';
 import { buildJourneyImagePrompt, JOURNEY_SENSORY_STYLE_ANCHOR } from './image-prompt';
+import { journeyArtOnHold } from './art-hold';
+import { placeholderForRole } from './placeholders';
 
-export { JOURNEY_SENSORY_STYLE_ANCHOR };
-
-const PLACEHOLDER_BASE = '/images/island-helpers';
-
-export function placeholderForRole(role: string): string {
-  const safe = JOURNEY_PAGE_ROLES.includes(role as any) ? role : 'intro';
-  return `${PLACEHOLDER_BASE}/journey-${safe}.svg`;
-}
+export { JOURNEY_SENSORY_STYLE_ANCHOR, placeholderForRole };
 
 function hasFalKey(): boolean {
   return Boolean(process.env.FAL_KEY?.trim());
@@ -32,6 +27,7 @@ function hostedImageUrl(value: unknown): string | null {
 }
 
 async function tryFlux(prompt: string): Promise<string | null> {
+  if (journeyArtOnHold()) return null;
   const apiKey = process.env.FAL_KEY?.trim();
   if (!apiKey) return null;
   try {
@@ -92,11 +88,9 @@ export async function illustrateJourneyPages(
     const page = pages[i];
     let imageUrl: string | null = null;
 
-    // Remote art is FAL FLUX only. Gemini/Imagen returns image bytes, not a URL we can store.
-    // A Gemini key must not become a stub remote URL. Missing or failed FAL uses local SVGs.
-    if (hasFalKey()) {
+    // One page per loop turn. Art on hold never calls FLUX.
+    if (!journeyArtOnHold() && hasFalKey()) {
       imageUrl = await tryFlux(buildJourneyIllustrationPrompt(draft, page));
-      // One page per loop turn. Do not fan out Imagen/FLUX calls.
     }
 
     if (!imageUrl) {

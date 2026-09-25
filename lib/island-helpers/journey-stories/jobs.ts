@@ -1,8 +1,9 @@
 /**
  * Journey Stories picture queue — pure planning + claim.
- * Durable rows live in Postgres. This module does not call Imagen.
- * QStash only wakes a signed route when its env is set. No Redis.
+ * Durable rows live in Postgres. The on-VPS worker claims them.
+ * This module does not call Imagen. No Redis.
  */
+import { placeholderForRole } from './placeholders';
 import type { JourneyImageStatus } from './types';
 
 export type JourneyJobStatus = 'queued' | 'running' | 'done' | 'failed';
@@ -18,6 +19,8 @@ export type PlannedPage = {
 
 export type EnqueuePlan = {
   queued: boolean;
+  /** True when picture models are skipped and local SVGs are used. */
+  artHold: boolean;
   calmCopy: string | null;
   /** null pageIndex means the worker walks every page, one at a time. */
   job: { pageIndex: number | null } | null;
@@ -51,14 +54,17 @@ export function isUsableHostedImage(url: string | null | undefined): boolean {
 
 export function planIllustrationWork(input: {
   hasImagenKey: boolean;
+  /** When set, requested pages get local SVGs and no job is created. */
+  artHold?: boolean;
   pageIndex?: number | null;
-  pages: { imageUrl?: string | null }[];
+  pages: { imageUrl?: string | null; role?: string }[];
 }): EnqueuePlan {
   const requested =
     typeof input.pageIndex === 'number' && input.pageIndex >= 0 && input.pageIndex < input.pages.length
       ? [input.pageIndex]
       : input.pages.map((_, index) => index);
 
+  const artHold = Boolean(input.artHold);
   const pages: PlannedPage[] = input.pages.map((page, pageIndex) => {
     if (!requested.includes(pageIndex)) {
       return {
@@ -70,26 +76,35 @@ export function planIllustrationWork(input: {
     if (isUsableHostedImage(page.imageUrl)) {
       return { pageIndex, imageStatus: 'reused', imageUrl: page.imageUrl!.trim() };
     }
+    if (artHold) {
+      return {
+        pageIndex,
+        imageStatus: 'ready',
+        imageUrl: placeholderForRole(page.role || 'intro'),
+      };
+    }
     return { pageIndex, imageStatus: 'pending', imageUrl: null };
   });
 
   const needsArt = requested.filter((index) => pages[index]?.imageStatus === 'pending');
 
-  if (!input.hasImagenKey) {
+  if (!input.hasImagenKey || artHold) {
     return {
       queued: false,
-      calmCopy: JOURNEY_ART_CALM_COPY,
+      artHold,
+      calmCopy: artHold ? null : JOURNEY_ART_CALM_COPY,
       job: null,
       pages,
     };
   }
 
   if (!needsArt.length) {
-    return { queued: false, calmCopy: null, job: null, pages };
+    return { queued: false, artHold: false, calmCopy: null, job: null, pages };
   }
 
   return {
     queued: true,
+    artHold: false,
     calmCopy: null,
     job: { pageIndex: typeof input.pageIndex === 'number' ? input.pageIndex : null },
     pages,
@@ -138,19 +153,17 @@ export function singleCallbackPageIndex(
   return pending ? pending.pageIndex : null;
 }
 
-/** Sync illustrate when no queue is actually running this page. */
+/** One-page illustrate only when the VPS worker is not already drawing this page. */
 export function shouldSyncIllustrate(input: {
   ok: boolean;
   queued?: boolean;
-  qstash?: string;
   status?: string;
   fallback?: string | null;
 }): boolean {
-  if (input.status === 'reused') return false;
-  if (input.queued && (input.qstash === 'published' || input.qstash === 'qstash_publish_failed')) return false;
+  if (input.status === 'reused' || input.status === 'placeholders') return false;
+  if (input.queued) return false;
   if (input.fallback === 'illustrate') return true;
   if (!input.ok) return true;
-  if (input.qstash === 'qstash_env_missing' || input.qstash === 'skipped') return true;
   return false;
 }
 

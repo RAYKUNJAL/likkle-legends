@@ -9,14 +9,11 @@ import {
   shouldSyncIllustrate,
   type JourneyJobRow,
 } from '../lib/island-helpers/journey-stories/jobs';
+import { journeyArtOnHold } from '../lib/island-helpers/journey-stories/art-hold';
+import { hasJourneyTextModelKey } from '../lib/island-helpers/journey-stories/generate';
 import { journeyLibraryKey, mergePublishedImages } from '../lib/island-helpers/journey-stories/library-key';
+import { placeholderForRole } from '../lib/island-helpers/journey-stories/placeholders';
 import { journeyPageRealtimeFilter } from '../lib/island-helpers/journey-stories/realtime';
-import {
-  hasQStashConfig,
-  publishJourneyJob,
-  signQStashBody,
-  verifyQStashRequest,
-} from '../lib/island-helpers/journey-stories/qstash';
 import { singleCallbackPageIndex } from '../lib/island-helpers/journey-stories/jobs';
 import { nextStoryStep, planStoryStart } from '../lib/island-helpers/journey-stories/advance-story';
 import { processJourneyJob } from '../lib/island-helpers/journey-stories/worker-run';
@@ -113,25 +110,46 @@ const onlyPage = singleCallbackPageIndex(null, [
   { pageIndex: 1, imageUrl: null, imageStatus: 'pending' },
 ]);
 if (onlyPage !== 1) throw new Error('a callback draws the next unfinished page only');
-if (shouldSyncIllustrate({ ok: true, queued: true, qstash: 'published' })) {
-  throw new Error('a published queue must not also sync-illustrate');
+if (shouldSyncIllustrate({ ok: true, queued: true })) {
+  throw new Error('a queued worker job must not also sync-illustrate');
 }
-if (!shouldSyncIllustrate({ ok: true, queued: false, qstash: 'qstash_env_missing', fallback: 'illustrate' })) {
-  throw new Error('missing queue key falls back to one-page illustrate');
+if (!shouldSyncIllustrate({ ok: true, queued: false, fallback: 'illustrate' })) {
+  throw new Error('a missed queue falls back to one-page illustrate');
+}
+if (shouldSyncIllustrate({ ok: true, queued: false, status: 'placeholders', fallback: 'illustrate' })) {
+  throw new Error('art hold placeholders must not call an image model');
 }
 if (shouldSyncIllustrate({ ok: true, queued: false, status: 'reused', fallback: 'illustrate' })) {
   throw new Error('reused art must not illustrate again');
 }
 if (!shouldSyncIllustrate({ ok: false })) throw new Error('a failed enqueue still illustrates one page');
-if (planStoryStart({ hasQStash: false, reusable: false }) !== 'sync') {
-  throw new Error('missing QStash keeps synchronous generation');
+if (planStoryStart({ canQueue: false, reusable: false }) !== 'sync') {
+  throw new Error('art hold or a missing database keeps synchronous generation');
 }
-if (planStoryStart({ hasQStash: true, reusable: false }) !== 'queue') {
-  throw new Error('QStash is the primary story queue');
+if (planStoryStart({ canQueue: true, reusable: false }) !== 'queue') {
+  throw new Error('the VPS worker is the story queue');
 }
-if (planStoryStart({ hasQStash: true, reusable: true }) !== 'reuse') {
+if (planStoryStart({ canQueue: true, reusable: true }) !== 'reuse') {
   throw new Error('a published match is reused before generation');
 }
+if (!journeyArtOnHold({})) throw new Error('missing image key must hold art');
+if (!journeyArtOnHold({ GEMINI_API_KEY: 'present', JOURNEY_ART_HOLD: '1' })) {
+  throw new Error('JOURNEY_ART_HOLD must force placeholders');
+}
+if (journeyArtOnHold({ GEMINI_API_KEY: 'present' })) throw new Error('a Gemini key lifts the hold');
+if (hasJourneyTextModelKey({})) throw new Error('missing text key must fail closed');
+if (!hasJourneyTextModelKey({ OPENROUTER_API_KEY: 'present' })) throw new Error('text key is detected');
+const held = planIllustrationWork({
+  hasImagenKey: false,
+  artHold: true,
+  pages: [{ imageUrl: null, role: 'title' }, { imageUrl: 'https://cdn.example.test/kept.png', role: 'intro' }],
+  pageIndex: 0,
+});
+if (held.queued || held.job) throw new Error('art hold must not enqueue Imagen');
+if (held.pages[0].imageUrl !== placeholderForRole('title')) throw new Error('art hold uses a local placeholder');
+if (held.pages[0].imageStatus !== 'ready') throw new Error('placeholder page is ready to read');
+if (/^https?:/i.test(held.pages[0].imageUrl || '')) throw new Error('placeholder must not be a remote URL');
+if (held.pages[1].imageStatus !== 'reused') throw new Error('art hold leaves an unrequested hosted picture alone');
 if (nextStoryStep([{ text: '' }, { text: 'Hi.' }]) !== 'narrative') {
   throw new Error('empty pages write the story before pictures');
 }
@@ -185,75 +203,11 @@ const reusedPlan = planIllustrationWork({ hasImagenKey: true, pages: merged, pag
 if (reusedPlan.queued) throw new Error('published hosted art must not enqueue Imagen');
 if (reusedPlan.pages[0].imageStatus !== 'reused') throw new Error('shared picture is reused');
 
-const qstashEnv = {
-  QSTASH_TOKEN: 'test-token',
-  QSTASH_CURRENT_SIGNING_KEY: 'current-signing-key',
-  QSTASH_NEXT_SIGNING_KEY: 'next-signing-key',
-  NEXT_PUBLIC_APP_URL: 'https://www.likklelegends.com',
-};
-if (hasQStashConfig({})) throw new Error('missing QStash env must fail closed');
-if (hasQStashConfig({ QSTASH_TOKEN: 'only-token' })) throw new Error('partial QStash env must fail closed');
-const callbackUrl = 'https://www.likklelegends.com/api/island-helpers/journey-stories/jobs/worker';
-const signedBody = JSON.stringify({ storyId: 's', jobId: 'j', pageIndex: 0 });
-const signature = signQStashBody({ body: signedBody, url: callbackUrl, key: qstashEnv.QSTASH_CURRENT_SIGNING_KEY });
-if (!verifyQStashRequest({ signature, body: signedBody, url: callbackUrl, env: qstashEnv }).ok) {
-  throw new Error('current signing key must verify');
-}
-const nextSignature = signQStashBody({ body: signedBody, url: callbackUrl, key: qstashEnv.QSTASH_NEXT_SIGNING_KEY });
-if (!verifyQStashRequest({ signature: nextSignature, body: signedBody, url: callbackUrl, env: qstashEnv }).ok) {
-  throw new Error('next signing key must verify');
-}
-if (verifyQStashRequest({ signature: null, body: signedBody, url: callbackUrl, env: qstashEnv }).ok) {
-  throw new Error('unsigned callback must be rejected');
-}
-const mismatched = verifyQStashRequest({
-  signature,
-  body: '{"tampered":true}',
-  url: callbackUrl,
-  env: qstashEnv,
-});
-if (mismatched.ok || mismatched.reason !== 'body_mismatch') throw new Error('body mismatch must fail closed');
-if (verifyQStashRequest({ signature, body: signedBody, url: callbackUrl, env: {} }).ok) {
-  throw new Error('callback without QStash env must fail closed');
-}
-
 const filter = journeyPageRealtimeFilter('11111111-1111-4111-8111-111111111111');
 if (filter.table !== 'journey_story_pages') throw new Error('realtime listens to page rows');
 if (!filter.filter.includes('story_id=eq.')) throw new Error('realtime filters one story');
 
 async function main() {
-let qstashFetches = 0;
-const skipped = await publishJourneyJob(
-  { storyId: 's', jobId: 'j', pageIndex: 0 },
-  {
-    env: {},
-    fetchImpl: async () => {
-      qstashFetches += 1;
-      return new Response('nope', { status: 500 });
-    },
-  },
-);
-if (skipped.published || skipped.reason !== 'qstash_env_missing') throw new Error('absent QStash must not publish');
-if (qstashFetches !== 0) throw new Error('absent QStash must not call the network');
-const published = await publishJourneyJob(
-  { storyId: 's', jobId: 'job-1', pageIndex: 2 },
-  {
-    env: qstashEnv,
-    fetchImpl: async (url, init) => {
-      const target = String(url);
-      if (!target.startsWith('https://qstash.upstash.io/v2/publish/https://www.likklelegends.com/')) {
-        throw new Error('publish URL must target the signed worker');
-      }
-      const headers = new Headers(init?.headers);
-      if (headers.get('Upstash-Retries') !== '3') throw new Error('QStash retries required');
-      const payload = JSON.parse(String(init?.body));
-      if (payload.pageIndex !== 2) throw new Error('publish one pageIndex');
-      return new Response('{}', { status: 200 });
-    },
-  },
-);
-if (!published.published) throw new Error('configured QStash should publish one page');
-
 const calls: number[] = [];
 let inFlight = 0;
 const processed = await processJourneyJob({
@@ -296,30 +250,31 @@ const blocked = await processJourneyJob({
   },
   saveImage: async () => 'https://cdn.example.test/nope.png',
   markPage: async (_index, patch) => {
-    if (patch.imageUrl) throw new Error('fail closed must not store an image URL');
-    if (patch.imageStatus !== 'failed') throw new Error('missing key marks the page failed');
+    if (patch.imageUrl !== placeholderForRole('title')) throw new Error('missing key stores the local placeholder');
+    if (/^https?:/i.test(patch.imageUrl || '')) throw new Error('missing key must not store a remote URL');
+    if (patch.imageStatus !== 'ready') throw new Error('placeholder page stays readable');
   },
 });
-if (blocked.ok) throw new Error('missing key fails closed');
+if (!blocked.ok) throw new Error('missing key still ships the words with a placeholder');
 if (blockedCalls !== 0) throw new Error('missing key must not call Imagen');
 
 const root = process.cwd();
 const sql = fs.readFileSync(path.join(root, 'supabase/migrations/20260925_journey_story_jobs.sql'), 'utf8');
 if (!/for update skip locked/i.test(sql)) throw new Error('claim must skip locked rows');
 if (!/journey_story_jobs/.test(sql)) throw new Error('jobs table missing');
-if (!/claim_journey_story_job_by_id/.test(sql)) throw new Error('QStash retries need a job id claim');
+if (!/claim_journey_story_job_by_id/.test(sql)) throw new Error('a stuck job can be claimed by id');
 if (!/library_key/.test(sql)) throw new Error('published picture cache needs library_key');
 if (!/request jsonb/.test(sql)) throw new Error('queued stories need the request payload');
 if (!/generating_text/.test(sql) || !/'illustrating'/.test(sql) || !/'ready'/.test(sql)) {
   throw new Error('job phase must cover pending through ready');
 }
-if (/qstash_/i.test(sql) || /social stories/i.test(sql)) throw new Error('migration uses a forbidden name');
+if (/qstash|social stories/i.test(sql)) throw new Error('migration uses a forbidden name');
 
 const compose = fs.readFileSync(path.join(root, 'docker-compose.yml'), 'utf8');
 if (!/journey-worker:/.test(compose)) throw new Error('compose needs journey-worker');
 if (!/traefik\.enable=false/.test(compose)) throw new Error('web Traefik label must stay off');
-if (/upstash|image:\s*redis|^\s+qstash:/im.test(compose)) {
-  throw new Error('compose must not add QStash or Redis');
+if (/upstash|qstash|image:\s*redis/i.test(compose)) {
+  throw new Error('compose must not add an external queue or Redis');
 }
 if (/ports:/.test(compose.slice(compose.indexOf('journey-worker:')))) {
   throw new Error('worker must not publish a port');
@@ -327,21 +282,24 @@ if (/ports:/.test(compose.slice(compose.indexOf('journey-worker:')))) {
 
 const worker = fs.readFileSync(path.join(root, 'scripts/journey-worker.ts'), 'utf8');
 if (/Promise\.all/.test(worker)) throw new Error('worker must not burst page images');
-if (/@upstash\/qstash/.test(worker)) throw new Error('worker uses the HTTP publish helper, not a new package');
+if (/qstash|upstash/i.test(worker)) throw new Error('worker must not call an external queue');
+if (!/claim_journey_story_job/.test(worker)) throw new Error('worker claims the Postgres job');
 const callbackRoute = fs.readFileSync(
   path.join(root, 'app/api/island-helpers/journey-stories/jobs/worker/route.ts'),
   'utf8',
 );
-if (/Promise\.all/.test(callbackRoute)) throw new Error('QStash callback must not burst page images');
-if (!/verifyQStashRequest/.test(callbackRoute)) throw new Error('callback must verify the QStash signature');
-if (!/singleCallbackPageIndex/.test(callbackRoute)) throw new Error('callback must draw one page');
+if (/Promise\.all|generateJourney|publishJourney|qstash|upstash/i.test(callbackRoute)) {
+  throw new Error('public worker URL must not generate or queue');
+}
+if (!/status: 410/.test(callbackRoute)) throw new Error('public worker URL stays closed');
 const jobsRoute = fs.readFileSync(
   path.join(root, 'app/api/island-helpers/journey-stories/jobs/route.ts'),
   'utf8',
 );
-if (!/publishJourneyJob/.test(jobsRoute)) throw new Error('adult API must be able to wake QStash');
-if (!/insertJob: qstashReady/.test(jobsRoute)) throw new Error('absent QStash must not enqueue a background picture');
-if (!/fallback: 'illustrate'/.test(jobsRoute)) throw new Error('absent QStash must tell the wizard to illustrate');
+if (/qstash|upstash|publishJourneyJob/i.test(jobsRoute)) throw new Error('adult API must not publish an external queue');
+if (!/artHold/.test(jobsRoute)) throw new Error('art hold must skip the picture job');
+if (!/insertJob: !artHold/.test(jobsRoute)) throw new Error('art hold must not enqueue Imagen');
+if (!/fallback: 'illustrate'/.test(jobsRoute)) throw new Error('a missed database still illustrates one page');
 if (!/x-island-helpers-adult/.test(jobsRoute)) throw new Error('adult gate stays on enqueue');
 const illustrateRoute = fs.readFileSync(
   path.join(root, 'app/api/island-helpers/journey-stories/illustrate/route.ts'),
@@ -360,28 +318,24 @@ const queueRoute = fs.readFileSync(
   'utf8',
 );
 if (!/x-island-helpers-adult/.test(queueRoute)) throw new Error('queue route keeps the adult gate');
-if (!/publishJourneyJob/.test(queueRoute)) throw new Error('queue route must ping QStash');
-if (!/fallback: 'sync'/.test(queueRoute)) throw new Error('missing QStash falls back to sync generation');
-const syncReturn = queueRoute.indexOf("plan === 'sync'");
-const publishCall = queueRoute.indexOf('await publishJourneyJob');
-if (syncReturn < 0 || publishCall < 0 || syncReturn > publishCall) {
-  throw new Error('missing QStash must return before any publish');
-}
+if (/qstash|upstash|publishJourneyJob/i.test(queueRoute)) throw new Error('queue route must not publish an external queue');
+if (!/fallback: 'sync'/.test(queueRoute)) throw new Error('art hold falls back to sync generation');
+if (!/journeyArtOnHold/.test(queueRoute)) throw new Error('queue route must check the art hold');
+if (!/worker: 'vps'/.test(queueRoute)) throw new Error('queued stories name the VPS worker');
 if (/Promise\.all/.test(queueRoute)) throw new Error('queue route must return before image generation');
 const advance = fs.readFileSync(path.join(root, 'lib/island-helpers/journey-stories/advance-story.ts'), 'utf8');
 if (/Promise\.all/.test(advance)) throw new Error('story worker must not burst page images');
 if (!/shouldSyncIllustrate/.test(wizard)) throw new Error('wizard must fall back to one-page illustrate');
 if (!/Picture \$\{pageIndex \+ 1\} of/.test(wizard)) throw new Error('wizard must show per-page progress');
-for (const file of ['.env.example', '.env.production.example']) {
+for (const file of ['.env.example', '.env.production.example', 'deploy/README.md', 'docker-compose.yml']) {
   const text = fs.readFileSync(path.join(root, file), 'utf8');
-  for (const name of ['QSTASH_TOKEN', 'QSTASH_CURRENT_SIGNING_KEY', 'QSTASH_NEXT_SIGNING_KEY']) {
-    if (!new RegExp(`^${name}=$`, 'm').test(text)) {
-      throw new Error(`${file} must document empty ${name}`);
-    }
-  }
-  if (/QSTASH_TOKEN=.+/.test(text) || /QSTASH_CURRENT_SIGNING_KEY=.+/.test(text)) {
-    throw new Error(`${file} must not commit QStash secret values`);
-  }
+  if (/qstash|upstash/i.test(text)) throw new Error(`${file} must not mention an external queue`);
+}
+const productionEnv = fs.readFileSync(path.join(root, '.env.production.example'), 'utf8');
+if (!/^GEMINI_API_KEY=$/m.test(productionEnv)) throw new Error('production example keeps an empty image key');
+if (!/^OPENROUTER_API_KEY=$/m.test(productionEnv)) throw new Error('production example documents the text key');
+if (/^[A-Z0-9_]*API_KEY=.+$/m.test(productionEnv)) {
+  throw new Error('production example must not commit secret values');
 }
 
 console.log('verify-journey-stories-jobs: PASS');

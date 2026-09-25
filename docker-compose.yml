@@ -64,7 +64,7 @@ services:
 
   # Sequential Journey Stories pictures. No public port. No Traefik labels.
   # Claims journey_story_jobs in Supabase (FOR UPDATE SKIP LOCKED).
-  # QStash is an HTTP callback into web, not a compose service. No Redis.
+  # No external queue. No Redis.
   journey-worker:
     build:
       context: .

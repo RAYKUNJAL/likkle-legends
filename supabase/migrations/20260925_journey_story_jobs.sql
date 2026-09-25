@@ -117,7 +117,7 @@ $$;
 revoke all on function public.claim_journey_story_job() from public, anon, authenticated;
 grant execute on function public.claim_journey_story_job() to service_role;
 
--- QStash retries must claim the same job, not whichever row is oldest.
+-- A stuck row can be claimed again by id. The on-host worker uses claim_journey_story_job().
 create or replace function public.claim_journey_story_job_by_id(target uuid)
 returns setof public.journey_story_jobs
 language plpgsql

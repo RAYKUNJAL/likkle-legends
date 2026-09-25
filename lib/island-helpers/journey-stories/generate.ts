@@ -69,12 +69,14 @@ function sanitizeModelError(message: string): string {
   return m.length > 180 ? m.slice(0, 177) + '…' : m;
 }
 
+/** Text model. Missing key must not call OpenRouter. */
+export function hasJourneyTextModelKey(env: NodeJS.ProcessEnv = process.env): boolean {
+  return Boolean((env.OPENROUTER_API_KEY || env.LLM_API_KEY || '').trim());
+}
+
 function getApiKey(): string | null {
-  const key =
-    process.env.OPENROUTER_API_KEY ||
-    process.env.LLM_API_KEY ||
-    '';
-  return key.trim() || null;
+  if (!hasJourneyTextModelKey()) return null;
+  return (process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY || '').trim();
 }
 
 function getOpenRouterUrl(): string {

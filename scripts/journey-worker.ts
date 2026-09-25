@@ -1,14 +1,14 @@
 /**
- * On-host Journey Stories picture worker.
+ * On-host Journey Stories worker.
  * Claims one Postgres job at a time and draws pages sequentially.
- * Backup for the signed QStash callback. This process does not call QStash.
- * No Redis. No public port.
+ * No public port. No external queue.
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { journeyArtOnHold } from '../lib/island-helpers/journey-stories/art-hold';
 import { runClaimedStoryStep, type StoryJobRequest } from '../lib/island-helpers/journey-stories/advance-story';
 import { executeClaimedJourneyJob } from '../lib/island-helpers/journey-stories/execute-job';
+import { hasJourneyTextModelKey } from '../lib/island-helpers/journey-stories/generate';
 import { hasGeminiImageKey } from '../lib/island-helpers/journey-stories/imagen';
-import { hasQStashConfig, publishJourneyJob } from '../lib/island-helpers/journey-stories/qstash';
 import fs from 'fs';
 
 const HEARTBEAT = '/tmp/journey-worker-heartbeat';
@@ -39,20 +39,12 @@ async function workOne(supabase: SupabaseClient): Promise<boolean> {
 
   console.log(`[journey-worker] claimed ${job.id} story ${job.story_id} page ${job.page_index ?? 'all'}`);
   if (job.request || job.phase === 'generating_text') {
-    const advanced = await runClaimedStoryStep(supabase, {
+    await runClaimedStoryStep(supabase, {
       id: String(job.id),
       story_id: String(job.story_id),
       page_index: job.page_index == null ? null : Number(job.page_index),
       request: (job.request || null) as StoryJobRequest | null,
     });
-    if (typeof advanced.publishPage === 'number' && hasQStashConfig()) {
-      await publishJourneyJob({
-        storyId: String(job.story_id),
-        jobId: String(job.id),
-        pageIndex: advanced.publishPage,
-        step: 'page',
-      });
-    }
     return true;
   }
   await executeClaimedJourneyJob(supabase, {
@@ -77,8 +69,11 @@ async function main() {
   if (!supabase) {
     console.error('[journey-worker] missing Supabase service role. Idling.');
   }
-  if (!hasGeminiImageKey()) {
-    console.error('[journey-worker] no GEMINI_API_KEY. New picture jobs fail closed.');
+  if (!hasJourneyTextModelKey()) {
+    console.error('[journey-worker] no text model key. Literal stories fail closed. Standard seeds stay offline.');
+  }
+  if (journeyArtOnHold() || !hasGeminiImageKey()) {
+    console.error('[journey-worker] art is on hold. Pictures use local placeholders. No image model calls.');
   }
 
   while (!stopping) {

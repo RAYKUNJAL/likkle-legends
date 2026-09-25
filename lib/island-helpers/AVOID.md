@@ -11,4 +11,4 @@ Agent checklist before shipping Island Helpers changes:
 7. **Do not re-bake** Tanty story audio for Cut 1 — extend phrase captions on existing karaoke.
 8. **Journey Stories** — public name only; never Social Stories™; parent edit gate before child sees AI pages.
 9. **Literal words** — a parent reading option on Journey Stories (short, direct sentences). Do not name it as a diagnosis or therapy in kid UI, and do not add a separate social-story product.
-10. **Pictures** — one page at a time. QStash may wake the signed route when `QSTASH_TOKEN`, `QSTASH_CURRENT_SIGNING_KEY`, and `QSTASH_NEXT_SIGNING_KEY` are all set. If any are missing, keep the page-by-page illustrate path and the VPS `journey-worker`. No Redis. No new character designs.
+10. **Pictures** — one page at a time on the VPS `journey-worker` and `journey_story_jobs`. No external queue. No Redis. If art is on hold (`JOURNEY_ART_HOLD=1` or no `GEMINI_API_KEY`), ship the wizard and the words with local SVG placeholders. No new character designs. No stub remote image URLs.

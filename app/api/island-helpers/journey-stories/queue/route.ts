@@ -1,10 +1,11 @@
 /**
  * Adult request for a Journey Story.
- * Inserts a pending row, wakes QStash, and returns the id immediately.
- * Without QStash the caller keeps the one-page synchronous path.
+ * Inserts a pending row for the on-VPS worker and returns the id immediately.
+ * Art on hold, or no database, keeps the synchronous text path. No external queue.
  */
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { journeyArtOnHold } from '@/lib/island-helpers/journey-stories/art-hold';
 import {
   blankStoryPages,
   planStoryStart,
@@ -12,7 +13,6 @@ import {
   type StoryJobRequest,
 } from '@/lib/island-helpers/journey-stories/advance-story';
 import { newStoryId } from '@/lib/island-helpers/journey-stories/job-store';
-import { hasQStashConfig, publishJourneyJob } from '@/lib/island-helpers/journey-stories/qstash';
 import { parseJourneyLanguageMode } from '@/lib/island-helpers/journey-stories/generate';
 import { JOURNEY_PAGE_ROLES } from '@/lib/island-helpers/journey-stories/types';
 import { ISLAND_HELPERS_CHARACTER_IDS, type IslandHelpersCharacterId } from '@/lib/island-helpers/types';
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
 
   const client = admin();
   if (!client) {
-    return NextResponse.json({ ok: true, queued: false, fallback: 'sync', status: 'pending' });
+    return NextResponse.json({ ok: true, queued: false, fallback: 'sync', status: 'pending', worker: 'vps' });
   }
 
   const libraryKey = storyLibraryKey(request);
@@ -106,7 +106,8 @@ export async function POST(req: Request) {
     }));
   }
   const reusable = reusablePages.length === 5 && reusablePages.every((page) => page.text.trim());
-  const plan = planStoryStart({ hasQStash: hasQStashConfig(), reusable });
+  const artHold = journeyArtOnHold();
+  const plan = planStoryStart({ canQueue: !artHold, reusable });
 
   if (plan === 'reuse' && published?.id) {
     return NextResponse.json({
@@ -125,7 +126,7 @@ export async function POST(req: Request) {
       queued: false,
       fallback: 'sync',
       status: 'pending',
-      qstash: 'qstash_env_missing',
+      art: artHold ? 'hold' : 'live',
     });
   }
 
@@ -166,19 +167,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, queued: false, fallback: 'sync', status: 'pending', storyId });
   }
 
-  const publishedJob = await publishJourneyJob({
-    storyId,
-    jobId: String(jobRow.id),
-    pageIndex: null,
-    step: 'generate',
-  });
-
   return NextResponse.json({
     ok: true,
     queued: true,
     status: 'pending',
     storyId,
     jobId: String(jobRow.id),
-    qstash: publishedJob.reason,
+    worker: 'vps',
+    art: 'live',
   });
 }

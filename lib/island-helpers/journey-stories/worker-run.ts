@@ -4,6 +4,7 @@
  */
 import { buildJourneyImagePrompt } from './image-prompt';
 import { isUsableHostedImage, pageIndexesForJob, runPagesSequentially } from './jobs';
+import { placeholderForRole } from './placeholders';
 
 export type WorkerPage = {
   pageIndex: number;
@@ -50,11 +51,11 @@ export async function processJourneyJob(input: {
     }
 
     if (!input.hasImagenKey) {
-      failed = true;
+      const local = placeholderForRole(page.role);
       await input.markPage(pageIndex, {
-        imageUrl: null,
-        imageStatus: 'failed',
-        imageError: PAGE_FAILED,
+        imageUrl: local,
+        imageStatus: 'ready',
+        imageError: null,
       });
       return;
     }
