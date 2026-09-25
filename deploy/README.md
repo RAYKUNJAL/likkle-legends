@@ -77,12 +77,15 @@ and health-checks the app before finishing.
 
 ## Journey Stories pictures
 
-**Today, without a QStash token,** the parent wizard writes the story on the
-generate route and **Make pictures** calls
-`POST /api/island-helpers/journey-stories/illustrate` once per page. Each
-request sends one `pageIndex` and the screen shows “Picture 1 of 5…”. Do not
-draw every page inside one request. If the queue route cannot reach QStash it
-returns `fallback: sync` and does not publish. The parent UI keeps going.
+**Code building:** the QStash values are already on the Likkle Portal box.
+Copy them into the server env under these exact names before compose. Do not
+commit them, and do not invent other names.
+
+If any of the three is empty, publish is skipped and the parent UI does not
+crash. The wizard writes the story on the generate route, and **Make pictures**
+calls `POST /api/island-helpers/journey-stories/illustrate` once per page.
+Each request sends one `pageIndex` and the screen shows “Picture 1 of 5…”.
+Do not draw every page inside one request.
 
 **Target path, after the token exists:** `POST /api/island-helpers/journey-stories/queue`
 (adult header) inserts a pending `journey_stories` row and a
