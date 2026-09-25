@@ -41,7 +41,13 @@ function CheckoutContent() {
         const initialSku = offerParam && offerParam !== 'catalog' ? offerParam : planParam;
         return <IslandOffersCheckout initialSku={initialSku} />;
     }
-    const [step, setStep] = useState(1);
+    const paidPlanInUrl = [
+        'starter_mailer', 'plan_mail_intro',
+        'legends_plus', 'plan_legends_plus',
+        'family_legacy', 'plan_family_legacy',
+        'digital_explorer', 'plan_digital_legends',
+    ].includes(planParam || '');
+    const [step, setStep] = useState(paidPlanInUrl || searchParams.get('pay') === '1' ? 4 : 1);
     const [emailError, setEmailError] = useState<string | null>(null);
     const [emailTouched, setEmailTouched] = useState(false);
     const [hasSession, setHasSession] = useState<boolean | null>(null);
@@ -233,10 +239,14 @@ function CheckoutContent() {
     }
 
     const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
+    const billingCycle = searchParams.get('cycle') === 'year' ? 'year' : 'month';
+    const subscriptionPlanId = formData.planKey === 'plan_free_forever'
+        ? ''
+        : ((billingCycle === 'year' ? selectedPlan?.paypalPlanIdYearly : selectedPlan?.paypalPlanId) || '');
     const paypalBlockedMessage = formData.planKey === 'plan_free_forever' && calculateOneTimeTotal() === 0
         ? null
         : paypalSubscriptionCheckoutMessage(
-            formData.planKey === 'plan_free_forever' ? 'addon' : selectedPlan?.paypalPlanId
+            formData.planKey === 'plan_free_forever' ? 'addon' : subscriptionPlanId
         );
 
     const checkoutPage = (
@@ -761,6 +771,8 @@ function CheckoutContent() {
                                                     >
                                                         Activate Free Account
                                                     </button>
+                                                ) : !searchParams.get('uid') && hasSession === null ? (
+                                                    <p className="text-sm font-bold text-slate-500">Checking parent session…</p>
                                                 ) : !searchParams.get('uid') && hasSession === false ? (
                                                     <button
                                                         type="button"
@@ -789,8 +801,7 @@ function CheckoutContent() {
                                                             });
                                                         } : undefined}
                                                         createSubscription={formData.planKey !== 'plan_free_forever' ? (_data, actions) => {
-                                                            const selectedPlan = SUBSCRIPTION_PLANS[formData.planKey as keyof typeof SUBSCRIPTION_PLANS];
-                                                            const targetPlanId = selectedPlan?.paypalPlanId;
+                                                            const targetPlanId = subscriptionPlanId;
 
                                                             if (!targetPlanId) {
                                                                 toast.error("Payment plan is not configured. Please contact support.");
