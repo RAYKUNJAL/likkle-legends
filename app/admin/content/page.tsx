@@ -93,6 +93,16 @@ export default function AdminContentPage() {
             icon: Download,
             color: "text-secondary bg-secondary/5",
             href: "/admin/content/printables"
+        },
+        {
+            id: 'content-files',
+            name: "Content Files",
+            count: 0,
+            type: "Upload",
+            detail: "Coloring books, PDFs, and story packs",
+            icon: Download,
+            color: "text-amber-700 bg-amber-50",
+            href: "/admin/content-library"
         }
     ];
 
@@ -153,7 +163,9 @@ export default function AdminContentPage() {
                                             <h4 className="text-lg font-black text-gray-900">{mod.name}</h4>
                                             <div className="flex items-center gap-3">
                                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                                    {isLoading ? '...' : mod.count} {mod.type}s
+                                                    {'detail' in mod && mod.detail
+                                                        ? mod.detail
+                                                        : `${isLoading ? '...' : mod.count} ${mod.type}s`}
                                                 </span>
                                             </div>
                                         </div>
