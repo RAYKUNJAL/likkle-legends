@@ -23,6 +23,7 @@ import { getCharacterConfig, CHARACTER_ORDER, CharacterId, CharacterChild } from
 import IslandVoice from '@/components/IslandVoice';
 import { normalizeParentalControls } from '@/lib/parental-controls';
 import type { BuddyFollowUp } from '@/lib/buddy-followups';
+import { AskAParentNotice } from '@/components/portal/AskAParentNotice';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -661,18 +662,12 @@ export default function CharacterChatPage() {
                             <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
                                 <Lock size={22} />
                             </div>
-                            <h2 className="mt-4 text-2xl font-black text-slate-900">Buddy chat requires a paid plan.</h2>
+                            <h2 className="mt-4 text-2xl font-black text-slate-900">Buddy chat opens with a parent.</h2>
                             <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">
-                                Upgrade to unlock unlimited buddy chat, safe memory, and the full buddy experience for your child.
+                                A parent can unlock buddy chat from their account. You can still try Tanty Spice here.
                             </p>
-                            <div className="mt-5 flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => router.push('/checkout')}
-                                    className="rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white"
-                                >
-                                    Upgrade Now
-                                </button>
+                            <AskAParentNotice className="mt-4 text-slate-700" />
+                            <div className="mt-5">
                                 <button
                                     type="button"
                                     onClick={() => router.push('/portal/buddy/tanty_spice')}
@@ -691,16 +686,10 @@ export default function CharacterChatPage() {
                             </div>
                             <h2 className="mt-4 text-2xl font-black text-slate-900">You've used all 5 free Tanty chats today!</h2>
                             <p className="mt-2 text-sm font-medium leading-relaxed text-slate-600">
-                                Tanty Spice loves talking with you! Upgrade to keep the conversation going — unlimited chats with Tanty and all the Legends, anytime.
+                                Tanty Spice loves talking with you. Your free chats reset tomorrow. A parent can keep the conversation going from their account.
                             </p>
-                            <div className="mt-5 flex gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => router.push('/pricing')}
-                                    className="rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-3 text-sm font-black text-white shadow-lg hover:scale-105 transition-transform"
-                                >
-                                    Unlock Unlimited Tanty →
-                                </button>
+                            <AskAParentNotice className="mt-4 text-slate-700" />
+                            <div className="mt-5">
                                 <button
                                     type="button"
                                     onClick={() => router.push('/portal/buddy')}
