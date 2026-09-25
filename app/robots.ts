@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next';
+import { getPublicSiteUrl } from '@/lib/blog/site-url';
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://likklelegends.com';
+  const baseUrl = getPublicSiteUrl();
 
   return {
     rules: {
