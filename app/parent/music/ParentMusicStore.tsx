@@ -129,7 +129,110 @@ export default function ParentMusicStore() {
         await load(token);
     };
 
-    const store = (
+    const catalog = (
+        <>
+            <div className="mt-8 space-y-4">
+                {tracks.map((track) => (
+                    <article key={track.id} className="rounded-3xl bg-white p-5 shadow-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <h2 className="text-xl font-black text-slate-900">{track.title}</h2>
+                                <p className="text-sm text-slate-500">{track.artist}</p>
+                            </div>
+                            <button type="button" onClick={() => play(track)} className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-black text-white">
+                                {playing === track.id ? 'Pause' : 'Play'}
+                            </button>
+                        </div>
+                        <div className="mt-4 flex flex-wrap items-center gap-3">
+                            {track.owned ? (
+                                <>
+                                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black uppercase tracking-widest text-emerald-700">Owned</span>
+                                    <a href={`/api/music/download/${track.id}`} className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-black text-white">Download</a>
+                                </>
+                            ) : played[track.id] ? (
+                                signedIn ? (
+                                    <>
+                                        <button type="button" onClick={() => setBuying(buying === track.id ? null : track.id)} className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-black text-slate-900">
+                                            Download for ${formatUsd(MUSIC_DOWNLOAD_PRICE)}
+                                        </button>
+                                        {credits > 0 && (
+                                            <button type="button" onClick={() => redeem(track.id)} className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-black text-slate-900">
+                                                Use 1 license ({credits} left)
+                                            </button>
+                                        )}
+                                    </>
+                                ) : (
+                                    <a href="/login?redirect=/parent/music" className="text-sm font-bold text-slate-600 underline">
+                                        Download for ${formatUsd(MUSIC_DOWNLOAD_PRICE)} after parent sign in
+                                    </a>
+                                )
+                            ) : null}
+                        </div>
+                        {buying === track.id && !track.owned && signedIn && PAYPAL_CLIENT_ID && (
+                            <div className="mt-4" data-testid="paypal-download">
+                                <MusicPayPalButton
+                                    sku={MUSIC_DOWNLOAD_SKU}
+                                    token={token}
+                                    trackId={track.id}
+                                    onVerified={() => {
+                                        setBuying(null);
+                                        setMessage(`${track.title} download is on this parent account.`);
+                                        load(token);
+                                    }}
+                                />
+                            </div>
+                        )}
+                        {buying === track.id && !PAYPAL_CLIENT_ID && (
+                            <p className="mt-3 text-sm font-bold text-red-700">PayPal checkout is unavailable. Nothing can be purchased until it is configured.</p>
+                        )}
+                    </article>
+                ))}
+            </div>
+
+            {signedIn && (
+                <section className="mt-8 rounded-3xl bg-white p-6 shadow-sm">
+                    <h2 className="text-xl font-black text-slate-900">A few download licenses</h2>
+                    <p className="mt-2 text-sm text-slate-600">
+                        Optional. Five download licenses for ${formatUsd(MUSIC_DOWNLOAD_BUNDLE_PRICE)}, only for songs in this library. Unused licenses stay on the parent account. You have {credits} left.
+                    </p>
+                    {PAYPAL_CLIENT_ID ? (
+                        <div className="mt-4" data-testid="paypal-bundle">
+                            <MusicPayPalButton
+                                sku={MUSIC_DOWNLOAD_BUNDLE_SKU}
+                                token={token}
+                                onVerified={() => {
+                                    setMessage('Five download licenses were added after PayPal verified the payment.');
+                                    load(token);
+                                }}
+                            />
+                        </div>
+                    ) : (
+                        <p className="mt-3 text-sm font-bold text-red-700">PayPal checkout is unavailable.</p>
+                    )}
+                </section>
+            )}
+
+            {receipts.length > 0 && (
+                <section className="mt-8">
+                    <h2 className="text-xl font-black text-slate-900">Receipts</h2>
+                    <ul className="mt-3 space-y-3">
+                        {receipts.map((receipt) => (
+                            <li key={receipt.id} className="rounded-3xl bg-white p-4 text-sm text-slate-600 shadow-sm">
+                                <p className="font-black text-slate-900">{receipt.label}</p>
+                                <p className="mt-1">{receipt.sku} · ${formatUsd(receipt.amount)} {receipt.currency}</p>
+                                <p className="mt-1">{receipt.createdAt ? new Date(receipt.createdAt).toLocaleString() : ''}</p>
+                                {receipt.paypalOrderId && <p className="mt-1 break-all text-xs text-slate-400">PayPal {receipt.paypalOrderId}</p>}
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
+
+            {message && <p className="mt-6 text-sm font-bold text-slate-800" role="status">{message}</p>}
+        </>
+    );
+
+    return (
         <div className="min-h-screen bg-[#F8FAFC] px-4 py-16">
             <div className="mx-auto max-w-3xl">
                 <Link href="/parent" className="text-sm font-bold text-slate-500">Parent dashboard</Link>
@@ -154,112 +257,12 @@ export default function ParentMusicStore() {
                     </p>
                 )}
 
-                <div className="mt-8 space-y-4">
-                    {tracks.map((track) => (
-                        <article key={track.id} className="rounded-3xl bg-white p-5 shadow-sm">
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div>
-                                    <h2 className="text-xl font-black text-slate-900">{track.title}</h2>
-                                    <p className="text-sm text-slate-500">{track.artist}</p>
-                                </div>
-                                <button type="button" onClick={() => play(track)} className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-black text-white">
-                                    {playing === track.id ? 'Pause' : 'Play'}
-                                </button>
-                            </div>
-                            <div className="mt-4 flex flex-wrap items-center gap-3">
-                                {track.owned ? (
-                                    <>
-                                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black uppercase tracking-widest text-emerald-700">Owned</span>
-                                        <a href={`/api/music/download/${track.id}`} className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-black text-white">Download</a>
-                                    </>
-                                ) : played[track.id] ? (
-                                    signedIn ? (
-                                        <>
-                                            <button type="button" onClick={() => setBuying(buying === track.id ? null : track.id)} className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-black text-slate-900">
-                                                Download for ${formatUsd(MUSIC_DOWNLOAD_PRICE)}
-                                            </button>
-                                            {credits > 0 && (
-                                                <button type="button" onClick={() => redeem(track.id)} className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-black text-slate-900">
-                                                    Use 1 license ({credits} left)
-                                                </button>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <a href="/login?redirect=/parent/music" className="text-sm font-bold text-slate-600 underline">
-                                            Download for ${formatUsd(MUSIC_DOWNLOAD_PRICE)} after parent sign in
-                                        </a>
-                                    )
-                                ) : null}
-                            </div>
-                            {buying === track.id && !track.owned && signedIn && PAYPAL_CLIENT_ID && (
-                                <div className="mt-4" data-testid="paypal-download">
-                                    <MusicPayPalButton
-                                        sku={MUSIC_DOWNLOAD_SKU}
-                                        token={token}
-                                        trackId={track.id}
-                                        onVerified={() => {
-                                            setBuying(null);
-                                            setMessage(`${track.title} download is on this parent account.`);
-                                            load(token);
-                                        }}
-                                    />
-                                </div>
-                            )}
-                            {buying === track.id && !PAYPAL_CLIENT_ID && (
-                                <p className="mt-3 text-sm font-bold text-red-700">PayPal checkout is unavailable. Nothing can be purchased until it is configured.</p>
-                            )}
-                        </article>
-                    ))}
-                </div>
-
-                {signedIn && (
-                    <section className="mt-8 rounded-3xl bg-white p-6 shadow-sm">
-                        <h2 className="text-xl font-black text-slate-900">A few download licenses</h2>
-                        <p className="mt-2 text-sm text-slate-600">
-                            Optional. Five download licenses for ${formatUsd(MUSIC_DOWNLOAD_BUNDLE_PRICE)}, only for songs in this library. Unused licenses stay on the parent account. You have {credits} left.
-                        </p>
-                        {PAYPAL_CLIENT_ID ? (
-                            <div className="mt-4" data-testid="paypal-bundle">
-                                <MusicPayPalButton
-                                    sku={MUSIC_DOWNLOAD_BUNDLE_SKU}
-                                    token={token}
-                                    onVerified={() => {
-                                        setMessage('Five download licenses were added after PayPal verified the payment.');
-                                        load(token);
-                                    }}
-                                />
-                            </div>
-                        ) : (
-                            <p className="mt-3 text-sm font-bold text-red-700">PayPal checkout is unavailable.</p>
-                        )}
-                    </section>
-                )}
-
-                {receipts.length > 0 && (
-                    <section className="mt-8">
-                        <h2 className="text-xl font-black text-slate-900">Receipts</h2>
-                        <ul className="mt-3 space-y-3">
-                            {receipts.map((receipt) => (
-                                <li key={receipt.id} className="rounded-3xl bg-white p-4 text-sm text-slate-600 shadow-sm">
-                                    <p className="font-black text-slate-900">{receipt.label}</p>
-                                    <p className="mt-1">{receipt.sku} · ${formatUsd(receipt.amount)} {receipt.currency}</p>
-                                    <p className="mt-1">{receipt.createdAt ? new Date(receipt.createdAt).toLocaleString() : ''}</p>
-                                    {receipt.paypalOrderId && <p className="mt-1 break-all text-xs text-slate-400">PayPal {receipt.paypalOrderId}</p>}
-                                </li>
-                            ))}
-                        </ul>
-                    </section>
-                )}
-
-                {message && <p className="mt-6 text-sm font-bold text-slate-800" role="status">{message}</p>}
+                {signedIn && PAYPAL_CLIENT_ID ? (
+                    <PayPalScriptProvider options={paypalOptions}>
+                        {catalog}
+                    </PayPalScriptProvider>
+                ) : catalog}
             </div>
         </div>
-    );
-
-    if (!signedIn || !PAYPAL_CLIENT_ID) return store;
-    return (
-        <PayPalScriptProvider options={paypalOptions}>
-            {store}
-        </PayPalScriptProvider>
     );
 }

@@ -6,7 +6,7 @@ export default function ParentMusicPage() {
     return (
         <>
             {songs.map((song) => (
-                <link key={song.id} rel="preload" as="audio" href={playbackUrl(song)} />
+                <link key={song.id} rel="preload" as="audio" href={playbackUrl(song)} fetchPriority="low" />
             ))}
             <ParentMusicStore />
         </>
