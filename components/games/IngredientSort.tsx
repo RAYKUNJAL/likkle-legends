@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 
 const CATEGORIES = [
@@ -52,6 +52,10 @@ export default function IngredientSort({ onComplete }: GameProps) {
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<{ id?: number; type: 'correct' | 'incorrect' | '' }>({ type: '' });
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const placedRef = useRef<Set<number>>(new Set());
+  const placingRef = useRef(false);
+  const draggedRef = useRef<number | null>(null);
 
   const TOTAL_ITEMS = 20;
 
@@ -64,49 +68,62 @@ export default function IngredientSort({ onComplete }: GameProps) {
   }, []);
 
   const handleDragStart = useCallback((id: number) => {
+    draggedRef.current = id;
     setDraggedItem(id);
+    setSelectedId(id);
   }, []);
 
-  const handleDropOnCategory = useCallback((categoryId: string) => {
-    if (draggedItem === null) return;
+  const placeIngredient = useCallback((id: number, categoryId: string) => {
+    if (placingRef.current || placedRef.current.has(id)) return;
+    placingRef.current = true;
+    queueMicrotask(() => {
+      placingRef.current = false;
+    });
 
-    const ingredient = ingredients.find(ing => ing.id === draggedItem);
+    const ingredient = ingredients.find(ing => ing.id === id);
     if (!ingredient) return;
 
-    if (ingredient.category === categoryId) {
-      // Correct placement
-      setFeedback({ id: draggedItem, type: 'correct' });
-      setPlaced(new Set([...placed, draggedItem]));
-      setScore(prev => prev + 50);
-
-      confetti({
-        particleCount: 30,
-        spread: 45,
-        origin: { y: 0.5 },
-      });
-
-      setTimeout(() => {
-        setFeedback({ type: '' });
-      }, 800);
-
-      if (placed.size + 1 === TOTAL_ITEMS) {
-        setTimeout(() => {
-          setGameState('complete');
-          if (onComplete) {
-            onComplete(score + 50);
-          }
-        }, 1000);
-      }
-    } else {
-      // Incorrect placement
-      setFeedback({ id: draggedItem, type: 'incorrect' });
-      setTimeout(() => {
-        setFeedback({ type: '' });
-      }, 600);
+    if (ingredient.category !== categoryId) {
+      setFeedback({ id, type: 'incorrect' });
+      setTimeout(() => setFeedback({ type: '' }), 600);
+      draggedRef.current = null;
+      setDraggedItem(null);
+      return;
     }
 
+    const next = new Set(placedRef.current);
+    next.add(id);
+    placedRef.current = next;
+    setPlaced(next);
+    setSelectedId(null);
+    draggedRef.current = null;
     setDraggedItem(null);
-  }, [draggedItem, ingredients, placed, score, onComplete]);
+    setFeedback({ id, type: 'correct' });
+    setScore(prev => {
+      const nextScore = prev + 50;
+      if (next.size === TOTAL_ITEMS) {
+        setTimeout(() => {
+          setGameState('complete');
+          onComplete?.(nextScore);
+        }, 1000);
+      }
+      return nextScore;
+    });
+
+    confetti({
+      particleCount: 30,
+      spread: 45,
+      origin: { y: 0.5 },
+    });
+
+    setTimeout(() => setFeedback({ type: '' }), 800);
+  }, [ingredients, onComplete]);
+
+  const handleDropOnCategory = useCallback((categoryId: string) => {
+    const id = draggedRef.current ?? selectedId;
+    if (id === null) return;
+    placeIngredient(id, categoryId);
+  }, [placeIngredient, selectedId]);
 
   return (
     <div style={{
@@ -125,7 +142,7 @@ export default function IngredientSort({ onComplete }: GameProps) {
           background: rgba(255, 210, 63, 0.1);
           border: 2px solid rgba(255, 210, 63, 0.3);
           border-radius: 0.75rem;
-          cursor: grab;
+          cursor: pointer;
           user-select: none;
           transition: all 0.2s ease;
           color: #FFD23F;
@@ -134,6 +151,11 @@ export default function IngredientSort({ onComplete }: GameProps) {
           align-items: center;
           gap: 0.5rem;
           font-size: 1rem;
+          font-family: inherit;
+          text-align: left;
+          touch-action: manipulation;
+          width: 100%;
+          appearance: none;
         }
         .ingredient-item:hover {
           background: rgba(255, 210, 63, 0.2);
@@ -152,6 +174,14 @@ export default function IngredientSort({ onComplete }: GameProps) {
           border-color: rgba(255, 210, 63, 0.3);
           transform: none;
         }
+        .ingredient-item.selected {
+          background: rgba(255, 210, 63, 0.35);
+          border-color: #FFD23F;
+          box-shadow: 0 0 0 3px rgba(255, 210, 63, 0.35);
+        }
+        .category-basket.ready {
+          background: rgba(255, 255, 255, 0.08);
+        }
         .category-basket {
           flex: 1;
           min-height: 150px;
@@ -163,8 +193,13 @@ export default function IngredientSort({ onComplete }: GameProps) {
           justify-content: center;
           align-items: center;
           transition: all 0.3s ease;
-          cursor: drop;
+          cursor: pointer;
           position: relative;
+          touch-action: manipulation;
+          font: inherit;
+          color: inherit;
+          width: 100%;
+          appearance: none;
         }
         .category-basket.drag-over {
           transform: scale(1.05);
@@ -221,6 +256,12 @@ export default function IngredientSort({ onComplete }: GameProps) {
       </div>
 
       {gameState === 'playing' && (
+        <p style={{ color: '#8EA4C8', fontWeight: 600, marginTop: '-1rem', marginBottom: '1.25rem' }}>
+          Tap a food, then tap its basket. You can also drag it.
+        </p>
+      )}
+
+      {gameState === 'playing' && (
         <>
           {/* Category Baskets - Drop Zone */}
           <div style={{
@@ -230,12 +271,16 @@ export default function IngredientSort({ onComplete }: GameProps) {
             marginBottom: '3rem',
           }}>
             {CATEGORIES.map(category => (
-              <div
+              <button
+                type="button"
                 key={category.id}
-                className={`category-basket ${draggedItem ? 'drag-over' : ''}`}
+                className={`category-basket ${draggedItem ? 'drag-over' : ''} ${selectedId !== null ? 'ready' : ''}`}
                 style={{
                   borderColor: category.color,
                   background: `rgba(${parseInt(category.color.slice(1, 3), 16)}, ${parseInt(category.color.slice(3, 5), 16)}, ${parseInt(category.color.slice(5, 7), 16)}, 0.05)`,
+                }}
+                onClick={() => {
+                  if (selectedId !== null) placeIngredient(selectedId, category.id);
                 }}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={() => handleDropOnCategory(category.id)}
@@ -247,7 +292,7 @@ export default function IngredientSort({ onComplete }: GameProps) {
                 <div className="basket-count" style={{ color: category.color }}>
                   {ingredients.filter(ing => ing.category === category.id && placed.has(ing.id)).length}/{ingredients.filter(ing => ing.category === category.id).length}
                 </div>
-              </div>
+              </button>
             ))}
           </div>
 
@@ -262,9 +307,12 @@ export default function IngredientSort({ onComplete }: GameProps) {
             border: '1px solid rgba(255, 210, 63, 0.2)',
           }}>
             {ingredients.map(ingredient => (
-              <div
+              <button
+                type="button"
                 key={ingredient.id}
                 className={`ingredient-item ${placed.has(ingredient.id) ? 'placed' : ''} ${
+                  selectedId === ingredient.id ? 'selected' : ''
+                } ${
                   feedback.id === ingredient.id
                     ? feedback.type === 'correct'
                       ? 'correct-anim'
@@ -272,6 +320,10 @@ export default function IngredientSort({ onComplete }: GameProps) {
                     : ''
                 }`}
                 draggable={!placed.has(ingredient.id)}
+                disabled={placed.has(ingredient.id)}
+                onClick={() => {
+                  if (!placed.has(ingredient.id)) setSelectedId(ingredient.id);
+                }}
                 onDragStart={() => handleDragStart(ingredient.id)}
                 style={{
                   opacity: placed.has(ingredient.id) ? 0.3 : 1,
@@ -279,7 +331,7 @@ export default function IngredientSort({ onComplete }: GameProps) {
               >
                 <span>{ingredient.emoji}</span>
                 <span>{ingredient.name}</span>
-              </div>
+              </button>
             ))}
           </div>
         </>

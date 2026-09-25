@@ -94,6 +94,13 @@ function testIslandWeekAndPreservedSurfaces() {
   assert.ok(voice.includes("voice === 'dilly_doubles'"));
 }
 
+function testIngredientSortAcceptsTap() {
+  const source = readFileSync(resolve(process.cwd(), 'components/games/IngredientSort.tsx'), 'utf8');
+  assert.ok(source.includes('Tap a food, then tap its basket'));
+  assert.ok(source.includes('placeIngredient(selectedId, category.id)'));
+  assert.ok(source.includes('onDrop={() => handleDropOnCategory(category.id)}'));
+}
+
 function testWorkingGamesOnly() {
   assert.equal(HIDDEN_GAME_IDS.has('story-library'), true);
   assert.equal(HIDDEN_GAME_IDS.has('cultural-quiz'), true);
@@ -109,6 +116,7 @@ testFreeTrialNeverLeaksMagicLink();
 testBuddyFollowUpsStayInCharacter();
 testVoiceFailsClosedWithoutKeys();
 testArcadeRoutesRedirectToHtml();
+testIngredientSortAcceptsTap();
 testWorkingGamesOnly();
 testIslandWeekAndPreservedSurfaces();
 
