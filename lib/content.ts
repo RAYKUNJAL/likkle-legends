@@ -9,9 +9,11 @@ export const siteContent = {
         enabled: true,
         text: "Limited Time: Get 15% OFF your first month with code LEGEND15",
         subtext: "Ends soon. New members only.",
+        // No fake client timer — only show a countdown when CMS provides a real future ends_at.
         countdown: {
-            enabled: true,
-            duration_hours: 24
+            enabled: false,
+            duration_hours: 24,
+            ends_at: null
         }
     },
     navigation: {
@@ -51,11 +53,11 @@ export const siteContent = {
         },
         trust_row: {
             badges: [
-                "500+ happy families",
+                "Kid-safe & ad-free",
                 "Cancel anytime",
                 "Ships worldwide"
             ],
-            ticker_text: "Trusted by 500+ families in New York, London, Toronto, and across the Caribbean."
+            ticker_text: "Made for Caribbean families in New York, London, Toronto, and across the islands."
         },
         hero_media: {
             type: "image",
@@ -91,7 +93,7 @@ export const siteContent = {
                 icon: "digital-portal"
             }
         ],
-        bottom_note: "Join 500+ families. Most start with the $10 Intro — upgrade anytime as your child grows."
+        bottom_note: "Most families start with the $10 Intro — upgrade anytime as your child grows."
     },
     what_you_get: {
         id: "what-you-get",
@@ -327,25 +329,12 @@ export const siteContent = {
         id: "testimonials",
         title: "What our legends say",
         subtitle: "Real stories from families on their cultural journey.",
-        featured_rating: "4.9/5 from parents worldwide",
-        items: [
-            {
-                quote: "My daughter literally waits by the mailbox for her Likkle Legends letter. She's finally learning about her Trinidadian roots in a way that's fun and meaningful.",
-                headline: "She waits by the mailbox every month.",
-                name: "Sarah J.",
-                meta: "Mom of a 6-year-old · New York, USA"
-            },
-            {
-                quote: "The emotional literacy component is what sold me. My son is learning how to talk about his feelings while celebrating his culture. It's beautiful.",
-                headline: "Culture and feelings in one place.",
-                name: "David R.",
-                meta: "Dad of a 7-year-old · London, UK"
-            }
-        ]
+        featured_rating: "",
+        items: []
     },
     cta_banner: {
         headline: "Ready to start your child's Caribbean adventure?",
-        subheadline: "Join 500+ families building identity, emotional literacy, and joyful memories each month.",
+        subheadline: "Build identity, emotional literacy, and joyful memories each month.",
         primary_cta: {
             label: "Start Mail Club for $10/month",
             href: "/get-started"

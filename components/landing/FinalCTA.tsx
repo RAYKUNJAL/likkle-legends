@@ -22,7 +22,7 @@ export default function FinalCTA() {
                 >
                     <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/10 backdrop-blur text-white/80 text-sm font-black uppercase tracking-widest border border-white/10">
                         <Sparkles size={14} />
-                        Join 500+ Families
+                        For Caribbean families abroad
                     </div>
 
                     <h2 className="text-4xl md:text-6xl font-black text-white leading-tight">

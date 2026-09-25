@@ -13,7 +13,6 @@ import {
     Mail,
     User,
     Globe,
-    Star,
     Sparkles,
     Zap,
     Search,
@@ -258,7 +257,7 @@ function CheckoutContent() {
                                     <span className="text-primary italic">Infinite magic.</span>
                                 </h2>
                                 <p className="text-deep/40 font-medium max-w-sm">
-                                    Join 2,000+ diaspora families preserving their heritage through personalized digital adventure.
+                                    Preserve Caribbean heritage through personalized digital adventure — built for families abroad.
                                 </p>
                             </div>
 
@@ -337,16 +336,7 @@ function CheckoutContent() {
                         </div>
                     </div>
 
-                    {/* Testimonial Snippet */}
-                    <div className="hidden lg:block pt-12">
-                        <div className="flex gap-1 mb-3">
-                            {[1, 2, 3, 4, 5].map(i => <Star key={i} size={12} className="fill-yellow-400 text-yellow-400" />)}
-                        </div>
-                        <p className="text-sm font-medium text-deep/40 italic leading-relaxed">
-                            &quot;The only app that actually makes my son excited to learn about his Trini roots. The physical envelope is the highlight of our month!&quot;
-                        </p>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-deep/20 mt-4">— Sarah M., NY</p>
-                    </div>
+                    {/* Unverified testimonial removed for commercial honesty */}
                 </section>
 
                 {/* Right: The Streamlined Form */}
