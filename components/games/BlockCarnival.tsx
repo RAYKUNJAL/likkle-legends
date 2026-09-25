@@ -16,6 +16,7 @@ import {
     type BlockCell,
     type ShapeCell,
 } from '@/lib/games/block-placement';
+import { blockCarnivalLines, blockCarnivalSwaps } from '@/lib/games/long-play';
 
 interface GameProps {
     onComplete?: (score: number) => void;
@@ -39,7 +40,6 @@ const ISLANDS = [
     { id: 'saint-lucia', label: 'Saint Lucia', flag: '🇱🇨', treasure: 'Green fig', emoji: '🍌' },
 ];
 
-const LINES_TO_WIN = 3;
 const COLORS = ['#fbbf24', '#34d399', '#c4b5fd', '#fb7185', '#67e8f9'];
 
 function randomShape() {
@@ -80,6 +80,7 @@ export default function BlockCarnival({ onComplete }: GameProps) {
     const [awarded, setAwarded] = useState(false);
 
     const island = ISLANDS[islandIndex];
+    const linesToWin = blockCarnivalLines(islandIndex);
     const selected = pieces.find((piece) => piece.id === selectedId && !piece.used) ?? null;
 
     function freshTray(emoji: string, current = board) {
@@ -102,7 +103,7 @@ export default function BlockCarnival({ onComplete }: GameProps) {
         setLines(0);
         setCombo(0);
         setFever(0);
-        setSwaps(3);
+        setSwaps(blockCarnivalSwaps(index));
         setFinished(null);
         setAwarded(false);
         setStarted(true);
@@ -161,7 +162,8 @@ export default function BlockCarnival({ onComplete }: GameProps) {
         setFever(nextFever);
         setPieces(usedPieces);
 
-        if (nextLines >= LINES_TO_WIN) {
+        const linesToWin = blockCarnivalLines(islandIndex);
+        if (nextLines >= linesToWin) {
             setFinished('win');
             if (!awarded) {
                 setAwarded(true);
@@ -194,7 +196,7 @@ export default function BlockCarnival({ onComplete }: GameProps) {
                 </div>
                 <div className="flex gap-2 text-center text-sm font-black">
                     <Pill label="Score" value={score} />
-                    <Pill label="Lines" value={`${lines}/${LINES_TO_WIN}`} />
+                    <Pill label="Lines" value={`${lines}/${linesToWin}`} />
                     <Pill label="Fever" value={`${fever}%`} />
                 </div>
             </div>
@@ -309,7 +311,7 @@ export default function BlockCarnival({ onComplete }: GameProps) {
                         <h2 className="mt-2 text-3xl font-black">{finished === 'win' ? 'Level complete!' : 'Board full'}</h2>
                         <p className="mt-2 text-sm font-semibold text-slate-500">
                             {finished === 'win'
-                                ? `You cleared ${LINES_TO_WIN} lines in ${island.label} and raised Carnival Fever.`
+                                ? `You cleared ${linesToWin} lines in ${island.label} and raised Carnival Fever.`
                                 : 'Rotate or swap sooner next time. Every island is open to try again.'}
                         </p>
                         <p className="mt-3 text-4xl font-black text-orange-500">{score}</p>

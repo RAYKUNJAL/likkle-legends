@@ -11,6 +11,7 @@ import {
     entityUnderPoint,
     memberCanPlayReefLevel,
     reefConfig,
+    reefWave,
     reefZone,
     scoreReefHit,
     type ReefHitKind,
@@ -44,8 +45,8 @@ export default function ReefRescue({ onComplete }: GameProps) {
     const [showLevels, setShowLevels] = useState(false);
     const [count, setCount] = useState('3');
     const [score, setScore] = useState(0);
-    const [lives, setLives] = useState(3);
-    const [timeLeft, setTimeLeft] = useState(35);
+    const [lives, setLives] = useState(() => reefConfig(1).lives);
+    const [timeLeft, setTimeLeft] = useState(() => reefConfig(1).duration);
     const [combo, setCombo] = useState(0);
     const [litter, setLitter] = useState<Litter[]>([]);
     const [notes, setNotes] = useState<FloatNote[]>([]);
@@ -54,8 +55,10 @@ export default function ReefRescue({ onComplete }: GameProps) {
     const arenaRef = useRef<HTMLDivElement>(null);
     const litterRef = useRef<Litter[]>([]);
     const scoreRef = useRef(0);
-    const livesRef = useRef(3);
-    const timeRef = useRef(35);
+    const livesRef = useRef(reefConfig(1).lives);
+    const maxLivesRef = useRef(reefConfig(1).lives);
+    const missBankRef = useRef(0);
+    const timeRef = useRef(reefConfig(1).duration);
     const comboRef = useRef(0);
     const levelRef = useRef(1);
     const runningRef = useRef(false);
@@ -69,7 +72,8 @@ export default function ReefRescue({ onComplete }: GameProps) {
 
     const zone = reefZone(level);
     const config = reefConfig(level);
-    const reefHealth = Math.max(0, Math.min(100, (lives / 3) * 100));
+    const reefHealth = Math.max(0, Math.min(100, (lives / Math.max(1, config.lives)) * 100));
+    const wave = reefWave(score, config.target, config.waves);
 
     function sync(nextLitter = litterRef.current) {
         litterRef.current = nextLitter;
@@ -163,7 +167,7 @@ export default function ReefRescue({ onComplete }: GameProps) {
         const result = scoreReefHit(item.kind, item.points, comboRef.current);
         scoreRef.current = Math.max(0, scoreRef.current + result.scoreDelta);
         comboRef.current = result.nextCombo;
-        livesRef.current = Math.max(0, Math.min(3, livesRef.current + result.lifeDelta));
+        livesRef.current = Math.max(0, Math.min(maxLivesRef.current, livesRef.current + result.lifeDelta));
         timeRef.current += result.timeDelta;
         litterRef.current = litterRef.current.filter((entry) => entry.id !== id);
         if (item.kind === 'wildlife') {
@@ -186,7 +190,9 @@ export default function ReefRescue({ onComplete }: GameProps) {
         runningRef.current = false;
         levelRef.current = nextLevel;
         scoreRef.current = 0;
-        livesRef.current = 3;
+        maxLivesRef.current = cfg.lives;
+        livesRef.current = cfg.lives;
+        missBankRef.current = 0;
         timeRef.current = cfg.duration;
         comboRef.current = 0;
         spawnClockRef.current = cfg.spawnMs * 0.35;
@@ -194,7 +200,7 @@ export default function ReefRescue({ onComplete }: GameProps) {
         setLevel(nextLevel);
         setShowLevels(false);
         setScore(0);
-        setLives(3);
+        setLives(cfg.lives);
         setTimeLeft(cfg.duration);
         setCombo(0);
         setLitter([]);
@@ -247,9 +253,13 @@ export default function ReefRescue({ onComplete }: GameProps) {
                 const y = item.y + item.speed * delta;
                 if (y >= limit) {
                     if (item.kind === 'trash') {
-                        livesNow -= 1;
+                        missBankRef.current += 1;
                         comboRef.current = 0;
-                        setMessage('Rubbish reached the coral. Keep tapping!');
+                        if (missBankRef.current >= cfg.missesPerLife) {
+                            missBankRef.current = 0;
+                            livesNow -= 1;
+                            setMessage('Rubbish reached the coral. Keep tapping!');
+                        }
                     }
                     return;
                 }
@@ -305,6 +315,7 @@ export default function ReefRescue({ onComplete }: GameProps) {
                 <div>
                     <p className="text-xs font-black uppercase tracking-widest text-amber-200">{zone.flag} {zone.name}</p>
                     <p className="text-lg font-black">Level {level} / {MAX_REEF_LEVEL}</p>
+                    <p className="text-xs font-black text-cyan-100">Wave {wave} / {config.waves}</p>
                 </div>
                 <div className="flex gap-2 text-center text-sm font-black">
                     <Stat label="Score" value={score} />
@@ -334,7 +345,7 @@ export default function ReefRescue({ onComplete }: GameProps) {
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-emerald-700/80 to-transparent" />
                 <div
                     className="pointer-events-none absolute inset-x-4 bottom-3 h-16 rounded-full blur-md transition-all"
-                    style={{ background: `linear-gradient(90deg,#f9a8d4,#34d399,#22d3ee,#fbbf24)`, opacity: 0.35 + (1 - lives / 3) * 0.15 + Math.min(score / config.target, 1) * 0.4 }}
+                    style={{ background: `linear-gradient(90deg,#f9a8d4,#34d399,#22d3ee,#fbbf24)`, opacity: 0.35 + (1 - lives / Math.max(1, config.lives)) * 0.15 + Math.min(score / config.target, 1) * 0.4 }}
                 />
 
                 {litter.map((item) => (
@@ -387,7 +398,7 @@ export default function ReefRescue({ onComplete }: GameProps) {
                         <p className="mt-2 text-sm font-semibold text-cyan-100">
                             Clear ocean litter, protect sea life and restore colorful Caribbean reefs.
                         </p>
-                        <p className="mt-3 text-sm font-black text-amber-200">Level {level} · {zone.name}</p>
+                        <p className="mt-3 text-sm font-black text-amber-200">Level {level} · {zone.name} · {config.waves} waves</p>
                         <button
                             type="button"
                             className="mt-4 min-h-[64px] w-full cursor-pointer rounded-2xl bg-gradient-to-r from-emerald-300 to-amber-300 text-lg font-black text-slate-900 touch-manipulation"

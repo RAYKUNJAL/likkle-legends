@@ -39,6 +39,27 @@ const RECIPES = [
     fact: 'Callaloo is a leafy green vegetable used in many Caribbean dishes!',
     emoji: '🥣',
   },
+  {
+    name: 'Pelau',
+    ingredients: ['Rice', 'Pigeon Peas', 'Coconut Milk', 'Chicken', 'Burnt Sugar', 'Thyme'],
+    correctOrder: [0, 1, 2, 3, 4, 5],
+    fact: 'Pelau is a one-pot Trinidadian rice dish with a little burnt sugar for color!',
+    emoji: '🍛',
+  },
+  {
+    name: 'Coconut Bake',
+    ingredients: ['Flour', 'Coconut', 'Sugar', 'Butter', 'Yeast', 'Water'],
+    correctOrder: [0, 1, 2, 3, 4, 5],
+    fact: 'Coconut bake is a warm bread enjoyed across the islands, often with saltfish!',
+    emoji: '🍞',
+  },
+  {
+    name: 'Sorrel Drink',
+    ingredients: ['Sorrel', 'Ginger', 'Clove', 'Sugar', 'Orange Peel', 'Water'],
+    correctOrder: [0, 1, 2, 3, 4, 5],
+    fact: 'Sorrel is a ruby-red holiday drink made from hibiscus in the Caribbean!',
+    emoji: '🥤',
+  },
 ];
 
 interface Ingredient {

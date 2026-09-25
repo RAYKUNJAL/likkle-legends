@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { SPEED_SHAPE_ANSWER_SECONDS, SPEED_SHAPE_REVEAL_SECONDS, SPEED_SHAPE_ROUNDS } from '@/lib/games/long-play';
 
 const SHAPES = ['circle', 'square', 'triangle', 'star', 'hexagon', 'diamond', 'pentagon', 'heart'];
 const SHAPE_ICONS: Record<string, string> = {
@@ -31,9 +32,9 @@ export default function SpeedShapes({ onComplete }: GameProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showingShape, setShowingShape] = useState(true);
 
-  const MAX_ROUNDS = 10;
-  const REVEAL_TIME = 0.75;
-  const ANSWER_TIME: Record<string, number> = { easy: 8, medium: 6, hard: 4 };
+  const MAX_ROUNDS = SPEED_SHAPE_ROUNDS[difficulty];
+  const REVEAL_TIME = SPEED_SHAPE_REVEAL_SECONDS[difficulty];
+  const ANSWER_TIME = SPEED_SHAPE_ANSWER_SECONDS;
   const OPTION_COUNT: Record<string, number> = { easy: 3, medium: 6, hard: 9 };
 
   const generateRound = useCallback(() => {
@@ -54,7 +55,7 @@ export default function SpeedShapes({ onComplete }: GameProps) {
     if (gameState !== 'playing' || !showingShape) return;
     const timer = setTimeout(() => setShowingShape(false), REVEAL_TIME * 1000);
     return () => clearTimeout(timer);
-  }, [gameState, showingShape]);
+  }, [gameState, showingShape, REVEAL_TIME]);
 
   const nextRound = useCallback(() => {
     if (round < MAX_ROUNDS) {
@@ -64,7 +65,7 @@ export default function SpeedShapes({ onComplete }: GameProps) {
       setGameState('gameover');
       if (onComplete) onComplete(score);
     }
-  }, [round, generateRound, score, onComplete]);
+  }, [round, generateRound, score, onComplete, MAX_ROUNDS]);
 
   useEffect(() => {
     if (gameState !== 'playing' || showingShape || selectedOption !== null) return;
