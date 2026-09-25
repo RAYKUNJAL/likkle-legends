@@ -96,10 +96,12 @@ writes `journey_story_pages`, and Realtime streams the picture. A retry is
 safe: `claim_journey_story_job_by_id` skips a job that is already done or
 still running. There is no Redis service in compose.
 
-If any of the three QStash vars is missing, publish is skipped and the parent
-UI does not crash. `POST /api/island-helpers/journey-stories/illustrate` still
-illustrates one `pageIndex` at a time, and the on-host worker below can claim
-the Postgres row.
+If any of the three QStash vars is missing, no background picture job is
+inserted and the parent UI does not crash. **Make pictures** falls back to
+`POST /api/island-helpers/journey-stories/illustrate` with one `pageIndex` per
+request and shows “Picture 1 of 5…”. That is the timeout-safe path today.
+When the three vars are set, the on-host worker below can still claim a row
+the callback missed.
 
 **On-host backup (`journey-worker`)** in `docker-compose.yml` joins
 `supabase_default`, has no host port, and does not change
