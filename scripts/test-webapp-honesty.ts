@@ -60,11 +60,19 @@ function testVoiceFailsClosedWithoutKeys() {
 }
 
 function testRefundPolicyIsParentFacing() {
+  const termsSentence = 'You may cancel at any time, but we do not offer partial refunds for the current billing cycle.';
   const page = readFileSync(resolve(process.cwd(), 'app/refund/page.tsx'), 'utf8');
   assert.ok(page.includes('Refund Policy'));
   assert.ok(page.includes('hello@likklelegends.com'));
   assert.ok(page.includes('Children do not'));
+  assert.ok(page.includes(termsSentence));
+  assert.ok(page.includes('Monthly subscriptions are billed every 30 days.'));
+  assert.equal(page.includes('within 30 days of that charge'), false);
   assert.equal(page.includes('/portal/games'), false);
+
+  const terms = readFileSync(resolve(process.cwd(), 'app/terms/page.tsx'), 'utf8');
+  assert.ok(terms.includes(termsSentence));
+  assert.equal(terms.includes('except when that charge never unlocked'), false);
 
   const config = readFileSync(resolve(process.cwd(), 'next.config.mjs'), 'utf8');
   assert.ok(config.includes("'/refund-policy'"));

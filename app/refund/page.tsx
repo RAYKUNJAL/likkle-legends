@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
     title: 'Refund Policy',
-    description: 'Parent refund rules for Likkle Legends Island Packs, annual plans, and song downloads. Children do not buy.',
+    description: 'Parent refund rules for Likkle Legends subscriptions, Island Packs, and song downloads. Children do not buy.',
 };
 
 export default function RefundPolicyPage() {
@@ -33,34 +33,31 @@ export default function RefundPolicyPage() {
                             <section className="space-y-6">
                                 <h2 className="text-3xl font-black text-deep">A charge counts only after PayPal confirms it</h2>
                                 <p className="leading-relaxed">
-                                    Access turns on after PayPal captures a one-time payment, or after an annual subscription is active. If PayPal does not confirm the payment, nothing is unlocked and that attempt is not a successful purchase.
+                                    Access turns on after PayPal captures a one-time payment, or after a subscription is active. If PayPal does not confirm the payment, nothing is unlocked and that attempt is not a successful purchase.
+                                </p>
+                            </section>
+
+                            <section className="space-y-6">
+                                <h2 className="text-3xl font-black text-deep">Subscriptions</h2>
+                                <p className="leading-relaxed">
+                                    Monthly subscriptions are billed every 30 days. Annual subscriptions are billed once a year at the start of the term. You may cancel at any time, but we do not offer partial refunds for the current billing cycle.
+                                </p>
+                                <p className="leading-relaxed">
+                                    The Island Pass ($49.90 per year) and the Family Plan ($349 per year) are annual subscriptions. Cancel in PayPal so the next year is not billed. The year PayPal has already billed is the current billing cycle.
                                 </p>
                             </section>
 
                             <section className="space-y-6">
                                 <h2 className="text-3xl font-black text-deep">Island Packs</h2>
                                 <p className="leading-relaxed">
-                                    The Digital Island Starter ($10) and the Legends Discovery Pack ($25) are one-time digital packs. Each one includes 30 days of access after PayPal captures the payment. They are not a mailed box.
-                                </p>
-                                <p className="leading-relaxed">
-                                    Email us within 30 days of that charge for a refund of the amount PayPal captured. When the refund is sent, access from that pack ends. The refund goes back to the original PayPal payer.
-                                </p>
-                            </section>
-
-                            <section className="space-y-6">
-                                <h2 className="text-3xl font-black text-deep">Island Pass and Family Plan</h2>
-                                <p className="leading-relaxed">
-                                    The Island Pass ($49.90 per year) and the Family Plan ($349 per year) renew through PayPal until a parent cancels. Cancel in PayPal so the next year is not billed. We do not refund the unused part of a year that PayPal has already billed.
-                                </p>
-                                <p className="leading-relaxed">
-                                    If PayPal captured a charge and the parent account never received the access that charge was for, email us. We refund that charge.
+                                    The Digital Island Starter ($10) and the Legends Discovery Pack ($25) are one-time digital charges. They are not a subscription and they are not a mailed box. Each pack includes 30 days of access after PayPal captures the payment. Those 30 days are the access period, not a refund window. We do not offer a refund of unused days on a captured pack.
                                 </p>
                             </section>
 
                             <section className="space-y-6">
                                 <h2 className="text-3xl font-black text-deep">Song downloads and custom songs</h2>
                                 <p className="leading-relaxed">
-                                    Listening is free. A parent can buy a $1 download license, five licenses for $4, or a custom song for $24.99. If PayPal captured the payment and the file or custom song was not delivered, we refund that charge. After the file or custom song is delivered, that license is not refunded.
+                                    Listening is free. A parent can buy a $1 download license, five licenses for $4, or a custom song for $24.99. Each of those is a one-time charge, not a billing cycle. We do not offer a partial refund of a captured download or custom song.
                                 </p>
                             </section>
 
@@ -69,7 +66,7 @@ export default function RefundPolicyPage() {
                                 <p className="leading-relaxed">
                                     If a checkout sold a mailed kit, returns for that kit are on the{' '}
                                     <Link href="/shipping" className="font-bold text-primary hover:underline">Shipping &amp; Returns</Link>{' '}
-                                    page. A shorter window printed on that checkout still applies to that purchase.
+                                    page.
                                 </p>
                             </section>
 
@@ -81,9 +78,8 @@ export default function RefundPolicyPage() {
                                     from the parent email on the account. Include the PayPal transaction or subscription id. We reply to the parent, not the child.
                                 </p>
                                 <p className="leading-relaxed">
-                                    This page is the refund policy for parent checkout. The{' '}
-                                    <Link href="/terms" className="font-bold text-primary hover:underline">Terms of Use</Link>{' '}
-                                    cover the rest of the service.
+                                    This page uses the same refund rule as the{' '}
+                                    <Link href="/terms" className="font-bold text-primary hover:underline">Terms of Use</Link>.
                                 </p>
                             </section>
                         </div>

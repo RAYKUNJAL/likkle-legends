@@ -69,7 +69,7 @@ export default function TermsPage() {
                                     Refunds
                                 </h2>
                                 <p className="leading-relaxed">
-                                    Parent purchases follow the <Link href="/refund" className="font-bold text-primary hover:underline">Refund Policy</Link>. Annual plans can be canceled so they do not renew. We do not offer a partial refund for a billing period PayPal has already charged, except when that charge never unlocked the access it paid for. Children do not buy and cannot request a refund in the kids portal.
+                                    Parent purchases follow the <Link href="/refund" className="font-bold text-primary hover:underline">Refund Policy</Link>. Monthly subscriptions are billed every 30 days. Annual subscriptions are billed once a year at the start of the term. You may cancel at any time, but we do not offer partial refunds for the current billing cycle. Children do not buy and cannot request a refund in the kids portal.
                                 </p>
                             </section>
 

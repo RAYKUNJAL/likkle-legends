@@ -244,7 +244,7 @@ export default function ParentMusicStore() {
                 <Link href="/parent/music/custom" className="mt-4 inline-flex text-sm font-bold text-slate-600 underline">Birthday / event song for your likkle one</Link>
                 <p className="mt-2 text-sm text-slate-500">
                     <Link href="/refund" className="font-bold underline">Refund Policy</Link>
-                    {' '}— parents only. A download is refunded if PayPal captured the payment and the file was not delivered.
+                    {' '}— parents only. A captured download is a one-time charge, not a billing cycle.
                 </p>
 
                 <div className="mt-8">
