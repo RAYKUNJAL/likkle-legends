@@ -36,7 +36,7 @@ const COPY: Record<LegendsLeadGameId, { learningFocus: string; badge: { emoji: s
 export default function PublicLeadGame({ gameId }: { gameId: LegendsLeadGameId }) {
     const game = LEGENDS_LEAD_GAMES.find((item) => item.id === gameId) ?? LEGENDS_LEAD_GAMES[0];
     const copy = COPY[game.id];
-    const { user, isLoading } = useUser();
+    const { user } = useUser();
     const member = Boolean(user);
     const awardGameXp = useAwardPortalGameXp(game.id, game.title, PORTAL_GAME_CONTENT_IDS[game.id]);
     const onComplete = member
@@ -55,14 +55,12 @@ export default function PublicLeadGame({ gameId }: { gameId: LegendsLeadGameId }
             backHref="/games"
             showXp={member}
         >
-            {isLoading ? (
-                <p className="py-16 text-center text-lg font-black text-amber-200">Getting the game ready...</p>
-            ) : game.id === 'reef-rescue' ? (
-                <ReefRescue levelLimit={reefLevelLimit(member)} onComplete={onComplete} />
+            {game.id === 'reef-rescue' ? (
+                <ReefRescue key={member ? 'member' : 'guest'} levelLimit={reefLevelLimit(member)} onComplete={onComplete} />
             ) : game.id === 'block-carnival' ? (
-                <BlockCarnival islandLimit={carnivalIslandLimit(member)} onComplete={onComplete} />
+                <BlockCarnival key={member ? 'member' : 'guest'} islandLimit={carnivalIslandLimit(member)} onComplete={onComplete} />
             ) : (
-                <IslandQuizQuest roundLimit={quizRoundLimit(member)} onComplete={onComplete} />
+                <IslandQuizQuest key={member ? 'member' : 'guest'} roundLimit={quizRoundLimit(member)} onComplete={onComplete} />
             )}
         </GameLayoutWrapper>
     );
