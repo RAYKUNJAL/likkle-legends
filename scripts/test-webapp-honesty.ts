@@ -5,6 +5,7 @@ import { buildFreeTrialSuccessBody, stripAuthSecrets } from '../lib/auth/free-tr
 import { buildBuddyFollowUps } from '../lib/buddy-followups';
 import { getPortalCapabilities } from '../lib/portal-capabilities';
 import { activityContentFields, clampPortalGameXp, isUuid } from '../lib/game-xp';
+import { basketIdFromPoint, dragExceeded } from '../lib/games/ingredient-sort';
 import { HIDDEN_GAME_IDS, isWorkingGameId, WORKING_ARCADE_GAMES, WORKING_PORTAL_GAMES } from '../lib/working-games';
 import { PORTAL_GAME_CONTENT_IDS } from '../lib/portal-game-content';
 
@@ -169,6 +170,32 @@ function testPortalGameCompleteAwardsXp() {
   assert.ok(portal.includes('refreshChildren(user.id)'));
 }
 
+function testIngredientSortAcceptsTap() {
+  const source = readFileSync(resolve(process.cwd(), 'components/games/IngredientSort.tsx'), 'utf8');
+  assert.ok(source.includes('Tap a food, then tap its basket'));
+  assert.ok(source.includes('onPointerDown'));
+  assert.ok(source.includes('onPointerUp'));
+  assert.ok(source.includes('placeIngredient(id, basketId)'));
+  assert.ok(source.includes('placeIngredient(selectedId, press.id)'));
+  assert.ok(source.includes('setSelectedId(id)'));
+  assert.ok(source.includes('data-basket'));
+  assert.equal(source.includes('draggable'), false);
+
+  const page = readFileSync(resolve(process.cwd(), 'app/portal/games/ingredient-sort/page.tsx'), 'utf8');
+  assert.ok(page.includes('Tap or drag Caribbean ingredients'));
+
+  assert.equal(dragExceeded(0, 0, 4, 4), false);
+  assert.equal(dragExceeded(0, 0, 12, 0), true);
+  const basket = {
+    closest(selector: string) {
+      return selector === '[data-basket]' ? { getAttribute: () => 'fruits' } : null;
+    },
+  };
+  const food = { closest: () => null };
+  assert.equal(basketIdFromPoint([food, basket]), 'fruits');
+  assert.equal(basketIdFromPoint([food]), null);
+}
+
 function testWorkingGamesOnly() {
   assert.equal(HIDDEN_GAME_IDS.has('story-library'), true);
   assert.equal(HIDDEN_GAME_IDS.has('cultural-quiz'), true);
@@ -206,6 +233,7 @@ testVoiceFailsClosedWithoutKeys();
 testArcadeGamesHaveNoKidPaywall();
 testPortalGamesHaveNoKidPayCta();
 testArcadeRoutesRedirectToHtml();
+testIngredientSortAcceptsTap();
 testWorkingGamesOnly();
 testPortalGameCompleteAwardsXp();
 testIslandWeekAndPreservedSurfaces();
