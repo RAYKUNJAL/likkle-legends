@@ -59,6 +59,29 @@ function testVoiceFailsClosedWithoutKeys() {
   assert.equal(ready.storyStudio.available, true);
 }
 
+function testRefundPolicyIsParentFacing() {
+  const page = readFileSync(resolve(process.cwd(), 'app/refund/page.tsx'), 'utf8');
+  assert.ok(page.includes('Refund Policy'));
+  assert.ok(page.includes('hello@likklelegends.com'));
+  assert.ok(page.includes('Children do not'));
+  assert.equal(page.includes('/portal/games'), false);
+
+  const config = readFileSync(resolve(process.cwd(), 'next.config.mjs'), 'utf8');
+  assert.ok(config.includes("'/refund-policy'"));
+  assert.ok(config.includes("destination: '/refund'"));
+
+  for (const file of [
+    'components/landing-v5/LandingPage.tsx',
+    'app/terms/page.tsx',
+    'components/checkout/IslandOffersCheckout.tsx',
+    'app/offer/checkout/page.tsx',
+    'lib/content.ts',
+  ]) {
+    const source = readFileSync(resolve(process.cwd(), file), 'utf8');
+    assert.ok(source.includes('/refund'), `${file} should link to the refund policy`);
+  }
+}
+
 function testArcadeRoutesRedirectToHtml() {
   const config = readFileSync(resolve(process.cwd(), 'next.config.mjs'), 'utf8');
   for (const id of ['island-hop', 'tantys-kitchen', 'math-market', 'spelling-blaze']) {
@@ -108,6 +131,7 @@ testFreeTrialRouteSourceHasNoMagicLink();
 testFreeTrialNeverLeaksMagicLink();
 testBuddyFollowUpsStayInCharacter();
 testVoiceFailsClosedWithoutKeys();
+testRefundPolicyIsParentFacing();
 testArcadeRoutesRedirectToHtml();
 testWorkingGamesOnly();
 testIslandWeekAndPreservedSurfaces();

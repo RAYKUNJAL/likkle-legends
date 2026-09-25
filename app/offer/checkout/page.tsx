@@ -671,6 +671,9 @@ function CheckoutContent() {
                         <Link href="/terms" className="hover:text-deep/60 transition-colors">
                             Terms
                         </Link>
+                        <Link href="/refund" className="hover:text-deep/60 transition-colors">
+                            Refunds
+                        </Link>
                         <Link href="/contact" className="hover:text-deep/60 transition-colors">
                             Support
                         </Link>

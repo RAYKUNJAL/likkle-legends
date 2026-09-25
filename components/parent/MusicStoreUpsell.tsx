@@ -21,6 +21,9 @@ export default function MusicStoreUpsell() {
             <p className="mt-4 text-sm text-slate-500">
                 <Link href="/parent/music/custom" className="font-bold text-slate-700 underline">Birthday / event song for your likkle one</Link>
             </p>
+            <p className="mt-3 text-sm text-slate-500">
+                <Link href="/refund" className="font-bold text-slate-700 underline">Refund Policy</Link>
+            </p>
         </section>
     );
 }

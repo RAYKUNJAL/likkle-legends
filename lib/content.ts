@@ -404,6 +404,7 @@ export const siteContent = {
                     { label: "About Us", href: "/about" },
                     { label: "Contact", href: "/contact" },
                     { label: "Shipping & Returns", href: "/shipping" },
+                    { label: "Refund Policy", href: "/refund" },
                     { label: "FAQ", href: "/faq" },
                     { label: "Privacy Policy", href: "/privacy" },
                     { label: "Terms of Use", href: "/terms" },

@@ -242,6 +242,10 @@ export default function ParentMusicStore() {
                     {scoreboard.playable} kids Caribbean song{scoreboard.playable === 1 ? '' : 's'} can be played today. The library is growing. {scoreboard.inventoryMissing} older titles stay off this page because the audio file is not in this project. Listening is free.
                 </p>
                 <Link href="/parent/music/custom" className="mt-4 inline-flex text-sm font-bold text-slate-600 underline">Birthday / event song for your likkle one</Link>
+                <p className="mt-2 text-sm text-slate-500">
+                    <Link href="/refund" className="font-bold underline">Refund Policy</Link>
+                    {' '}— parents only. A download is refunded if PayPal captured the payment and the file was not delivered.
+                </p>
 
                 <div className="mt-8">
                     <LikkleRadioPlayer onTrackStarted={(trackId) => setPlayed((prev) => ({ ...prev, [trackId]: true }))} />

@@ -122,7 +122,8 @@ export default function IslandOffersCheckout({ initialSku }: { initialSku?: stri
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-primary">Parent checkout</p>
                 <h1 className="mt-3 text-4xl font-black text-slate-900">Island Packs and annual plans</h1>
                 <p className="mt-3 text-slate-600">
-                    A parent account pays here. Children cannot buy from the portal. Access turns on only after PayPal capture or an active subscription is verified.
+                    A parent account pays here. Children cannot buy from the portal. Access turns on only after PayPal capture or an active subscription is verified. Refunds are explained in the{' '}
+                    <Link href="/refund" className="font-bold text-slate-800 underline">Refund Policy</Link>.
                 </p>
 
                 <div className="mt-8 grid gap-4 sm:grid-cols-2">

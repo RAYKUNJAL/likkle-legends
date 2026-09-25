@@ -602,6 +602,7 @@ export default function OfferPage() {
           <a href="/faq" className="hover:text-[#0e9aa7]">Help / Contact</a>
           <a href="/privacy" className="hover:text-[#0e9aa7]">Privacy Policy</a>
           <a href="/terms" className="hover:text-[#0e9aa7]">Terms</a>
+          <a href="/refund" className="hover:text-[#0e9aa7]">Refund Policy</a>
           <span className="text-[#5f5f5d]/60">Shipping / access varies by destination</span>
           <span className="text-[#5f5f5d]/60">COPPA compliant — child safety first</span>
         </div>

@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
+import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { siteContent } from '@/lib/content';
 
 export const metadata: Metadata = {
     title: 'Terms of Use',
@@ -66,6 +66,16 @@ export default function TermsPage() {
                             <section className="space-y-6">
                                 <h2 className="text-3xl font-black text-deep flex items-center gap-4">
                                     <span className="w-8 h-8 bg-secondary/10 text-secondary rounded-lg flex items-center justify-center text-sm">05</span>
+                                    Refunds
+                                </h2>
+                                <p className="leading-relaxed">
+                                    Parent purchases follow the <Link href="/refund" className="font-bold text-primary hover:underline">Refund Policy</Link>. Annual plans can be canceled so they do not renew. We do not offer a partial refund for a billing period PayPal has already charged, except when that charge never unlocked the access it paid for. Children do not buy and cannot request a refund in the kids portal.
+                                </p>
+                            </section>
+
+                            <section className="space-y-6">
+                                <h2 className="text-3xl font-black text-deep flex items-center gap-4">
+                                    <span className="w-8 h-8 bg-secondary/10 text-secondary rounded-lg flex items-center justify-center text-sm">06</span>
                                     User Conduct
                                 </h2>
                                 <p className="leading-relaxed">
