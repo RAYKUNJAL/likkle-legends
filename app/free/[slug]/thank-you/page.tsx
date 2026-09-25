@@ -40,7 +40,7 @@ const DOWNLOAD_SLUGS: Record<string, {
         upsellPrice: "7-day trial",
         upsellLink: "/signup?plan=free_trial&utm_source=journey_pack&utm_medium=thankyou",
         secondaryCtaLabel: "Play free games",
-        secondaryCtaLink: "https://likkle-games.nextbagchaser.com/",
+        secondaryCtaLink: "/games",
         printHtmlPath: "/printables/free-journey-pack.html",
     },
 };
@@ -205,15 +205,13 @@ export default function ThankYouPage() {
 
                         {config.secondaryCtaLink && (
                             <div className="mt-4">
-                                <a
+                                <Link
                                     href={config.secondaryCtaLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
                                     className="inline-flex items-center gap-2 text-sm font-bold text-yellow-300 hover:text-yellow-200 underline-offset-2 hover:underline"
                                 >
                                     {config.secondaryCtaLabel || "Explore free games"}
                                     <ArrowRight className="w-4 h-4" />
-                                </a>
+                                </Link>
                             </div>
                         )}
 
