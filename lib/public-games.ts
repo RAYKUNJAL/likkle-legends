@@ -75,13 +75,6 @@ export const MORE_PUBLIC_GAMES = [
         summary: 'Spell Caribbean words before the fire timer runs out.',
         emoji: '🌶️',
     },
-    {
-        id: 'doubles-dash',
-        href: '/games/doubles-dash',
-        title: 'Doubles Dash',
-        summary: 'Fry the bara, scoop the channa, and serve doubles in a lunchtime rush.',
-        emoji: '🫓',
-    },
 ] as const;
 
 export const GAMES_LANDING_PATH = '/games';

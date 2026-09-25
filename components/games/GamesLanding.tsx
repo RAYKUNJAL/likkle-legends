@@ -116,7 +116,7 @@ export default function GamesLanding() {
                         <h2 className="mt-4 text-2xl font-black tracking-tight">A parent-friendly first stop</h2>
                         <ul className="mt-4 space-y-3 text-sm leading-relaxed text-[#38536f]">
                             <li>Three featured games with stable links you can share.</li>
-                            <li>More free games already on this site, from market math to doubles.</li>
+                            <li>More free games already on this site, from island hop to market math and spelling.</li>
                             <li>Trial and signup live here, so play screens stay focused on the game.</li>
                         </ul>
                     </aside>
