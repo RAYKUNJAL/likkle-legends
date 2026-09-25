@@ -5,7 +5,15 @@
  */
 import fs from 'fs';
 import path from 'path';
-import { isRouterPrefetch, loginBounceTarget, musicStorePhase } from '../lib/login-bounce';
+import {
+    AUTH_LOOKUP_MS,
+    PARENT_SESSION_CHECK_MS,
+    isRouterPrefetch,
+    loginBounceTarget,
+    middlewareNeedsAuthUser,
+    musicStorePhase,
+    parentSessionView,
+} from '../lib/login-bounce';
 import { resolvePayerAccount } from '../lib/payer-account';
 
 function assert(condition: unknown, message: string) {
@@ -83,6 +91,43 @@ assert(!isRouterPrefetch(() => null), 'a document navigation is not a prefetch')
 assert(musicStorePhase({ ready: false, signedIn: true }) === 'checking', 'session check does not flash the login link');
 assert(musicStorePhase({ ready: true, signedIn: true }) === 'checkout', 'cookie session shows the PayPal section');
 
+const cookieWithoutToken = parentSessionView({
+    meSettled: true,
+    sessionSettled: false,
+    timedOut: false,
+    accessToken: null,
+    cookieAuthenticated: true,
+});
+assert(cookieWithoutToken.ready && cookieWithoutToken.signedIn, 'cookie session does not wait on getSession');
+
+const hungProbes = parentSessionView({
+    meSettled: false,
+    sessionSettled: false,
+    timedOut: true,
+    accessToken: null,
+    cookieAuthenticated: false,
+});
+assert(hungProbes.ready && !hungProbes.signedIn, 'a stalled session check fails open to signed-out');
+assert(musicStorePhase(hungProbes) === 'signed-out', 'timeout shows the sign-in CTA');
+
+const stillChecking = parentSessionView({
+    meSettled: false,
+    sessionSettled: false,
+    timedOut: false,
+    accessToken: null,
+    cookieAuthenticated: false,
+});
+assert(!stillChecking.ready && musicStorePhase(stillChecking) === 'checking', 'the check stays quiet until a probe or the timeout');
+
+assert(PARENT_SESSION_CHECK_MS > 0 && PARENT_SESSION_CHECK_MS <= 5000, 'the parent session check is capped');
+assert(AUTH_LOOKUP_MS >= PARENT_SESSION_CHECK_MS, 'middleware auth lookup is also capped');
+assert(middlewareNeedsAuthUser('/parent/music') === false, 'the music page does not wait on middleware getUser');
+assert(middlewareNeedsAuthUser('/parent/music/custom') === false, 'custom song page does not wait on middleware getUser');
+assert(middlewareNeedsAuthUser('/login') === true, 'login still reads the session');
+assert(middlewareNeedsAuthUser('/portal') === true, 'portal still reads the session');
+assert(middlewareNeedsAuthUser('/admin/orders') === true, 'admin tools still read the session');
+assert(middlewareNeedsAuthUser('/admin') === false, 'the public admin landing does not require a user lookup');
+
 const parentOnProfileOnly = resolvePayerAccount({
     usersRow: null,
     usersError: false,
@@ -137,11 +182,22 @@ assert(store.includes('useParentSession'), 'store reads the cookie session');
 assert(store.includes('data-testid="paypal-bundle"'), 'signed-in checkout renders a PayPal slot');
 assert(!store.includes('entitled: true') && !store.includes('entitled:true'), 'the page does not grant entitlement');
 assert(page.includes('rel="preload"') && page.includes('as="audio"'), 'stream files are preloaded');
+assert(page.includes('fetchPriority="low"'), 'stream preload does not outrank the page');
 assert(page.includes('<ParentMusicStore'), 'store still mounts');
+const radioAt = store.indexOf('<LikkleRadioPlayer');
+const paypalAt = store.indexOf('<PayPalScriptProvider');
+assert(radioAt !== -1 && paypalAt !== -1 && radioAt < paypalAt, 'radio stays outside the PayPal loader');
+assert(!store.includes('return store'), 'signing in does not remount the whole page inside PayPal');
+const sessionHook = fs.readFileSync(path.join(process.cwd(), 'components/parent/useParentSession.ts'), 'utf8');
+assert(sessionHook.includes('parentSessionView'), 'the hook uses the capped session view');
+assert(sessionHook.includes('PARENT_SESSION_CHECK_MS'), 'the hook times out the session check');
+assert(!sessionHook.includes('Promise.all'), 'getSession cannot block the cookie probe');
 
 const middleware = fs.readFileSync(path.join(process.cwd(), 'lib/supabase/middleware.ts'), 'utf8');
 const matcher = fs.readFileSync(path.join(process.cwd(), 'middleware.ts'), 'utf8');
 assert(middleware.includes('loginBounceTarget'), 'middleware uses the bounce guard');
+assert(middleware.includes('middlewareNeedsAuthUser'), 'middleware skips auth lookup on public parent pages');
+assert(middleware.includes('AUTH_LOOKUP_MS'), 'middleware auth lookup cannot hang');
 assert(matcher.includes('assets'), 'song files skip the auth middleware');
 
 console.log('parent music loop checks passed');
