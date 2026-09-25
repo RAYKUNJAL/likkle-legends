@@ -2,8 +2,9 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { MATH_PROBLEM_COUNTS, extendMathProblems } from '@/lib/games/long-play';
 
-const LEVEL_DATA = [
+const LEVEL_SOURCE = [
   {
     name: 'Addition Quest',
     operation: 'addition',
@@ -60,6 +61,11 @@ const LEVEL_DATA = [
     ],
   },
 ];
+
+const LEVEL_DATA = LEVEL_SOURCE.map((level, index) => ({
+  ...level,
+  problems: extendMathProblems(level.operation, level.problems, MATH_PROBLEM_COUNTS[index] ?? level.problems.length),
+}));
 
 interface GameProps {
   onComplete?: (score: number) => void;

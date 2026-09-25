@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import Player from '../entities/Player';
 import Customer from '../entities/Customer';
 import { PEPPER_OPTIONS } from '../entities/DoublesOrder';
+import { doublesDashSeconds } from '../../lib/games/long-play';
 
 export default class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -34,7 +35,7 @@ export default class GameScene extends Phaser.Scene {
   init(data: { level?: number; score?: number }) {
     this.level = data.level ?? 1;
     this.score = data.score ?? 0;
-    this.timeRemaining = 60;
+    this.timeRemaining = doublesDashSeconds(this.level);
   }
 
   create() {
@@ -76,7 +77,7 @@ export default class GameScene extends Phaser.Scene {
     
     // Spawner Event
     this.time.addEvent({
-        delay: Math.max(3000, 8000 - (this.level * 600)),
+        delay: Math.max(4500, 9000 - (this.level * 450)),
         loop: true,
         callback: () => this.spawnCustomer()
     });

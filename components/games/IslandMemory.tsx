@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { RefreshCw, Trophy, ArrowLeft, Target } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
+import { MEMORY_PLAN, type MemoryDifficulty } from '@/lib/games/long-play';
 
 const MEMORY_SYMBOLS = [
     { symbol: '🥥', name: 'Coconut' },
@@ -14,6 +15,14 @@ const MEMORY_SYMBOLS = [
     { symbol: '🏝️', name: 'Island' },
     { symbol: '⛵', name: 'Boat' },
     { symbol: '🥁', name: 'Steel Pan' },
+    { symbol: '🌴', name: 'Palm' },
+    { symbol: '🌺', name: 'Hibiscus' },
+    { symbol: '🐚', name: 'Conch' },
+    { symbol: '🐠', name: 'Reef Fish' },
+    { symbol: '🦀', name: 'Crab' },
+    { symbol: '☀️', name: 'Sun' },
+    { symbol: '🌊', name: 'Wave' },
+    { symbol: '🎵', name: 'Music' },
 ];
 
 export default function IslandMemory({ onComplete }: { onComplete?: (score: number, correct: number, total: number) => void }) {
@@ -26,31 +35,24 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
     const [focusedIndex, setFocusedIndex] = useState(0);
     const cardButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-    const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard' | null>(null);
+    const [difficulty, setDifficulty] = useState<MemoryDifficulty | null>(null);
+    const [board, setBoard] = useState(1);
+    const [notice, setNotice] = useState<string | null>(null);
 
-    const totalPairs = useMemo(() => {
-        if (difficulty === 'easy') return 6;
-        if (difficulty === 'medium' || difficulty === 'hard') return 8;
-        return MEMORY_SYMBOLS.length;
-    }, [difficulty]);
+    const plan = difficulty ? MEMORY_PLAN[difficulty] : null;
 
-    const gridColumns = useMemo(() => {
-        if (difficulty === 'easy') return 4;
-        if (difficulty === 'medium') return 4;
-        if (difficulty === 'hard') return 6;
-        return 4;
-    }, [difficulty]);
+    const totalPairs = useMemo(() => plan?.pairs ?? MEMORY_SYMBOLS.length, [plan]);
+
+    const gridColumns = plan?.columns ?? 4;
 
     useEffect(() => {
-        if (difficulty) initializeGame();
+        if (difficulty) initializeGame(1);
     }, [difficulty]);
 
-    const initializeGame = () => {
+    const initializeGame = (nextBoard = 1) => {
         if (!difficulty) return;
-
-        let pairsCount = 6;
-        if (difficulty === 'medium') pairsCount = 8;
-        if (difficulty === 'hard') pairsCount = 8;
+        const nextPlan = MEMORY_PLAN[difficulty];
+        const pairsCount = nextPlan.pairs;
 
         // Choose random symbols
         const selectedSymbols = [...MEMORY_SYMBOLS].sort(() => Math.random() - 0.5).slice(0, pairsCount);
@@ -66,11 +68,13 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
             }));
 
         setCards(shuffled);
-        setMoves(0);
+        if (nextBoard === 1) setMoves(0);
         setMatches(0);
         setFlippedIndices([]);
         setGameWon(false);
         setFocusedIndex(0);
+        setBoard(nextBoard);
+        setNotice(null);
     };
 
     useEffect(() => {
@@ -99,10 +103,18 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
                 setFlippedIndices([]);
                 setMatches(prev => {
                     const next = prev + 1;
-                    if (next === cards.length / 2) {
-                        setGameWon(true);
-                        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                        if (onComplete) onComplete(1000 * (difficulty === 'hard' ? 2 : 1), next, next);
+                    const boardPairs = cards.length / 2;
+                    if (next === boardPairs && difficulty) {
+                        const boards = MEMORY_PLAN[difficulty].boards;
+                        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+                        if (board < boards) {
+                            setNotice(`Board ${board} clear! Next board is ready.`);
+                            window.setTimeout(() => initializeGame(board + 1), 900);
+                        } else {
+                            setGameWon(true);
+                            const total = MEMORY_PLAN[difficulty].pairs * boards;
+                            if (onComplete) onComplete(1000 * (difficulty === 'hard' ? 2 : 1), total, total);
+                        }
                     }
                     return next;
                 });
@@ -124,13 +136,13 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
                 <p className="text-white/60 mb-8 max-w-md">Train your brain and remember the island treasures!</p>
                 <div className="flex flex-col gap-4 w-full max-w-xs">
                     <button onClick={() => setDifficulty('easy')} className="p-4 bg-green-500 rounded-2xl font-black text-white hover:scale-105 transition-transform">
-                        Easy (12 Cards)
+                        Easy · 2 boards of 6 pairs
                     </button>
                     <button onClick={() => setDifficulty('medium')} className="p-4 bg-yellow-500 rounded-2xl font-black text-white hover:scale-105 transition-transform">
-                        Medium (16 Cards)
+                        Medium · 2 boards of 8 pairs
                     </button>
                     <button onClick={() => setDifficulty('hard')} className="p-4 bg-red-500 rounded-2xl font-black text-white hover:scale-105 transition-transform">
-                        Hard (24 Cards)
+                        Hard · 3 boards of 10 pairs
                     </button>
                     <button onClick={() => router.push('/portal/games')} className="mt-4 text-white/40 font-bold hover:text-white">
                         Back to Hub
@@ -170,10 +182,10 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
     };
 
     // Grid sizing based on difficulty
-    const gridData = {
+    const gridData: Record<MemoryDifficulty, string> = {
         easy: 'grid-cols-3 md:grid-cols-4',
         medium: 'grid-cols-4',
-        hard: 'grid-cols-4 md:grid-cols-6'
+        hard: 'grid-cols-4'
     };
 
     return (
@@ -192,6 +204,10 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
                         <span className="text-white/60 text-sm">Matches:</span>
                         <span className="font-black text-amber-400">{matches}/{totalPairs}</span>
                     </div>
+                    <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl text-white">
+                        <span className="text-white/60 text-sm">Board:</span>
+                        <span className="font-black">{board}/{plan?.boards ?? 1}</span>
+                    </div>
                 </div>
             </div>
 
@@ -200,12 +216,15 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
                 {gameWon ? (
                     <div className="text-center text-white">
                         <h2 className="text-5xl font-black mb-4 animate-bounce">Winner!</h2>
-                        <p className="text-xl text-white/60 mb-8">You found all matched pairs in {moves} moves.</p>
-                        <button onClick={initializeGame} className="px-8 py-4 bg-green-500 rounded-2xl font-black text-xl hover:scale-105 transition-transform">
+                        <p className="text-xl text-white/60 mb-8">You cleared every board in {moves} moves.</p>
+                        {notice && <p className="text-lg text-amber-200 mb-6">{notice}</p>}
+                        <button onClick={() => initializeGame(1)} className="px-8 py-4 bg-green-500 rounded-2xl font-black text-xl hover:scale-105 transition-transform">
                             Play Again
                         </button>
                     </div>
                 ) : (
+                    <div className="w-full max-w-2xl">
+                        {notice && <p className="mb-4 text-center text-lg font-black text-amber-200">{notice}</p>}
                     <div
                         role="grid"
                         aria-label="Memory game board"
@@ -233,6 +252,7 @@ export default function IslandMemory({ onComplete }: { onComplete?: (score: numb
                                 </span>
                             </button>
                         ))}
+                    </div>
                     </div>
                 )}
             </div>

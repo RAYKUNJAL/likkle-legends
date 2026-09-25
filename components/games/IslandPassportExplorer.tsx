@@ -113,6 +113,11 @@ export default function IslandPassportExplorer({ onComplete }: GameProps) {
       options: [island.food, 'Pad Thai', 'Paella', 'Sushi'],
       correctIndex: 0,
     },
+    {
+      question: `Which fact fits ${island.name}?`,
+      options: [island.facts, 'It is covered in snow all year.', 'Its only city is on the moon.', 'People there only eat ice cream.'],
+      correctIndex: 0,
+    },
   ];
 
   const handleStartTrivia = useCallback(() => {

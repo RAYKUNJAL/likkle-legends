@@ -10,7 +10,7 @@ import { recordGameResult } from '@/lib/game-progress';
  * Local progress is saved even when nobody is signed in. XP is only written
  * for a positive award tied to this completion.
  */
-export function useAwardPortalGameXp(gameId: string, title?: string) {
+export function useAwardPortalGameXp(gameId: string, title?: string, contentId?: string) {
     const { activeChild, applyChildXp, refreshChildren } = useUser();
 
     return useCallback(async (xp: number, score = xp) => {
@@ -23,6 +23,7 @@ export function useAwardPortalGameXp(gameId: string, title?: string) {
             xp,
             score,
             title,
+            contentId,
         });
 
         if (!result.success) {
@@ -34,5 +35,5 @@ export function useAwardPortalGameXp(gameId: string, title?: string) {
             applyChildXp(activeChild.id, result.totalXp);
             await refreshChildren();
         }
-    }, [activeChild?.id, applyChildXp, gameId, refreshChildren, title]);
+    }, [activeChild?.id, applyChildXp, contentId, gameId, refreshChildren, title]);
 }

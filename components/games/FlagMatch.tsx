@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { FLAG_LEVELS } from '@/lib/games/long-play';
 
 interface FlagCard {
     flagCode: string;
@@ -30,20 +31,15 @@ const FLAG_CARDS: FlagCard[] = [
     { flagCode: 'bz', emoji: '🇧🇿', island: 'Belize', fact: 'Home to the Great Blue Hole! 🤿' },
 ];
 
-const LEVELS = [
-    { num: 1, name: 'Tourist', options: 2, timeMs: 0 },
-    { num: 2, name: 'Explorer', options: 4, timeMs: 0 },
-    { num: 3, name: 'Navigator', options: 4, timeMs: 10000 },
-    { num: 4, name: 'Captain', options: 6, timeMs: 8000 },
-    { num: 5, name: 'Legend', options: 8, timeMs: 5000 },
-];
+const LEVELS = FLAG_LEVELS;
 
 export default function FlagMatch({ onComplete }: { onComplete?: (score: number) => void }) {
     const [gameState, setGameState] = useState<'start' | 'level_select' | 'playing' | 'won' | 'lost'>('start');
     const [currentLevel, setCurrentLevel] = useState(1);
     const [round, setRound] = useState(0);
     const [score, setScore] = useState(0);
-    const [lives, setLives] = useState(3);
+    const [lives, setLives] = useState(5);
+    const [maxLives, setMaxLives] = useState(5);
     const [currentCard, setCurrentCard] = useState<FlagCard | null>(null);
     const [options, setOptions] = useState<FlagCard[]>([]);
     const [showFact, setShowFact] = useState(false);
@@ -74,7 +70,9 @@ export default function FlagMatch({ onComplete }: { onComplete?: (score: number)
         setGameState('playing');
         setRound(0);
         setScore(0);
-        setLives(3);
+        const heartCount = level <= 2 ? 5 : 4;
+        setMaxLives(heartCount);
+        setLives(heartCount);
         generateRound(level);
     };
 
@@ -128,7 +126,7 @@ export default function FlagMatch({ onComplete }: { onComplete?: (score: number)
             setScore(nextScore);
 
             setTimeout(() => {
-                if (nextRound >= 10) {
+                if (nextRound >= levelConfig.rounds) {
                     setGameState('won');
                     confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
                     onComplete?.(nextScore);
@@ -147,7 +145,7 @@ export default function FlagMatch({ onComplete }: { onComplete?: (score: number)
         setTimeout(() => {
             if (nextLives <= 0) {
                 setGameState('lost');
-            } else if (nextRound >= 10) {
+            } else if (nextRound >= levelConfig.rounds) {
                 setGameState('won');
                 onComplete?.(score);
             } else {
@@ -200,6 +198,7 @@ export default function FlagMatch({ onComplete }: { onComplete?: (score: number)
                                         <div className="text-sm uppercase tracking-widest font-black text-cyan-600 mb-2">{level.name}</div>
                                         <div className="flex justify-center gap-4 text-xs font-bold opacity-70">
                                             <span className="bg-white px-2 py-1 rounded-lg">{level.options} Flags</span>
+                                            <span className="bg-white px-2 py-1 rounded-lg">{level.rounds} Rounds</span>
                                             {level.timeMs > 0 && <span className="bg-red-100 text-red-600 px-2 py-1 rounded-lg">{(level.timeMs / 1000)}s Timer</span>}
                                         </div>
                                     </div>
@@ -271,9 +270,9 @@ export default function FlagMatch({ onComplete }: { onComplete?: (score: number)
     return (
         <div className="h-full flex flex-col items-center justify-center p-8 space-y-8 bg-gradient-to-b from-blue-100 to-cyan-50 rounded-[3rem]">
             <div className="text-center">
-                <p className="text-3xl font-black text-blue-900">Round {round + 1} / 10</p>
+                <p className="text-3xl font-black text-blue-900">Round {round + 1} / {currentLevelConfig.rounds}</p>
                 <div className="flex justify-center gap-2 mt-2">
-                    {Array.from({ length: 3 }).map((_, i) => (
+                    {Array.from({ length: maxLives }).map((_, i) => (
                         <span key={i} className={`text-2xl ${i < lives ? 'text-red-500' : 'text-gray-400'}`}>
                             {i < lives ? '\u{2764}\u{FE0F}' : '\u{1FA76}'}
                         </span>

@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
-import { activityContentFields, clampPortalGameXp } from '@/lib/game-xp';
+import { activityContentFields, clampPortalGameXp, isUuid } from '@/lib/game-xp';
 
 export type AwardPortalGameXpResult =
     | { success: true; xpAwarded: number; totalXp: number }
@@ -63,6 +63,8 @@ export async function awardPortalGameXp(input: {
     xp: number;
     score?: number;
     title?: string;
+    /** Real UUID written to activities.content_id. Slugs stay in metadata. */
+    contentId?: string;
 }): Promise<AwardPortalGameXpResult> {
     const childId = input?.childId?.trim();
     const gameId = input?.gameId?.trim();
@@ -98,10 +100,12 @@ export async function awardPortalGameXp(input: {
         return { success: false, error: 'Failed to update XP' };
     }
 
-    const fields = activityContentFields(gameId, {
+    const contentId = isUuid(input.contentId) ? input.contentId : gameId;
+    const fields = activityContentFields(contentId, {
         title: input.title || gameId,
         score: Number.isFinite(input.score) ? input.score : input.xp,
         source: 'portal_game_complete',
+        content_key: gameId,
     });
 
     const logged = await supabaseAdmin.from('activities').insert({

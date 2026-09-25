@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { WORD_BUILDER_WORDS_TO_CLEAR } from '@/lib/games/long-play';
 
 const WORD_SETS = [
   {
@@ -33,6 +34,26 @@ const WORD_SETS = [
     letters: ['O', 'K', 'R', 'A', 'H'],
     validWords: ['OKRA', 'ARK', 'OAK', 'HAR', 'OAR'],
     facts: 'Okra is a green vegetable popular in Caribbean cuisine!',
+  },
+  {
+    letters: ['I', 'S', 'L', 'A', 'N', 'D'],
+    validWords: ['ISLAND', 'LAND', 'SAND', 'SAIL', 'NAIL', 'AND'],
+    facts: 'An island is land with water all around it — just like the Caribbean!',
+  },
+  {
+    letters: ['C', 'O', 'C', 'O', 'N', 'U', 'T'],
+    validWords: ['COCONUT', 'COCO', 'NUT', 'CUT', 'NOT', 'TON'],
+    facts: 'Coconut water is a favorite drink on hot Caribbean days!',
+  },
+  {
+    letters: ['M', 'A', 'R', 'K', 'E', 'T'],
+    validWords: ['MARKET', 'MAKE', 'TAKE', 'MEAT', 'MARK', 'TEAM'],
+    facts: 'Island markets sell fruit, fish, and spices in the morning!',
+  },
+  {
+    letters: ['P', 'E', 'P', 'P', 'E', 'R'],
+    validWords: ['PEPPER', 'PEER', 'PEEP', 'REP', 'PEP'],
+    facts: 'Scotch bonnet peppers bring the heat to Caribbean cooking!',
   },
 ];
 
@@ -87,15 +108,14 @@ export default function WordBuilder({ onComplete }: GameProps) {
       setFormedWord([]);
       setScore(prev => prev + 100);
 
-      if (newFound.size === 3) {
-        // Found 3 words, move to next round
+      if (newFound.size === WORD_BUILDER_WORDS_TO_CLEAR) {
         confetti({
           particleCount: 80,
           spread: 70,
           origin: { y: 0.6 },
         });
 
-        setFeedback({ message: '⭐ Excellent! 3 words found!', type: 'correct' });
+        setFeedback({ message: `⭐ Excellent! ${WORD_BUILDER_WORDS_TO_CLEAR} words found!`, type: 'correct' });
 
         if (roundIndex < WORD_SETS.length - 1) {
           setTimeout(() => {
@@ -250,7 +270,7 @@ export default function WordBuilder({ onComplete }: GameProps) {
           {foundWords.size > 0 && (
             <div style={{ marginBottom: '1.5rem' }}>
               <div style={{ color: '#8EA4C8', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: '600' }}>
-                Words Found: {foundWords.size}/3
+                Words Found: {foundWords.size}/{WORD_BUILDER_WORDS_TO_CLEAR}
               </div>
               <div className="found-words-list">
                 {Array.from(foundWords).map(word => (

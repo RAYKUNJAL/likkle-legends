@@ -35,6 +35,9 @@ const CountingMarket = dynamic(() => import('@/components/games/CountingMarket')
 const RecipeScramble = dynamic(() => import('@/components/games/RecipeScramble'), { loading: () => <LoadingGame /> });
 const RhythmMatcher = dynamic(() => import('@/components/games/RhythmMatcher'), { loading: () => <LoadingGame /> });
 const MathAdventure = dynamic(() => import('@/components/games/MathAdventure'), { loading: () => <LoadingGame /> });
+const ReefRescue = dynamic(() => import('@/components/games/ReefRescue'), { loading: () => <LoadingGame /> });
+const BlockCarnival = dynamic(() => import('@/components/games/BlockCarnival'), { loading: () => <LoadingGame /> });
+const IslandQuizQuest = dynamic(() => import('@/components/games/IslandQuizQuest'), { loading: () => <LoadingGame /> });
 
 interface CompletionScreenProps {
     score: number;
@@ -157,7 +160,8 @@ export default function GamePlayerPage() {
                 'color-match', 'flag-match', 'island-explorer',
                 'speed-shapes', 'word-builder', 'ingredient-sort',
                 'island-passport-explorer', 'counting-market', 'recipe-scramble',
-                'rhythm-matcher', 'math-adventure'
+                'rhythm-matcher', 'math-adventure',
+                'reef-rescue', 'block-carnival', 'island-quiz'
             ];
 
             if (!featuredIds.includes(gameId)) {
@@ -207,6 +211,12 @@ export default function GamePlayerPage() {
                 return 'Rhythm Matcher';
             case 'math-adventure':
                 return "R.O.T.I.'s Math Adventure";
+            case 'reef-rescue':
+                return 'Reef Rescue';
+            case 'block-carnival':
+                return 'Caribbean Block Carnival';
+            case 'island-quiz':
+                return 'Island Quiz Quest';
             default:
                 return 'Island Game';
         }
@@ -307,6 +317,12 @@ export default function GamePlayerPage() {
                 return <RhythmMatcher onComplete={handleComplete} />;
             case 'math-adventure':
                 return <MathAdventure onComplete={handleComplete} />;
+            case 'reef-rescue':
+                return <ReefRescue onComplete={(earnedScore) => handleComplete(earnedScore)} />;
+            case 'block-carnival':
+                return <BlockCarnival onComplete={(earnedScore) => handleComplete(earnedScore)} />;
+            case 'island-quiz':
+                return <IslandQuizQuest onComplete={(earnedScore) => handleComplete(earnedScore)} />;
             default:
                 return (
                     <div className="text-center py-20">
