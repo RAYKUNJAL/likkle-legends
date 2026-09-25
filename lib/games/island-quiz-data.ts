@@ -20,6 +20,15 @@ export const QUIZ_ISLANDS = [
 const TYPES = ['food', 'nature', 'culture', 'flag'] as const;
 export const QUIZ_LEVELS = QUIZ_ISLANDS.length * TYPES.length;
 
+/** One quest is three rounds so a sitting is a long passport run, not eight quick taps. */
+export const QUIZ_ROUNDS = [
+    { name: 'Harbor', questions: 8 },
+    { name: 'Market', questions: 10 },
+    { name: 'Festival', questions: 12 },
+] as const;
+
+export const QUIZ_QUEST_QUESTIONS = QUIZ_ROUNDS.reduce((sum, round) => sum + round.questions, 0);
+
 export type QuizQuestion = {
     island: string;
     flag: string;

@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { MARKET_BUDGETS } from '@/lib/games/long-play';
 
 const MARKET_ITEMS = [
   { name: 'Coconut', emoji: '🥥', price: 5 },
@@ -30,21 +31,19 @@ interface GameProps {
 export default function CountingMarket({ onComplete }: GameProps) {
   const [gameState, setGameState] = useState<'start' | 'shopping' | 'checkout'>('start');
   const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
-  const [budget, setBudget] = useState(50);
+  const [stop, setStop] = useState(0);
+  const [budget, setBudget] = useState(MARKET_BUDGETS.easy[0]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<{ message: string; type: 'correct' | 'incorrect' | '' }>({ message: '', type: '' });
   const [changeGiven, setChangeGiven] = useState<number | null>(null);
   const [targetAmount, setTargetAmount] = useState(0);
 
-  const DIFFICULTY_BUDGETS: Record<string, number> = {
-    easy: 50,
-    medium: 75,
-    hard: 100,
-  };
+  const stops = MARKET_BUDGETS[difficulty];
 
   const startGame = useCallback(() => {
-    const selectedBudget = DIFFICULTY_BUDGETS[difficulty];
+    const selectedBudget = MARKET_BUDGETS[difficulty][0];
+    setStop(0);
     setBudget(selectedBudget);
     setTargetAmount(selectedBudget);
     setCart([]);
@@ -121,17 +120,30 @@ export default function CountingMarket({ onComplete }: GameProps) {
       });
 
       setTimeout(() => {
+        const plan = MARKET_BUDGETS[difficulty];
+        const nextStop = stop + 1;
+        if (nextStop < plan.length) {
+          const nextBudget = plan[nextStop];
+          setStop(nextStop);
+          setBudget(nextBudget);
+          setTargetAmount(nextBudget);
+          setCart([]);
+          setChangeGiven(null);
+          setFeedback({ message: `Customer served! Next shopper has $${nextBudget}.`, type: 'correct' });
+          setGameState('shopping');
+          return;
+        }
         if (onComplete) {
           onComplete(score + 100);
         }
-      }, 2000);
+      }, 1200);
     } else {
       setFeedback({
         message: `Not enough money! Total: $${totalCost}, but you gave: $${amountGiven}`,
         type: 'incorrect',
       });
     }
-  }, [getTotalCost, score, onComplete]);
+  }, [getTotalCost, score, onComplete, difficulty, stop]);
 
   const totalCost = getTotalCost();
 
@@ -247,9 +259,9 @@ export default function CountingMarket({ onComplete }: GameProps) {
                   textTransform: 'capitalize',
                 }}
               >
-                {level === 'easy' && '🎯 Easy ($50)'}
-                {level === 'medium' && '🎯🎯 Medium ($75)'}
-                {level === 'hard' && '🎯🎯🎯 Hard ($100)'}
+                {level === 'easy' && '🎯 Easy · 3 shoppers'}
+                {level === 'medium' && '🎯🎯 Medium · 4 shoppers'}
+                {level === 'hard' && '🎯🎯🎯 Hard · 5 shoppers'}
               </button>
             ))}
           </div>
@@ -305,6 +317,7 @@ export default function CountingMarket({ onComplete }: GameProps) {
               marginBottom: '1rem',
               flexWrap: 'wrap',
             }}>
+              <div>Shopper {stop + 1}/{stops.length}</div>
               <div>Budget: ${budget}</div>
               <div>Spent: ${totalCost}</div>
               <div style={{

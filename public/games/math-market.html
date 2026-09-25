@@ -750,7 +750,7 @@ body.playing .back-link { display: none; }
   <div class="hud-top">
     <a href="index.html" class="hud-back">Games</a>
     <span class="hud-level" id="hudLevel">Level 1/6</span>
-    <span class="hud-question" id="hudQuestion">Q 1/10</span>
+    <span class="hud-question" id="hudQuestion">Q 1/16</span>
     <span class="hud-stars">⭐ <span class="star-count" id="hudStars">0</span>/18</span>
     <span class="hud-score">🪙 <span id="hudScore">0</span></span>
   </div>
@@ -876,6 +876,9 @@ const MARKET_ITEMS = [
 const CHARACTERS = ['Mango Moko', 'Tanty Spice', 'Steelpan Sam', 'Dilly Doubles'];
 const CUSTOMERS = ['👦🏽', '👧🏾', '🧒🏽', '👦🏿', '👧🏽', '🧑🏾', '👩🏽', '👨🏾', '👶🏽', '🧓🏾'];
 
+const QUESTIONS_PER_LEVEL = 16;
+const LEVEL_COUNT = 6;
+
 const LEVEL_NAMES = [
   'Counting Coconuts',
   'Fruit Addition',
@@ -976,7 +979,7 @@ function generateWrongAnswers(correct, min, max, count = 2) {
 function generateLevel1() {
   // Counting 1-10
   const questions = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
     const fruit = pick(FRUITS);
     const count = rand(1, 10);
     const wrongs = generateWrongAnswers(count, 1, 10);
@@ -994,7 +997,7 @@ function generateLevel1() {
 function generateLevel2() {
   // Addition up to 10
   const questions = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
     const fruit = pick(FRUITS);
     const a = rand(1, 7);
     const b = rand(1, 10 - a);
@@ -1014,7 +1017,7 @@ function generateLevel2() {
 function generateLevel3() {
   // Subtraction up to 10
   const questions = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
     const fruit = pick(FRUITS);
     const total = rand(3, 10);
     const sub = rand(1, total);
@@ -1035,7 +1038,7 @@ function generateLevel3() {
 function generateLevel4() {
   // Addition up to 20
   const questions = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
     const fruitA = pick(FRUITS);
     let fruitB = pick(FRUITS);
     while (fruitB.name === fruitA.name) fruitB = pick(FRUITS);
@@ -1057,7 +1060,7 @@ function generateLevel4() {
 function generateLevel5() {
   // Mixed addition & subtraction up to 20
   const questions = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
     const fruit = pick(FRUITS);
     const isAdd = Math.random() < 0.5;
     if (isAdd) {
@@ -1104,7 +1107,7 @@ function generateLevel6() {
   const questions = [];
   const itemPool = MARKET_ITEMS.filter(it => it.price >= 1);
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
     const pType = i % 3; // rotate: total cost, making change, multi-item
 
     if (pType === 0) {
@@ -1387,11 +1390,11 @@ function spawnConfetti(count = 40) {
 // ===== HUD UPDATE =====
 function updateHUD() {
   hudLevel.textContent = `Level ${state.currentLevel + 1}/6`;
-  hudQuestion.textContent = `Q ${state.currentQuestion + 1}/10`;
+  hudQuestion.textContent = `Q ${state.currentQuestion + 1}/${QUESTIONS_PER_LEVEL}`;
   hudStars.textContent = state.totalStars;
   hudScore.textContent = state.score;
   // Progress: each level is worth ~16.67%, each question within is 1.67%
-  const progress = ((state.currentLevel * 10 + state.currentQuestion) / 60) * 100;
+  const progress = ((state.currentLevel * QUESTIONS_PER_LEVEL + state.currentQuestion) / (LEVEL_COUNT * QUESTIONS_PER_LEVEL)) * 100;
   hudProgress.style.width = progress + '%';
 }
 
@@ -1453,7 +1456,7 @@ function handleAnswer(btn, selected, q) {
     // Next question after delay
     setTimeout(() => {
       state.currentQuestion++;
-      if (state.currentQuestion >= 10) {
+      if (state.currentQuestion >= QUESTIONS_PER_LEVEL) {
         endLevel();
       } else {
         showQuestion();
@@ -1474,9 +1477,9 @@ function handleAnswer(btn, selected, q) {
 function endLevel() {
   const correct = state.levelCorrectFirst[state.currentLevel];
   let stars = 0;
-  if (correct >= 10) stars = 3;
-  else if (correct >= 8) stars = 2;
-  else if (correct >= 6) stars = 1;
+  if (correct >= 14) stars = 3;
+  else if (correct >= 12) stars = 2;
+  else if (correct >= 9) stars = 1;
 
   state.levelStars[state.currentLevel] = stars;
   state.totalStars = state.levelStars.reduce((a, b) => a + b, 0);
@@ -1494,7 +1497,7 @@ function endLevel() {
     starHTML += i < stars ? '<span class="star-on">⭐</span>' : '<span class="star-off">☆</span>';
   }
   overlayStars.innerHTML = starHTML;
-  overlayAccuracy.textContent = `${correct}/10 correct on first try`;
+  overlayAccuracy.textContent = `${correct}/${QUESTIONS_PER_LEVEL} correct on first try`;
 
   if (state.currentLevel < 5) {
     overlayFact.innerHTML = `<strong>🏝️ Caribbean Fact:</strong> ${LEVEL_FACTS[state.currentLevel]}`;

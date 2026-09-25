@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import confetti from 'canvas-confetti';
+import { INGREDIENT_ROUND_SIZES } from '@/lib/games/long-play';
 
 const CATEGORIES = [
   { name: 'Vegetables', emoji: '🥬', color: '#69F0AE', id: 'vegetables' },
@@ -52,16 +53,21 @@ export default function IngredientSort({ onComplete }: GameProps) {
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<{ id?: number; type: 'correct' | 'incorrect' | '' }>({ type: '' });
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
+  const [round, setRound] = useState(1);
+  const [goal, setGoal] = useState<number>(INGREDIENT_ROUND_SIZES[0]);
 
-  const TOTAL_ITEMS = 20;
+  const dealBoard = useCallback((size: number) => {
+    const shuffled = [...INGREDIENTS].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, size).map((ing, idx) => ({ ...ing, id: idx }));
+    setIngredients(selected);
+    setPlaced(new Set());
+    setDraggedItem(null);
+    setGoal(size);
+  }, []);
 
   useEffect(() => {
-    // Shuffle and select 20 items
-    const shuffled = INGREDIENTS.sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, TOTAL_ITEMS);
-    const withIds = selected.map((ing, idx) => ({ ...ing, id: idx }));
-    setIngredients(withIds);
-  }, []);
+    dealBoard(INGREDIENT_ROUND_SIZES[0]);
+  }, [dealBoard]);
 
   const handleDragStart = useCallback((id: number) => {
     setDraggedItem(id);
@@ -89,13 +95,21 @@ export default function IngredientSort({ onComplete }: GameProps) {
         setFeedback({ type: '' });
       }, 800);
 
-      if (placed.size + 1 === TOTAL_ITEMS) {
-        setTimeout(() => {
-          setGameState('complete');
-          if (onComplete) {
-            onComplete(score + 50);
-          }
-        }, 1000);
+      if (placed.size + 1 === goal) {
+        if (round < INGREDIENT_ROUND_SIZES.length) {
+          const nextRound = round + 1;
+          window.setTimeout(() => {
+            setRound(nextRound);
+            dealBoard(INGREDIENT_ROUND_SIZES[nextRound - 1]);
+          }, 700);
+        } else {
+          setTimeout(() => {
+            setGameState('complete');
+            if (onComplete) {
+              onComplete(score + 50);
+            }
+          }, 1000);
+        }
       }
     } else {
       // Incorrect placement
@@ -106,7 +120,7 @@ export default function IngredientSort({ onComplete }: GameProps) {
     }
 
     setDraggedItem(null);
-  }, [draggedItem, ingredients, placed, score, onComplete]);
+  }, [draggedItem, ingredients, placed, score, onComplete, goal, round, dealBoard]);
 
   return (
     <div style={{
@@ -216,7 +230,7 @@ export default function IngredientSort({ onComplete }: GameProps) {
         fontWeight: '600',
         color: '#FFD23F',
       }}>
-        <div>Progress: {placed.size}/{TOTAL_ITEMS}</div>
+        <div>Board {round}/{INGREDIENT_ROUND_SIZES.length} · {placed.size}/{goal}</div>
         <div>Score: {score}</div>
       </div>
 

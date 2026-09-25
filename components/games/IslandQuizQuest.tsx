@@ -2,34 +2,38 @@
 
 import { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { QUIZ_LEVELS, questionFor } from '@/lib/games/island-quiz-data';
+import { QUIZ_LEVELS, QUIZ_QUEST_QUESTIONS, QUIZ_ROUNDS, questionFor } from '@/lib/games/island-quiz-data';
 
 interface GameProps {
     onComplete?: (score: number) => void;
 }
 
-const ROUND_LENGTH = 8;
-
 export default function IslandQuizQuest({ onComplete }: GameProps) {
     const [started, setStarted] = useState(false);
     const [level, setLevel] = useState(1);
+    const [roundIndex, setRoundIndex] = useState(0);
     const [answered, setAnswered] = useState(0);
     const [score, setScore] = useState(0);
     const [streak, setStreak] = useState(0);
     const [locked, setLocked] = useState(false);
     const [picked, setPicked] = useState<string | null>(null);
+    const [roundClear, setRoundClear] = useState(false);
     const [done, setDone] = useState(false);
 
+    const round = QUIZ_ROUNDS[roundIndex];
     const question = questionFor(level);
+    const questAnswered = QUIZ_ROUNDS.slice(0, roundIndex).reduce((sum, item) => sum + item.questions, 0) + answered;
 
     function begin(nextLevel = 1) {
         setStarted(true);
         setLevel(nextLevel);
+        setRoundIndex(0);
         setAnswered(0);
         setScore(0);
         setStreak(0);
         setLocked(false);
         setPicked(null);
+        setRoundClear(false);
         setDone(false);
     }
 
@@ -50,17 +54,31 @@ export default function IslandQuizQuest({ onComplete }: GameProps) {
         setScore(nextScore);
         setAnswered(nextAnswered);
         confetti({ particleCount: 36, spread: 50, origin: { y: 0.65 } });
-        if (nextAnswered >= ROUND_LENGTH) {
-            setDone(true);
-            onComplete?.(nextScore);
+        if (nextAnswered >= round.questions) {
+            if (roundIndex < QUIZ_ROUNDS.length - 1) {
+                setRoundClear(true);
+            } else {
+                setDone(true);
+                onComplete?.(nextScore);
+            }
         }
     }
 
     function nextQuestion() {
-        if (!locked || done) return;
+        if (!locked || done || roundClear) return;
         setLevel((current) => (current % QUIZ_LEVELS) + 1);
         setLocked(false);
         setPicked(null);
+    }
+
+    function continueRound() {
+        if (!roundClear) return;
+        setRoundIndex((current) => current + 1);
+        setAnswered(0);
+        setLocked(false);
+        setPicked(null);
+        setRoundClear(false);
+        setLevel((current) => (current % QUIZ_LEVELS) + 1);
     }
 
     return (
@@ -71,17 +89,18 @@ export default function IslandQuizQuest({ onComplete }: GameProps) {
                     <h2 className="text-3xl font-black">Island Quiz Quest</h2>
                 </div>
                 <div className="flex gap-2 text-center text-sm font-black">
+                    <Stat label="Round" value={`${roundIndex + 1}/${QUIZ_ROUNDS.length}`} />
                     <Stat label="Level" value={`${((level - 1) % QUIZ_LEVELS) + 1}/${QUIZ_LEVELS}`} />
                     <Stat label="Score" value={score} />
                     <Stat label="Streak" value={streak} />
                 </div>
             </div>
             <div className="mb-4 h-2 overflow-hidden rounded-full bg-white/20">
-                <div className="h-full bg-amber-300" style={{ width: `${(answered / ROUND_LENGTH) * 100}%` }} />
+                <div className="h-full bg-amber-300" style={{ width: `${(questAnswered / QUIZ_QUEST_QUESTIONS) * 100}%` }} />
             </div>
 
             <div className="rounded-3xl bg-white/10 p-4 sm:p-6">
-                <p className="text-xs font-black tracking-widest text-amber-200">{question.label}</p>
+                <p className="text-xs font-black tracking-widest text-amber-200">{round.name} · question {Math.min(round.questions, roundClear || done ? answered : answered + 1)}/{round.questions} · {question.label}</p>
                 <p className="mt-1 text-sm font-bold text-indigo-100">{question.flag} {question.island}</p>
                 {question.label === 'ISLAND FLAG' && (
                     <p className="my-3 text-center text-7xl" aria-hidden>{question.flag}</p>
@@ -107,7 +126,23 @@ export default function IslandQuizQuest({ onComplete }: GameProps) {
                         );
                     })}
                 </div>
-                {locked && !done && (
+                {roundClear && !done && (
+                    <div className="mt-4 rounded-2xl bg-black/25 p-4">
+                        <p className="font-black">{round.name} round clear!</p>
+                        <p className="mt-1 text-sm text-indigo-100">Keep your streak going. The next round has more island questions.</p>
+                        <button
+                            type="button"
+                            className="mt-3 min-h-[56px] w-full cursor-pointer rounded-2xl bg-amber-300 font-black text-slate-900 touch-manipulation"
+                            onPointerDown={(event) => {
+                                event.preventDefault();
+                                continueRound();
+                            }}
+                        >
+                            Next round
+                        </button>
+                    </div>
+                )}
+                {locked && !done && !roundClear && (
                     <div className="mt-4 rounded-2xl bg-black/25 p-4">
                         <p className="font-black">Passport stamp earned!</p>
                         <p className="mt-1 text-sm text-indigo-100">{question.detail}</p>
@@ -153,7 +188,7 @@ export default function IslandQuizQuest({ onComplete }: GameProps) {
                         <p className="text-5xl">🎖️</p>
                         <h2 className="mt-2 text-3xl font-black">Quest complete!</h2>
                         <p className="mt-2 text-sm font-semibold text-slate-500">
-                            Eight stamps collected. Every island question stays open for another round.
+                            {QUIZ_QUEST_QUESTIONS} stamps across {QUIZ_ROUNDS.length} rounds. Every island question stays open for another quest.
                         </p>
                         <p className="mt-3 text-4xl font-black text-indigo-600">{score}</p>
                         <button

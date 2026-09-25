@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Star, ArrowLeft, Map, CheckCircle2, Lock, Play, ChevronRight, Crown, Unlock, Target, Clock, Zap } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import confetti from 'canvas-confetti';
+import { triviaSession } from '@/lib/games/long-play';
 
 // ==========================================
 // DATA: ISLANDS & QUESTIONS
@@ -428,7 +429,8 @@ export default function IslandTrivia({ onComplete }: { onComplete?: (score: numb
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {selectedIsland.levels.map(level => {
+                        {selectedIsland.levels.map((rawLevel) => {
+                            const level = triviaSession(rawLevel);
                             const isUnlocked = level.id <= unlockLevel;
                             return (
                                 <button
