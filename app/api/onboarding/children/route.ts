@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
+import { canonicalPrimaryIsland } from '@/lib/curriculum/resolve-signup-island';
 
 type ChildPayload = {
   first_name?: string;
@@ -23,7 +24,7 @@ async function insertChild(userId: string, payload: Required<Pick<ChildPayload, 
     parent_id: userId,
     age: payload.age,
     age_track: payload.age_track,
-    primary_island: payload.primary_island,
+    primary_island: canonicalPrimaryIsland(payload.primary_island) || payload.primary_island,
     secondary_island: payload.secondary_island || null,
     avatar_id: payload.avatar_id,
   };
@@ -56,7 +57,7 @@ async function insertChild(userId: string, payload: Required<Pick<ChildPayload, 
         name: payload.first_name,
         age: payload.age,
         age_track: payload.age_track,
-        island: payload.primary_island,
+        island: canonicalPrimaryIsland(payload.primary_island) || payload.primary_island,
         avatar_id: payload.avatar_id,
         created_at: new Date().toISOString(),
       })

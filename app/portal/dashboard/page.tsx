@@ -4,41 +4,35 @@ import { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Download, Sparkles, BookOpen, User, Star } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useUser } from '@/components/UserContext';
+import TodaysCustomWork from '@/components/parent/TodaysCustomWork';
 
 function DashboardContent() {
-    const searchParams = useSearchParams();
+    const { user, activeChild, children, isLoading } = useUser();
     const [childName, setChildName] = useState<string>('Legend');
     const [userId, setUserId] = useState<string>('');
     const [hasUpsell, setHasUpsell] = useState<boolean>(false);
     const [hasHeritage, setHasHeritage] = useState<boolean>(false);
     const [heritageCode, setHeritageCode] = useState<string>('');
-    const [isGenerating, setIsGenerating] = useState<boolean>(false);
-    const [storyReady, setStoryReady] = useState<boolean>(false);
 
     useEffect(() => {
-        // Hydrate from localStorage if not in params
-        if (typeof window !== 'undefined') {
-            const stored = localStorage.getItem('likkle_legends_user');
-            if (stored) {
-                const data = JSON.parse(stored);
-                setChildName(data.childName || 'Legend');
-                setUserId(data.userId || data.uid || '');
-                setHasUpsell(data.hasUpsell);
-                setHasHeritage(data.hasHeritageStory);
-                setHeritageCode(data.heritage);
-
-                if (data.hasHeritageStory) {
-                    setIsGenerating(true);
-                    // Simulate generation delay
-                    setTimeout(() => {
-                        setIsGenerating(false);
-                        setStoryReady(true);
-                    }, 5000);
-                }
-            }
+        if (typeof window === 'undefined') return;
+        const stored = localStorage.getItem('likkle_legends_user');
+        if (!stored) return;
+        try {
+            const data = JSON.parse(stored);
+            setChildName(data.childName || 'Legend');
+            setUserId(data.userId || data.uid || '');
+            setHasUpsell(Boolean(data.hasUpsell));
+            setHasHeritage(Boolean(data.hasHeritageStory));
+            setHeritageCode(data.heritage || '');
+        } catch {
+            // Ignore a bad local cache. The plan comes from the parent session.
         }
     }, []);
+
+    const displayName = activeChild?.first_name || childName;
+    const heritageOwned = hasHeritage || Boolean(user?.has_heritage_dna_story);
 
     return (
         <div className="min-h-screen bg-[#FFFDF7]">
@@ -50,7 +44,7 @@ function DashboardContent() {
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 bg-zinc-50 rounded-full">
                     <User size={16} className="text-deep/40" />
-                    <span className="text-sm font-bold text-deep">{childName}</span>
+                    <span className="text-sm font-bold text-deep">{displayName}</span>
                 </div>
             </header>
 
@@ -68,7 +62,7 @@ function DashboardContent() {
                                 <span className="text-[10px] font-black uppercase tracking-widest">Active Member</span>
                             </div>
                             <h2 className="text-4xl sm:text-5xl font-black tracking-tighter leading-tight">
-                                Welcome Home, {childName}!
+                                Welcome Home, {displayName}!
                             </h2>
                             <p className="text-lg font-medium text-white/80 max-w-xl">
                                 Your next adventure package is being prepared. Check your mailbox soon!
@@ -77,8 +71,38 @@ function DashboardContent() {
                         <div className="absolute right-0 bottom-0 w-64 h-64 bg-white/10 rounded-full blur-[80px] -mr-16 -mb-16"></div>
                     </div>
 
+                    {isLoading ? (
+                        <p className="text-sm font-bold text-deep/50">Checking the parent session…</p>
+                    ) : activeChild ? (
+                        <TodaysCustomWork
+                            childId={activeChild.id}
+                            childName={activeChild.first_name}
+                            age={activeChild.age}
+                        />
+                    ) : user && children.length === 0 ? (
+                        <div className="rounded-3xl border border-dashed border-zinc-200 bg-white p-8">
+                            <h3 className="text-xl font-black text-deep">No child profile yet</h3>
+                            <p className="mt-2 text-sm font-medium text-deep/50">
+                                Add an island in parent setup before a custom plan can be built.
+                            </p>
+                            <Link href="/onboarding/child" className="mt-4 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-black text-white">
+                                Add a child
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="rounded-3xl border border-dashed border-zinc-200 bg-white p-8">
+                            <h3 className="text-xl font-black text-deep">Plan not loaded</h3>
+                            <p className="mt-2 text-sm font-medium text-deep/50">
+                                Sign in as the parent to see today&apos;s work. Nothing is generated on this screen by itself.
+                            </p>
+                            <Link href="/login?redirect=/portal/dashboard" className="mt-4 inline-flex rounded-xl bg-primary px-5 py-3 text-sm font-black text-white">
+                                Parent sign in
+                            </Link>
+                        </div>
+                    )}
+
                     {/* Order Bumps Section */}
-                    {(hasUpsell || hasHeritage) && (
+                    {(hasUpsell || heritageOwned) && (
                         <div className="space-y-6">
                             <h3 className="text-2xl font-black text-deep tracking-tight flex items-center gap-2">
                                 <Star className="fill-yellow-400 text-yellow-400" /> Your Special Upgrades
@@ -102,32 +126,20 @@ function DashboardContent() {
                                 )}
 
                                 {/* Heritage DNA Story */}
-                                {hasHeritage && (
+                                {heritageOwned && (
                                     <div className="bg-white rounded-3xl p-8 border-2 border-primary/10 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-                                        {isGenerating && (
-                                            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center text-center p-6">
-                                                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-                                                <p className="font-black text-primary text-sm uppercase tracking-widest animate-pulse">
-                                                    Anansi is weaving your story...
-                                                </p>
-                                            </div>
-                                        )}
-
                                         <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-6 text-2xl group-hover:scale-110 transition-transform">
                                             🧬
                                         </div>
-                                        <h4 className="text-xl font-black text-deep mb-2">Heritage DNA Story</h4>
+                                        <h4 className="text-xl font-black text-deep mb-2">Heritage story</h4>
                                         <p className="text-sm text-deep/50 font-medium mb-6">
-                                            A personalized tale about {childName}'s roots in {heritageCode || 'the islands'}.
+                                            {activeChild?.primary_island
+                                                ? `Opens the saved family story for ${displayName}.`
+                                                : `Choose an island before a family story can use a real place. ${heritageCode ? `Checkout note: ${heritageCode}.` : ''}`}
                                         </p>
-
-                                        {storyReady ? (
-                                            <button className="w-full py-4 bg-primary text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
-                                                <BookOpen size={16} /> Read Now
-                                            </button>
-                                        ) : (
-                                            <div className="w-full h-12 bg-zinc-100 rounded-xl animate-pulse"></div>
-                                        )}
+                                        <Link href="/portal/heritage-story" className="w-full py-4 bg-primary text-white rounded-xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                                            <BookOpen size={16} /> Open story
+                                        </Link>
                                     </div>
                                 )}
                             </div>
@@ -139,14 +151,7 @@ function DashboardContent() {
                         <h3 className="text-2xl font-black text-deep tracking-tight flex items-center gap-2">
                             <Sparkles className="text-primary" /> Chat with R.O.T.I.
                         </h3>
-                        <ChatInterface childName={childName} userId={userId} />
-                    </div>
-
-                    <div className="opacity-50 pointer-events-none filter grayscale">
-                        <div className="bg-zinc-50 rounded-3xl p-12 text-center border border-zinc-100 border-dashed">
-                            <h3 className="text-lg font-black text-deep/40 uppercase tracking-widest mb-2">Coming Soon</h3>
-                            <p className="text-deep/30 font-medium">Monthly activities will appear here.</p>
-                        </div>
+                        <ChatInterface childName={displayName} userId={user?.id || userId} />
                     </div>
 
                 </motion.div>

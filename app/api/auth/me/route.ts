@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { supabaseAdmin } from '@/lib/supabase-client';
+import { canonicalPrimaryIsland } from '@/lib/curriculum/resolve-signup-island';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -94,7 +95,8 @@ export async function GET() {
           ? meta.full_name
           : 'My Legend');
       const age = Math.min(9, Math.max(3, Number(meta.child_age) || 5));
-      const island = meta.island_heritage || profile?.origin_island || 'mixed';
+      const rawIsland = meta.island_heritage || profile?.origin_island || 'mixed';
+      const island = canonicalPrimaryIsland(rawIsland) || rawIsland;
       try {
         const base = {
           parent_id: user.id,
