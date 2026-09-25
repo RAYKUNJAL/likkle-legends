@@ -41,13 +41,8 @@ function CheckoutContent() {
         const initialSku = offerParam && offerParam !== 'catalog' ? offerParam : planParam;
         return <IslandOffersCheckout initialSku={initialSku} />;
     }
-    const paidPlanInUrl = [
-        'starter_mailer', 'plan_mail_intro',
-        'legends_plus', 'plan_legends_plus',
-        'family_legacy', 'plan_family_legacy',
-        'digital_explorer', 'plan_digital_legends',
-    ].includes(planParam || '');
-    const [step, setStep] = useState(paidPlanInUrl || searchParams.get('pay') === '1' ? 4 : 1);
+    const freePlanInUrl = planParam === 'free' || planParam === 'plan_free_forever';
+    const [step, setStep] = useState(freePlanInUrl ? 1 : 4);
     const [emailError, setEmailError] = useState<string | null>(null);
     const [emailTouched, setEmailTouched] = useState(false);
     const [hasSession, setHasSession] = useState<boolean | null>(null);
@@ -323,8 +318,7 @@ function CheckoutContent() {
                                     </div>
                                     {formData.planKey !== 'plan_free_forever' && (
                                         <p className="text-[10px] text-deep/30 font-medium">
-                                            Then ${calculateRecurringTotal().toFixed(2)}/month starting{' '}
-                                            {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                            Then ${calculateRecurringTotal().toFixed(2)}/month after the 7-day trial
                                         </p>
                                     )}
                                 </div>
@@ -745,8 +739,7 @@ function CheckoutContent() {
                                                     </div>
                                                     {formData.planKey !== 'plan_free_forever' && (
                                                         <p className="text-[10px] text-deep/30 font-medium mt-1">
-                                                            Then ${calculateTotal()}/month starting{' '}
-                                                            {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                            Then ${calculateTotal()}/month after the 7-day trial
                                                         </p>
                                                     )}
                                                 </div>
@@ -771,6 +764,10 @@ function CheckoutContent() {
                                                     >
                                                         Activate Free Account
                                                     </button>
+                                                ) : paypalBlockedMessage ? (
+                                                    <p className="text-sm font-bold text-red-700" role="alert">
+                                                        {paypalBlockedMessage}
+                                                    </p>
                                                 ) : !searchParams.get('uid') && hasSession === null ? (
                                                     <p className="text-sm font-bold text-slate-500">Checking parent session…</p>
                                                 ) : !searchParams.get('uid') && hasSession === false ? (
@@ -781,10 +778,6 @@ function CheckoutContent() {
                                                     >
                                                         Create Account to Continue
                                                     </button>
-                                                ) : paypalBlockedMessage ? (
-                                                    <p className="text-sm font-bold text-red-700" role="alert">
-                                                        {paypalBlockedMessage}
-                                                    </p>
                                                 ) : (
                                                     <PayPalButtons
                                                         style={{ layout: "vertical", shape: "rect", borderRadius: 12, height: 48 }}
@@ -804,8 +797,7 @@ function CheckoutContent() {
                                                             const targetPlanId = subscriptionPlanId;
 
                                                             if (!targetPlanId) {
-                                                                toast.error("Payment plan is not configured. Please contact support.");
-                                                                throw new Error("Missing PayPal Plan ID");
+                                                                return Promise.reject(new Error('Missing PayPal Plan ID'));
                                                             }
 
                                                             const trialEndDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
