@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { SEED_SCENARIOS } from '@/lib/island-helpers/journey-stories/seed-scenarios';
 import { ISLAND_HELPERS_CHARACTER_IDS, type IslandHelpersCharacterId } from '@/lib/island-helpers/types';
 import {
@@ -11,8 +12,25 @@ import {
   getDraft,
 } from '@/lib/island-helpers/journey-stories/draft-store';
 import { applyJourneySafety } from '@/lib/island-helpers/journey-stories/safety';
-import type { JourneyStoryDraft } from '@/lib/island-helpers/journey-stories/types';
-import { IH_JOURNEY_STORIES, IH_JOURNEY_ETHICS_EXTRA } from '@/lib/island-helpers/copy';
+import { JOURNEY_PAGE_ROLES, type JourneyLanguageMode, type JourneyStoryDraft } from '@/lib/island-helpers/journey-stories/types';
+import {
+  IH_JOURNEY_ART_CALM,
+  IH_JOURNEY_ART_NOTE,
+  IH_JOURNEY_ART_QUEUED,
+  IH_JOURNEY_ART_SIMPLE,
+  IH_JOURNEY_ETHICS_EXTRA,
+  IH_JOURNEY_LANGUAGE_HELP,
+  IH_JOURNEY_LANGUAGE_LITERAL,
+  IH_JOURNEY_LANGUAGE_STANDARD,
+  IH_JOURNEY_STORIES,
+} from '@/lib/island-helpers/copy';
+import { shouldSyncIllustrate } from '@/lib/island-helpers/journey-stories/jobs';
+import {
+  journeyBroadcastTopic,
+  journeyPageRealtimeFilter,
+  readPageImageUpdate,
+  type JourneyPageImageUpdate,
+} from '@/lib/island-helpers/journey-stories/realtime';
 import { EthicsDisclaimer } from '../EthicsDisclaimer';
 import { JourneyPageEditor } from './JourneyPageEditor';
 import { PublishGate } from './PublishGate';
@@ -39,6 +57,9 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
   const [customScenario, setCustomScenario] = useState('');
   const [childName, setChildName] = useState(existing?.childName || '');
   const [pointOfView, setPointOfView] = useState<'first' | 'third'>(existing?.pointOfView || 'third');
+  const [languageMode, setLanguageMode] = useState<JourneyLanguageMode>(
+    existing?.languageMode === 'literal' ? 'literal' : 'standard',
+  );
   const [cast, setCast] = useState<IslandHelpersCharacterId[]>(
     existing?.castCharacterIds?.length ? existing.castCharacterIds : ['tanty_spice', 'roti'],
   );
@@ -50,6 +71,15 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
   const [publishWithoutPictures, setPublishWithoutPictures] = useState(
     Boolean(existing?.publishWithoutPictures),
   );
+  const [artNote, setArtNote] = useState<string | null>(null);
+  const [watchingArt, setWatchingArt] = useState(false);
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+
+  useEffect(() => {
+    if (!draft?.serverStoryId) return;
+    if (draft.status === 'generating') setWatchingArt(true);
+  }, [draft?.serverStoryId, draft?.status]);
 
   const selectedSeed = useMemo(
     () => SEED_SCENARIOS.find((s) => s.id === scenarioId),
@@ -60,10 +90,88 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
     setCast((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
+  const rememberServerStory = (
+    storyId: string,
+    pages: JourneyStoryDraft['pages'],
+    status: JourneyStoryDraft['status'],
+  ) => {
+    const saved = createDraft({
+      scenarioId: scenarioId === 'custom' ? 'custom' : scenarioId,
+      scenarioLabel: selectedSeed?.parentLabel || customScenario || 'Journey Story',
+      childName: childName || undefined,
+      pointOfView,
+      languageMode,
+      castCharacterIds: cast.length ? cast : selectedSeed?.defaultCast || ['tanty_spice'],
+      status,
+      pages,
+      serverStoryId: storyId,
+    });
+    draftRef.current = saved;
+    setDraft(saved);
+    return saved;
+  };
+
   const generate = async () => {
     setBusy(true);
     setError(null);
     try {
+      let queuedBody: { status?: string; pages?: unknown; storyId?: string; queued?: boolean; art?: string } | null =
+        null;
+      try {
+        const queueRes = await fetch('/api/island-helpers/journey-stories/queue', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-island-helpers-adult': '1',
+          },
+          body: JSON.stringify({
+            scenarioId: scenarioId === 'custom' ? 'custom' : scenarioId,
+            scenarioLabel: selectedSeed?.parentLabel || customScenario || 'Journey Story',
+            customScenario: scenarioId === 'custom' ? customScenario : undefined,
+            childName: childName || undefined,
+            pointOfView: scenarioId === 'custom' ? pointOfView : selectedSeed?.pointOfView || pointOfView,
+            languageMode,
+            castCharacterIds: cast.length ? cast : selectedSeed?.defaultCast || ['tanty_spice'],
+          }),
+        });
+        queuedBody = await queueRes.json().catch(() => null);
+        if (!queueRes.ok) queuedBody = null;
+      } catch {
+        queuedBody = null;
+      }
+      if (queuedBody?.status === 'reused' && Array.isArray(queuedBody.pages)) {
+        const pages = JOURNEY_PAGE_ROLES.map((role, index) => {
+          const page = queuedBody.pages.find((item: { pageIndex: number }) => item.pageIndex === index);
+          return {
+            role,
+            title: page?.title || undefined,
+            text: String(page?.text || ''),
+            imageUrl: page?.imageUrl || null,
+            imageStatus: page?.imageStatus || 'reused',
+            coachingLineCount: 0,
+          };
+        });
+        const saved = rememberServerStory(String(queuedBody.storyId), pages, 'ready');
+        setStep('edit');
+        setArtNote(IH_JOURNEY_ART_NOTE);
+        router.replace(`/island-helpers/journey-stories/${saved.id}/edit`);
+        return;
+      }
+      if (queuedBody?.queued && queuedBody.storyId) {
+        const pages = JOURNEY_PAGE_ROLES.map((role) => ({
+          role,
+          text: '',
+          imageUrl: null,
+          imageStatus: 'pending' as const,
+          coachingLineCount: 0,
+        }));
+        rememberServerStory(String(queuedBody.storyId), pages, 'generating');
+        setArtNote('Writing the story…');
+        setWatchingArt(true);
+        setError(null);
+        return;
+      }
+
       const res = await fetch('/api/island-helpers/journey-stories/generate', {
         method: 'POST',
         headers: {
@@ -75,6 +183,7 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
           customScenario: scenarioId === 'custom' ? customScenario : undefined,
           childName: childName || undefined,
           pointOfView: scenarioId === 'custom' ? pointOfView : selectedSeed?.pointOfView || pointOfView,
+          languageMode,
           castCharacterIds: cast.length
             ? cast
             : selectedSeed?.defaultCast || ['tanty_spice'],
@@ -85,6 +194,7 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
         if (body.draft) {
           const saved = createDraft({
             ...body.draft,
+            languageMode: body.draft.languageMode === 'literal' ? 'literal' : languageMode,
             status: 'draft',
             pages: body.draft.pages,
           });
@@ -104,6 +214,7 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
         scenarioLabel: body.draft.scenarioLabel,
         childName: body.draft.childName,
         pointOfView: body.draft.pointOfView,
+        languageMode: body.draft.languageMode === 'literal' ? 'literal' : 'standard',
         castCharacterIds: body.draft.castCharacterIds,
         status: 'ready',
         pages: body.draft.pages,
@@ -137,31 +248,236 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
     setWarnings(safety.ok ? safety.warnings : safety.reasons);
   };
 
-  const illustrate = async (pageIndex?: number) => {
+  const mergeArt = (update: JourneyPageImageUpdate) => {
+    const current = draftRef.current;
+    if (!current || update.pageIndex < 0 || update.pageIndex >= current.pages.length) return;
+    const pages = current.pages.map((page, index) =>
+      index === update.pageIndex
+        ? { ...page, imageUrl: update.imageUrl, imageStatus: update.imageStatus }
+        : page,
+    );
+    const next = updateDraft(current.id, { pages });
+    draftRef.current = next;
+    setDraft(next);
+  };
+
+  useEffect(() => {
+    const storyId = draft?.serverStoryId;
+    if (!watchingArt || !storyId) return;
+    const supabase = createClient();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    if (typeof supabase.channel === 'function') {
+      const filter = journeyPageRealtimeFilter(storyId);
+      channel = supabase
+        .channel(journeyBroadcastTopic(storyId))
+        .on('broadcast', { event: 'page_image' }, ({ payload }) => {
+          const update = readPageImageUpdate(storyId, payload as Record<string, unknown>);
+          if (update) mergeArt(update);
+        })
+        .on('postgres_changes', filter, (payload) => {
+          const update = readPageImageUpdate(storyId, (payload as { new?: Record<string, unknown> }).new);
+          if (update) mergeArt(update);
+        })
+        .subscribe();
+    }
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/island-helpers/journey-stories/jobs/${storyId}`, {
+          headers: { 'x-island-helpers-adult': '1' },
+        });
+        const body = await res.json();
+        if (!body?.ok || !Array.isArray(body.pages)) return;
+        const current = draftRef.current;
+        if (current) {
+          const pages = current.pages.map((page, index) => {
+            const server = body.pages.find((item: { pageIndex: number }) => item.pageIndex === index);
+            if (!server) return page;
+            const text = String(server.text || '').trim();
+            return {
+              ...page,
+              title: server.title || page.title,
+              text: text || page.text,
+              imageUrl: server.imageUrl ?? page.imageUrl,
+              imageStatus: server.imageStatus || page.imageStatus,
+            };
+          });
+          const readyText = pages.filter((page) => page.text.trim()).length === 5;
+          const latest = Array.isArray(body.jobs) ? body.jobs[0] : null;
+          const settled =
+            latest &&
+            (latest.phase === 'ready' ||
+              latest.phase === 'failed' ||
+              latest.status === 'done' ||
+              latest.status === 'failed');
+          const next = updateDraft(current.id, {
+            pages,
+            status: settled
+              ? readyText
+                ? 'ready'
+                : 'draft'
+              : current.status,
+          });
+          draftRef.current = next;
+          setDraft(next);
+          if (readyText) setStep('edit');
+          if (settled) {
+            setWatchingArt(false);
+            setArtNote(latest.phase === 'failed' || latest.status === 'failed' ? IH_JOURNEY_ART_CALM : IH_JOURNEY_ART_NOTE);
+          }
+        }
+      } catch {
+        /* keep the words on screen */
+      }
+    };
+    const timer = window.setInterval(() => void poll(), 4000);
+
+    return () => {
+      window.clearInterval(timer);
+      if (channel) supabase.removeChannel(channel);
+    };
+    // mergeArt reads the latest draft from a ref
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchingArt, draft?.serverStoryId]);
+
+  const illustrateOnePage = async (current: JourneyStoryDraft, pageIndex: number) => {
+    const res = await fetch('/api/island-helpers/journey-stories/illustrate', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-island-helpers-adult': '1',
+      },
+      body: JSON.stringify({ draft: current, pageIndex, allowPlaceholders: true }),
+    });
+    const body = await res.json();
+    if (!res.ok || !body.ok || !Array.isArray(body.pages)) return null;
+    return updateDraft(current.id, {
+      pages: body.pages,
+      status: current.safetyFlags.length ? 'draft' : 'ready',
+    });
+  };
+
+  const queuePictures = async () => {
     if (!draft) return;
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch('/api/island-helpers/journey-stories/illustrate', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'x-island-helpers-adult': '1',
-        },
-        body: JSON.stringify({ draft, pageIndex, allowPlaceholders: true }),
-      });
-      const body = await res.json();
-      if (!res.ok || !body.ok) {
-        setError(body.error || 'Illustrate failed');
-        return;
+      let current = draft;
+      let storyId = draft.serverStoryId;
+      let anyQueued = false;
+      let anyReused = false;
+      let anyPlaceholders = false;
+      for (let pageIndex = 0; pageIndex < current.pages.length; pageIndex += 1) {
+        setArtNote(`Picture ${pageIndex + 1} of ${current.pages.length}…`);
+        const res = await fetch('/api/island-helpers/journey-stories/jobs', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-island-helpers-adult': '1',
+          },
+          body: JSON.stringify({
+            storyId,
+            scenarioId: current.scenarioId,
+            scenarioLabel: current.scenarioLabel,
+            languageMode: current.languageMode === 'literal' ? 'literal' : 'standard',
+            pointOfView: current.pointOfView,
+            castCharacterIds: current.castCharacterIds,
+            pages: current.pages,
+            pageIndex,
+          }),
+        });
+        const body = await res.json().catch(() => ({ ok: false }));
+        if (shouldSyncIllustrate({
+          ok: Boolean(body?.ok) && res.ok,
+          queued: Boolean(body?.queued),
+          status: body?.status,
+          fallback: body?.fallback,
+        })) {
+          const illustrated = await illustrateOnePage(current, pageIndex);
+          if (!illustrated) {
+            setArtNote(IH_JOURNEY_ART_CALM);
+            setWatchingArt(false);
+            return;
+          }
+          current = illustrated;
+          draftRef.current = current;
+          setDraft(current);
+          continue;
+        }
+        if (!res.ok || body.ok === false) {
+          setArtNote(body.message || IH_JOURNEY_ART_CALM);
+          setWatchingArt(false);
+          return;
+        }
+        storyId = body.storyId || storyId;
+        const pages = current.pages.map((page, index) => {
+          const planned = Array.isArray(body.pages)
+            ? body.pages.find((item: { pageIndex: number }) => item.pageIndex === index)
+            : null;
+          return planned
+            ? { ...page, imageUrl: planned.imageUrl ?? page.imageUrl, imageStatus: planned.imageStatus }
+            : page;
+        });
+        current = updateDraft(current.id, { pages, serverStoryId: storyId });
+        draftRef.current = current;
+        setDraft(current);
+        if (body.queued) anyQueued = true;
+        if (body.status === 'reused') anyReused = true;
+        if (body.status === 'placeholders' || body.art === 'hold') anyPlaceholders = true;
       }
-      const next = updateDraft(draft.id, {
-        pages: body.pages,
-        status: draft.safetyFlags.length ? 'draft' : 'ready',
-      });
-      setDraft(next);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Illustrate failed');
+      if (anyQueued) {
+        setArtNote(IH_JOURNEY_ART_QUEUED);
+        setWatchingArt(true);
+      } else if (anyPlaceholders) {
+        setArtNote(IH_JOURNEY_ART_CALM);
+        setWatchingArt(false);
+      } else if (anyReused) {
+        setArtNote(IH_JOURNEY_ART_NOTE);
+        setWatchingArt(false);
+      } else {
+        setArtNote(IH_JOURNEY_ART_CALM);
+        setWatchingArt(false);
+      }
+    } catch {
+      setArtNote(IH_JOURNEY_ART_CALM);
+      setWatchingArt(false);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const useSimplePictures = async () => {
+    if (!draft) return;
+    setBusy(true);
+    setError(null);
+    setWatchingArt(false);
+    try {
+      let current = draft;
+      for (let pageIndex = 0; pageIndex < current.pages.length; pageIndex += 1) {
+        setArtNote(`Simple picture ${pageIndex + 1} of ${current.pages.length}…`);
+        const res = await fetch('/api/island-helpers/journey-stories/illustrate', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-island-helpers-adult': '1',
+          },
+          body: JSON.stringify({ draft: current, pageIndex, allowPlaceholders: true }),
+        });
+        const body = await res.json();
+        if (!res.ok || !body.ok) {
+          setArtNote(IH_JOURNEY_ART_CALM);
+          return;
+        }
+        current = updateDraft(current.id, {
+          pages: body.pages,
+          status: current.safetyFlags.length ? 'draft' : 'ready',
+        });
+        draftRef.current = current;
+        setDraft(current);
+      }
+      setArtNote(IH_JOURNEY_ART_NOTE);
+    } catch {
+      setArtNote(IH_JOURNEY_ART_CALM);
     } finally {
       setBusy(false);
     }
@@ -270,6 +586,43 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
             </label>
           </div>
 
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-black text-blue-950">Words</legend>
+            <div className="grid gap-2">
+              <label
+                className={`flex gap-3 rounded-2xl border p-3 cursor-pointer ${
+                  languageMode === 'standard' ? 'border-amber-400 bg-amber-50' : 'border-blue-100'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="languageMode"
+                  checked={languageMode === 'standard'}
+                  onChange={() => setLanguageMode('standard')}
+                />
+                <span>
+                  <span className="block font-black text-blue-950">{IH_JOURNEY_LANGUAGE_STANDARD}</span>
+                </span>
+              </label>
+              <label
+                className={`flex gap-3 rounded-2xl border p-3 cursor-pointer ${
+                  languageMode === 'literal' ? 'border-amber-400 bg-amber-50' : 'border-blue-100'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="languageMode"
+                  checked={languageMode === 'literal'}
+                  onChange={() => setLanguageMode('literal')}
+                />
+                <span>
+                  <span className="block font-black text-blue-950">{IH_JOURNEY_LANGUAGE_LITERAL}</span>
+                  <span className="block text-sm font-semibold text-blue-700/70">{IH_JOURNEY_LANGUAGE_HELP}</span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
           <div>
             <p className="text-sm font-black text-blue-950 mb-2">Cast</p>
             <div className="flex flex-wrap gap-2">
@@ -306,15 +659,27 @@ export function JourneyStoryWizard({ mode, initialDraftId }: Props) {
             Status: <span className="font-black">{draft.status}</span>
             {draft.safetyFlags.length ? ` · flags: ${draft.safetyFlags.join('; ')}` : ''}
           </p>
+          <p className="text-sm font-semibold text-blue-800/80">
+            {draft.languageMode === 'literal' ? IH_JOURNEY_LANGUAGE_LITERAL : IH_JOURNEY_LANGUAGE_STANDARD}
+          </p>
           <JourneyPageEditor pages={draft.pages} warnings={warnings} onChange={persistPages} />
-          <div className="flex flex-wrap gap-3">
+          <p className="text-sm font-semibold text-blue-800/80">{artNote || IH_JOURNEY_ART_NOTE}</p>
+          <div className="flex flex-wrap gap-3 items-center">
             <button
               type="button"
               disabled={busy}
-              onClick={() => void illustrate()}
+              onClick={() => void queuePictures()}
               className="rounded-2xl bg-teal-600 px-5 py-3 font-black text-white disabled:opacity-50"
             >
-              {busy ? 'Illustrating…' : 'Illustrate pages'}
+              {busy ? 'Working…' : 'Make pictures'}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => void useSimplePictures()}
+              className="rounded-2xl border border-teal-600 px-5 py-3 font-black text-teal-800 disabled:opacity-50"
+            >
+              {IH_JOURNEY_ART_SIMPLE}
             </button>
             <label className="inline-flex items-center gap-2 text-sm font-bold text-blue-900">
               <input

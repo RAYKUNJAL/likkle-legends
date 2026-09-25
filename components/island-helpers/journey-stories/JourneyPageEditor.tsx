@@ -29,7 +29,13 @@ export function JourneyPageEditor({ pages, warnings = [], onChange }: Props) {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={page.imageUrl} alt="" className="h-12 w-20 object-cover rounded-lg border" />
             ) : (
-              <span className="text-xs font-bold text-blue-500">No picture yet</span>
+              <span className="text-xs font-bold text-blue-500">
+                {page.imageStatus === 'pending'
+                  ? 'Picture on the way'
+                  : page.imageStatus === 'failed'
+                    ? 'Picture resting'
+                    : 'No picture yet'}
+              </span>
             )}
           </div>
           {page.role === 'title' ? (

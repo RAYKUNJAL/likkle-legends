@@ -8,7 +8,12 @@ import { ISLAND_HELPERS_CHARACTER_IDS } from '../types';
 import { getScenario } from './seed-scenarios';
 import { buildJourneyPrompt } from './prompt';
 import { applyJourneySafety } from './safety';
-import { JOURNEY_PAGE_ROLES, type JourneyPage, type JourneyStoryDraft } from './types';
+import {
+  JOURNEY_PAGE_ROLES,
+  type JourneyLanguageMode,
+  type JourneyPage,
+  type JourneyStoryDraft,
+} from './types';
 
 
 const CAST_NAMES: Record<IslandHelpersCharacterId, string> = {
@@ -25,7 +30,22 @@ export type GenerateJourneyRequest = {
   childName?: string;
   pointOfView: 'first' | 'third';
   castCharacterIds: IslandHelpersCharacterId[];
+  /** Defaults to standard when omitted. */
+  languageMode?: JourneyLanguageMode;
 };
+
+/** Accept only the two parent modes. Missing means standard. Anything else is rejected. */
+export function parseJourneyLanguageMode(value: unknown): JourneyLanguageMode | null {
+  if (value === undefined || value === null || value === '') return 'standard';
+  if (typeof value !== 'string') return null;
+  const mode = value.trim().toLowerCase();
+  if (mode === 'standard' || mode === 'literal') return mode;
+  return null;
+}
+
+function resolveLanguageMode(mode: JourneyLanguageMode | undefined): JourneyLanguageMode {
+  return mode === 'literal' ? 'literal' : 'standard';
+}
 
 export type GenerateJourneyResponse =
   | { ok: true; draft: JourneyStoryDraft }
@@ -49,12 +69,14 @@ function sanitizeModelError(message: string): string {
   return m.length > 180 ? m.slice(0, 177) + '…' : m;
 }
 
+/** Text model. Missing key must not call OpenRouter. */
+export function hasJourneyTextModelKey(env: NodeJS.ProcessEnv = process.env): boolean {
+  return Boolean((env.OPENROUTER_API_KEY || env.LLM_API_KEY || '').trim());
+}
+
 function getApiKey(): string | null {
-  const key =
-    process.env.OPENROUTER_API_KEY ||
-    process.env.LLM_API_KEY ||
-    '';
-  return key.trim() || null;
+  if (!hasJourneyTextModelKey()) return null;
+  return (process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY || '').trim();
 }
 
 function getOpenRouterUrl(): string {
@@ -165,6 +187,7 @@ function buildDraftShell(
     scenarioLabel: label,
     childName,
     pointOfView: req.pointOfView,
+    languageMode: resolveLanguageMode(req.languageMode),
     castCharacterIds: cast.length ? cast : scenario?.defaultCast || ['tanty_spice'],
     pages,
     safetyFlags,
@@ -201,12 +224,19 @@ export async function generateJourneyStory(
   req: GenerateJourneyRequest,
   opts?: { mockModelText?: string },
 ): Promise<GenerateJourneyResponse> {
+  const languageMode = resolveLanguageMode(req.languageMode);
+  const reqWithMode: GenerateJourneyRequest = { ...req, languageMode };
+
   if (opts?.mockModelText) {
-    return generateJourneyPagesFromModelText(opts.mockModelText, req);
+    return generateJourneyPagesFromModelText(opts.mockModelText, reqWithMode);
   }
 
   const apiKey = getApiKey();
   const useOffline = (reason: string) => {
+    // Seed pages are standard wording. Do not label them as literal words.
+    if (languageMode === 'literal') {
+      return { ok: false as const, error: reason };
+    }
     const offlinePages = req.scenarioId !== 'custom' ? offlineSeedPages(String(req.scenarioId)) : null;
     if (!offlinePages) {
       return { ok: false as const, error: reason };
@@ -250,15 +280,17 @@ export async function generateJourneyStory(
     childName,
     pointOfView: req.pointOfView || scenario?.pointOfView || 'third',
     castNames,
+    languageMode,
   });
 
   try {
     const text = await callOpenRouterChat(prompt, apiKey);
     return generateJourneyPagesFromModelText(text, {
-      ...req,
+      ...reqWithMode,
       childName,
       castCharacterIds: castIds.length ? castIds : scenario?.defaultCast || ['tanty_spice'],
       pointOfView: req.pointOfView || scenario?.pointOfView || 'third',
+      languageMode,
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Generation failed';

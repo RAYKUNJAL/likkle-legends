@@ -1,28 +1,33 @@
 /**
  * Journey Stories — illustration pipeline.
- * Prefer FAL FLUX when FAL_KEY present; else calm SVG placeholders (fail-closed art, not stub remote URLs).
+ * One page per call. Art on hold, or a missing FAL key, uses local SVG placeholders.
+ * Never invent a remote image URL.
  */
 import type { JourneyPage, JourneyStoryDraft } from './types';
-import { JOURNEY_PAGE_ROLES } from './types';
+import { buildJourneyImagePrompt, JOURNEY_SENSORY_STYLE_ANCHOR } from './image-prompt';
+import { journeyArtOnHold } from './art-hold';
+import { placeholderForRole } from './placeholders';
 
-const PLACEHOLDER_BASE = '/images/island-helpers';
-
-export function placeholderForRole(role: string): string {
-  const safe = JOURNEY_PAGE_ROLES.includes(role as any) ? role : 'intro';
-  return `${PLACEHOLDER_BASE}/journey-${safe}.svg`;
-}
+export { JOURNEY_SENSORY_STYLE_ANCHOR, placeholderForRole };
 
 function hasFalKey(): boolean {
   return Boolean(process.env.FAL_KEY?.trim());
 }
 
-function hasGeminiKey(): boolean {
-  return Boolean(
-    (process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || '').trim(),
-  );
+/** Accept only a real hosted image URL. Never synthesize a remote stub. */
+function hostedImageUrl(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
 }
 
 async function tryFlux(prompt: string): Promise<string | null> {
+  if (journeyArtOnHold()) return null;
   const apiKey = process.env.FAL_KEY?.trim();
   if (!apiKey) return null;
   try {
@@ -44,23 +49,18 @@ async function tryFlux(prompt: string): Promise<string | null> {
     });
     if (!res.ok) return null;
     const data = await res.json();
-    const url = data?.images?.[0]?.url;
-    return typeof url === 'string' ? url : null;
+    return hostedImageUrl(data?.images?.[0]?.url);
   } catch {
     return null;
   }
 }
 
-function pagePrompt(draft: JourneyStoryDraft, page: JourneyPage): string {
-  const cast = draft.castCharacterIds.join(', ');
-  return [
-    "Children's book illustration, Caribbean art style, warm tropical colors, soft painterly textures",
-    `Journey Story page (${page.role}): ${page.title || page.text}`,
-    cast ? `featuring friends: ${cast}` : '',
-    'calm sensory-safe scene, no gore, no medical trauma, no text, no words, no letters, child-friendly',
-  ]
-    .filter(Boolean)
-    .join(', ');
+export function buildJourneyIllustrationPrompt(draft: JourneyStoryDraft, page: JourneyPage): string {
+  return buildJourneyImagePrompt({
+    pageRole: page.role,
+    pageText: page.title ? `${page.title}. ${page.text}` : page.text,
+    castCharacterIds: draft.castCharacterIds,
+  });
 }
 
 export async function illustrateJourneyPages(
@@ -82,23 +82,22 @@ export async function illustrateJourneyPages(
 
   const pages = draft.pages.map((p) => ({ ...p }));
   let usedPlaceholders = false;
-  const canRemote = hasFalKey() || hasGeminiKey();
 
   for (const i of indices) {
     if (i < 0 || i >= pages.length) continue;
     const page = pages[i];
     let imageUrl: string | null = null;
 
-    if (hasFalKey()) {
-      imageUrl = await tryFlux(pagePrompt(draft, page));
+    // One page per loop turn. Art on hold never calls FLUX.
+    if (!journeyArtOnHold() && hasFalKey()) {
+      imageUrl = await tryFlux(buildJourneyIllustrationPrompt(draft, page));
     }
 
-    // Gemini native image gen is not reliably available here — do not ship gemini.ts stub URIs.
     if (!imageUrl) {
-      if (!allowPlaceholders && canRemote) {
+      if (!allowPlaceholders && hasFalKey()) {
         return { ok: false, error: 'Illustration provider returned no image' };
       }
-      if (!allowPlaceholders && !canRemote) {
+      if (!allowPlaceholders && !hasFalKey()) {
         return {
           ok: false,
           error: 'No illustration keys configured (FAL_KEY). Enable placeholders or add a key.',

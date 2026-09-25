@@ -73,11 +73,30 @@ export const IH_PARENT_GUIDE = {
     { name: 'My Phrases', blurb: 'Add your family’s own lines — Caribbean English welcome.' },
     { name: 'First → Then', blurb: 'A simple visual plan: what comes first, what comes next. No timers that punish.' },
     { name: 'Reading with Tanty', blurb: 'In storybooks, large captions can follow the warm narration. Helpers stay one tap away in the backpack.' },
-    { name: 'Journey Stories', blurb: 'Parent-made 5-page adventure storybooks for new places (dentist, loud fête, airplane, and more). You edit and Publish before your child sees them.' },
+    { name: 'Journey Stories', blurb: 'Parent-made 5-page adventure storybooks for new places (dentist, loud fête, airplane, and more). You edit and Publish before your child sees them. Literal words uses short, direct sentences.' },
   ],
   journeyBlurb:
-    'Journey Stories help you preview a new routine with Likkle friends. You write or generate pages, fix the words, add pictures, then Publish — only then does the book show up in the kids library.',
+    'Journey Stories help you preview a new routine with Likkle friends. You write or generate pages, fix the words, add pictures, then Publish — only then does the book show up in the kids library. Choose Literal words when your child reads exact words best: short, direct sentences, with feelings named plainly.',
 } as const;
+
+/** Parent wizard labels for Journey Stories reading style. Not shown as a diagnosis. */
+export const IH_JOURNEY_LANGUAGE_STANDARD = 'Standard words — warm story sentences.';
+
+export const IH_JOURNEY_LANGUAGE_LITERAL =
+  'Literal words — short, direct sentences for kids who read exact words best.';
+
+export const IH_JOURNEY_LANGUAGE_HELP =
+  'Literal words skip sayings, jokes that mean something else, and questions that are not real questions. Feelings are named plainly, like “my tummy feels tight.”';
+
+export const IH_JOURNEY_ART_NOTE =
+  'Pictures use calm island colors, a simple background, and no words in the art.';
+
+export const IH_JOURNEY_ART_QUEUED = 'Pictures are being made, one page at a time.';
+
+export const IH_JOURNEY_ART_CALM =
+  'Pictures are resting for now. You can still read the words.';
+
+export const IH_JOURNEY_ART_SIMPLE = 'Use simple pictures';
 
 /** Parent-only ethics. Must include “not a medical device”. No Social Stories™. */
 export const IH_ETHICS_DISCLAIMER = [

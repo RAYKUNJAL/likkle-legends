@@ -22,6 +22,7 @@ const draft = createDraft(
   mem,
 );
 if (draft.status !== 'draft') throw new Error('new draft must be draft');
+if (draft.languageMode !== 'standard') throw new Error('new draft language mode defaults to standard');
 
 try {
   markPublished(draft.id, 'lib-1', mem);

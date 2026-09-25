@@ -10,3 +10,5 @@ Agent checklist before shipping Island Helpers changes:
 6. **Calm Mode / reduced-motion** — no surprise autoplay when calm or OS reduce-motion.
 7. **Do not re-bake** Tanty story audio for Cut 1 — extend phrase captions on existing karaoke.
 8. **Journey Stories** — public name only; never Social Stories™; parent edit gate before child sees AI pages.
+9. **Literal words** — a parent reading option on Journey Stories (short, direct sentences). Do not name it as a diagnosis or therapy in kid UI, and do not add a separate social-story product.
+10. **Pictures** — one page at a time on the VPS `journey-worker` and `journey_story_jobs`. No external queue. No Redis. If art is on hold (`JOURNEY_ART_HOLD=1` or no `GEMINI_API_KEY`), ship the wizard and the words with local SVG placeholders. No new character designs. No stub remote image URLs.

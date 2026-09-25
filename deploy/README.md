@@ -75,6 +75,43 @@ and health-checks the app before finishing.
 
 ---
 
+## Journey Stories pictures
+
+Compose starts `journey-worker` beside `web`. It has no host port and does not
+change `web` `traefik.enable=false`. There is no external queue and no Redis.
+
+Apply `supabase/migrations/20260925_journey_story_jobs.sql` once. The worker
+claims `journey_story_jobs` with `claim_journey_story_job()` (`FOR UPDATE SKIP
+LOCKED`) and draws **one page, then the next**.
+
+`POST /api/island-helpers/journey-stories/queue` (adult header) inserts a
+pending story and a job (`phase` `generating_text`) and returns the story id.
+The worker writes the five pages, then one picture at a time. The wizard
+follows Supabase Realtime and polls. A published story with the same scenario,
+language mode, and cast (`library_key`) reuses hosted pictures.
+
+**Art on hold.** If `GEMINI_API_KEY` is empty, or `JOURNEY_ART_HOLD=1`, the
+queue does not wait on image generation. The wizard writes the words itself.
+**Make pictures** stores the local SVGs under `public/images/island-helpers/`
+and does not call Imagen or FLUX. No stub remote URLs.
+
+**Text model.** Literal words need `OPENROUTER_API_KEY` or `LLM_API_KEY`.
+If both are empty, literal generation fails closed. Standard seed scenarios
+still use the offline pages. Do not commit key values.
+
+Set `GEMINI_IMAGE_MODEL` only to override Imagen (default
+`imagen-3.0-generate-002`).
+
+```bash
+docker compose --env-file .env.production up -d --build journey-worker
+docker compose logs -f journey-worker
+```
+
+This file does not deploy. Code building runs compose at `/opt/likkle-legends`
+when that host is updated separately.
+
+---
+
 ## Scheduled jobs
 
 `deploy/crontab` mirrors the schedules that used to live in `vercel.json`

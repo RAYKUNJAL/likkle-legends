@@ -9,6 +9,9 @@ export type JourneyStoryStatus = 'draft' | 'generating' | 'ready' | 'published' 
 
 export type JourneyPageRole = 'title' | 'intro' | 'body_sensory' | 'body_coping' | 'conclusion';
 
+/** Parent reading option. `literal` = short, direct sentences. Never a diagnosis label. */
+export type JourneyLanguageMode = 'standard' | 'literal';
+
 export const JOURNEY_PAGE_ROLES: JourneyPageRole[] = [
   'title',
   'intro',
@@ -17,11 +20,14 @@ export const JOURNEY_PAGE_ROLES: JourneyPageRole[] = [
   'conclusion',
 ];
 
+export type JourneyImageStatus = 'pending' | 'ready' | 'failed' | 'reused';
+
 export type JourneyPage = {
   role: JourneyPageRole;
   title?: string;
   text: string;
   imageUrl?: string | null;
+  imageStatus?: JourneyImageStatus;
   coachingLineCount: number;
 };
 
@@ -33,10 +39,14 @@ export type JourneyStoryDraft = {
   scenarioLabel: string;
   childName?: string;
   pointOfView: 'first' | 'third';
+  /** Omitted on older drafts; treat missing as standard. */
+  languageMode?: JourneyLanguageMode;
   castCharacterIds: IslandHelpersCharacterId[];
   pages: JourneyPage[];
   safetyFlags: string[];
   libraryStoryId?: string;
+  /** Postgres row id for queued pictures. Omitted until a parent asks for art. */
+  serverStoryId?: string;
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;

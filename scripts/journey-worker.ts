@@ -1,0 +1,93 @@
+/**
+ * On-host Journey Stories worker.
+ * Claims one Postgres job at a time and draws pages sequentially.
+ * No public port. No external queue.
+ */
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { journeyArtOnHold } from '../lib/island-helpers/journey-stories/art-hold';
+import { runClaimedStoryStep, type StoryJobRequest } from '../lib/island-helpers/journey-stories/advance-story';
+import { executeClaimedJourneyJob } from '../lib/island-helpers/journey-stories/execute-job';
+import { hasJourneyTextModelKey } from '../lib/island-helpers/journey-stories/generate';
+import { hasGeminiImageKey } from '../lib/island-helpers/journey-stories/imagen';
+import fs from 'fs';
+
+const HEARTBEAT = '/tmp/journey-worker-heartbeat';
+
+function beat() {
+  fs.writeFileSync(HEARTBEAT, new Date().toISOString());
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function admin(): SupabaseClient | null {
+  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  if (!url || !key) return null;
+  return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+}
+
+async function workOne(supabase: SupabaseClient): Promise<boolean> {
+  const { data, error } = await supabase.rpc('claim_journey_story_job');
+  if (error) {
+    console.error('[journey-worker] claim failed');
+    return false;
+  }
+  const job = Array.isArray(data) ? data[0] : data;
+  if (!job?.id) return false;
+
+  console.log(`[journey-worker] claimed ${job.id} story ${job.story_id} page ${job.page_index ?? 'all'}`);
+  if (job.request || job.phase === 'generating_text') {
+    await runClaimedStoryStep(supabase, {
+      id: String(job.id),
+      story_id: String(job.story_id),
+      page_index: job.page_index == null ? null : Number(job.page_index),
+      request: (job.request || null) as StoryJobRequest | null,
+    });
+    return true;
+  }
+  await executeClaimedJourneyJob(supabase, {
+    id: String(job.id),
+    story_id: String(job.story_id),
+    page_index: job.page_index == null ? null : Number(job.page_index),
+  });
+  return true;
+}
+
+async function main() {
+  let stopping = false;
+  process.on('SIGTERM', () => {
+    stopping = true;
+  });
+  process.on('SIGINT', () => {
+    stopping = true;
+  });
+
+  beat();
+  const supabase = admin();
+  if (!supabase) {
+    console.error('[journey-worker] missing Supabase service role. Idling.');
+  }
+  if (!hasJourneyTextModelKey()) {
+    console.error('[journey-worker] no text model key. Literal stories fail closed. Standard seeds stay offline.');
+  }
+  if (journeyArtOnHold() || !hasGeminiImageKey()) {
+    console.error('[journey-worker] art is on hold. Pictures use local placeholders. No image model calls.');
+  }
+
+  while (!stopping) {
+    beat();
+    if (!supabase) {
+      await sleep(5000);
+      continue;
+    }
+    const did = await workOne(supabase);
+    if (!did) await sleep(2000);
+  }
+}
+
+main().catch((error) => {
+  console.error('[journey-worker] stopped', error instanceof Error ? error.message : 'error');
+  process.exit(1);
+});
