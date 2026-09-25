@@ -77,6 +77,7 @@ export function AdminLayout({ children, activeSection }: AdminLayoutProps) {
             label: 'Content',
             items: [
                 { id: 'content', label: 'Content Library', icon: BookOpen, href: '/admin/content' },
+                { id: 'content-library', label: 'Content Files', icon: Package, href: '/admin/content-library' },
                 { id: 'media', label: 'Media Library', icon: Video, href: '/admin/media' },
                 { id: 'blog', label: 'Blog Manager', icon: FileText, href: '/admin/blog' },
                 { id: 'auto-content', label: 'Fresh Content Agent', icon: Zap, href: '/admin/auto-content' },
