@@ -1,37 +1,65 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { X, Timer } from 'lucide-react';
+
+type CountdownConfig = {
+    enabled?: boolean;
+    duration_hours?: number;
+    ends_at?: string | null;
+};
+
+function parseFutureEnd(endsAt?: string | null): Date | null {
+    if (!endsAt) return null;
+    const end = new Date(endsAt);
+    if (Number.isNaN(end.getTime())) return null;
+    if (end.getTime() <= Date.now()) return null;
+    return end;
+}
+
+function formatRemaining(ms: number) {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return {
+        hours: String(hours).padStart(2, '0'),
+        minutes: String(minutes).padStart(2, '0'),
+        seconds: String(seconds).padStart(2, '0'),
+        done: totalSeconds <= 0,
+    };
+}
 
 export default function NotificationBar({ content }: { content: any }) {
     const { notification_bar } = content;
     const [isVisible, setIsVisible] = useState(true);
-    const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+    const countdown: CountdownConfig | undefined = notification_bar?.countdown;
+    const endDate = parseFutureEnd(countdown?.ends_at);
+    const showTimer = Boolean(countdown?.enabled && endDate);
+    const [timeLeft, setTimeLeft] = useState(() =>
+        endDate ? formatRemaining(endDate.getTime() - Date.now()) : null
+    );
 
     useEffect(() => {
-        if (!notification_bar?.countdown?.enabled) return;
+        if (!showTimer || !endDate) {
+            setTimeLeft(null);
+            return;
+        }
 
-        // Simple countdown logic for demo/rebuild
-        const hours = notification_bar.countdown.duration_hours || 24;
-        let totalSeconds = hours * 3600;
-
-        const timer = setInterval(() => {
-            if (totalSeconds <= 0) {
-                clearInterval(timer);
-                return;
-            }
-            totalSeconds--;
-            setTimeLeft({
-                hours: Math.floor(totalSeconds / 3600),
-                minutes: Math.floor((totalSeconds % 3600) / 60),
-                seconds: totalSeconds % 60
-            });
-        }, 1000);
-
+        const tick = () => {
+            const next = formatRemaining(endDate.getTime() - Date.now());
+            setTimeLeft(next);
+        };
+        tick();
+        const timer = setInterval(tick, 1000);
         return () => clearInterval(timer);
-    }, [notification_bar]);
+        // ends_at string is the source of truth for a real server/CMS expiry
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showTimer, countdown?.ends_at]);
 
     if (!notification_bar?.enabled || !isVisible) return null;
+
+    const timerLive = showTimer && timeLeft && !timeLeft.done;
 
     return (
         <div className="bg-deep relative z-[60] py-2 px-4 border-b border-white/10">
@@ -42,13 +70,11 @@ export default function NotificationBar({ content }: { content: any }) {
                         <span className="hidden md:inline text-white/60 ml-2">— {notification_bar.subtext}</span>
                     </p>
 
-                    {notification_bar.countdown?.enabled && (
+                    {timerLive && (
                         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-white/10 text-emerald-400 text-xs font-mono font-bold">
                             <Timer className="w-3.5 h-3.5" />
                             <span>
-                                {String(timeLeft.hours).padStart(2, '0')}:
-                                {String(timeLeft.minutes).padStart(2, '0')}:
-                                {String(timeLeft.seconds).padStart(2, '0')}
+                                {timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
                             </span>
                         </div>
                     )}

@@ -16,7 +16,7 @@ export default function VideoHero() {
     const trustBadges = [
         { icon: <ShieldCheck size={15} className="text-emerald-400" />, label: 'Ad-Free & Kid-Safe' },
         { icon: '📬', label: 'Ships Worldwide' },
-        { icon: '🌴', label: '500+ Families' },
+        { icon: '🌴', label: 'Caribbean diaspora' },
         { icon: '⭐', label: '4.9/5 Parent Rating' },
     ];
 
