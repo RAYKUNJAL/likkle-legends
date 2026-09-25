@@ -5,6 +5,7 @@
 //   word_count, angle, faq, metadata, tenant_slug, created_at
 import { supabase, supabaseAdmin } from '@/lib/supabase-client';
 import { isSupabaseConfigured } from '@/lib/supabase-client';
+import { normalizeFaq, type BlogFaqItem } from '@/lib/blog/faq';
 
 export interface BlogPost {
     id: string;
@@ -29,6 +30,8 @@ export interface BlogPost {
     read_time_minutes: number;
     created_at: string;
     updated_at: string;
+    /** From blog_posts.faq or metadata.faq. Empty when the post has no FAQ. */
+    faq: BlogFaqItem[];
     blog_categories?: {
         name: string;
     };
@@ -88,6 +91,7 @@ function fromDb(row: DbRow | null): BlogPost | null {
         read_time_minutes: Number(meta.read_time_minutes) || Math.max(1, Math.round(wordCount / 200)),
         created_at: row.created_at || new Date().toISOString(),
         updated_at: meta.updated_at || row.created_at || new Date().toISOString(),
+        faq: normalizeFaq(row.faq ?? meta.faq),
         blog_categories: meta.category ? { name: String(meta.category) } : undefined,
     };
 }
@@ -100,7 +104,20 @@ function toDb(post: Partial<BlogPost>): DbRow {
     const keywords = post.keywords || [];
     const status = post.status || 'draft';
     const published = status === 'published';
-    return {
+    const metadata: DbRow = {
+        excerpt: post.excerpt || plain.slice(0, 200),
+        category: post.category || 'culture',
+        tags: post.tags || [],
+        author_name: post.author_name || 'Tanty Spice (AI Agent)',
+        author_avatar_url: post.author_avatar_url || null,
+        ai_generated: post.ai_generated ?? true,
+        ai_prompt: post.ai_prompt || null,
+        ai_model: post.ai_model || 'gemini-2.5-flash',
+        read_time_minutes: post.read_time_minutes || Math.max(1, Math.round(wordCount / 200)),
+        view_count: post.view_count || 0,
+        updated_at: new Date().toISOString(),
+    };
+    const payload: DbRow = {
         title: post.title,
         slug: post.slug,
         body_html: content,
@@ -118,20 +135,14 @@ function toDb(post: Partial<BlogPost>): DbRow {
         word_count: wordCount,
         angle: post.category || null,
         tenant_slug: 'likkle-legends',
-        metadata: {
-            excerpt: post.excerpt || plain.slice(0, 200),
-            category: post.category || 'culture',
-            tags: post.tags || [],
-            author_name: post.author_name || 'Tanty Spice (AI Agent)',
-            author_avatar_url: post.author_avatar_url || null,
-            ai_generated: post.ai_generated ?? true,
-            ai_prompt: post.ai_prompt || null,
-            ai_model: post.ai_model || 'gemini-2.5-flash',
-            read_time_minutes: post.read_time_minutes || Math.max(1, Math.round(wordCount / 200)),
-            view_count: post.view_count || 0,
-            updated_at: new Date().toISOString(),
-        },
+        metadata,
     };
+    if (post.faq !== undefined) {
+        const faq = normalizeFaq(post.faq);
+        payload.faq = faq;
+        metadata.faq = faq;
+    }
+    return payload;
 }
 
 export async function getPublishedPosts(options?: {
