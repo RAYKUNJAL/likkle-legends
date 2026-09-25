@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getPublicSiteUrl } from '@/lib/blog/site-url';
+import { FEATURED_PUBLIC_GAMES, MORE_PUBLIC_GAMES } from '@/lib/public-games';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getPublicSiteUrl();
@@ -46,9 +47,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     }
 
-    return [...staticRoutes, ...postRoutes];
+    return [...staticRoutes, ...gameRoutes(baseUrl), ...postRoutes];
   } catch (error) {
     console.error('Sitemap blog URLs skipped:', error);
-    return staticRoutes;
+    return [...staticRoutes, ...gameRoutes(baseUrl)];
   }
+}
+
+function gameRoutes(baseUrl: string): MetadataRoute.Sitemap {
+  return [...FEATURED_PUBLIC_GAMES, ...MORE_PUBLIC_GAMES].map((game) => ({
+    url: `${baseUrl}${game.href}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.8,
+  }));
 }
