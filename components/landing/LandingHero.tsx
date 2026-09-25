@@ -32,7 +32,7 @@ export default function LandingHero({ content }: { content: any }) {
 
                         <div className="space-y-6">
                             <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-emerald-500/20">
-                                🌴 Join 500+ Caribbean Families
+                                🌴 Built for Caribbean families abroad
                             </div>
                             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-deep leading-[1.05] tracking-tight">
                                 Don't Let the <span className="text-emerald-600">Culture Fade.</span>

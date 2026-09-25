@@ -21,7 +21,7 @@ export default function FinalCTASection({ content }: { content: any }) {
                             </h2>
 
                             <p className="text-lg md:text-xl text-white/60 max-w-xl mx-auto">
-                                {cta_banner?.subheadline || "Join 500+ families building identity, emotional literacy, and joyful memories each month."}
+                                {cta_banner?.subheadline || "Build identity, emotional literacy, and joyful memories each month."}
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">

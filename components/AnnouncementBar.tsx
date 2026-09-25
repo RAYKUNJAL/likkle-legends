@@ -13,9 +13,6 @@ export default function AnnouncementBar() {
                 <span>🎉 {notification_bar.text}</span>
                 <div className="flex items-center gap-2">
                     <span className="text-white/60 font-normal">{notification_bar.subtext}</span>
-                    {notification_bar.countdown.enabled && (
-                        <span className="text-secondary tabular-nums">23:59:59</span>
-                    )}
                 </div>
             </div>
         </div>
