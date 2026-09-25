@@ -11,6 +11,7 @@ const LEAD_MAGNETS: Record<string, {
     bullets: string[];
     image: string;
     leadMagnetId: string;
+    ageBands?: boolean;
 }> = {
     "caribbean-abc": {
         title: "Free Caribbean ABC Coloring Pack",
@@ -38,6 +39,20 @@ const LEAD_MAGNETS: Record<string, {
         image: "/images/lead-magnets/classroom-pack-preview.png",
         leadMagnetId: "classroom-activity-pack",
     },
+    "journey-pack": {
+        title: "Free Printable Journey Story Pack",
+        subtitle: "3 calm Caribbean Journey Stories for everyday routines",
+        description: "Print-ready Journey Stories for haircut day, new foods, and loud fête sounds — special-needs friendly language, no trademarked product names.",
+        bullets: [
+            "3 short Journey Stories (5 pages each)",
+            "Caribbean everyday routines kids recognize",
+            "Special-needs friendly, literal-ready wording",
+            "Print at home — PDF + HTML print view",
+        ],
+        image: "/printables/free-journey-pack.html",
+        leadMagnetId: "journey-story-pack",
+        ageBands: true,
+    },
 };
 
 export default function LeadMagnetPage() {
@@ -48,6 +63,7 @@ export default function LeadMagnetPage() {
 
     const [email, setEmail] = useState("");
     const [firstName, setFirstName] = useState("");
+    const [ageBand, setAgeBand] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
@@ -80,6 +96,7 @@ export default function LeadMagnetPage() {
                 body: JSON.stringify({
                     email,
                     first_name: firstName || undefined,
+                    child_age_range: ageBand || undefined,
                     source: "lead_magnet_page",
                     lead_magnet_id: magnet.leadMagnetId,
                     utm_source: searchParams.get("utm_source") || undefined,
@@ -126,6 +143,16 @@ export default function LeadMagnetPage() {
                         {/* Preview Image */}
                         <div className="bg-white rounded-3xl shadow-lg p-6 mb-6">
                             <div className="aspect-[4/3] bg-gradient-to-br from-orange-100 to-yellow-100 rounded-2xl flex items-center justify-center overflow-hidden">
+                                {magnet.image.endsWith(".html") || magnet.image.endsWith(".pdf") ? (
+                                    <div className="flex flex-col items-center gap-3 text-orange-500 p-6 text-center">
+                                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                            <polyline points="14 2 14 8 20 8" />
+                                        </svg>
+                                        <span className="font-bold text-lg">Printable Journey Story Pack</span>
+                                        <span className="text-sm text-orange-400">3 stories · line-art placeholders · PDF ready</span>
+                                    </div>
+                                ) : (
                                 <img
                                     src={magnet.image}
                                     alt={magnet.title}
@@ -135,6 +162,7 @@ export default function LeadMagnetPage() {
                                         (e.target as HTMLImageElement).parentElement!.innerHTML = `<div class="flex flex-col items-center gap-3 text-orange-400"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="font-bold text-lg">Preview</span></div>`;
                                     }}
                                 />
+                                )}
                             </div>
                         </div>
 
@@ -191,6 +219,28 @@ export default function LeadMagnetPage() {
                                             className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:outline-none transition-colors"
                                         />
                                     </div>
+
+
+                                    {magnet.ageBands && (
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                                            Kid age band (optional)
+                                        </label>
+                                        <select
+                                            title="Kid age band"
+                                            aria-label="Kid age band"
+                                            value={ageBand}
+                                            onChange={(e) => setAgeBand(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:outline-none transition-colors"
+                                        >
+                                            <option value="">Select age band...</option>
+                                            <option value="3-5">Ages 3–5 (adult reads)</option>
+                                            <option value="6-9">Ages 6–9 (shared reading)</option>
+                                            <option value="mixed">Mixed ages / whole family</option>
+                                            <option value="skip">Prefer not to say</option>
+                                        </select>
+                                    </div>
+                                    )}
 
                                     <div>
                                         <label className="block text-sm font-bold text-gray-700 mb-1.5">

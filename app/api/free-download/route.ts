@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/admin';
+import { readFile } from 'fs/promises';
+import path from 'path';
 
 const DOWNLOAD_FILES: Record<string, {
     bucket: string;
     path: string;
     filename: string;
+    /** Optional repo-local PDF under public/ (draft / offline fallback). */
+    localPublicPath?: string;
 }> = {
     'caribbean-abc-coloring-pack': {
         bucket: 'lead-magnets',
@@ -15,6 +19,12 @@ const DOWNLOAD_FILES: Record<string, {
         bucket: 'lead-magnets',
         path: 'classroom-activity-pack.pdf',
         filename: 'Caribbean-Classroom-Activity-Pack.pdf',
+    },
+    'journey-story-pack': {
+        bucket: 'lead-magnets',
+        path: 'journey-story-pack.pdf',
+        filename: 'Likkle-Legends-Journey-Story-Pack.pdf',
+        localPublicPath: 'printables/free-journey-pack.pdf',
     },
 };
 
@@ -49,26 +59,41 @@ export async function GET(request: NextRequest) {
         });
     }
 
-    // Fetch the file from Supabase storage
+    // Prefer Supabase storage when uploaded; fall back to local public/ PDF for draft magnets.
     const { data, error } = await admin.storage
         .from(fileConfig.bucket)
         .download(fileConfig.path);
 
-    if (error || !data) {
-        console.error('Download file error:', error);
-        return NextResponse.json(
-            { error: 'File not found. Please contact support.' },
-            { status: 404 }
-        );
+    if (!error && data) {
+        const arrayBuffer = await data.arrayBuffer();
+        return new NextResponse(arrayBuffer, {
+            headers: {
+                'Content-Type': 'application/pdf',
+                'Content-Disposition': `attachment; filename="${fileConfig.filename}"`,
+                'Cache-Control': 'private, max-age=3600',
+            },
+        });
     }
 
-    // Return the file as a downloadable response
-    const arrayBuffer = await data.arrayBuffer();
-    return new NextResponse(arrayBuffer, {
-        headers: {
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': `attachment; filename="${fileConfig.filename}"`,
-            'Cache-Control': 'private, max-age=3600',
-        },
-    });
+    if (fileConfig.localPublicPath) {
+        try {
+            const localPath = path.join(process.cwd(), 'public', fileConfig.localPublicPath);
+            const buf = await readFile(localPath);
+            return new NextResponse(buf, {
+                headers: {
+                    'Content-Type': 'application/pdf',
+                    'Content-Disposition': `attachment; filename="${fileConfig.filename}"`,
+                    'Cache-Control': 'private, max-age=3600',
+                },
+            });
+        } catch (localErr) {
+            console.error('Local lead-magnet PDF missing:', localErr);
+        }
+    }
+
+    console.error('Download file error:', error);
+    return NextResponse.json(
+        { error: 'File not found. Please contact support.' },
+        { status: 404 }
+    );
 }

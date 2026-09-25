@@ -12,6 +12,9 @@ const DOWNLOAD_SLUGS: Record<string, {
     upsellDescription: string;
     upsellPrice: string;
     upsellLink: string;
+    secondaryCtaLabel?: string;
+    secondaryCtaLink?: string;
+    printHtmlPath?: string;
 }> = {
     "caribbean-abc": {
         title: "Caribbean ABC Coloring Pack",
@@ -28,6 +31,17 @@ const DOWNLOAD_SLUGS: Record<string, {
         upsellDescription: "Access our full library of Caribbean educational printables, lesson plans, and cultural activities. Free for educators.",
         upsellPrice: "Free",
         upsellLink: "/signup?plan=free&user_type=teacher",
+    },
+    "journey-pack": {
+        title: "Journey Story Pack",
+        downloadId: "journey-story-pack",
+        upsellTitle: "Make custom Journey Stories in the app",
+        upsellDescription: "Unlock Island Helpers Journey Stories, more printables, and the kids games hub. Start a free trial, then explore free games anytime.",
+        upsellPrice: "7-day trial",
+        upsellLink: "/signup?plan=free_trial&utm_source=journey_pack&utm_medium=thankyou",
+        secondaryCtaLabel: "Play free games",
+        secondaryCtaLink: "https://likkle-games.nextbagchaser.com/",
+        printHtmlPath: "/printables/free-journey-pack.html",
     },
 };
 
@@ -188,6 +202,29 @@ export default function ThankYouPage() {
                                 <div className="text-xs text-gray-400">after 7-day free trial</div>
                             </div>
                         </div>
+
+                        {config.secondaryCtaLink && (
+                            <div className="mt-4">
+                                <a
+                                    href={config.secondaryCtaLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 text-sm font-bold text-yellow-300 hover:text-yellow-200 underline-offset-2 hover:underline"
+                                >
+                                    {config.secondaryCtaLabel || "Explore free games"}
+                                    <ArrowRight className="w-4 h-4" />
+                                </a>
+                            </div>
+                        )}
+
+                        {config.printHtmlPath && (
+                            <p className="mt-4 text-sm text-gray-400">
+                                Prefer print-from-browser?{" "}
+                                <a href={config.printHtmlPath} className="text-yellow-300 underline" target="_blank" rel="noopener noreferrer">
+                                    Open the HTML print view
+                                </a>
+                            </p>
+                        )}
 
                         {/* Trust */}
                         <div className="mt-6 pt-6 border-t border-white/10 flex items-center justify-center gap-4 text-xs text-gray-400">
