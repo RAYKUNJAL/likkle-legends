@@ -2,31 +2,13 @@
 
 import IslandMemory from '@/components/games/IslandMemory';
 import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
-import { useUser } from '@/components/UserContext';
-import { logActivity } from '@/lib/database';
-import { recordGameResult } from '@/lib/game-progress';
+import { useAwardPortalGameXp } from '@/components/games/useAwardPortalGameXp';
 
 export default function IslandMemoryPage() {
-    const { user, activeChild } = useUser();
+    const awardGameXp = useAwardPortalGameXp('island-memory', 'Island Memory Match');
 
-    const handleComplete = async (score: number) => {
-        recordGameResult('island-memory', score);
-
-        if (!user || !activeChild) return;
-        try {
-            const xp = Math.min(score, 200);
-            await logActivity(
-                user.id,
-                activeChild.id,
-                'game',
-                'island-memory',
-                xp,
-                0,
-                { title: 'Island Memory Match' }
-            );
-        } catch (error) {
-            console.error('Failed to log game activity:', error);
-        }
+    const handleComplete = (score: number) => {
+        void awardGameXp(Math.min(score, 200), score);
     };
 
     return (

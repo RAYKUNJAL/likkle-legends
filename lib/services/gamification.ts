@@ -1,7 +1,8 @@
 import { supabase } from '@/lib/storage';
-import { isSupabaseConfigured, supabaseAdmin } from '@/lib/supabase-client';
+import { isSupabaseConfigured } from '@/lib/supabase-client';
 import { getChild, updateChild } from './children';
 import { BADGES } from '@/lib/gamification';
+import { activityContentFields } from '@/lib/game-xp';
 
 export async function logActivity(
     profileId: string,
@@ -13,17 +14,32 @@ export async function logActivity(
     metadata: Record<string, unknown> = {}
 ) {
     if (!isSupabaseConfigured()) return;
+    const fields = activityContentFields(contentId, metadata);
     const { error } = await supabase.from('activities').insert({
         profile_id: profileId,
         child_id: childId,
         activity_type: activityType,
-        content_id: contentId,
+        content_id: fields.content_id,
         xp_earned: xpEarned,
         duration_seconds: durationSeconds,
-        metadata,
+        metadata: fields.metadata,
     });
 
-    if (error) throw error;
+    // A rejected activity row (for example a game slug in the UUID content_id
+    // column) must not skip the total_xp update below.
+    if (error) {
+        console.error('Activity log insert failed:', error.message);
+    }
+
+    // Award XP before streak/badge side effects. Those used to throw first
+    // and leave total_xp unchanged after a failed activity insert.
+    if (xpEarned > 0) {
+        const multiplier = await getXPMultiplier();
+        const adjustedXP = Math.floor(xpEarned * multiplier);
+        if (adjustedXP > 0) {
+            await addXP(childId, adjustedXP, activityType);
+        }
+    }
 
     // Update streak
     await updateStreak(childId);
@@ -36,14 +52,6 @@ export async function logActivity(
             milestones.push(contentId);
             await updateChild(childId, { cultural_milestones: milestones });
         }
-    }
-
-    // Add XP if earned
-    if (xpEarned > 0) {
-        // Apply global multiplier
-        const multiplier = await getXPMultiplier();
-        const adjustedXP = Math.floor(xpEarned * multiplier);
-        await addXP(childId, adjustedXP, activityType);
     }
 
     // Update family challenge progress (fire-and-forget, non-blocking)

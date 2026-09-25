@@ -419,12 +419,16 @@ export default function GamesHubPage() {
         (async () => {
             try {
                 const recent = await getRecentActivities(activeChild.id, 150);
-                const gameRows = recent.filter((row: any) => row.activity_type === 'game' && row.content_id);
+                const gameRows = recent.filter((row: any) => {
+                    if (row.activity_type !== 'game' && row.metadata?.activity_type !== 'game') return false;
+                    return Boolean(row.content_id || row.metadata?.content_key);
+                });
                 if (!gameRows.length) return;
 
                 const merged = { ...localMap };
                 gameRows.forEach((row: any) => {
-                    const key = String(row.content_id);
+                    const key = String(row.content_id || row.metadata?.content_key || '');
+                    if (!key) return;
                     const score = Number(row?.metadata?.score || row?.xp_earned || 0);
                     const existing = merged[key];
                     merged[key] = {

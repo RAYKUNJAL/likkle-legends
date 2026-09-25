@@ -2,27 +2,13 @@
 
 import RecipeScramble from '@/components/games/RecipeScramble';
 import GameLayoutWrapper from '@/components/games/GameLayoutWrapper';
-import { useUser } from '@/components/UserContext';
-import { logActivity } from '@/lib/database';
+import { useAwardPortalGameXp } from '@/components/games/useAwardPortalGameXp';
 
 export default function RecipeScramblePage() {
-    const { user, activeChild } = useUser();
+    const awardGameXp = useAwardPortalGameXp('recipe-scramble', 'Recipe Scramble');
 
-    const handleComplete = async (score: number) => {
-        if (!user || !activeChild) return;
-        try {
-            await logActivity(
-                user.id,
-                activeChild.id,
-                'game',
-                'recipe-scramble',
-                score,
-                0,
-                { title: 'Recipe Scramble' }
-            );
-        } catch (error) {
-            console.error('Failed to log game activity:', error);
-        }
+    const handleComplete = (score: number) => {
+        void awardGameXp(score, score);
     };
 
     return (
