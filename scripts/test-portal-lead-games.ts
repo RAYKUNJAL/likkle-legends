@@ -11,7 +11,7 @@ import {
     BOARD_SIZE,
 } from '../lib/games/block-placement';
 import { questionFor, QUIZ_LEVELS } from '../lib/games/island-quiz-data';
-import { memberCanPlayReefLevel, reefConfig, scoreReefHit } from '../lib/games/reef-rescue-rules';
+import { clampPlayfieldX, entityUnderPoint, memberCanPlayReefLevel, reefConfig, scoreReefHit } from '../lib/games/reef-rescue-rules';
 
 function testReefMembersAreNeverGated() {
     assert.equal(memberCanPlayReefLevel(1), true);
@@ -25,6 +25,12 @@ function testReefMembersAreNeverGated() {
     assert.equal(friend.lifeDelta, -1);
     assert.equal(friend.nextCombo, 0);
     assert.ok(reefConfig(1).target > 0);
+
+    const pieces = [{ id: 'bag', x: 120, y: 180 }, { id: 'bottle', x: 130, y: 190 }];
+    assert.equal(entityUnderPoint(pieces, 140, 200)?.id, 'bottle');
+    assert.equal(entityUnderPoint(pieces, 0, 0), null);
+    assert.equal(clampPlayfieldX(-40, 320, 72), 0);
+    assert.equal(clampPlayfieldX(400, 320, 72), 248);
 }
 
 function testQuizAlwaysHasATappableAnswer() {
