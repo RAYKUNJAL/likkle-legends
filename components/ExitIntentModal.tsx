@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { X, Gift } from 'lucide-react';
+import { X, Heart } from 'lucide-react';
 import Button from './Button';
 
 const ExitIntentModal: React.FC = () => {
@@ -22,9 +22,9 @@ const ExitIntentModal: React.FC = () => {
       // Check if it's a mobile viewport and hasn't shown yet
       if (window.innerWidth < 768 && !hasShown) {
         // Only show on mobile after 30 seconds of engagement
-        // setIsVisible(true); 
+        // setIsVisible(true);
         // setHasShown(true);
-        // Commented out to be less intrusive on mobile for this demo, 
+        // Commented out to be less intrusive on mobile for this demo,
         // but this is where you'd put it.
       }
     }, 30000);
@@ -57,43 +57,33 @@ const ExitIntentModal: React.FC = () => {
 
             <div className="text-center relative z-10">
               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-md text-primary ring-4 ring-white/50">
-                <Gift size={40} />
+                <Heart size={40} />
               </div>
               <span className="font-heading font-bold text-primary text-xl">Wait!</span>
             </div>
           </div>
           <div className="p-8 md:w-3/5">
             <h3 className="font-heading font-bold text-2xl text-text mb-2">
-              Don't leave empty handed!
+              Start free — no card needed
             </h3>
             <p className="text-textLight mb-6 text-sm">
-              Unlock a special <span className="font-bold text-primary">15% OFF</span> your first box when you join today.
+              Create a free parent account and explore stories, games, and island radio. Paid buddy, full library, and mail kits stay locked until you upgrade.
             </p>
-
-            <div className="bg-gray-50 p-3 rounded-lg text-center mb-6 border border-dashed border-gray-300 group cursor-pointer hover:bg-gray-100 transition-colors"
-              onClick={() => {
-                navigator.clipboard.writeText('LEGEND15');
-                alert('Code copied!');
-              }}
-            >
-              <span className="text-[10px] text-gray-500 uppercase tracking-widest block mb-1">Click to Copy Code</span>
-              <span className="font-mono font-bold text-2xl text-text tracking-wider group-hover:text-primary transition-colors">LEGEND15</span>
-            </div>
 
             <Button
               fullWidth
               onClick={() => {
                 setIsVisible(false);
-                window.location.href = '#pricing';
+                window.location.href = '/signup';
               }}
             >
-              Claim Offer
+              Create your free account
             </Button>
             <button
               onClick={() => setIsVisible(false)}
               className="w-full text-center text-xs text-gray-400 mt-4 hover:text-gray-600 underline"
             >
-              No thanks, I don't want to save money
+              No thanks, maybe later
             </button>
           </div>
         </div>
